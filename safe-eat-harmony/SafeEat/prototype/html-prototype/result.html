@@ -1,0 +1,147 @@
+<!--
+  Page: 识别结果页
+  Purpose: 展示识别分级、食物名称、建议、营养成分、评分和多维风险，支持翻转卡片。
+  API:
+    - GET /v1/safe-eat/recognitions/{id}
+    - POST /v1/safe-eat/recognitions/{id}/feedback
+  Auth: Authorization: Bearer {accessToken}
+  Data Mapping:
+    - adviceLevel -> 结果边框颜色和文案
+    - foodScore -> 圆形评分
+    - healthImpacts -> 风险/优势标签
+    - feedbackEvidence.hasEvidence -> 反馈状态提示
+-->
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Safe-Eat Prototype - Result</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./prototype-api.js"></script>
+  </head>
+  <body>
+    <main class="prototype-shell">
+      <div class="phone-frame">
+        <div class="screen">
+          <div class="topbar">
+            <a class="eyebrow" href="./scan.html">重新扫描</a>
+            <button class="icon-button" id="flip-card-button" aria-label="翻转卡片">翻转</button>
+          </div>
+
+          <section class="result-card" id="result-card">
+            <div class="result-card-inner">
+              <div class="result-face front">
+                <article class="result-panel caution">
+                  <div class="split">
+                    <div class="stack">
+                      <span class="section-title result-section-title">识别结果</span>
+                      <strong class="result-name">凉拌荞麦面</strong>
+                    </div>
+                    <span class="status-tag caution">谨慎食用</span>
+                  </div>
+
+                  <div class="hero-plate section">
+                    <div class="hero-food"></div>
+                  </div>
+
+                  <div class="section split">
+                    <div class="stack">
+                      <span class="metric-label">综合分数</span>
+                      <strong class="result-score caution">64</strong>
+                    </div>
+                    <div class="stack align-end">
+                      <span class="metric-label">证据反馈状态</span>
+                      <strong class="result-feedback-state">尚未反馈</strong>
+                    </div>
+                  </div>
+
+                  <div class="tag-row section">
+                    <span class="impact-chip positive">血糖管理：相对友好</span>
+                    <span class="impact-chip risk">血压管理：偏咸需控制</span>
+                  </div>
+
+                  <div class="section stack">
+                    <a class="button full" href="./feedback.html">识别不对，提交反馈</a>
+                    <button class="button-secondary full" id="flip-front-button">查看详细建议</button>
+                  </div>
+                </article>
+              </div>
+
+              <div class="result-face back">
+                <article class="result-panel caution">
+                  <div class="split">
+                    <div class="stack">
+                      <span class="section-title result-section-title">翻转详情</span>
+                      <strong class="result-detail-title">营养与分维度风险</strong>
+                    </div>
+                    <span class="status-tag caution">谨慎食用</span>
+                  </div>
+
+                  <section class="section">
+                    <h2 class="section-title">营养成分</h2>
+                    <div class="metric-grid">
+                      <article class="metric-card">
+                        <span class="metric-label">热量</span>
+                        <span class="metric-value">138</span>
+                      </article>
+                      <article class="metric-card">
+                        <span class="metric-label">蛋白质</span>
+                        <span class="metric-value">4.5g</span>
+                      </article>
+                      <article class="metric-card">
+                        <span class="metric-label">脂肪</span>
+                        <span class="metric-value">1.8g</span>
+                      </article>
+                      <article class="metric-card">
+                        <span class="metric-label">碳水</span>
+                        <span class="metric-value">27.2g</span>
+                      </article>
+                    </div>
+                  </section>
+
+                  <section class="section">
+                    <h2 class="section-title">食用建议</h2>
+                    <article class="card">
+                      <div class="stack">
+                        <strong>建议文字</strong>
+                        <span class="body-copy">可以吃凉拌荞麦面，但建议控制份量，并避免偏咸调味。</span>
+                      </div>
+                    </article>
+                  </section>
+
+                  <section class="section">
+                    <h2 class="section-title">分项风险</h2>
+                    <div class="stack">
+                      <span class="impact-chip positive">血糖管理：碳水负担相对温和，优于高糖甜品。</span>
+                      <span class="impact-chip risk">血压管理：存在偏咸信号，建议少酱料或减少汤汁。</span>
+                      <span class="impact-chip caution">减脂目标：热量不算高，但仍建议搭配蔬菜。</span>
+                    </div>
+                  </section>
+
+                  <div class="section stack">
+                    <button class="button full" id="flip-back-button">返回正面卡片</button>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <nav class="tabbar">
+          <a class="tab active" href="./home.html">首页</a>
+          <a class="tab" href="./menu-month.html">菜单</a>
+          <a class="tab" href="./profile.html">个人</a>
+        </nav>
+      </div>
+    </main>
+
+    <script>
+      const card = document.getElementById('result-card');
+      const toggle = () => card.classList.toggle('is-flipped');
+      document.getElementById('flip-card-button').addEventListener('click', toggle);
+      document.getElementById('flip-front-button').addEventListener('click', toggle);
+      document.getElementById('flip-back-button').addEventListener('click', toggle);
+    </script>
+  </body>
+</html>

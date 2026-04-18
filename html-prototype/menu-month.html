@@ -1,0 +1,67 @@
+<!--
+  Page: 菜单一级页面 / 按月历史
+  Purpose: 从本地历史按月份聚合，进入具体某天的两列瀑布流。
+  API:
+    - 无（本页默认使用本地历史）
+  Auth: N/A（依赖端侧本地数据）
+  Request:
+    - 无
+  Data Mapping:
+    - 本地数据源 <- SafeEatLocalHistory
+    - 月份标题 <- createdAt 分组
+    - 本月识别数 <- 分组条数
+    - 最新一次 adviceLevel <- 分组内最新记录
+-->
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Safe-Eat Prototype - Menu Month</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./prototype-api.js"></script>
+    <script type="module" src="./theme-toggle.js"></script>
+  </head>
+  <body>
+    <main class="prototype-shell">
+      <div class="phone-frame">
+        <div class="screen">
+          <div class="topbar">
+            <span class="eyebrow">菜单 / 按月</span>
+            <button class="icon-button" aria-label="筛选">􀌉</button>
+          </div>
+
+          <section class="hero">
+            <span class="pill">本地历史聚合</span>
+            <h2>把每次识别沉淀下来，回看自己的饮食轨迹</h2>
+            <p>一级页面先按月聚合，点击某个月后进入按日瀑布流。图片来源默认是应用沙盒，本页不请求服务端原图。</p>
+          </section>
+
+          <section class="section">
+            <h2 class="section-title">2026 年识别月份</h2>
+            <div class="month-list">
+              <a class="month-item" href="./menu-day.html">
+                <strong>04 月</strong>
+                <span>18 次识别，最近一次为凉拌荞麦面，主要风险集中在偏咸和隐性糖分。</span>
+              </a>
+              <article class="month-item">
+                <strong>03 月</strong>
+                <span>27 次识别，以早餐和外卖快餐为主，已开始形成控糖与减脂趋势。</span>
+              </article>
+              <article class="month-item">
+                <strong>02 月</strong>
+                <span>11 次识别，春节期间高油高糖明显增多，适合作为对比观察样本。</span>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <nav class="tabbar">
+          <a class="tab" href="./home.html">首页</a>
+          <a class="tab active" href="./menu-month.html">菜单</a>
+          <a class="tab" href="./profile.html">个人</a>
+        </nav>
+      </div>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,87 @@
+<!--
+  Page: 原型总览图
+  Purpose: 用边框表示页面，用连线表示跳转，方便给华为 AI 或协作者整体理解页面关系。
+  API:
+    - 无（流程关系说明页）
+  Auth: N/A
+  Request:
+    - 无
+  Data Mapping:
+    - 页面节点名称 <- 对应 HTML 文件名与页面职责
+-->
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Safe-Eat Prototype Flow</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="flow-shell">
+      <section class="flow-board">
+        <h1>Safe-Eat HTML Prototype Flow</h1>
+        <p>边框代表页面，线条代表主要跳转路径。点击节点可以直接打开对应 HTML 页面。</p>
+
+        <div class="flow-map">
+          <svg class="flow-lines" viewBox="0 0 1400 820" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M 260 210 C 320 210, 300 120, 360 120" fill="none" stroke="rgba(46,125,90,0.3)" stroke-width="4" stroke-linecap="round"/>
+            <path d="M 580 120 C 640 120, 620 210, 680 210" fill="none" stroke="rgba(46,125,90,0.3)" stroke-width="4" stroke-linecap="round"/>
+            <path d="M 900 210 C 970 210, 950 130, 1020 130" fill="none" stroke="rgba(201,91,68,0.28)" stroke-width="4" stroke-linecap="round"/>
+            <path d="M 260 250 C 330 250, 300 470, 360 470" fill="none" stroke="rgba(214,165,69,0.3)" stroke-width="4" stroke-linecap="round"/>
+            <path d="M 580 470 C 640 470, 620 560, 680 560" fill="none" stroke="rgba(214,165,69,0.3)" stroke-width="4" stroke-linecap="round"/>
+            <path d="M 260 650 C 320 650, 300 740, 360 740" fill="none" stroke="rgba(46,125,90,0.3)" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+
+          <a class="flow-node home" href="./home.html">
+            <small>entry</small>
+            <strong>Home</strong>
+            <span>首页简化入口，右上角是小型新用户优惠条。</span>
+          </a>
+
+          <a class="flow-node scan" href="./scan.html">
+            <small>camera</small>
+            <strong>Scan</strong>
+            <span>调用 Harmony 相机后，上传图片创建识别。</span>
+          </a>
+
+          <a class="flow-node result" href="./result.html">
+            <small>result</small>
+            <strong>Result</strong>
+            <span>绿黄红结果卡片，支持翻转查看营养和风险。</span>
+          </a>
+
+          <a class="flow-node feedback" href="./feedback.html">
+            <small>correction</small>
+            <strong>Feedback</strong>
+            <span>把当前菜单改成贴纸样式，并补传证据图。</span>
+          </a>
+
+          <a class="flow-node menu-month" href="./menu-month.html">
+            <small>history</small>
+            <strong>Menu Month</strong>
+            <span>历史一级页，按月聚合识别记录。</span>
+          </a>
+
+          <a class="flow-node menu-day" href="./menu-day.html">
+            <small>stickers</small>
+            <strong>Menu Day</strong>
+            <span>历史二级页，每个菜单就是一个贴纸。</span>
+          </a>
+
+          <a class="flow-node profile" href="./profile.html">
+            <small>me</small>
+            <strong>Profile</strong>
+            <span>参考“我的”页，套餐标识贴在名字附近，内容折叠到子层级。</span>
+          </a>
+
+          <a class="flow-node membership" href="./membership.html">
+            <small>promo</small>
+            <strong>Membership</strong>
+            <span>会员购买页带划线原价、到手价和限时优惠逻辑。</span>
+          </a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

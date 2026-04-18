@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Safe-Eat 需要使用相机拍照识别食物并提供饮食建议。</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Safe-Eat 需要访问相册以便选择已有图片进行识别或反馈纠错。</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Safe-Eat 会在本地保存识别历史图片用于菜单回看。</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>resource/fonts/ChillRoundFRegular.ttf</string>
+		<string>resource/fonts/ChillRoundFBold.ttf</string>
+	</array>
+</dict>
+</plist>

@@ -1,0 +1,95 @@
+<!--
+  Page: 菜单二级页面 / 按日瀑布流
+  Purpose: 展示某个月下每天的识别卡片，固定两列排列。
+  API:
+    - 无（本页默认使用本地历史）
+  Auth: N/A（依赖端侧本地数据）
+  Request:
+    - 无
+  Data Mapping:
+    - 本地数据源 <- SafeEatLocalHistory
+    - localImageUri -> 卡片图片
+    - recognizedName / adviceLevel / foodScore -> 卡片主信息
+    - createdAt -> 日分组标题
+-->
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Safe-Eat Prototype - Menu Day</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./prototype-api.js"></script>
+    <script type="module" src="./theme-toggle.js"></script>
+  </head>
+  <body>
+    <main class="prototype-shell">
+      <div class="phone-frame sticker-day-frame">
+        <div class="screen sticker-day-screen">
+          <div class="topbar">
+            <a class="sticker-back" href="./menu-month.html" aria-label="返回月份">‹</a>
+            <button class="icon-button sticker-sort" aria-label="切换排序">排序</button>
+          </div>
+
+          <section class="sticker-day-header">
+            <h1>4 月 03 日</h1>
+            <p>5 条记录</p>
+          </section>
+
+          <section class="sticker-stage">
+            <a class="sticker-menu" href="./result.html">
+              <div class="sticker-visual dish-soba"></div>
+              <div class="sticker-caption">
+                <span>冷拌</span>
+                <span>荞麦面</span>
+              </div>
+              <div class="sticker-meta caution">64 分 · 谨慎食用</div>
+            </a>
+
+            <a class="sticker-menu offset-right" href="./result.html">
+              <div class="sticker-visual dish-chicken"></div>
+              <div class="sticker-caption">
+                <span>香煎</span>
+                <span>鸡胸肉</span>
+              </div>
+              <div class="sticker-meta recommended">88 分 · 推荐食用</div>
+            </a>
+
+            <a class="sticker-menu offset-left" href="./result.html">
+              <div class="sticker-visual dish-salad"></div>
+              <div class="sticker-caption">
+                <span>绿叶</span>
+                <span>蔬菜沙拉</span>
+              </div>
+              <div class="sticker-meta recommended">81 分 · 推荐食用</div>
+            </a>
+
+            <a class="sticker-menu" href="./result.html">
+              <div class="sticker-visual dish-cake"></div>
+              <div class="sticker-caption">
+                <span>奶油</span>
+                <span>蛋糕</span>
+              </div>
+              <div class="sticker-meta avoid">22 分 · 不建议食用</div>
+            </a>
+
+            <a class="sticker-menu offset-center" href="./result.html">
+              <div class="sticker-visual dish-apple"></div>
+              <div class="sticker-caption">
+                <span>苹果</span>
+                <span>切片</span>
+              </div>
+              <div class="sticker-meta recommended">82 分 · 推荐食用</div>
+            </a>
+          </section>
+        </div>
+
+        <nav class="tabbar">
+          <a class="tab" href="./home.html">首页</a>
+          <a class="tab active" href="./menu-month.html">菜单</a>
+          <a class="tab" href="./profile.html">个人</a>
+        </nav>
+      </div>
+    </main>
+  </body>
+</html>

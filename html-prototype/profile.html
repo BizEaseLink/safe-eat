@@ -1,0 +1,116 @@
+<!--
+  Page: 个人中心
+  Purpose: 聚合用户信息、健康画像、订单入口和会员购买入口，结构参考“我的”页。
+  API:
+    - GET /v1/safe-eat/me
+    - GET /v1/safe-eat/membership/plans
+  Auth: Authorization: Bearer {accessToken}
+  Data Mapping:
+    - 用户资料与健康标签 <- me
+    - 套餐标识 <- 当前会员权益
+    - 订单入口与会员入口收在个人信息结构里
+-->
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Safe-Eat Prototype - Profile</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./prototype-api.js"></script>
+    <script type="module" src="./theme-toggle.js"></script>
+  </head>
+  <body>
+    <main class="prototype-shell">
+      <div class="phone-frame profile-frame">
+        <div class="screen profile-screen">
+          <div class="topbar">
+            <span class="eyebrow">个人中心</span>
+            <button class="icon-button" aria-label="设置">设置</button>
+          </div>
+
+          <section class="profile-card">
+            <div class="profile-avatar"></div>
+            <div class="profile-headline">
+              <div class="profile-name-row">
+                <strong>李嘉嘉</strong>
+                <span class="plan-badge free">Free</span>
+              </div>
+              <span class="profile-subtitle">编辑资料</span>
+            </div>
+            <a class="profile-language" href="#">
+              <span>中文</span>
+            </a>
+          </section>
+
+          <section class="profile-upgrade-card">
+            <div class="profile-upgrade-copy">
+              <span>升级安心食会员</span>
+              <strong>解锁更多识别次数与饮食追踪</strong>
+            </div>
+            <a class="profile-upgrade-action" href="./membership.html">查看优惠</a>
+          </section>
+
+          <section class="profile-groups">
+            <details class="profile-group" open>
+              <summary>个人信息</summary>
+              <div class="profile-group-body">
+                <a class="profile-row" href="#">
+                  <span>手机号</span>
+                  <strong>138 0013 8000</strong>
+                </a>
+                <a class="profile-row" href="#">
+                  <span>当前套餐</span>
+                  <strong>Free</strong>
+                </a>
+                <a class="profile-row" href="./membership.html">
+                  <span>会员购买</span>
+                  <strong>查看优惠</strong>
+                </a>
+                <a class="profile-row" href="#">
+                  <span>订单记录</span>
+                  <strong>2 笔</strong>
+                </a>
+              </div>
+            </details>
+
+            <details class="profile-group" open>
+              <summary>健康画像</summary>
+              <div class="profile-group-body">
+                <div class="profile-chip-row">
+                  <span class="impact-chip positive">高血糖</span>
+                  <span class="impact-chip caution">高血压</span>
+                  <span class="impact-chip positive">减脂</span>
+                </div>
+                <div class="profile-note-list">
+                  <span>避开成分：奶油、反式脂肪、重油重盐调味</span>
+                  <span>饮食偏好：清淡、优先高蛋白、减少精制糖</span>
+                </div>
+              </div>
+            </details>
+
+            <details class="profile-group">
+              <summary>提醒与设置</summary>
+              <div class="profile-group-body">
+                <a class="profile-row" href="#">
+                  <span>学习提醒</span>
+                  <strong>已关闭</strong>
+                </a>
+                <a class="profile-row" href="#">
+                  <span>系统语言</span>
+                  <strong>中文</strong>
+                </a>
+              </div>
+            </details>
+          </section>
+        </div>
+
+        <nav class="tabbar">
+          <a class="tab" href="./home.html">首页</a>
+          <a class="tab" href="./menu-month.html">菜单</a>
+          <a class="tab active" href="./profile.html">个人</a>
+        </nav>
+      </div>
+    </main>
+  </body>
+</html>

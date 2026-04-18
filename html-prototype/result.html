@@ -1,0 +1,220 @@
+<!--
+  Page: 新版识别结果页（全页双面卡）
+  Purpose: 使用全页子页面展示识别结果与营养风险分析，点击卡片或左右滑动在正反两面之间切换。
+  API:
+    - GET /v1/safe-eat/recognitions/{id}
+    - POST /v1/safe-eat/recognitions/{id}/feedback
+  Auth: Authorization: Bearer {accessToken}
+  Data Mapping:
+    - recognizedName -> 页面顶部食物名称、背面第三行食物名
+    - adviceLevel -> 状态 chip 与语义色
+    - foodScore -> 健康评分与分数逻辑卡
+    - nutritionSnapshot -> 背面营养分析
+    - reasons / adviceText -> 饮食建议
+    - healthImpacts -> 风险分析
+-->
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Safe-Eat Prototype - Result v2</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./prototype-api.js"></script>
+    <script type="module" src="./theme-toggle.js"></script>
+  </head>
+  <body>
+    <main class="prototype-shell">
+      <div class="phone-frame result-phone-frame">
+        <div class="screen result-screen-standalone">
+          <div class="result-fixed-backbar">
+            <a class="result-fixed-back" href="./home.html" aria-label="返回首页">‹</a>
+          </div>
+
+          <section class="result-page" id="result-page">
+            <div class="result-page-front-head">
+              <h1 class="result-page-food-name">未识别食物</h1>
+            </div>
+
+            <div class="result-page-card" id="result-page-card">
+              <div class="result-page-card-inner">
+                <article class="result-page-face front" data-flip-surface>
+                  <div class="result-page-main-card">
+                    <div class="result-page-card-top">
+                      <h2 class="result-page-card-title">识别结果</h2>
+                      <span class="result-page-status">信息不足</span>
+                    </div>
+
+                    <p class="result-page-card-subtitle">未识别食物</p>
+
+                    <div class="result-page-hero">
+                      <div class="result-page-hero-plate"></div>
+                    </div>
+
+                    <div class="result-page-score-block">
+                      <span class="result-page-label">健康评分</span>
+                      <div class="result-page-score-row">
+                        <strong class="result-page-score">45</strong>
+                        <span class="result-page-score-caption">较低</span>
+                      </div>
+                    </div>
+
+                    <p class="result-page-summary">
+                      当前无法识别完整营养信息，建议继续补拍主体或翻到背面查看营养与风险分析。
+                    </p>
+
+                    <div class="result-page-actions">
+                      <button class="button full" type="button" id="flip-to-back">继续评估</button>
+                      <button class="button-secondary full" type="button">重新拍摄</button>
+                    </div>
+
+                    <button class="result-page-inline-feedback" type="button">反馈错误</button>
+                  </div>
+                </article>
+
+                <article class="result-page-face back" data-flip-surface>
+                  <div class="result-page-main-card">
+                    <div class="result-page-back-head">
+                      <p class="result-page-note">具体营养需求：饮食建议仅供参考</p>
+                      <h2 class="result-page-card-title">营养与风险分析</h2>
+                      <p class="result-page-card-subtitle">未识别食物</p>
+                    </div>
+
+                    <span class="result-page-local-chip">当前仅有本地结果</span>
+
+                    <button class="result-page-score-logic" id="score-logic-toggle" type="button">
+                      <div class="result-page-score-logic-top">
+                        <div class="stack">
+                          <span class="result-page-label">分数逻辑</span>
+                          <strong class="result-page-score-logic-value">健康评分 45</strong>
+                        </div>
+                        <span class="result-page-score-help">?</span>
+                      </div>
+                      <span class="result-page-score-logic-hint">点击查看评分说明与计算逻辑</span>
+                    </button>
+
+                    <div class="result-page-score-logic-detail" id="score-logic-detail" hidden>
+                      当前分数会结合识别完整度、营养指标、风险标签和建议等级综合计算。这里预留给后续评分解释文案。
+                    </div>
+
+                    <section class="result-page-section">
+                      <h3 class="result-page-section-title">营养分析</h3>
+
+                      <div class="result-page-metric-card">
+                        <div class="result-page-metric-col">
+                          <span class="result-page-metric-title">热量</span>
+                          <span class="result-page-metric-value">--</span>
+                        </div>
+                        <div class="result-page-metric-divider"></div>
+                        <div class="result-page-metric-col">
+                          <span class="result-page-metric-title">蛋白质</span>
+                          <span class="result-page-metric-value">--</span>
+                        </div>
+                      </div>
+
+                      <div class="result-page-metric-card">
+                        <div class="result-page-metric-col">
+                          <span class="result-page-metric-title">脂肪</span>
+                          <span class="result-page-metric-value">--</span>
+                        </div>
+                        <div class="result-page-metric-divider"></div>
+                        <div class="result-page-metric-col">
+                          <span class="result-page-metric-title">碳水</span>
+                          <span class="result-page-metric-value">--</span>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section class="result-page-section">
+                      <h3 class="result-page-section-title">饮食建议</h3>
+                      <div class="result-page-single-card">
+                        营养基线缺失，建议以人工判断为准。
+                      </div>
+                    </section>
+
+                    <section class="result-page-section">
+                      <h3 class="result-page-section-title">风险分析</h3>
+                      <div class="result-page-risk-card">
+                        <div class="result-page-risk-item">
+                          <span class="result-page-risk-dot warning"></span>
+                          <span class="result-page-risk-title">营养信息不足</span>
+                          <span class="result-page-risk-copy">当前缺少可靠营养基线，建议人工确认后再判断。</span>
+                        </div>
+                      </div>
+                    </section>
+
+                    <button class="button full" id="flip-to-front" type="button">返回正面</button>
+
+                    <button class="result-page-inline-feedback" type="button">反馈错误</button>
+
+                    <p class="result-page-disclaimer">
+                      Safe-Eat 提供的是日常饮食辅助建议，不替代医院诊断、医生处方或专业营养干预。若你有高血压、高血脂、高血糖、肾病、妊娠或其他特殊健康情况，请以正规医院和专业医生建议为准。
+                    </p>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const page = document.getElementById('result-page');
+      const card = document.getElementById('result-page-card');
+      const flipToBack = document.getElementById('flip-to-back');
+      const flipToFront = document.getElementById('flip-to-front');
+      const scoreLogicToggle = document.getElementById('score-logic-toggle');
+      const scoreLogicDetail = document.getElementById('score-logic-detail');
+      let touchStartX = 0;
+
+      const openBack = () => {
+        card.classList.add('is-flipped');
+        page.classList.add('is-flipped');
+      };
+
+      const openFront = () => {
+        card.classList.remove('is-flipped');
+        page.classList.remove('is-flipped');
+      };
+
+      document.querySelectorAll('[data-flip-surface]').forEach((surface) => {
+        surface.addEventListener('click', (event) => {
+          if (event.target.closest('button, a')) return;
+          card.classList.toggle('is-flipped');
+          page.classList.toggle('is-flipped');
+        });
+      });
+
+      flipToBack.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openBack();
+      });
+
+      flipToFront.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openFront();
+      });
+
+      scoreLogicToggle.addEventListener('click', (event) => {
+        event.stopPropagation();
+        scoreLogicDetail.toggleAttribute('hidden');
+      });
+
+      card.addEventListener('touchstart', (event) => {
+        touchStartX = event.touches[0].clientX;
+      }, { passive: true });
+
+      card.addEventListener('touchend', (event) => {
+        const endX = event.changedTouches[0].clientX;
+        const delta = endX - touchStartX;
+        if (Math.abs(delta) < 48) return;
+        if (delta < 0) {
+          openBack();
+        } else {
+          openFront();
+        }
+      }, { passive: true });
+    </script>
+  </body>
+</html>

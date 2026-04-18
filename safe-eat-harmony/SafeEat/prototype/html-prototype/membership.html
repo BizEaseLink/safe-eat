@@ -1,0 +1,95 @@
+<!--
+  Page: 会员购买页
+  Purpose: 展示 Free / Lite / Pro 方案，并带有新用户优惠逻辑。
+  API:
+    - GET /v1/safe-eat/membership/plans
+    - POST /v1/safe-eat/orders
+  Auth: Authorization: Bearer {accessToken}
+  Data Mapping:
+    - 原价 / 到手价 / 限时文案 <- membership/plans + promotion config
+    - 购买动作 -> orders
+-->
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Safe-Eat Prototype - Membership</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./prototype-api.js"></script>
+  </head>
+  <body>
+    <main class="prototype-shell">
+      <div class="phone-frame membership-frame">
+        <div class="screen membership-screen">
+          <div class="topbar">
+            <a class="eyebrow" href="./profile.html">返回个人</a>
+            <span class="membership-top-tag">新用户专享</span>
+          </div>
+
+          <section class="membership-hero">
+            <span class="membership-badge">限时优惠</span>
+            <h1>年度会员 5 折优惠</h1>
+            <p>识别次数更多，连续追踪更稳定。价格区同时展示原价与优惠价，便于后续直接转 ArkTS 促销页。</p>
+          </section>
+
+          <section class="section">
+            <article class="membership-offer-card">
+              <div class="membership-offer-label">Lite 月卡</div>
+              <div class="membership-price-row">
+                <strong>￥20</strong>
+                <span class="price-strike">￥29</span>
+              </div>
+              <div class="membership-countdown">限时优惠 · 11:59:52</div>
+              <ul class="list">
+                <li>每日 20 次识别</li>
+                <li>无需广告补次</li>
+                <li>适合控糖和减脂阶段的日常使用</li>
+              </ul>
+              <button class="button full">立即领取优惠</button>
+            </article>
+          </section>
+
+          <section class="section stack">
+            <article class="plan-card compact-plan">
+              <div class="split">
+                <strong>Free</strong>
+                <span class="status-tag caution">默认</span>
+              </div>
+              <div class="compact-plan-price">￥0</div>
+              <span class="price-note">每日 3 次识别，可通过广告奖励补次</span>
+            </article>
+
+            <article class="plan-card featured compact-plan">
+              <div class="split">
+                <strong>Lite</strong>
+                <span class="status-tag recommended">推荐</span>
+              </div>
+              <div class="compact-plan-price">
+                ￥20 <span class="price-strike light">￥29</span>
+              </div>
+              <span class="price-note">新用户首购价，月卡示意</span>
+            </article>
+
+            <article class="plan-card compact-plan">
+              <div class="split">
+                <strong>Pro</strong>
+                <span class="status-tag pro">高阶</span>
+              </div>
+              <div class="compact-plan-price">
+                ￥45 <span class="price-strike">￥59</span>
+              </div>
+              <span class="price-note">高频识别用户，可做长期饮食记录</span>
+            </article>
+          </section>
+        </div>
+
+        <nav class="tabbar">
+          <a class="tab" href="./home.html">首页</a>
+          <a class="tab" href="./menu-month.html">菜单</a>
+          <a class="tab active" href="./profile.html">个人</a>
+        </nav>
+      </div>
+    </main>
+  </body>
+</html>

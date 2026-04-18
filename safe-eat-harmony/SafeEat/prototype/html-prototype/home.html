@@ -1,0 +1,81 @@
+<!--
+  Page: 首页 / 扫描入口
+  Purpose: App 首页，承接拍照识别入口、轻量会员提醒和最近一次本地识别记录。
+  API:
+    - GET /v1/safe-eat/me
+    - GET /v1/safe-eat/membership/plans
+  Auth: Authorization: Bearer {accessToken}
+  Data Mapping:
+    - 用户昵称/健康标签 <- me
+    - 会员提醒 <- membership/plans + 当前用户权益
+    - 最近识别卡片 <- 本地沙盒历史 SafeEatLocalHistory
+-->
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Safe-Eat Prototype - Home</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./prototype-api.js"></script>
+  </head>
+  <body>
+    <main class="prototype-shell">
+      <div class="phone-frame">
+        <div class="screen">
+          <div class="topbar home-topbar">
+            <span class="eyebrow">Safe-Eat</span>
+            <a class="privilege-bar" href="./membership.html">
+              <span>新用户专享</span>
+              <strong>29 元立减至 20 元</strong>
+            </a>
+          </div>
+
+          <section class="home-hero">
+            <div class="home-hero-copy">
+              <div class="pill-row compact">
+                <span class="pill">控糖友好</span>
+                <span class="pill">本地历史</span>
+              </div>
+              <h1>今天这道菜，适不适合你继续吃？</h1>
+              <p>普通识别不留服务端原图，结果和历史图片由应用沙盒自己保存。</p>
+            </div>
+            <div class="home-hero-actions">
+              <a class="button" href="./scan.html">开始扫描</a>
+              <a class="button-secondary" href="./membership.html">看会员</a>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2 class="section-title">最近一次本地记录</h2>
+            <article class="glass-card home-record-card">
+              <div class="split">
+                <div class="stack">
+                  <strong>凉拌荞麦面</strong>
+                  <span class="subcopy">本地图片 · 15:20 · 64 分</span>
+                </div>
+                <span class="status-tag caution">谨慎食用</span>
+              </div>
+              <div class="section split">
+                <div class="tag-row">
+                  <span class="impact-chip positive">血糖管理友好</span>
+                  <span class="impact-chip risk">血压注意偏咸</span>
+                </div>
+              </div>
+              <div class="section record-links">
+                <a class="record-link" href="./result.html">查看结果页</a>
+                <a class="record-link" href="./menu-month.html">进入菜单历史</a>
+              </div>
+            </article>
+          </section>
+        </div>
+
+        <nav class="tabbar">
+          <a class="tab active" href="./home.html">首页</a>
+          <a class="tab" href="./menu-month.html">菜单</a>
+          <a class="tab" href="./profile.html">个人</a>
+        </nav>
+      </div>
+    </main>
+  </body>
+</html>

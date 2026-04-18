@@ -1,0 +1,81 @@
+<!--
+  Page: 反馈纠错页
+  Purpose: 当用户认为识别错误时提交修正名、说明和证据图。
+  API:
+    - POST /v1/safe-eat/recognitions/{id}/feedback
+  Auth: Authorization: Bearer {accessToken}
+  Request:
+    - multipart/form-data
+    - proposedName
+    - comment
+    - evidenceImage
+  Data Mapping:
+    - evidenceImage 优先使用本地沙盒里的原识别图片
+    - 当前识别菜单使用贴纸菜单样式展示，保持与菜单历史一致
+-->
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Safe-Eat Prototype - Feedback</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./prototype-api.js"></script>
+  </head>
+  <body>
+    <main class="prototype-shell">
+      <div class="phone-frame feedback-frame">
+        <div class="screen feedback-screen">
+          <div class="topbar">
+            <a class="eyebrow" href="./result.html">返回结果页</a>
+            <button class="icon-button" aria-label="帮助说明">帮助</button>
+          </div>
+
+          <section class="feedback-hero">
+            <span class="membership-top-tag">反馈只在纠错时上传证据图</span>
+            <h1>识别不对？把这张菜单贴纸改正一下</h1>
+            <p>证据图会进入审核队列，待审核阶段短时保留；审核完成后只保留结构化记录和删除倒计时。</p>
+          </section>
+
+          <section class="feedback-sticker-zone">
+            <a class="sticker-menu offset-left" href="./result.html">
+              <div class="sticker-visual dish-soba"></div>
+              <div class="sticker-caption">
+                <span>Cold soba</span>
+                <span>noodles</span>
+              </div>
+              <div class="sticker-meta caution">当前识别结果</div>
+            </a>
+
+            <div class="feedback-arrow">→</div>
+
+            <div class="feedback-proof-card">
+              <div class="feedback-proof-visual"></div>
+              <strong>证据图</strong>
+              <span>从本地沙盒补传原识别图片</span>
+            </div>
+          </section>
+
+          <section class="section stack">
+            <div class="field">
+              <label for="proposed-name">正确名称</label>
+              <input id="proposed-name" value="日式荞麦面" />
+            </div>
+            <div class="field">
+              <label for="feedback-comment">补充说明</label>
+              <textarea id="feedback-comment">这不是普通凉面，调味偏清淡，但有酱汁。</textarea>
+            </div>
+            <button class="button-secondary full">从本地沙盒选择识别原图</button>
+            <button class="button full">提交反馈</button>
+          </section>
+        </div>
+
+        <nav class="tabbar">
+          <a class="tab active" href="./home.html">首页</a>
+          <a class="tab" href="./menu-month.html">菜单</a>
+          <a class="tab" href="./profile.html">个人</a>
+        </nav>
+      </div>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,63 @@
+<!--
+  Page: 首页扫描态
+  Purpose: 触发拍照识别，请华为 AI 转 ArkTS 时接入相机能力。
+  API:
+    - POST /v1/safe-eat/recognitions
+  Auth: Authorization: Bearer {accessToken}
+  Request:
+    - multipart/form-data
+    - field: image
+  Data Mapping:
+    - 返回 recognizedName / adviceLevel / foodScore / healthImpacts 后跳转 result.html 对应的 ArkTS 结果页
+-->
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Safe-Eat Prototype - Scan</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./prototype-api.js"></script>
+  </head>
+  <body>
+    <main class="prototype-shell">
+      <div class="phone-frame">
+        <div class="screen">
+          <div class="topbar">
+            <a class="eyebrow" href="./home.html">返回首页</a>
+            <button class="icon-button" aria-label="切换闪光灯">闪光</button>
+          </div>
+
+          <section class="hero">
+            <span class="pill">相机能力由 Harmony 接入</span>
+            <h2>把菜品对准中心，尽量拍清整盘或主要食材</h2>
+            <p>ArkTS 落地时，这里替换成真实相机预览。当前 HTML 只负责表达构图、层级和扫描状态。</p>
+          </section>
+
+          <section class="section">
+            <article class="glass-card scan-preview-card">
+              <div class="scan-preview-stage">
+                <div class="scan-stage-frame"></div>
+                <div class="scan-stage-focus"></div>
+                <div class="scan-stage-hint">对准菜品主体，点击下方开始识别</div>
+              </div>
+            </article>
+          </section>
+
+          <section class="section">
+            <div class="stack">
+              <a class="button full" href="./result.html">拍照并进入结果页示意</a>
+              <button class="button-secondary full">从相册选择图片</button>
+            </div>
+          </section>
+        </div>
+
+        <nav class="tabbar">
+          <a class="tab active" href="./home.html">首页</a>
+          <a class="tab" href="./menu-month.html">菜单</a>
+          <a class="tab" href="./profile.html">个人</a>
+        </nav>
+      </div>
+    </main>
+  </body>
+</html>
