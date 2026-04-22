@@ -5,7 +5,11 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if store.session == nil {
+            if !store.hasBootstrapped {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(.systemBackground))
+            } else if store.session == nil {
                 LoginView()
 //                ScanHomeView()
             } else {

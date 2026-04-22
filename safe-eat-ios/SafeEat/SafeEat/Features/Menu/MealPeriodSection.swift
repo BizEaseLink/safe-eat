@@ -105,66 +105,28 @@ struct MealPeriodSection: View {
 
     private func foodGrid(items: [LocalHistoryItem]) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 14) {
+            HStack(alignment: .top, spacing: 18) {
                 ForEach(items.prefix(4)) { item in
                     foodCard(item: item)
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, 6)
         }
     }
 
     private func foodCard(item: LocalHistoryItem) -> some View {
-        VStack(spacing: 8) {
-            AsyncImage(url: URL(string: item.displayImageUri)) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                case .failure:
-                    fallbackImage(for: item)
-                @unknown default:
-                    ProgressView()
-                }
-            }
-            .frame(width: 110, height: 110)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-
-            Text(mealLabel(for: item))
-                .font(SafeEatFont.textStyle(.body))
-                .foregroundStyle(SafeEatTheme.textPrimary)
-                .lineLimit(1)
-        }
+        RecognitionStickerThumbnailView(
+            image: LocalImageLoader.loadStickerImage(for: item),
+            titleText: item.recognizedName,
+            metaText: "\(AdviceLevelMapper.compactTitle(item.adviceLevel)) · \(item.foodScore) 分",
+            imageHeight: 104,
+            labelMaxWidth: 124,
+            style: .floating
+        )
+        .frame(width: 132, alignment: .top)
+        .contentShape(Rectangle())
         .onTapGesture {
             onDayTapped(selectedDate)
-        }
-    }
-
-    private func mealLabel(for item: LocalHistoryItem) -> String {
-        let hour = Calendar.current.component(.hour, from: item.createdAt)
-        if MealPeriod.breakfast.hourRange.contains(hour) { return "早餐" }
-        if MealPeriod.lunch.hourRange.contains(hour) { return "午餐" }
-        return "晚餐"
-    }
-
-    private func fallbackImage(for item: LocalHistoryItem) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            SafeEatTheme.accent.opacity(0.3),
-                            SafeEatTheme.primarySoft,
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-
-            Image(systemName: "photo")
-                .font(.system(size: 24))
-                .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.5))
         }
     }
 

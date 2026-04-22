@@ -5,6 +5,7 @@ import SwiftUI
 struct DailyPerformanceCard: View {
     let items: [LocalHistoryItem]
     let date: Date
+    var onTapped: (() -> Void)? = nil
 
     private var stats: (recommended: Int, caution: Int, avoid: Int) {
         var r = 0, c = 0, a = 0
@@ -52,6 +53,25 @@ struct DailyPerformanceCard: View {
                     .frame(width: 8, height: 8)
 
                 Spacer()
+
+                if let onTapped {
+                    Button(action: onTapped) {
+                        HStack(spacing: 4) {
+                            Text("日记录")
+                                .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .bold))
+                        }
+                        .foregroundStyle(SafeEatTheme.primary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(SafeEatTheme.primarySoft.opacity(0.82))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
 
                 Button(action: {}) {
                     Image(systemName: "exclamationmark")

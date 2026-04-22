@@ -305,6 +305,10 @@ enum LocalImageLoader {
         return image
     }
 
+    static func cachedStickerImage(for item: LocalHistoryItem) -> UIImage? {
+        stickerCache.object(forKey: "\(item.displayImageUri)#sticker" as NSString)
+    }
+
     static func loadOriginalImage(for item: LocalHistoryItem) -> UIImage? {
         loadImage(from: item.originalImageUri)
     }
@@ -444,16 +448,91 @@ struct StickerPaperBackground: View {
     }
 }
 
+struct SafeEatDottedRecordBackground: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    private let dotSpacing: CGFloat = 18
+    private let dotRadius: CGFloat = 1.5
+
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: colorScheme == .dark
+                    ? [
+                        Color(red: 0.12, green: 0.13, blue: 0.15),
+                        Color(red: 0.09, green: 0.10, blue: 0.12),
+                    ]
+                    : [
+                        Color(red: 0.99, green: 0.995, blue: 0.99),
+                        Color(red: 0.965, green: 0.978, blue: 0.968),
+                    ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+
+            RadialGradient(
+                colors: [
+                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.16 : 0.42),
+                    Color.clear,
+                ],
+                center: .topLeading,
+                startRadius: 18,
+                endRadius: 320
+            )
+
+            Canvas { context, size in
+                let dotColor = colorScheme == .dark
+                    ? UIColor.white.withAlphaComponent(0.08)
+                    : UIColor(red: 0.80, green: 0.84, blue: 0.82, alpha: 0.68)
+
+                for y in stride(from: dotSpacing * 0.5, through: size.height + dotSpacing, by: dotSpacing) {
+                    for x in stride(from: dotSpacing * 0.5, through: size.width + dotSpacing, by: dotSpacing) {
+                        let rect = CGRect(
+                            x: x - dotRadius,
+                            y: y - dotRadius,
+                            width: dotRadius * 2,
+                            height: dotRadius * 2
+                        )
+                        context.fill(Path(ellipseIn: rect), with: .color(Color(dotColor)))
+                    }
+                }
+            }
+            .allowsHitTesting(false)
+        }
+        .ignoresSafeArea()
+    }
+}
+
 struct SafeEatLoadingOverlay: View {
     var title: String
     var subtitle: String? = nil
+    var previewImage: UIImage? = nil
 
     var body: some View {
         ZStack {
             loadingBackground
 
             VStack(spacing: 24) {
-                AvocadoLoadingView()
+                if let previewImage {
+                    VStack(spacing: 16) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                                .fill(Color.white.opacity(0.86))
+                                .frame(width: 188, height: 188)
+                                .shadow(color: .black.opacity(0.08), radius: 18, y: 10)
+
+                            Image(uiImage: previewImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 148, height: 148)
+                        }
+
+                        AvocadoLoadingView()
+                            .frame(height: 72)
+                    }
+                } else {
+                    AvocadoLoadingView()
+                }
 
                 VStack(spacing: 8) {
                     Text(title)
@@ -467,6 +546,12 @@ struct SafeEatLoadingOverlay: View {
                             .multilineTextAlignment(.center)
                     }
                 }
+
+                HStack(spacing: 10) {
+                    loadingStep("裁切白框内主体")
+                    loadingStep("移除背景")
+                    loadingStep("同步识别结果")
+                }
             }
             .padding(28)
         }
@@ -474,7 +559,23 @@ struct SafeEatLoadingOverlay: View {
     }
 
     private var loadingBackground: some View {
-        Color(.systemBackground)
+        ZStack {
+            Color(.systemBackground)
+            SafeEatDottedRecordBackground()
+                .opacity(0.82)
+        }
+    }
+
+    private func loadingStep(_ text: String) -> some View {
+        Text(text)
+            .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+            .foregroundStyle(SafeEatTheme.textSecondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(Color.white.opacity(0.82))
+            )
     }
 }
 
@@ -562,66 +663,140 @@ struct StickerTextBubble: View {
     }
 }
 
+enum RecognitionStickerThumbnailStyle {
+    case card
+    case floating
+}
+
 struct RecognitionStickerThumbnailView: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     let stickerImage: UIImage?
     let titleText: String
     let metaText: String?
     var imageHeight: CGFloat
     var labelMaxWidth: CGFloat
+    var style: RecognitionStickerThumbnailStyle
 
     init(item: LocalHistoryItem, imageHeight: CGFloat, labelMaxWidth: CGFloat) {
         self.stickerImage = LocalImageLoader.loadStickerImage(for: item)
         self.titleText = item.recognizedName
-        self.metaText = "\(item.foodScore) 分 · \(AdviceLevelMapper.compactTitle(item.adviceLevel))"
+        self.metaText = "\(AdviceLevelMapper.compactTitle(item.adviceLevel)) · \(item.foodScore) 分"
         self.imageHeight = imageHeight
         self.labelMaxWidth = labelMaxWidth
+        self.style = .card
     }
 
-    init(image: UIImage?, titleText: String, metaText: String?, imageHeight: CGFloat, labelMaxWidth: CGFloat) {
+    init(
+        image: UIImage?,
+        titleText: String,
+        metaText: String?,
+        imageHeight: CGFloat,
+        labelMaxWidth: CGFloat,
+        style: RecognitionStickerThumbnailStyle = .card
+    ) {
         self.stickerImage = image
         self.titleText = titleText
         self.metaText = metaText
         self.imageHeight = imageHeight
         self.labelMaxWidth = labelMaxWidth
+        self.style = style
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            stickerImage(height: imageHeight)
+        Group {
+            switch style {
+            case .card:
+                cardBody
+            case .floating:
+                floatingBody
+            }
+        }
+    }
 
-            VStack(spacing: -2) {
-                ForEach(titleTags, id: \.self) { tag in
-                    StickerTextBubble(
-                        text: tag,
-                        font: SafeEatFont.custom(19, relativeTo: .headline),
-                        maxWidth: labelMaxWidth,
-                        lineLimit: 1,
-                        horizontalPadding: 11,
-                        verticalPadding: 4
-                    )
+    private var cardBody: some View {
+        VStack(alignment: .center, spacing: 10) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(cardBackground)
+
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(imagePanelBackground)
+                    .padding(12)
+
+                stickerImage(height: imageHeight)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: imageHeight + 34)
+            .overlay(
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .stroke(cardStroke, lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(colorScheme == .dark ? 0.12 : 0.08), radius: 14, y: 8)
+
+            VStack(spacing: 7) {
+                Text(displayTitle)
+                    .font(SafeEatFont.custom(17, relativeTo: .headline, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .frame(maxWidth: labelMaxWidth)
+
+                HStack(spacing: 8) {
+                    ForEach(Array(metaTags.prefix(2).enumerated()), id: \.offset) { index, tag in
+                        Text(tag)
+                            .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                            .foregroundStyle(metaTextColor(for: index, text: tag))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(metaBackgroundColor(for: index, text: tag))
+                            )
+                    }
                 }
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var floatingBody: some View {
+        VStack(alignment: .center, spacing: 0) {
+            stickerImage(height: imageHeight)
+                .frame(maxWidth: .infinity)
+
+            VStack(spacing: 6) {
+                StickerTextBubble(
+                    text: displayTitle,
+                    font: SafeEatFont.custom(17, relativeTo: .headline, weight: .bold),
+                    maxWidth: labelMaxWidth,
+                    lineLimit: 2,
+                    textColor: SafeEatTheme.primaryDeep,
+                    horizontalPadding: 12,
+                    verticalPadding: 5
+                )
 
                 if !metaTags.isEmpty {
-                    HStack(spacing: 6) {
-                        ForEach(metaTags, id: \.self) { tag in
+                    HStack(spacing: 8) {
+                        ForEach(Array(metaTags.prefix(2).enumerated()), id: \.offset) { index, tag in
                             StickerTextBubble(
                                 text: tag,
-                                font: SafeEatFont.custom(11, relativeTo: .caption2),
+                                font: SafeEatFont.custom(12, relativeTo: .caption, weight: .bold),
+                                maxWidth: nil,
                                 lineLimit: 1,
-                                textColor: StickerPalette.subtleText,
-                                horizontalPadding: 8,
-                                verticalPadding: 3
+                                textColor: metaBubbleTextColor(for: index, text: tag),
+                                horizontalPadding: 10,
+                                verticalPadding: 4
                             )
                         }
                     }
-                    .frame(maxWidth: labelMaxWidth)
-                    .padding(.top, 6)
                 }
             }
-            .offset(y: metaTags.isEmpty ? 18 : 28)
+            .offset(y: -8)
         }
-        .padding(.bottom, metaTags.isEmpty ? 30 : 54)
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .top)
     }
 
     @ViewBuilder
@@ -645,40 +820,63 @@ struct RecognitionStickerThumbnailView: View {
         }
     }
 
-    private var titleTags: [String] {
+    private var displayTitle: String {
         let trimmed = titleText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return ["未命名"] }
-
-        let words = trimmed
-            .split(whereSeparator: \.isWhitespace)
-            .map(String.init)
-            .filter { !$0.isEmpty }
-        if !words.isEmpty {
-            if words.count <= 3 {
-                return words
-            }
-
-            return Array(words.prefix(2)) + [words.dropFirst(2).joined(separator: " ")]
-        }
-
-        let characters = Array(trimmed)
-        let chunkSize = characters.count > 8 ? 4 : 3
-        return stride(from: 0, to: characters.count, by: chunkSize)
-            .map { startIndex in
-                let endIndex = min(startIndex + chunkSize, characters.count)
-                return String(characters[startIndex..<endIndex])
-            }
-            .prefix(3)
-            .map { $0 }
+        return trimmed.isEmpty ? "未命名" : trimmed
     }
 
     private var metaTags: [String] {
         guard let metaText else { return [] }
 
-        return metaText
+        let tags = metaText
             .split(separator: "·")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
+
+        if tags.count == 2, tags[0].contains("分"), !tags[1].contains("分") {
+            return [tags[1], tags[0]]
+        }
+        return tags
+    }
+
+    private var cardBackground: Color {
+        colorScheme == .dark
+            ? Color(red: 0.15, green: 0.16, blue: 0.19).opacity(0.88)
+            : Color.white.opacity(0.78)
+    }
+
+    private var imagePanelBackground: Color {
+        colorScheme == .dark
+            ? Color.white.opacity(0.04)
+            : Color(red: 0.97, green: 0.98, blue: 0.97)
+    }
+
+    private var cardStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
+    }
+
+    private func metaTextColor(for index: Int, text: String) -> Color {
+        if text.contains("分") {
+            return SafeEatTheme.warning
+        }
+        return index == 0 ? SafeEatTheme.primaryDeep : SafeEatTheme.textSecondary
+    }
+
+    private func metaBackgroundColor(for index: Int, text: String) -> Color {
+        if text.contains("分") {
+            return SafeEatTheme.warning.opacity(colorScheme == .dark ? 0.20 : 0.14)
+        }
+        if index == 0 {
+            return SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.22 : 0.78)
+        }
+        return colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05)
+    }
+
+    private func metaBubbleTextColor(for index: Int, text: String) -> Color {
+        if text.contains("分") {
+            return SafeEatTheme.warning
+        }
+        return index == 0 ? SafeEatTheme.primaryDeep : SafeEatTheme.textSecondary
     }
 }
 
@@ -708,7 +906,7 @@ struct RecognitionStickerExpandedView: View {
             RecognitionStickerThumbnailView(
                 image: LocalImageLoader.loadStickerImage(for: item),
                 titleText: item.recognizedName,
-                metaText: "\(item.foodScore) 分 · \(AdviceLevelMapper.compactTitle(item.adviceLevel))",
+                metaText: "\(AdviceLevelMapper.compactTitle(item.adviceLevel)) · \(item.foodScore) 分",
                 imageHeight: height * 0.56,
                 labelMaxWidth: width * 0.82
             )

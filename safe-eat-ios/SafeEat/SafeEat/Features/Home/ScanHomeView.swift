@@ -22,6 +22,7 @@ struct ScanHomeView: View {
     @State private var isRecognizing = false
     @State private var resultRoute: ResultRoute?
     @State private var scrollOffset: CGFloat = 0
+    @State private var recognizingPreviewImage: UIImage?
 
     private let scrollCoordinateSpace = "safeeat.home.scroll"
 
@@ -96,7 +97,8 @@ struct ScanHomeView: View {
                 if isRecognizing {
                     SafeEatLoadingOverlay(
                         title: "正在识别",
-                        subtitle: "Safe-Eat 正在分析这张照片，请稍候。"
+                        subtitle: "Safe-Eat 正在分析白框内的主体，请稍候。",
+                        previewImage: recognizingPreviewImage
                     )
                     .transition(.opacity)
                     .zIndex(30)
@@ -106,6 +108,7 @@ struct ScanHomeView: View {
         .toolbar(.hidden, for: .navigationBar)
         .fullScreenCover(isPresented: $showCamera) {
             CameraCaptureView { payload in
+                recognizingPreviewImage = BackgroundRemovalService.makePendingPreview(from: payload.croppedImage)
                 Task {
                     await recognize(croppedImage: payload.croppedImage, rawImage: payload.rawImage)
                 }
@@ -349,6 +352,7 @@ struct ScanHomeView: View {
         isRecognizing = true
         defer {
             isRecognizing = false
+            recognizingPreviewImage = nil
         }
 
         guard let uploadData = croppedImage.jpegDataForUpload() else {

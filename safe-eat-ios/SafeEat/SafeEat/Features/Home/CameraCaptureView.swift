@@ -95,6 +95,9 @@ struct CameraCaptureView: View {
         .onPreferenceChange(CameraGuideRectPreferenceKey.self) { rect in
             camera.updateGuideRect(rect)
         }
+        .onPreferenceChange(CameraGuideSizeRatioPreferenceKey.self) { ratio in
+            camera.updateGuideSizeRatio(ratio)
+        }
         .task {
             await camera.prepare()
         }
@@ -190,6 +193,24 @@ final class CameraSessionModel: NSObject, ObservableObject {
     func updateGuideRect(_ guideRect: CGRect) {
         latestGuideRect = guideRect
         recomputeNormalizedGuideRect()
+    }
+
+    /// 扫描框相对于屏幕的尺寸比例
+    /// - width: 扫描框宽度占屏幕宽度的比例 (0.0 ~ 1.0)
+    /// - height: 扫描框高度占屏幕宽度的比例 (0.0 ~ 1.0) - 注意：是相对于屏幕宽度，不是高度
+    /// 
+    /// 使用示例：
+    /// ```
+    /// let screenWidth = UIScreen.main.bounds.width
+    /// let screenHeight = UIScreen.main.bounds.height
+    /// let guideWidth = screenWidth * camera.guideSizeRatio.width
+    /// let guideHeight = screenWidth * camera.guideSizeRatio.height  // 注意：高度相对于宽度
+    /// ```
+    @Published private(set) var guideSizeRatio: CGSize = .zero
+
+    @MainActor
+    func updateGuideSizeRatio(_ ratio: CGSize) {
+        guideSizeRatio = ratio
     }
 
     func capturePhoto() {
@@ -313,14 +334,40 @@ final class CameraSessionModel: NSObject, ObservableObject {
         let pixelWidth = CGFloat(cgImage.width)
         let pixelHeight = CGFloat(cgImage.height)
         let fullBounds = CGRect(x: 0, y: 0, width: pixelWidth, height: pixelHeight)
-        let pixelRect = CGRect(
-            x: normalizedRect.minX * pixelWidth,
-            y: normalizedRect.minY * pixelHeight,
-            width: normalizedRect.width * pixelWidth,
-            height: normalizedRect.height * pixelHeight
-        )
-        .integral
-        .intersection(fullBounds)
+        
+        // 计算中心点
+        let centerX = normalizedRect.midX * pixelWidth
+        let centerY = normalizedRect.midY * pixelHeight
+        
+        // 固定裁切比例 1:1.24（宽度:高度）
+        let heightRatio: CGFloat = 1.24
+        
+        // 以中心点为基准，按 1:1.24 比例计算裁切尺寸
+        // 宽度使用 normalizedRect 的宽度，高度 = 宽度 × 1.24
+        let cropWidth = normalizedRect.width * pixelWidth
+        let cropHeight = cropWidth * heightRatio
+        
+        // 确保裁切区域不超出图片边界
+        var cropX = centerX - cropWidth / 2
+        var cropY = centerY - cropHeight / 2
+        
+        // 边界检查
+        if cropX < 0 {
+            cropX = 0
+        }
+        if cropY < 0 {
+            cropY = 0
+        }
+        if cropX + cropWidth > pixelWidth {
+            cropX = pixelWidth - cropWidth
+        }
+        if cropY + cropHeight > pixelHeight {
+            cropY = pixelHeight - cropHeight
+        }
+        
+        let pixelRect = CGRect(x: cropX, y: cropY, width: cropWidth, height: cropHeight)
+            .integral
+            .intersection(fullBounds)
 
         guard
             !pixelRect.isNull,
@@ -451,25 +498,81 @@ private struct CameraGuideRectPreferenceKey: PreferenceKey {
     }
 }
 
+/// 扫描框相对于屏幕的尺寸比例（百分比）
+/// - width: 扫描框宽度占屏幕宽度的比例
+/// - height: 扫描框高度占屏幕宽度的比例（不是屏幕高度！）
+private struct CameraGuideSizeRatioPreferenceKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
+    }
+}
+
+/// 扫描框尺寸配置（百分比）
+/// - 使用屏幕尺寸的百分比，方便裁切时复用
+enum CameraGuideSize {
+    /// 扫描框宽度占屏幕宽度的比例 (0.0 ~ 1.0)
+    static let widthRatio: CGFloat = 0.85
+    
+    /// 扫描框高度相对于宽度的比例
+    static let heightRatio: CGFloat = 1.24
+    
+    /// 扫描框最大宽度（pt）
+    static let maxWidth: CGFloat = 318
+    
+    /// 扫描框最小宽度（pt）
+    static let minWidth: CGFloat = 236
+    
+    /// 左右边距（pt）
+    static let horizontalPadding: CGFloat = 36
+}
+
 private struct CameraGuideLayout {
     let frameRect: CGRect
+    let captureRect: CGRect
     let labelWidth: CGFloat
+    /// 扫描框尺寸占屏幕的比例（用于裁切）
+    let sizeRatio: CGSize
 
     static func make(in proxy: GeometryProxy) -> CameraGuideLayout {
-        let horizontalInset: CGFloat = 36
-        let width = max(236, min(proxy.size.width - horizontalInset * 2, 318))
-        let desiredHeight = width * 1.24
+        let screenWidth = proxy.size.width
+        let screenHeight = proxy.size.height
+        
+        // 使用百分比计算宽度
+        let widthByRatio = screenWidth * CameraGuideSize.widthRatio
+        // 限制最大最小值
+        let width = min(CameraGuideSize.maxWidth, max(CameraGuideSize.minWidth, widthByRatio))
+        
+        // 高度按宽度比例计算
+        let height = width * CameraGuideSize.heightRatio
+        
+        // 计算尺寸比例（相对于屏幕）
+        let sizeRatio = CGSize(width: width / screenWidth, height: height / screenHeight)
+        
         let topSafe = proxy.safeAreaInsets.top + 124
         let bottomControlsSafe = proxy.safeAreaInsets.bottom + 238
-        let availableHeight = max(240, proxy.size.height - topSafe - bottomControlsSafe)
-        let height = min(desiredHeight, availableHeight)
-        let x = (proxy.size.width - width) / 2
-        let preferredY = max(proxy.safeAreaInsets.top + 138, (proxy.size.height - height) / 2 - 46)
-        let maxY = max(proxy.safeAreaInsets.top + 92, proxy.size.height - bottomControlsSafe - height)
+        let availableHeight = max(240, screenHeight - topSafe - bottomControlsSafe)
+        let adjustedHeight = min(height, availableHeight)
+        
+        let x = (screenWidth - width) / 2
+        let preferredY = max(proxy.safeAreaInsets.top + 138, (screenHeight - adjustedHeight) / 2 - 46)
+        let maxY = max(proxy.safeAreaInsets.top + 92, screenHeight - bottomControlsSafe - adjustedHeight)
         let y = min(preferredY, maxY)
-        let rect = CGRect(x: x, y: y, width: width, height: height)
+        
+        let rect = CGRect(x: x, y: y, width: width, height: adjustedHeight)
+        let captureRect = rect.insetBy(
+            dx: max(10, rect.width * 0.045),
+            dy: max(14, rect.height * 0.055)
+        )
         let labelWidth = min(width - 28, 224)
-        return CameraGuideLayout(frameRect: rect, labelWidth: labelWidth)
+        
+        return CameraGuideLayout(
+            frameRect: rect, 
+            captureRect: captureRect, 
+            labelWidth: labelWidth,
+            sizeRatio: sizeRatio
+        )
     }
 }
 
@@ -481,6 +584,7 @@ private struct CameraGuidanceOverlay: View {
             ZStack(alignment: .topLeading) {
                 Color.clear
                     .preference(key: CameraGuideRectPreferenceKey.self, value: layout.frameRect)
+                    .preference(key: CameraGuideSizeRatioPreferenceKey.self, value: layout.sizeRatio)
 
                 CameraCornerBrackets()
                     .stroke(.white.opacity(0.86), style: StrokeStyle(lineWidth: 3.2, lineCap: .round, lineJoin: .round))

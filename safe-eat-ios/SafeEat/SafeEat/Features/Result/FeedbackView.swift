@@ -67,7 +67,10 @@ struct FeedbackView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 22) {
-                        SafeEatGlobalScrollOffsetReader(scrollOffset: $scrollOffset)
+                        SafeEatGlobalScrollOffsetReader(
+                            scrollOffset: $scrollOffset
+                        )
+                        .id(recognition.id)
 
                         Color.clear
                             .frame(height: proxy.safeAreaInsets.top + 74)

@@ -36,7 +36,9 @@ struct WeekDatePicker: View {
             )
         }
     }
-
+    
+    
+    
     private var weekRangeString: String {
         guard let interval = calendar.dateInterval(of: .weekOfYear, for: selectedDate) else { return "" }
         let formatter = DateFormatter()
@@ -49,7 +51,14 @@ struct WeekDatePicker: View {
 
     /// Whether selected date is NOT today — show "back to today" button
     private var isNotCurrentWeek: Bool {
-        !calendar.isDateInToday(selectedDate)
+        guard
+            let selectedWeek = calendar.dateInterval(of: .weekOfYear, for: selectedDate)?.start,
+            let currentWeek = calendar.dateInterval(of: .weekOfYear, for: Date())?.start
+        else {
+            return !calendar.isDateInToday(selectedDate)
+        }
+
+        return !calendar.isDate(selectedWeek, inSameDayAs: currentWeek)
     }
 
     var body: some View {
@@ -161,6 +170,7 @@ struct MenuWeekView: View {
     @State private var notificationEnabled = false
 
     @State private var dayRoute: HistoryDayRoute?
+    @State private var weekRoute: HistoryWeekRoute?
 
     private var todayItems: [LocalHistoryItem] {
         store.localHistory.filter { Calendar.current.isDate($0.createdAt, inSameDayAs: selectedDate) }
@@ -171,7 +181,51 @@ struct MenuWeekView: View {
         return store.localHistory.filter { $0.createdAt >= interval.start && $0.createdAt < interval.end }
     }
 
+    private var headerSubtitle: String {
+        "今日 \(todayItems.count) 条记录 · 本周 \(weekItems.count) 条识别"
+    }
+
     // MARK: - Page Background (Light/Dark)
+    
+    private var homeBackground: some View {
+        ZStack {
+            LinearGradient(
+                colors: colorScheme == .dark
+                    ? [
+                        Color(red: 0.12, green: 0.13, blue: 0.15),
+                        Color(red: 0.09, green: 0.10, blue: 0.12),
+                    ]
+                    : [
+                        Color(red: 0.99, green: 0.995, blue: 0.99),
+                        Color(red: 0.965, green: 0.978, blue: 0.968),
+                    ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+
+            RadialGradient(
+                colors: [
+                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.16 : 0.55),
+                    Color.clear,
+                ],
+                center: .topLeading,
+                startRadius: 14,
+                endRadius: 360
+            )
+
+            RadialGradient(
+                colors: [
+                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.12 : 0.42),
+                    Color.clear,
+                ],
+                center: .bottomTrailing,
+                startRadius: 16,
+                endRadius: 380
+            )
+        }
+//        .ignoresSafeArea()
+    }
+
 
     private var pageBackground: some View {
         Group {
@@ -195,15 +249,19 @@ struct MenuWeekView: View {
             VStack(alignment: .leading, spacing: 20) {
                 topBar
 
+                overviewCard
+
                 WeekDatePicker(selectedDate: $selectedDate)
 
-                DailyPerformanceCard(items: todayItems, date: selectedDate)
+                DailyPerformanceCard(items: todayItems, date: selectedDate) {
+                    dayRoute = HistoryDayRoute(date: selectedDate)
+                }
 
                 MealPeriodSection(
                     items: todayItems,
                     selectedDate: selectedDate,
                     onDayTapped: { date in
-                        dayRoute = HistoryDayRoute(date: date, title: "日列表")
+                        dayRoute = HistoryDayRoute(date: date)
                     }
                 )
 
@@ -211,7 +269,7 @@ struct MenuWeekView: View {
                     items: weekItems,
                     weekStartDate: Calendar.current.dateInterval(of: .weekOfYear, for: selectedDate)?.start ?? Date(),
                     onTapped: { monday in
-                        dayRoute = HistoryDayRoute(date: monday, title: "本周详情")
+                        weekRoute = HistoryWeekRoute(referenceDate: monday)
                     }
                 )
             }
@@ -219,7 +277,7 @@ struct MenuWeekView: View {
             .padding(.top, 16)
             .padding(.bottom, 100)
         }
-        .background(pageBackground.ignoresSafeArea())
+        .background(homeBackground.ignoresSafeArea())
         .sheet(isPresented: $showNotificationSheet) {
             NotificationSettingsSheet(isEnabled: $notificationEnabled)
                 .presentationDetents([.height(460)])
@@ -227,15 +285,64 @@ struct MenuWeekView: View {
                 .presentationBackground(Color(.systemBackground))
         }
         .navigationDestination(item: $dayRoute) { route in
-            HistoryDayView(monthKey: route.monthKey, monthDate: route.monthDate)
+            HistoryDayView(date: route.date)
         }
+        .navigationDestination(item: $weekRoute) { route in
+            HistoryWeekView(referenceDate: route.referenceDate)
+        }
+    }
+
+    private var overviewCard: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .top, spacing: 16) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(selectedDate.menuHeroDateText)
+                        .font(SafeEatFont.custom(30, relativeTo: .title, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+
+                    Text(selectedDate.menuHeroWeekdayText)
+                        .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.primary)
+
+                    Text(todayItems.isEmpty ? "今天还没有识别记录，拍一张食物照片就会生成新的记忆卡。" : "今天已累计 \(todayItems.count) 次识别，本周一共沉淀 \(weekItems.count) 条记录。")
+                        .font(SafeEatFont.custom(15, relativeTo: .body))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 0)
+
+                VStack(alignment: .trailing, spacing: 10) {
+                    heroMetricChip(title: "今日", value: "\(todayItems.count)")
+                    heroMetricChip(title: "本周", value: "\(weekItems.count)")
+                }
+            }
+
+            HStack(spacing: 12) {
+                quickAccessButton(title: "日记录", subtitle: "查看当天贴纸", systemImage: "calendar") {
+                    dayRoute = HistoryDayRoute(date: selectedDate)
+                }
+
+                quickAccessButton(title: "周记录", subtitle: "按日期回看", systemImage: "square.stack.3d.up") {
+                    let weekStart = Calendar.current.dateInterval(of: .weekOfYear, for: selectedDate)?.start ?? selectedDate
+                    weekRoute = HistoryWeekRoute(referenceDate: weekStart)
+                }
+            }
+        }
+        .padding(20)
+        .background(heroCardBackground)
+        .overlay(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(heroCardStroke, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 
     // MARK: - Top Bar
 
     private var topBar: some View {
         HStack {
-            SafeEatPageHeader(title: "个人")
+            SafeEatPageHeader(title: "菜单", subtitle: headerSubtitle)
 //            Text("菜单")
 //                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
 //                .foregroundStyle(SafeEatTheme.textPrimary)
@@ -247,6 +354,91 @@ struct MenuWeekView: View {
             }
         }
     }
+
+    private func heroMetricChip(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+
+            Text(value)
+                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+        }
+        .frame(minWidth: 68, alignment: .leading)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(colorScheme == .dark ? 0.08 : 0.62))
+        )
+    }
+
+    private func quickAccessButton(
+        title: String,
+        subtitle: String,
+        systemImage: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(SafeEatTheme.primary)
+                    .frame(width: 38, height: 38)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.32 : 0.92))
+                    )
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(SafeEatFont.custom(15, relativeTo: .headline, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+
+                    Text(subtitle)
+                        .font(SafeEatFont.custom(12, relativeTo: .caption))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color.white.opacity(colorScheme == .dark ? 0.05 : 0.54))
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var heroCardBackground: some View {
+        RoundedRectangle(cornerRadius: 28, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: colorScheme == .dark
+                        ? [
+                            Color.white.opacity(0.08),
+                            Color.white.opacity(0.03),
+                        ]
+                        : [
+                            Color.white.opacity(0.92),
+                            Color(red: 0.95, green: 0.98, blue: 0.95).opacity(0.92),
+                        ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+    }
+
+    private var heroCardStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
+    }
 }
 
 // MARK: - Navigation Route
@@ -254,16 +446,11 @@ struct MenuWeekView: View {
 private struct HistoryDayRoute: Identifiable, Hashable {
     let id = UUID()
     let date: Date
-    let title: String
+}
 
-    var monthKey: String {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "zh_CN")
-        f.dateFormat = "yyyy 年 MM 月"
-        return f.string(from: date)
-    }
-
-    var monthDate: Date { date }
+private struct HistoryWeekRoute: Identifiable, Hashable {
+    let id = UUID()
+    let referenceDate: Date
 }
 
 // MARK: - Preview
@@ -272,5 +459,21 @@ private struct HistoryDayRoute: Identifiable, Hashable {
     NavigationStack {
         MenuWeekView()
             .environmentObject(AppStore())
+    }
+}
+
+private extension Date {
+    var menuHeroDateText: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "MMM dd"
+        return formatter.string(from: self)
+    }
+
+    var menuHeroWeekdayText: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: self)
     }
 }

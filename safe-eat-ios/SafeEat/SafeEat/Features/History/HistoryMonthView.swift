@@ -67,7 +67,7 @@ struct HistoryMonthView: View {
                             LazyVStack(spacing: 14) {
                                 ForEach(monthGroups) { group in
                                     NavigationLink {
-                                        HistoryDayView(monthKey: group.id, monthDate: group.displayMonthDate)
+                                        HistoryWeekView(referenceDate: group.displayMonthDate)
                                     } label: {
                                         HStack(spacing: 12) {
                                             VStack(alignment: .leading, spacing: 6) {

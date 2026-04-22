@@ -10,6 +10,7 @@ enum AppRootTab: Hashable {
 
 @MainActor
 final class AppStore: ObservableObject {
+    @Published var hasBootstrapped = false
     @Published var session: AuthSession?
     @Published var profile: UserProfile?
     @Published var localHistory: [LocalHistoryItem] = []
@@ -20,6 +21,7 @@ final class AppStore: ObservableObject {
     let api: SafeEatAPI
     private let sessionStore: AuthSessionStore
     private let historyStore: LocalHistoryStore
+    private var refreshTask: Task<AuthSession, Error>?
 
     init(
         api: SafeEatAPI,
@@ -40,6 +42,7 @@ final class AppStore: ObservableObject {
     }
 
     func bootstrap() async {
+        defer { hasBootstrapped = true }
         session = sessionStore.load()
         reloadLocalHistory()
 
@@ -58,8 +61,7 @@ final class AppStore: ObservableObject {
 
         do {
             let logged = try await api.login(phone: phone, code: code)
-            session = logged
-            sessionStore.save(logged)
+            applySession(logged)
             #if DEBUG
             print("[AppStore] login success, session updated")
             #endif
@@ -80,6 +82,7 @@ final class AppStore: ObservableObject {
     }
 
     func logout(message: String? = nil) {
+        refreshTask = nil
         session = nil
         profile = nil
         selectedRootTab = .home
@@ -195,17 +198,14 @@ final class AppStore: ObservableObject {
     }
 
     func authorizedRequest<T>(_ operation: (String) async throws -> T) async throws -> T {
-        guard let token = session?.accessToken else {
-            let expiredError = APIError.server(status: 401, message: "登录已过期，请重新登录。")
-            logout(message: expiredError.localizedDescription)
-            throw expiredError
-        }
+        let token = try currentAccessToken()
 
         do {
             return try await operation(token)
         } catch {
             if isUnauthorizedError(error) {
-                logout(message: "登录已过期，请重新登录。")
+                let refreshedSession = try await refreshSessionIfNeeded()
+                return try await operation(refreshedSession.accessToken)
             }
             throw error
         }
@@ -221,6 +221,56 @@ final class AppStore: ObservableObject {
             return false
         }
         return status == 401
+    }
+
+    private func currentAccessToken() throws -> String {
+        guard let token = session?.accessToken else {
+            let expiredError = APIError.server(status: 401, message: "登录已过期，请重新登录。")
+            logout(message: expiredError.localizedDescription)
+            throw expiredError
+        }
+        return token
+    }
+
+    private func refreshSessionIfNeeded() async throws -> AuthSession {
+        if let refreshTask {
+            return try await refreshTask.value
+        }
+
+        guard let currentSession = session else {
+            let expiredError = APIError.server(status: 401, message: "登录已过期，请重新登录。")
+            logout(message: expiredError.localizedDescription)
+            throw expiredError
+        }
+
+        let task = Task<AuthSession, Error> { [api] in
+            let refreshed = try await api.refreshToken(currentSession.refreshToken)
+            return AuthSession(
+                accessToken: refreshed.accessToken,
+                refreshToken: refreshed.refreshToken
+            )
+        }
+        refreshTask = task
+
+        do {
+            let refreshedSession = try await task.value
+            applySession(refreshedSession)
+            refreshTask = nil
+            return refreshedSession
+        } catch {
+            refreshTask = nil
+
+            if isUnauthorizedError(error) {
+                logout(message: "登录已过期，请重新登录。")
+            }
+
+            throw error
+        }
+    }
+
+    private func applySession(_ session: AuthSession) {
+        self.session = session
+        sessionStore.save(session)
     }
 
     private func updateHistoryItem(_ item: LocalHistoryItem) {

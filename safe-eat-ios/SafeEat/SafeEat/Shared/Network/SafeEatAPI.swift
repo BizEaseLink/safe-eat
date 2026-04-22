@@ -48,7 +48,7 @@ final class SafeEatAPI {
 
     func refreshToken(_ refreshToken: String) async throws -> RefreshTokenResponse {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/refresh",
+            path: "/v1/\(AppConfig.appCode)/auth/refresh-token",
             method: "POST",
             body: ["refreshToken": refreshToken]
         )

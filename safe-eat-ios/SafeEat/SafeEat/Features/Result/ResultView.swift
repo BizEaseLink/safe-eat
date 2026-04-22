@@ -176,15 +176,18 @@ struct ResultView: View {
     private func resultPage(item: LocalHistoryItem, recognition: RecognitionRecord) -> some View {
         GeometryReader { proxy in
             ZStack(alignment: .topLeading) {
-  
                 pageBackground
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 22) {
-                        SafeEatGlobalScrollOffsetReader(scrollOffset: $scrollOffset)
+                        SafeEatGlobalScrollOffsetReader(
+                            scrollOffset: $scrollOffset
+                        )
+                        .id(item.id)
 
+                        // 顶部占位，避免内容被 sticky header 遮挡
                         Color.clear
-                            .frame(height: proxy.safeAreaInsets.top + 76)
+                            .frame(height: proxy.safeAreaInsets.top + 36)
 
                         flipCard(item: item, recognition: recognition)
                     }
@@ -200,6 +203,10 @@ struct ResultView: View {
                 )
             }
             .ignoresSafeArea()
+        }
+        .onAppear {
+            // 确保 scrollOffset 在视图出现时被重置
+            scrollOffset = 0
         }
     }
 
@@ -264,20 +271,6 @@ struct ResultView: View {
 
     private func frontCard(item: LocalHistoryItem) -> some View {
         VStack(alignment: .leading, spacing: 30) {
-//            VStack(alignment: .leading, spacing: 8) {
-//                Text(backHeaderNote)
-//                    .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-//                    .foregroundStyle(SafeEatTheme.textSecondary)
-//                    .fixedSize(horizontal: false, vertical: true)
-//                Text("识别结果")
-//                    .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
-//                    .foregroundStyle(SafeEatTheme.textPrimary)
-//                    .fixedSize(horizontal: false, vertical: true)
-//
-//                Spacer(minLength: 12)
-//
-//                statusChip(text: statusText, color: statusColor)
-//            }
             VStack(alignment: .leading, spacing: 8) {
  
                 HStack(alignment: .top, spacing: 6) {
@@ -302,11 +295,6 @@ struct ResultView: View {
                     .font(SafeEatFont.custom(18, relativeTo: .title3, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
             }
-
-//            Text(displayName)
-//                .font(SafeEatFont.custom(18, relativeTo: .title3, weight: .bold))
-//                .foregroundStyle(SafeEatTheme.textPrimary)
-//
             heroImageCard(item: item)
 
             VStack(alignment: .leading, spacing: 10) {
@@ -326,24 +314,6 @@ struct ResultView: View {
                         .foregroundStyle(scoreColor.opacity(0.88))
                         .padding(.bottom, 8)
                 }
-                
-//                Text("健康评分")
-//                    .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
-//                    .foregroundStyle(SafeEatTheme.textPrimary)
-//                
-//                statusChip(text: statusText, color: statusColor)
-//
-//                sectionCard {
-//                    
-//                    Text("\(scoreValue)")
-//                        .font(SafeEatFont.custom(58, relativeTo: .largeTitle, weight: .bold))
-//                        .foregroundStyle(scoreColor)
-//
-//                    Text(scoreTitle)
-//                        .font(SafeEatFont.custom(22, relativeTo: .headline, weight: .bold))
-//                        .foregroundStyle(scoreColor.opacity(0.88))
-//                        .padding(.bottom, 8)
-//                }
             }
 
             Text(frontSummaryText)
