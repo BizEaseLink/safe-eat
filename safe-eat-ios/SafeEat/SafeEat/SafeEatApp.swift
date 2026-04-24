@@ -1,9 +1,9 @@
 import SwiftUI
-import UserNotifications
 
 @main
 struct SafeEatApp: App {
     @StateObject private var store = AppStore()
+    @StateObject private var settings = AppSettingsStore.shared
 
     init() {
         SafeEatFont.bootstrap()
@@ -16,13 +16,11 @@ struct SafeEatApp: App {
                 .safeEatBaseFont()
                 .tint(SafeEatTheme.primary)
                 .environmentObject(store)
+                .environmentObject(settings)
+                .environment(\.locale, settings.displayLocale)
                 .task {
+                    await settings.refreshNotificationStatus()
                     await store.bootstrap()
-                    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, error in
-                        if let error = error {
-                            print("通知授权失败: \(error.localizedDescription)")
-                        }
-                    }
                 }
         }
     }

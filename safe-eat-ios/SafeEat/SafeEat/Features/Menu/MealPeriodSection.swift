@@ -1,14 +1,24 @@
 import SwiftUI
-import UserNotifications
 
 // MARK: - Meal Period Type
 
 enum MealPeriod: String, CaseIterable, Identifiable {
-    case breakfast = "早餐"
-    case lunch = "午餐"
-    case dinner = "晚餐"
+    case breakfast
+    case lunch
+    case dinner
 
     var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .breakfast:
+            return SafeEatL10n.text(L10nKey.Menu.mealBreakfast)
+        case .lunch:
+            return SafeEatL10n.text(L10nKey.Menu.mealLunch)
+        case .dinner:
+            return SafeEatL10n.text(L10nKey.Menu.mealDinner)
+        }
+    }
 
     var hourRange: ClosedRange<Int> {
         switch self {
@@ -85,7 +95,7 @@ struct MealPeriodSection: View {
                 selectedPeriod = period
             }
         }) {
-            Text(period.rawValue)
+            Text(period.displayName)
                 .font(SafeEatFont.custom(14, relativeTo: .body, weight: .bold))
                 .foregroundStyle(isSelected ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
                 .padding(.bottom, 6)
@@ -118,7 +128,7 @@ struct MealPeriodSection: View {
         RecognitionStickerThumbnailView(
             image: LocalImageLoader.loadStickerImage(for: item),
             titleText: item.recognizedName,
-            metaText: "\(AdviceLevelMapper.compactTitle(item.adviceLevel)) · \(item.foodScore) 分",
+            metaText: StickerTextFormatter.adviceScore(for: item),
             imageHeight: 104,
             labelMaxWidth: 124,
             style: .floating
@@ -138,7 +148,7 @@ struct MealPeriodSection: View {
                 .font(.system(size: 28))
                 .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.5))
 
-            Text("暂无\(selectedPeriod.rawValue)记录")
+            Text(SafeEatL10n.format(L10nKey.Menu.mealEmptyFormat, selectedPeriod.displayName))
                 .font(SafeEatFont.textStyle(.caption))
                 .foregroundStyle(SafeEatTheme.textSecondary)
         }
@@ -155,7 +165,7 @@ struct MealPeriodSection: View {
 // MARK: - Notification Bell Button
 
 struct NotificationBellButton: View {
-    @Binding var isEnabled: Bool
+    let isEnabled: Bool
     let onTap: () -> Void
 
     var body: some View {
@@ -193,179 +203,5 @@ struct NotificationBellButton: View {
 
     private var bellBorder: Color {
         colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
-    }
-}
-
-// MARK: - Notification Settings Sheet
-
-struct NotificationSettingsSheet: View {
-    @Binding var isEnabled: Bool
-    @Environment(\.dismiss) private var dismiss
-
-    @State private var selectedDayIndex = 0 // 0=今天, 1=明天
-    @State private var selectedTimeIndex = 36 // default 09:00 (index in timeOptions)
-
-    private let dayOptions = ["今天", "明天"]
-    private let timeOptions: [String] = {
-        var opts: [String] = []
-        for h in 6..<23 {
-            for m in stride(from: 0, through: 45, by: 15) {
-                opts.append(String(format: "%02d:%02d", h, m))
-            }
-        }
-        return opts
-    }()
-
-    var body: some View {
-        VStack(spacing: 24) {
-            header
-
-            toggleSection
-
-            dualWheelPicker
-
-            confirmButton
-        }
-        .padding(24)
-    }
-
-    private var header: some View {
-        VStack(spacing: 6) {
-            Text("饮食提醒")
-                .font(SafeEatFont.custom(20, relativeTo: .title2, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
-
-            Text("每日定时推送今日食用表现总结")
-                .font(SafeEatFont.textStyle(.subheadline))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-        }
-    }
-
-    private var toggleSection: some View {
-        HStack {
-            Text("开启通知提醒")
-                .font(SafeEatFont.textStyle(.body))
-                .foregroundStyle(SafeEatTheme.textPrimary)
-
-            Spacer()
-
-            Toggle("", isOn: $isEnabled)
-                .tint(SafeEatTheme.primary)
-        }
-    }
-
-    // MARK: Dual Wheel Picker (Day + Time)
-
-    private var dualWheelPicker: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("提醒时间")
-                .font(SafeEatFont.textStyle(.caption))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-
-            HStack(spacing: 0) {
-                // Left wheel: 今天 / 明天
-                Picker("日期", selection: $selectedDayIndex) {
-                    ForEach(0..<dayOptions.count, id: \.self) { idx in
-                        Text(dayOptions[idx]).tag(idx)
-                    }
-                }
-                .pickerStyle(.wheel)
-                .frame(maxWidth: .infinity)
-
-                // Right wheel: Time options
-                Picker("时间", selection: $selectedTimeIndex) {
-                    ForEach(0..<timeOptions.count, id: \.self) { idx in
-                        Text(timeOptions[idx]).tag(idx)
-                    }
-                }
-                .pickerStyle(.wheel)
-                .frame(maxWidth: .infinity)
-            }
-            .frame(height: 140)
-            .disabled(!isEnabled)
-            .opacity(isEnabled ? 1 : 0.45)
-
-            // Selected value display
-            HStack {
-                Spacer()
-                Text("\(dayOptions[selectedDayIndex]) \(timeOptions[selectedTimeIndex])")
-                    .font(SafeEatFont.custom(14, relativeTo: .body, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.primary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule().fill(SafeEatTheme.primarySoft)
-                    )
-            }
-        }
-    }
-
-    private var confirmButton: some View {
-        Button(action: {
-            scheduleNotification()
-            dismiss()
-        }) {
-            Text("保存设置")
-                .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 48)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(
-                            LinearGradient(
-                                colors: [SafeEatTheme.primary, SafeEatTheme.accent],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                )
-                .shadow(color: SafeEatTheme.primary.opacity(0.25), radius: 12, y: 4)
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func scheduleNotification() {
-        guard isEnabled else { return }
-        
-        // 1. 先请求通知权限（你原来完全没写，这是核心！）
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            guard granted, error == nil else {
-                print("用户拒绝通知权限 或 出错：\(error?.localizedDescription ?? "")")
-                return
-            }
-            
-            // 2. 有权限后才执行通知逻辑
-            let timeStr = timeOptions[selectedTimeIndex]
-            let parts = timeStr.split(separator: ":").compactMap { Int($0) }
-            guard parts.count == 2 else { return }
-            
-            let center = UNUserNotificationCenter.current()
-            center.removeAllPendingNotificationRequests() // 先清掉旧的，避免重复
-            
-            // 每日定时通知
-            let content = UNMutableNotificationContent()
-            content.title = "Safe-Eat 今日饮食总结"
-            content.body = "点击查看今日食用表现详情"
-            content.sound = .default
-            
-            var dateComponents = DateComponents()
-            dateComponents.hour = parts[0]
-            dateComponents.minute = parts[1]
-            
-            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
-            let request = UNNotificationRequest(identifier: "safe-eat-daily-summary", content: content, trigger: trigger)
-            center.add(request)
-            
-            // 测试通知（3秒后弹出）
-            let testContent = UNMutableNotificationContent()
-            testContent.title = "Safe-Eat 提醒已开启"
-            testContent.body = "您将在每天 \(timeStr) 收到饮食总结通知"
-            testContent.sound = .default
-            
-            let testTrigger = UNTimeIntervalNotificationTrigger(timeInterval: 3, repeats: false)
-            let testRequest = UNNotificationRequest(identifier: "safe-eat-test", content: testContent, trigger: testTrigger)
-            center.add(testRequest)
-        }
     }
 }

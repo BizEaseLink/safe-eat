@@ -8,11 +8,11 @@ enum APIError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidResponse:
-            return "服务响应异常，请稍后重试。"
+            return SafeEatL10n.text(L10nKey.Errors.invalidResponse)
         case let .server(_, message):
             return message
         case .invalidURL:
-            return "接口地址配置错误。"
+            return SafeEatL10n.text(L10nKey.Errors.invalidURL)
         }
     }
 }
@@ -30,7 +30,7 @@ final class SafeEatAPI {
         let request = try buildJSONRequest(
             path: "/v1/\(AppConfig.appCode)/auth/sms/send",
             method: "POST",
-            body: ["phone": phone]
+            body: PhoneBody(phone: phone)
         )
 
         return try await send(request, as: SendSmsResponse.self)
@@ -40,9 +40,49 @@ final class SafeEatAPI {
         let request = try buildJSONRequest(
             path: "/v1/\(AppConfig.appCode)/auth/login",
             method: "POST",
-            body: ["phone": phone, "code": code]
+            body: PhoneCodeBody(phone: phone, code: code)
         )
 
+        return try await send(request, as: AuthSession.self)
+    }
+
+    func loginWithPassword(phone: String, password: String) async throws -> AuthSession {
+        let request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/auth/password/login",
+            method: "POST",
+            body: PhonePasswordBody(phone: phone, password: password)
+        )
+
+        return try await send(request, as: AuthSession.self)
+    }
+
+    func setPassword(phone: String, code: String, password: String) async throws -> AuthSession {
+        let request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/auth/password/set",
+            method: "POST",
+            body: PhoneCodePasswordBody(phone: phone, code: code, password: password)
+        )
+
+        return try await send(request, as: AuthSession.self)
+    }
+
+    func appleLogin(appleSub: String, displayName: String?) async throws -> AuthSession {
+        let request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/auth/apple/login",
+            method: "POST",
+            body: AppleLoginBody(appleSub: appleSub, displayName: displayName)
+        )
+
+        return try await send(request, as: AuthSession.self)
+    }
+
+    func bindApplePhone(accessToken: String, phone: String, code: String) async throws -> AuthSession {
+        var request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/auth/apple/bind-phone",
+            method: "POST",
+            body: PhoneCodeBody(phone: phone, code: code)
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         return try await send(request, as: AuthSession.self)
     }
 
@@ -56,9 +96,55 @@ final class SafeEatAPI {
         return try await send(request, as: RefreshTokenResponse.self)
     }
 
+    func logout(_ refreshToken: String) async throws {
+        let request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/auth/logout",
+            method: "POST",
+            body: ["refreshToken": refreshToken]
+        )
+        _ = try await send(request, as: LogoutResponse.self)
+    }
+
     func getProfile(accessToken: String) async throws -> UserProfile {
         var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/me", method: "GET")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: UserProfile.self)
+    }
+
+    func updateProfile(accessToken: String, payload: UserProfileUpdatePayload) async throws -> UserProfile {
+        var request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/me/profile",
+            method: "PATCH",
+            body: payload
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: UserProfile.self)
+    }
+
+    func updateHealthProfile(accessToken: String, payload: UserHealthProfileUpdatePayload) async throws -> UserProfile {
+        var request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/me/health-profile",
+            method: "PATCH",
+            body: payload
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: UserProfile.self)
+    }
+
+    func updateAvatar(accessToken: String, imageData: Data, fileName: String = "avatar.jpg") async throws -> UserProfile {
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/me/avatar", method: "PATCH")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.httpBody = MultipartFormDataBuilder.build(
+            boundary: boundary,
+            textFields: [:],
+            fileFieldName: "avatar",
+            fileName: fileName,
+            mimeType: "image/jpeg",
+            fileData: imageData
+        )
+
         return try await send(request, as: UserProfile.self)
     }
 
@@ -67,6 +153,16 @@ final class SafeEatAPI {
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         let response = try await send(request, as: MembershipPlanListResponse.self)
         return response.items
+    }
+
+    func createMembershipOrder(accessToken: String, payload: MembershipOrderPayload) async throws -> MembershipOrderResult {
+        var request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/orders",
+            method: "POST",
+            body: payload
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: MembershipOrderResult.self)
     }
 
     func createRecognition(accessToken: String, imageData: Data, fileName: String) async throws -> RecognitionRecord {
@@ -150,7 +246,10 @@ final class SafeEatAPI {
         do {
             return try decoder.decode(type, from: data)
         } catch {
-            throw APIError.server(status: httpResponse.statusCode, message: "响应解析失败：\(error.localizedDescription)")
+            throw APIError.server(
+                status: httpResponse.statusCode,
+                message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription)
+            )
         }
     }
 
@@ -172,7 +271,7 @@ final class SafeEatAPI {
         return request
     }
 
-    private func buildJSONRequest(path: String, method: String, body: [String: String]) throws -> URLRequest {
+    private func buildJSONRequest<T: Encodable>(path: String, method: String, body: T) throws -> URLRequest {
         var request = try buildRequest(path: path, method: method)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(body)
@@ -182,9 +281,9 @@ final class SafeEatAPI {
     private func localizedMessage(for serverMessage: String?, statusCode: Int) -> String {
         switch serverMessage {
         case "Daily recognition quota has been used up.":
-            return "今日免费识别次数已用完，Free 用户每天可识别 3 次。"
+            return SafeEatL10n.text(L10nKey.Errors.requestQuotaExceeded)
         default:
-            return serverMessage ?? "请求失败：\(statusCode)"
+            return serverMessage ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, statusCode)
         }
     }
 
@@ -206,6 +305,35 @@ final class SafeEatAPI {
         }
         return decoder
     }
+}
+
+private struct PhoneBody: Encodable {
+    let phone: String
+}
+
+private struct PhoneCodeBody: Encodable {
+    let phone: String
+    let code: String
+}
+
+private struct PhonePasswordBody: Encodable {
+    let phone: String
+    let password: String
+}
+
+private struct PhoneCodePasswordBody: Encodable {
+    let phone: String
+    let code: String
+    let password: String
+}
+
+private struct AppleLoginBody: Encodable {
+    let appleSub: String
+    let displayName: String?
+}
+
+private struct LogoutResponse: Decodable {
+    let success: Bool
 }
 
 private enum ISO8601DateFormatter {

@@ -87,7 +87,7 @@ struct HistoryDayView: View {
                 .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
                 .foregroundStyle(SafeEatTheme.textPrimary)
 
-            Text(dayItems.isEmpty ? "暂无记录" : "\(dayItems.count) 条记录")
+            Text(dayItems.isEmpty ? SafeEatL10n.text(L10nKey.History.noRecords) : SafeEatHistoryL10n.recordCount(dayItems.count))
                 .font(SafeEatFont.custom(17, relativeTo: .body))
                 .foregroundStyle(SafeEatTheme.textSecondary)
         }
@@ -109,7 +109,7 @@ struct HistoryDayView: View {
             Button(role: .destructive) {
                 store.removeHistoryItem(item)
             } label: {
-                Label("删除", systemImage: "trash")
+                Label(SafeEatL10n.text(L10nKey.Common.delete), systemImage: "trash")
             }
         }
         .onTapGesture {
@@ -119,8 +119,8 @@ struct HistoryDayView: View {
 
     private var emptyState: some View {
         SafeEatEmptyState(
-            title: "当天暂无本地记录",
-            message: "先去首页完成一次识别，日记录会把同一天的内容集中展示在这里。",
+            title: SafeEatL10n.text(L10nKey.History.dayEmptyTitle),
+            message: SafeEatL10n.text(L10nKey.History.dayEmptyMessage),
             systemImage: "square.stack.3d.up.slash"
         )
         .padding(.top, 28)
@@ -130,22 +130,16 @@ struct HistoryDayView: View {
 private extension Date {
     var historyDayIdentity: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: self)
     }
 
     var chromeDateText: String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "M月d日"
-        return formatter.string(from: self)
+        SafeEatHistoryL10n.shortDate(self)
     }
 
     var heroDateText: String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "M月d日"
-        return formatter.string(from: self)
+        SafeEatHistoryL10n.shortDate(self)
     }
 }

@@ -7,25 +7,30 @@ struct ContentView: View {
         Group {
             if !store.hasBootstrapped {
                 ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(.systemBackground))
-            } else if store.session == nil {
+            } else if !store.hasCompletedOnboarding {
+                OnboardingView()
+            } else if store.session == nil || store.requiresPhoneBinding {
                 LoginView()
-//                ScanHomeView()
             } else {
                 MainTabView()
             }
         }
-        .alert("提示", isPresented: Binding(
-            get: { store.errorMessage != nil },
-            set: { if !$0 { store.errorMessage = nil } }
-        ), actions: {
-            Button("知道了") {
-                store.errorMessage = nil
+        .alert(
+            SafeEatL10n.text(L10nKey.Errors.sessionExpired),
+            isPresented: $store.showLoginPrompt,
+            actions: {
+                Button(SafeEatL10n.text(L10nKey.Auth.goLogin)) {
+                    store.showLoginPrompt = false
+                    store.logout()
+                }
+                Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {
+                    store.showLoginPrompt = false
+                }
+            },
+            message: {
+                Text(SafeEatL10n.text(L10nKey.Auth.loginPromptMessage))
             }
-        }, message: {
-            Text(store.errorMessage ?? "")
-        })
+        )
     }
 }
 

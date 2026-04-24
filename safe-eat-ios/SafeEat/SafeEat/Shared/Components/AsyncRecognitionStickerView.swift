@@ -20,7 +20,7 @@ struct AsyncRecognitionStickerView: View {
                 RecognitionStickerThumbnailView(
                     image: image,
                     titleText: item.recognizedName,
-                    metaText: "\(AdviceLevelMapper.compactTitle(item.adviceLevel)) · \(item.foodScore) 分",
+                    metaText: StickerTextFormatter.adviceScore(for: item),
                     imageHeight: imageHeight,
                     labelMaxWidth: labelMaxWidth,
                     style: style
@@ -43,7 +43,7 @@ struct AsyncRecognitionStickerView: View {
         RecognitionStickerThumbnailView(
             image: nil,
             titleText: item.recognizedName,
-            metaText: "\(AdviceLevelMapper.compactTitle(item.adviceLevel)) · \(item.foodScore) 分",
+            metaText: StickerTextFormatter.adviceScore(for: item),
             imageHeight: imageHeight,
             labelMaxWidth: labelMaxWidth,
             style: style
@@ -54,7 +54,7 @@ struct AsyncRecognitionStickerView: View {
         RecognitionStickerThumbnailView(
             image: nil,
             titleText: item.recognizedName,
-            metaText: "\(AdviceLevelMapper.compactTitle(item.adviceLevel)) · \(item.foodScore) 分",
+            metaText: StickerTextFormatter.adviceScore(for: item),
             imageHeight: imageHeight,
             labelMaxWidth: labelMaxWidth,
             style: style

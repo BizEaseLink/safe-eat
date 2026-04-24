@@ -5,14 +5,21 @@ import UIKit
 
 enum SafeEatFont {
     private static let fallbackRegularFontName = "ChillRoundFRegular"
+    private static let fallbackSemiboldFontName = "ChillRoundFSemibold"
     private static let fallbackBoldFontName = "ChillRoundFBold"
 
     private(set) static var activeRegularFontName = fallbackRegularFontName
+    private(set) static var activeSemiboldFontName = fallbackSemiboldFontName
     private(set) static var activeBoldFontName = fallbackBoldFontName
 
     static func bootstrap() {
         let regularResult = registerAppFont(
             named: "ChillRoundFRegular",
+            fileExtension: "ttf",
+            subdirectory: "resource/fonts"
+        )
+        let semiboldResult = registerAppFont(
+            named: "ChillRoundFSemibold",
             fileExtension: "ttf",
             subdirectory: "resource/fonts"
         )
@@ -23,10 +30,12 @@ enum SafeEatFont {
         )
 
         activeRegularFontName = regularResult.fontName ?? fallbackRegularFontName
+        activeSemiboldFontName = semiboldResult.fontName ?? fallbackSemiboldFontName
         activeBoldFontName = boldResult.fontName ?? fallbackBoldFontName
 
         #if DEBUG
         print("[SafeEatFont] regular=\(activeRegularFontName) source=\(regularResult.source)")
+        print("[SafeEatFont] semibold=\(activeSemiboldFontName) source=\(semiboldResult.source)")
         print("[SafeEatFont] bold=\(activeBoldFontName) source=\(boldResult.source)")
         #endif
     }
@@ -150,6 +159,8 @@ enum SafeEatFont {
         switch explicitWeight ?? inferredWeight(for: style) {
         case .regular:
             return activeRegularFontName
+        case .semibold:
+            return activeSemiboldFontName
         case .bold:
             return activeBoldFontName
         }
@@ -167,6 +178,7 @@ enum SafeEatFont {
 
 enum SafeEatFontWeight {
     case regular
+    case semibold
     case bold
 }
 

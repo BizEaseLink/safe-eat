@@ -1,0 +1,4 @@
+"CFBundleDisplayName" = "Safe Eat";
+"NSCameraUsageDescription" = "Safe Eat needs camera access to recognize food and provide dietary suggestions.";
+"NSPhotoLibraryAddUsageDescription" = "Safe Eat stores recognition history images locally so you can review them later in the menu.";
+"NSPhotoLibraryUsageDescription" = "Safe Eat needs photo library access so you can select existing images for recognition or feedback.";

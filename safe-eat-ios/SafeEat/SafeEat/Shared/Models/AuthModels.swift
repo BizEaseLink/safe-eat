@@ -3,6 +3,7 @@ import Foundation
 struct AuthSession: Codable {
     let accessToken: String
     let refreshToken: String
+    let requiresPhoneBinding: Bool?
 }
 
 struct SendSmsResponse: Codable {

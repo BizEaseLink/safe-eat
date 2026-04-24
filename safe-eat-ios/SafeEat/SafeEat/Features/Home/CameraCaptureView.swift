@@ -34,7 +34,7 @@ struct CameraCaptureView: View {
                 )
                     .ignoresSafeArea()
             } else if camera.authorizationStatus == .authorized {
-                ProgressView("正在启动相机…")
+                ProgressView(SafeEatL10n.text(L10nKey.Home.cameraStarting))
                     .tint(.white)
                     .foregroundStyle(.white)
             } else {
@@ -122,15 +122,15 @@ struct CameraCaptureView: View {
                 .font(.system(size: 42))
                 .foregroundStyle(.white.opacity(0.9))
 
-            Text("需要相机权限才能直接拍照识别")
+            Text(SafeEatL10n.text(L10nKey.Home.cameraPermissionTitle))
                 .font(SafeEatFont.textStyle(.headline))
                 .foregroundStyle(.white)
 
-            Text("请在系统设置中打开相机权限后再试。")
+            Text(SafeEatL10n.text(L10nKey.Home.cameraPermissionBody))
                 .font(SafeEatFont.textStyle(.footnote))
                 .foregroundStyle(.white.opacity(0.75))
 
-            Button("打开设置") {
+            Button(SafeEatL10n.text(L10nKey.Home.cameraOpenSettings)) {
                 guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
                 openURL(settingsURL)
             }
@@ -174,12 +174,12 @@ final class CameraSessionModel: NSObject, ObservableObject {
             if granted {
                 startSession()
             } else {
-                errorMessage = "相机权限未开启。"
+                errorMessage = SafeEatL10n.text(L10nKey.Home.cameraPermissionOff)
             }
         case .denied, .restricted:
-            errorMessage = "相机权限未开启。"
+            errorMessage = SafeEatL10n.text(L10nKey.Home.cameraPermissionOff)
         @unknown default:
-            errorMessage = "当前设备不支持相机。"
+            errorMessage = SafeEatL10n.text(L10nKey.Home.cameraUnsupported)
         }
     }
 
@@ -239,7 +239,7 @@ final class CameraSessionModel: NSObject, ObservableObject {
                 self.session.startRunning()
             } catch {
                 Task { @MainActor in
-                    self.errorMessage = "相机启动失败，请稍后重试。"
+                    self.errorMessage = SafeEatL10n.text(L10nKey.Home.cameraStartFailed)
                 }
             }
         }
@@ -321,7 +321,7 @@ final class CameraSessionModel: NSObject, ObservableObject {
     }
 
     private func cropImageToGuideRectIfPossible(_ image: UIImage) -> UIImage {
-        let normalizedRect = currentNormalizedGuideRect()
+        let normalizedRect = currentNormalizedGuideRect().standardized
         guard !normalizedRect.isNull, !normalizedRect.isEmpty else {
             return image
         }
@@ -334,38 +334,14 @@ final class CameraSessionModel: NSObject, ObservableObject {
         let pixelWidth = CGFloat(cgImage.width)
         let pixelHeight = CGFloat(cgImage.height)
         let fullBounds = CGRect(x: 0, y: 0, width: pixelWidth, height: pixelHeight)
-        
-        // 计算中心点
-        let centerX = normalizedRect.midX * pixelWidth
-        let centerY = normalizedRect.midY * pixelHeight
-        
-        // 固定裁切比例 1:1.24（宽度:高度）
-        let heightRatio: CGFloat = 1.24
-        
-        // 以中心点为基准，按 1:1.24 比例计算裁切尺寸
-        // 宽度使用 normalizedRect 的宽度，高度 = 宽度 × 1.24
-        let cropWidth = normalizedRect.width * pixelWidth
-        let cropHeight = cropWidth * heightRatio
-        
-        // 确保裁切区域不超出图片边界
-        var cropX = centerX - cropWidth / 2
-        var cropY = centerY - cropHeight / 2
-        
-        // 边界检查
-        if cropX < 0 {
-            cropX = 0
-        }
-        if cropY < 0 {
-            cropY = 0
-        }
-        if cropX + cropWidth > pixelWidth {
-            cropX = pixelWidth - cropWidth
-        }
-        if cropY + cropHeight > pixelHeight {
-            cropY = pixelHeight - cropHeight
-        }
-        
-        let pixelRect = CGRect(x: cropX, y: cropY, width: cropWidth, height: cropHeight)
+
+        // 直接按预览层里的白框内区域裁切，避免再次推导比例带来的偏差。
+        let pixelRect = CGRect(
+            x: normalizedRect.minX * pixelWidth,
+            y: normalizedRect.minY * pixelHeight,
+            width: normalizedRect.width * pixelWidth,
+            height: normalizedRect.height * pixelHeight
+        )
             .integral
             .intersection(fullBounds)
 
@@ -391,7 +367,7 @@ extension CameraSessionModel: AVCapturePhotoCaptureDelegate {
         if error != nil {
             Task { @MainActor in
                 self.isCapturingPhoto = false
-                self.errorMessage = "拍照失败，请重试。"
+                self.errorMessage = SafeEatL10n.text(L10nKey.Home.cameraCaptureFailed)
             }
             return
         }
@@ -402,7 +378,7 @@ extension CameraSessionModel: AVCapturePhotoCaptureDelegate {
         else {
             Task { @MainActor in
                 self.isCapturingPhoto = false
-                self.errorMessage = "拍照失败，请重试。"
+                self.errorMessage = SafeEatL10n.text(L10nKey.Home.cameraCaptureFailed)
             }
             return
         }
@@ -583,7 +559,7 @@ private struct CameraGuidanceOverlay: View {
 
             ZStack(alignment: .topLeading) {
                 Color.clear
-                    .preference(key: CameraGuideRectPreferenceKey.self, value: layout.frameRect)
+                    .preference(key: CameraGuideRectPreferenceKey.self, value: layout.captureRect)
                     .preference(key: CameraGuideSizeRatioPreferenceKey.self, value: layout.sizeRatio)
 
                 CameraCornerBrackets()
@@ -592,7 +568,7 @@ private struct CameraGuidanceOverlay: View {
                     .position(x: layout.frameRect.midX, y: layout.frameRect.midY)
                     .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
 
-                Text("请将主体放置于框线内")
+                Text(SafeEatL10n.text(L10nKey.Home.cameraGuide))
                     .font(SafeEatFont.custom(13, relativeTo: .caption))
                     .foregroundStyle(.white.opacity(0.72))
                     .lineLimit(1)

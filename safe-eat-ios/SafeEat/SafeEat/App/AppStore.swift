@@ -17,11 +17,15 @@ final class AppStore: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var selectedRootTab: AppRootTab = .home
+    @Published var hasCompletedOnboarding: Bool
+    @Published var showLoginPrompt = false
 
     let api: SafeEatAPI
     private let sessionStore: AuthSessionStore
     private let historyStore: LocalHistoryStore
     private var refreshTask: Task<AuthSession, Error>?
+
+    private static let onboardingKey = "safe-eat.onboarding.completed"
 
     init(
         api: SafeEatAPI,
@@ -31,6 +35,7 @@ final class AppStore: ObservableObject {
         self.api = api
         self.sessionStore = sessionStore
         self.historyStore = historyStore
+        self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: Self.onboardingKey)
     }
 
     convenience init() {
@@ -41,12 +46,27 @@ final class AppStore: ObservableObject {
         )
     }
 
+    func completeOnboarding() {
+        hasCompletedOnboarding = true
+        UserDefaults.standard.set(true, forKey: Self.onboardingKey)
+    }
+
+    func resetOnboarding() {
+        hasCompletedOnboarding = false
+        UserDefaults.standard.set(false, forKey: Self.onboardingKey)
+    }
+
+    func requireLogin() {
+        guard session == nil else { return }
+        showLoginPrompt = true
+    }
+
     func bootstrap() async {
         defer { hasBootstrapped = true }
         session = sessionStore.load()
         reloadLocalHistory()
 
-        if session != nil {
+        if session != nil, !requiresPhoneBinding {
             await refreshProfile()
         }
     }
@@ -56,16 +76,38 @@ final class AppStore: ObservableObject {
     }
 
     func login(phone: String, code: String) async {
+        await handleLoginTask {
+            try await api.login(phone: phone, code: code)
+        }
+    }
+
+    func loginWithPassword(phone: String, password: String) async {
+        await handleLoginTask {
+            try await api.loginWithPassword(phone: phone, password: password)
+        }
+    }
+
+    func registerWithPassword(phone: String, code: String, password: String) async {
+        await handleLoginTask {
+            try await api.setPassword(phone: phone, code: code, password: password)
+        }
+    }
+
+    func loginWithApple(appleSub: String, displayName: String?) async {
+        await handleLoginTask {
+            try await api.appleLogin(appleSub: appleSub, displayName: displayName)
+        }
+    }
+
+    func bindApplePhone(phone: String, code: String) async {
         isLoading = true
         defer { isLoading = false }
 
         do {
-            let logged = try await api.login(phone: phone, code: code)
-            applySession(logged)
-            #if DEBUG
-            print("[AppStore] login success, session updated")
-            #endif
-            await refreshProfile()
+            let boundSession = try await authorizedRequest { token in
+                try await api.bindApplePhone(accessToken: token, phone: phone, code: code)
+            }
+            finishLogin(with: boundSession)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -92,6 +134,65 @@ final class AppStore: ObservableObject {
         }
     }
 
+    func performLogout() async {
+        let refreshToken = session?.refreshToken
+        logout()
+
+        guard let refreshToken else { return }
+        try? await api.logout(refreshToken)
+    }
+
+    func updateUserProfile(_ payload: UserProfileUpdatePayload) async throws -> UserProfile {
+        let updated = try await authorizedRequest { token in
+            try await api.updateProfile(accessToken: token, payload: payload)
+        }
+        profile = updated
+        return updated
+    }
+
+    func updateUserHealthProfile(_ payload: UserHealthProfileUpdatePayload) async throws -> UserProfile {
+        let updated = try await authorizedRequest { token in
+            try await api.updateHealthProfile(accessToken: token, payload: payload)
+        }
+        profile = updated
+        return updated
+    }
+
+    func updateAvatar(_ image: UIImage) async throws -> UserProfile {
+        guard let imageData = image.avatarUploadData() else {
+            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.avatarCompressionFailed))
+        }
+
+        let updated = try await authorizedRequest { token in
+            try await api.updateAvatar(accessToken: token, imageData: imageData)
+        }
+        profile = updated
+        return updated
+    }
+
+    func createMembershipOrder(planId: String, channel: String) async throws -> MembershipOrderResult {
+        try await authorizedRequest { token in
+            try await api.createMembershipOrder(
+                accessToken: token,
+                payload: MembershipOrderPayload(planId: planId, channel: channel)
+            )
+        }
+    }
+
+    func clearLocalCache() {
+        historyStore.clearAll()
+        LocalImageLoader.clearAllCaches()
+        reloadLocalHistory()
+    }
+
+    var localCacheSizeText: String {
+        ByteCountFormatter.string(fromByteCount: historyStore.storageUsageBytes(), countStyle: .file)
+    }
+
+    var localCacheCount: Int {
+        localHistory.count
+    }
+
     func appendHistoryItem(_ item: LocalHistoryItem) {
         historyStore.append(item)
         reloadLocalHistory()
@@ -109,10 +210,10 @@ final class AppStore: ObservableObject {
         rawImage: UIImage? = nil
     ) throws -> LocalHistoryItem {
         guard let originalImageData = originalImage.jpegDataForUpload() else {
-            throw APIError.server(status: 0, message: "原图保存失败，请重试。")
+            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveOriginalFailed))
         }
         guard let rawImageData = (rawImage ?? originalImage).jpegDataForUpload() else {
-            throw APIError.server(status: 0, message: "隐藏原图保存失败，请重试。")
+            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveHiddenOriginalFailed))
         }
 
         let previewImageData = previewImage?.pngDataForPreview()
@@ -173,15 +274,15 @@ final class AppStore: ObservableObject {
 
     func rotateHistoryItemClockwise(_ itemID: LocalHistoryItem.ID) throws {
         guard var item = historyItem(id: itemID) else {
-            throw APIError.server(status: 0, message: "本地记录不存在。")
+            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.localRecordMissing))
         }
         guard let originalImage = LocalImageLoader.loadOriginalImage(for: item)?.rotated(clockwise: true) else {
-            throw APIError.server(status: 0, message: "本地原图丢失，无法旋转。")
+            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.localOriginalMissing))
         }
 
         let rotatedPreview = LocalImageLoader.loadImage(from: item.previewImageUri)?.rotated(clockwise: true)
         guard let originalImageData = originalImage.jpegDataForUpload() else {
-            throw APIError.server(status: 0, message: "旋转后的原图保存失败。")
+            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveRotatedOriginalFailed))
         }
 
         let previewImageData = rotatedPreview?.pngDataForPreview()
@@ -225,9 +326,8 @@ final class AppStore: ObservableObject {
 
     private func currentAccessToken() throws -> String {
         guard let token = session?.accessToken else {
-            let expiredError = APIError.server(status: 401, message: "登录已过期，请重新登录。")
-            logout(message: expiredError.localizedDescription)
-            throw expiredError
+            showLoginPrompt = true
+            throw APIError.server(status: 401, message: SafeEatL10n.text(L10nKey.Errors.sessionExpired))
         }
         return token
     }
@@ -238,7 +338,7 @@ final class AppStore: ObservableObject {
         }
 
         guard let currentSession = session else {
-            let expiredError = APIError.server(status: 401, message: "登录已过期，请重新登录。")
+            let expiredError = APIError.server(status: 401, message: SafeEatL10n.text(L10nKey.Errors.sessionExpired))
             logout(message: expiredError.localizedDescription)
             throw expiredError
         }
@@ -247,7 +347,8 @@ final class AppStore: ObservableObject {
             let refreshed = try await api.refreshToken(currentSession.refreshToken)
             return AuthSession(
                 accessToken: refreshed.accessToken,
-                refreshToken: refreshed.refreshToken
+                refreshToken: refreshed.refreshToken,
+                requiresPhoneBinding: currentSession.requiresPhoneBinding
             )
         }
         refreshTask = task
@@ -261,7 +362,7 @@ final class AppStore: ObservableObject {
             refreshTask = nil
 
             if isUnauthorizedError(error) {
-                logout(message: "登录已过期，请重新登录。")
+                logout(message: SafeEatL10n.text(L10nKey.Errors.sessionExpired))
             }
 
             throw error
@@ -273,6 +374,32 @@ final class AppStore: ObservableObject {
         sessionStore.save(session)
     }
 
+    private func handleLoginTask(_ operation: () async throws -> AuthSession) async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let logged = try await operation()
+            finishLogin(with: logged)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func finishLogin(with session: AuthSession) {
+        applySession(session)
+        #if DEBUG
+        print("[AppStore] login success, session updated")
+        #endif
+        if session.requiresPhoneBinding == true {
+            profile = nil
+        } else {
+            Task {
+                await refreshProfile()
+            }
+        }
+    }
+
     private func updateHistoryItem(_ item: LocalHistoryItem) {
         historyStore.update(item)
         reloadLocalHistory()
@@ -280,5 +407,9 @@ final class AppStore: ObservableObject {
 
     private func reloadLocalHistory() {
         localHistory = historyStore.loadItems().sorted { $0.createdAt > $1.createdAt }
+    }
+
+    var requiresPhoneBinding: Bool {
+        session?.requiresPhoneBinding == true
     }
 }

@@ -22,13 +22,13 @@ struct DailyPerformanceCard: View {
 
     private var performanceLevel: String {
         let total = stats.recommended + stats.caution + stats.avoid
-        guard total > 0 else { return "暂无记录" }
+        guard total > 0 else { return SafeEatL10n.text(L10nKey.Menu.performanceNoRecord) }
 
         let ratio = Double(stats.recommended) / Double(total)
-        if ratio >= 0.7 { return "表现优秀" }
-        if ratio >= 0.4 { return "表现中等" }
-        if stats.avoid > stats.recommended { return "需要改善" }
-        return "表现中等"
+        if ratio >= 0.7 { return SafeEatL10n.text(L10nKey.Menu.performanceExcellent) }
+        if ratio >= 0.4 { return SafeEatL10n.text(L10nKey.Menu.performanceMedium) }
+        if stats.avoid > stats.recommended { return SafeEatL10n.text(L10nKey.Menu.performanceNeedsImprove) }
+        return SafeEatL10n.text(L10nKey.Menu.performanceMedium)
     }
 
     private var statusColor: Color {
@@ -44,7 +44,7 @@ struct DailyPerformanceCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
-                Text("今天\(performanceLevel)")
+                Text(SafeEatL10n.format(L10nKey.Menu.dailyTitleFormat, performanceLevel))
                     .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
 
@@ -57,7 +57,7 @@ struct DailyPerformanceCard: View {
                 if let onTapped {
                     Button(action: onTapped) {
                         HStack(spacing: 4) {
-                            Text("日记录")
+                            Text(SafeEatL10n.text(L10nKey.Menu.dayRecordAction))
                                 .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 11, weight: .bold))
@@ -106,12 +106,12 @@ struct DailyPerformanceCard: View {
         return Group {
             if total > 0 {
                 HStack(spacing: 4) {
-                    statBadge("\(stats.recommended) 推荐", color: .success)
-                    statBadge("\(stats.caution) 谨慎", color: .warning)
-                    statBadge("\(stats.avoid) 不建议", color: .danger)
+                    statBadge(SafeEatL10n.format(L10nKey.Menu.statRecommendedFormat, stats.recommended), color: .success)
+                    statBadge(SafeEatL10n.format(L10nKey.Menu.statCautionFormat, stats.caution), color: .warning)
+                    statBadge(SafeEatL10n.format(L10nKey.Menu.statAvoidFormat, stats.avoid), color: .danger)
                 }
             } else {
-                Text("今天还没有识别记录")
+                Text(SafeEatL10n.text(L10nKey.Menu.todayNoRecord))
                     .font(SafeEatFont.textStyle(.caption))
                     .foregroundStyle(SafeEatTheme.textSecondary)
             }
@@ -237,7 +237,7 @@ struct WeeklySummaryCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
-                Text("本周总览")
+                Text(SafeEatL10n.text(L10nKey.Menu.weeklyOverview))
                     .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
 
@@ -273,19 +273,19 @@ struct WeeklySummaryCard: View {
         return VStack(alignment: .leading, spacing: 10) {
             if total > 0 {
                 HStack(spacing: 10) {
-                    weekStatTag("推荐 \(stats.recommended)", color: .success)
-                    weekStatTag("谨慎 \(stats.caution)", color: .warning)
-                    weekStatTag("不建议 \(stats.avoid)", color: .danger)
+                    weekStatTag(SafeEatL10n.format(L10nKey.Menu.weeklyStatRecommendedFormat, stats.recommended), color: .success)
+                    weekStatTag(SafeEatL10n.format(L10nKey.Menu.weeklyStatCautionFormat, stats.caution), color: .warning)
+                    weekStatTag(SafeEatL10n.format(L10nKey.Menu.weeklyStatAvoidFormat, stats.avoid), color: .danger)
                 }
             } else {
                 // Three empty-state placeholder tags
                 HStack(spacing: 10) {
-                    emptyWeekStatTag("0 推荐", color: .success)
-                    emptyWeekStatTag("0 谨慎", color: .warning)
-                    emptyWeekStatTag("0 不建议", color: .danger)
+                    emptyWeekStatTag(SafeEatL10n.text(L10nKey.Menu.weeklyEmptyRecommendedFormat), color: .success)
+                    emptyWeekStatTag(SafeEatL10n.text(L10nKey.Menu.weeklyEmptyCautionFormat), color: .warning)
+                    emptyWeekStatTag(SafeEatL10n.text(L10nKey.Menu.weeklyEmptyAvoidFormat), color: .danger)
                 }
 
-                Text("本周暂无记录，去首页识别第一餐吧")
+                Text(SafeEatL10n.text(L10nKey.Menu.weeklyEmpty))
                     .font(SafeEatFont.textStyle(.caption))
                     .foregroundStyle(SafeEatTheme.textSecondary)
             }

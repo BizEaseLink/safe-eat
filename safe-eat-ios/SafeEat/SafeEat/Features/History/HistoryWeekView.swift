@@ -6,7 +6,7 @@ private struct WeekDayGroup: Identifiable {
     let items: [LocalHistoryItem]
 
     var subtitle: String {
-        "\(items.count) 条记录"
+        SafeEatHistoryL10n.recordCount(items.count)
     }
 }
 
@@ -125,7 +125,7 @@ struct HistoryWeekView: View {
 
     private var heroHeader: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("周记录")
+            Text(SafeEatL10n.text(L10nKey.History.weekTitle))
                 .font(SafeEatFont.custom(38, relativeTo: .largeTitle, weight: .bold))
                 .foregroundStyle(SafeEatTheme.textPrimary)
 
@@ -133,7 +133,13 @@ struct HistoryWeekView: View {
                 .font(SafeEatFont.custom(17, relativeTo: .body))
                 .foregroundStyle(SafeEatTheme.textSecondary)
 
-            Text("\(weekItems.count) 条记录 · \(dayGroups.count) 天")
+            Text(
+                SafeEatL10n.format(
+                    L10nKey.History.weekSummaryFormat,
+                    SafeEatHistoryL10n.recordCount(weekItems.count),
+                    SafeEatHistoryL10n.dayCount(dayGroups.count)
+                )
+            )
                 .font(SafeEatFont.custom(15, relativeTo: .subheadline))
                 .foregroundStyle(SafeEatTheme.textSecondary)
         }
@@ -146,7 +152,13 @@ struct HistoryWeekView: View {
                     .font(SafeEatFont.custom(30, relativeTo: .title, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
 
-                Text("\(group.date.weekdayText) · \(group.subtitle)")
+                Text(
+                    SafeEatL10n.format(
+                        L10nKey.History.weekSectionSubtitleFormat,
+                        group.date.weekdayText,
+                        group.subtitle
+                    )
+                )
                     .font(SafeEatFont.custom(15, relativeTo: .subheadline))
                     .foregroundStyle(SafeEatTheme.textSecondary)
             }
@@ -189,7 +201,7 @@ struct HistoryWeekView: View {
             Button(role: .destructive) {
                 store.removeHistoryItem(item)
             } label: {
-                Label("删除", systemImage: "trash")
+                Label(SafeEatL10n.text(L10nKey.Common.delete), systemImage: "trash")
             }
         }
         .onTapGesture {
@@ -199,8 +211,8 @@ struct HistoryWeekView: View {
 
     private var emptyState: some View {
         SafeEatEmptyState(
-            title: "本周暂无记录",
-            message: "本周识别记录会按天聚合在这里，继续拍照后就能看到每日贴纸列表。",
+            title: SafeEatL10n.text(L10nKey.History.weekEmptyTitle),
+            message: SafeEatL10n.text(L10nKey.History.weekEmptyMessage),
             systemImage: "calendar.badge.exclamationmark"
         )
         .padding(.top, 28)
@@ -209,12 +221,10 @@ struct HistoryWeekView: View {
     private var weekRangeText: String {
         guard let weekInterval else { return "" }
 
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "M月d日"
-        let start = formatter.string(from: weekInterval.start)
-        let end = formatter.string(from: weekInterval.end.addingTimeInterval(-86400))
-        return "\(start) - \(end)"
+        return SafeEatHistoryL10n.weekRange(
+            start: weekInterval.start,
+            end: weekInterval.end.addingTimeInterval(-86400)
+        )
     }
 
     private func updateVisibleDate(with markers: [String: CGFloat], triggerY: CGFloat) {
@@ -241,36 +251,27 @@ struct HistoryWeekView: View {
 private extension Date {
     var weekIdentity: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-'W'ww"
         return formatter.string(from: self)
     }
 
     var weekDayIdentity: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: self)
     }
 
     var chromeDateText: String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "M月d日"
-        return formatter.string(from: self)
+        SafeEatHistoryL10n.shortDate(self)
     }
 
     var heroDateText: String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "M月d日"
-        return formatter.string(from: self)
+        SafeEatHistoryL10n.shortDate(self)
     }
 
     var weekdayText: String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "EEEE"
-        return formatter.string(from: self)
+        SafeEatHistoryL10n.weekday(self)
     }
 }

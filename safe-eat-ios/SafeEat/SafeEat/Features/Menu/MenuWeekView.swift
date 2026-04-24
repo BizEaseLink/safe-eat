@@ -16,7 +16,11 @@ struct WeekDayItem: Identifiable {
 struct WeekDatePicker: View {
     @Binding var selectedDate: Date
 
-    private var calendar: Calendar { Calendar.current }
+    private var calendar: Calendar {
+        var calendar = Calendar.current
+        calendar.locale = AppSettingsStore.shared.displayLocale
+        return calendar
+    }
     private var weekDays: [WeekDayItem] {
         let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: selectedDate)?.start ?? selectedDate
         let symbols = calendar.shortStandaloneWeekdaySymbols
@@ -30,7 +34,9 @@ struct WeekDatePicker: View {
             return WeekDayItem(
                 date: date,
                 weekdaySymbol: reorderedSymbols[symbolIndex],
-                dayNumber: calendar.isDateInToday(date) ? "今" : "\(calendar.component(.day, from: date))",
+                dayNumber: calendar.isDateInToday(date)
+                    ? SafeEatL10n.text(L10nKey.Menu.todayMarker)
+                    : "\(calendar.component(.day, from: date))",
                 isToday: calendar.isDateInToday(date),
                 isSelected: calendar.isDate(date, inSameDayAs: selectedDate)
             )
@@ -42,8 +48,8 @@ struct WeekDatePicker: View {
     private var weekRangeString: String {
         guard let interval = calendar.dateInterval(of: .weekOfYear, for: selectedDate) else { return "" }
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "M月d日"
+        formatter.locale = AppSettingsStore.shared.displayLocale
+        formatter.dateFormat = AppSettingsStore.shared.language == .en ? "MMM d" : "M月d日"
         let startStr = formatter.string(from: interval.start)
         let endStr = formatter.string(from: interval.end.addingTimeInterval(-86400))
         return "\(startStr) - \(endStr)"
@@ -74,7 +80,7 @@ struct WeekDatePicker: View {
 
                 if isNotCurrentWeek {
                     Button(action: backToToday) {
-                        Text("[ 回到今天 ]")
+                        Text(SafeEatL10n.text(L10nKey.Menu.backToToday))
                             .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
                             .foregroundStyle(SafeEatTheme.primary)
                     }
@@ -163,11 +169,11 @@ struct WeekDatePicker: View {
 
 struct MenuWeekView: View {
     @EnvironmentObject private var store: AppStore
+    @EnvironmentObject private var settings: AppSettingsStore
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var selectedDate = Date()
     @State private var showNotificationSheet = false
-    @State private var notificationEnabled = false
 
     @State private var dayRoute: HistoryDayRoute?
     @State private var weekRoute: HistoryWeekRoute?
@@ -182,48 +188,13 @@ struct MenuWeekView: View {
     }
 
     private var headerSubtitle: String {
-        "今日 \(todayItems.count) 条记录 · 本周 \(weekItems.count) 条识别"
+        SafeEatL10n.format(L10nKey.Menu.headerSubtitleFormat, todayItems.count, weekItems.count)
     }
 
     // MARK: - Page Background (Light/Dark)
     
     private var homeBackground: some View {
-        ZStack {
-            LinearGradient(
-                colors: colorScheme == .dark
-                    ? [
-                        Color(red: 0.12, green: 0.13, blue: 0.15),
-                        Color(red: 0.09, green: 0.10, blue: 0.12),
-                    ]
-                    : [
-                        Color(red: 0.99, green: 0.995, blue: 0.99),
-                        Color(red: 0.965, green: 0.978, blue: 0.968),
-                    ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-
-            RadialGradient(
-                colors: [
-                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.16 : 0.55),
-                    Color.clear,
-                ],
-                center: .topLeading,
-                startRadius: 14,
-                endRadius: 360
-            )
-
-            RadialGradient(
-                colors: [
-                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.12 : 0.42),
-                    Color.clear,
-                ],
-                center: .bottomTrailing,
-                startRadius: 16,
-                endRadius: 380
-            )
-        }
-//        .ignoresSafeArea()
+        SafeEatMainGradientBackground()
     }
 
 
@@ -279,16 +250,19 @@ struct MenuWeekView: View {
         }
         .background(homeBackground.ignoresSafeArea())
         .sheet(isPresented: $showNotificationSheet) {
-            NotificationSettingsSheet(isEnabled: $notificationEnabled)
-                .presentationDetents([.height(460)])
+            SafeEatReminderSettingsSheet()
+                .presentationDetents([.height(600)])
                 .presentationDragIndicator(.visible)
-                .presentationBackground(Color(.systemBackground))
+                .presentationBackground(.clear)
         }
         .navigationDestination(item: $dayRoute) { route in
             HistoryDayView(date: route.date)
         }
         .navigationDestination(item: $weekRoute) { route in
             HistoryWeekView(referenceDate: route.referenceDate)
+        }
+        .task {
+            await settings.refreshNotificationStatus()
         }
     }
 
@@ -304,7 +278,11 @@ struct MenuWeekView: View {
                         .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
                         .foregroundStyle(SafeEatTheme.primary)
 
-                    Text(todayItems.isEmpty ? "今天还没有识别记录，拍一张食物照片就会生成新的记忆卡。" : "今天已累计 \(todayItems.count) 次识别，本周一共沉淀 \(weekItems.count) 条记录。")
+                    Text(
+                        todayItems.isEmpty
+                            ? SafeEatL10n.text(L10nKey.Menu.heroEmptySummary)
+                            : SafeEatL10n.format(L10nKey.Menu.heroFilledSummary, todayItems.count, weekItems.count)
+                    )
                         .font(SafeEatFont.custom(15, relativeTo: .body))
                         .foregroundStyle(SafeEatTheme.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -313,17 +291,25 @@ struct MenuWeekView: View {
                 Spacer(minLength: 0)
 
                 VStack(alignment: .trailing, spacing: 10) {
-                    heroMetricChip(title: "今日", value: "\(todayItems.count)")
-                    heroMetricChip(title: "本周", value: "\(weekItems.count)")
+                    heroMetricChip(title: SafeEatL10n.text(L10nKey.Menu.metricToday), value: "\(todayItems.count)")
+                    heroMetricChip(title: SafeEatL10n.text(L10nKey.Menu.metricWeek), value: "\(weekItems.count)")
                 }
             }
 
             HStack(spacing: 12) {
-                quickAccessButton(title: "日记录", subtitle: "查看当天贴纸", systemImage: "calendar") {
+                quickAccessButton(
+                    title: SafeEatL10n.text(L10nKey.Menu.dayRecordTitle),
+                    subtitle: SafeEatL10n.text(L10nKey.Menu.dayRecordSubtitle),
+                    systemImage: "calendar"
+                ) {
                     dayRoute = HistoryDayRoute(date: selectedDate)
                 }
 
-                quickAccessButton(title: "周记录", subtitle: "按日期回看", systemImage: "square.stack.3d.up") {
+                quickAccessButton(
+                    title: SafeEatL10n.text(L10nKey.Menu.weekRecordTitle),
+                    subtitle: SafeEatL10n.text(L10nKey.Menu.weekRecordSubtitle),
+                    systemImage: "square.stack.3d.up"
+                ) {
                     let weekStart = Calendar.current.dateInterval(of: .weekOfYear, for: selectedDate)?.start ?? selectedDate
                     weekRoute = HistoryWeekRoute(referenceDate: weekStart)
                 }
@@ -342,14 +328,14 @@ struct MenuWeekView: View {
 
     private var topBar: some View {
         HStack {
-            SafeEatPageHeader(title: "菜单", subtitle: headerSubtitle)
+            SafeEatPageHeader(title: SafeEatL10n.text(L10nKey.Menu.title), subtitle: headerSubtitle)
 //            Text("菜单")
 //                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
 //                .foregroundStyle(SafeEatTheme.textPrimary)
 
             Spacer()
 
-            NotificationBellButton(isEnabled: $notificationEnabled) {
+            NotificationBellButton(isEnabled: settings.reminderEnabled) {
                 showNotificationSheet = true
             }
         }
@@ -465,14 +451,14 @@ private struct HistoryWeekRoute: Identifiable, Hashable {
 private extension Date {
     var menuHeroDateText: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "MMM dd"
+        formatter.locale = AppSettingsStore.shared.displayLocale
+        formatter.dateFormat = AppSettingsStore.shared.language == .en ? "MMM dd" : "M月d日"
         return formatter.string(from: self)
     }
 
     var menuHeroWeekdayText: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = AppSettingsStore.shared.displayLocale
         formatter.dateFormat = "EEEE"
         return formatter.string(from: self)
     }

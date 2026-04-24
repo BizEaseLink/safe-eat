@@ -22,7 +22,7 @@ struct FeedbackView: View {
     private var displayName: String {
         let rawName = recognition.recognizedName.trimmingCharacters(in: .whitespacesAndNewlines)
         if rawName.isEmpty || rawName == "未知食物" {
-            return "未识别食物"
+            return SafeEatL10n.text(L10nKey.Common.unknownFood)
         }
         return rawName
     }
@@ -45,15 +45,15 @@ struct FeedbackView: View {
         let base = [
             trimmedProposedName,
             displayName,
-            "日式荞麦面",
-            "荞麦冷面",
-            "凉拌荞麦面",
+            SafeEatL10n.text(L10nKey.Feedback.suggestionSoba),
+            SafeEatL10n.text(L10nKey.Feedback.suggestionColdSoba),
+            SafeEatL10n.text(L10nKey.Feedback.suggestionChilledSoba),
         ]
 
         var seen = Set<String>()
         return base.compactMap { value in
             let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmed.isEmpty, trimmed != "未识别食物", seen.insert(trimmed).inserted else {
+            guard !trimmed.isEmpty, trimmed != SafeEatL10n.text(L10nKey.Common.unknownFood), seen.insert(trimmed).inserted else {
                 return nil
             }
             return trimmed
@@ -97,7 +97,7 @@ struct FeedbackView: View {
                 }
 
                 SafeEatTopBackChrome(
-                    title: "反馈",
+                    title: SafeEatL10n.text(L10nKey.Feedback.title),
                     scrollOffset: scrollOffset,
                     topInset: proxy.safeAreaInsets.top,
                     onBack: { dismiss() }
@@ -130,20 +130,20 @@ struct FeedbackView: View {
                 comment = String(newValue.prefix(200))
             }
         }
-        .confirmationDialog("更换证据图", isPresented: $showSourceDialog, titleVisibility: .visible) {
+        .confirmationDialog(SafeEatL10n.text(L10nKey.Feedback.replaceEvidenceTitle), isPresented: $showSourceDialog, titleVisibility: .visible) {
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                Button("拍照补传") {
+                Button(SafeEatL10n.text(L10nKey.Feedback.sourceCamera)) {
                     pickerSource = .camera
                     showImagePicker = true
                 }
             }
 
-            Button("从相册选择") {
+            Button(SafeEatL10n.text(L10nKey.Feedback.sourceLibrary)) {
                 pickerSource = .photoLibrary
                 showImagePicker = true
             }
 
-            Button("取消", role: .cancel) {}
+            Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
         }
         .sheet(isPresented: $showImagePicker) {
             ImagePicker(sourceType: pickerSource) { image in
@@ -191,7 +191,7 @@ struct FeedbackView: View {
     }
 
     private var statusTag: some View {
-        Text("反馈将在上传后进入审核")
+        Text(SafeEatL10n.text(L10nKey.Feedback.status))
             .font(SafeEatFont.custom(14, relativeTo: .footnote, weight: .bold))
             .foregroundStyle(SafeEatTheme.warning)
             .padding(.horizontal, 14)
@@ -208,15 +208,15 @@ struct FeedbackView: View {
 
     private var heroSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("识别结果不准确？")
+            Text(SafeEatL10n.text(L10nKey.Feedback.heroTitle))
                 .font(SafeEatFont.custom(36, relativeTo: .largeTitle, weight: .bold))
                 .foregroundStyle(SafeEatTheme.textPrimary)
 
-            Text("帮我们修正一下")
+            Text(SafeEatL10n.text(L10nKey.Feedback.heroSubtitle))
                 .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
                 .foregroundStyle(SafeEatTheme.primary)
 
-            Text("你的修改会用于优化识别模型，让结果更准确。")
+            Text(SafeEatL10n.text(L10nKey.Feedback.heroBody))
                 .font(SafeEatFont.custom(17, relativeTo: .body))
                 .foregroundStyle(SafeEatTheme.textSecondary)
         }
@@ -269,7 +269,7 @@ struct FeedbackView: View {
     private var currentRecognitionCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                badge(title: "当前识别", emphasized: false)
+                badge(title: SafeEatL10n.text(L10nKey.Feedback.badgeCurrent), emphasized: false)
                 Spacer()
 
                 Button {
@@ -323,10 +323,10 @@ struct FeedbackView: View {
 
     private var correctionCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            badge(title: "你认为正确的是", emphasized: true)
+            badge(title: SafeEatL10n.text(L10nKey.Feedback.badgeCorrect), emphasized: true)
 
             HStack(spacing: 10) {
-                TextField("例如：日式荞麦面", text: $proposedName)
+                TextField(SafeEatL10n.text(L10nKey.Feedback.inputPlaceholder), text: $proposedName)
                     .font(SafeEatFont.custom(18, relativeTo: .body, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
                     .textInputAutocapitalization(.never)
@@ -352,7 +352,7 @@ struct FeedbackView: View {
             )
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
-            Text("试试这些：")
+            Text(SafeEatL10n.text(L10nKey.Feedback.suggestionsTitle))
                 .font(SafeEatFont.custom(15, relativeTo: .subheadline))
                 .foregroundStyle(SafeEatTheme.textSecondary)
 
@@ -433,7 +433,7 @@ struct FeedbackView: View {
 
     private var commentSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("补充说明（可选）")
+            Text(SafeEatL10n.text(L10nKey.Feedback.noteTitle))
                 .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
                 .foregroundStyle(SafeEatTheme.textSecondary)
 
@@ -443,7 +443,7 @@ struct FeedbackView: View {
                     .overlay(cardStroke(cornerRadius: 24))
 
                 if comment.isEmpty {
-                    Text("这不是普通凉面，调味偏清淡，但有酱汁。")
+                    Text(SafeEatL10n.text(L10nKey.Feedback.notePlaceholder))
                         .font(SafeEatFont.custom(16, relativeTo: .body))
                         .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.6))
                         .padding(.horizontal, 16)
@@ -465,7 +465,7 @@ struct FeedbackView: View {
                     Spacer()
                     HStack {
                         Spacer()
-                        Text("\(comment.count)/200")
+                        Text(SafeEatL10n.format(L10nKey.Feedback.noteCountFormat, comment.count))
                             .font(SafeEatFont.custom(12, relativeTo: .caption))
                             .foregroundStyle(SafeEatTheme.textSecondary)
                             .padding(.trailing, 16)
@@ -487,11 +487,11 @@ struct FeedbackView: View {
                 .padding(.top, 2)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("我们会认真审核")
+                Text(SafeEatL10n.text(L10nKey.Feedback.auditTitle))
                     .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
                     .foregroundStyle(colorScheme == .dark ? Color(red: 0.80, green: 0.94, blue: 0.84) : SafeEatTheme.primaryDeep)
 
-                Text("审核完成后只保留结构化记录，不会泄露你的个人信息。")
+                Text(SafeEatL10n.text(L10nKey.Feedback.auditBody))
                     .font(SafeEatFont.custom(15, relativeTo: .subheadline))
                     .foregroundStyle(colorScheme == .dark ? Color.white.opacity(0.78) : SafeEatTheme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -521,7 +521,7 @@ struct FeedbackView: View {
                         .tint(.white)
                         .frame(maxWidth: .infinity)
                 } else {
-                    Text("提交修正")
+                    Text(SafeEatL10n.text(L10nKey.Feedback.submit))
                         .font(SafeEatFont.custom(22, relativeTo: .headline, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -549,7 +549,7 @@ struct FeedbackView: View {
         HStack(spacing: 8) {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: 18, weight: .semibold))
-            Text("感谢你的帮助，你的反馈将让识别更精准！")
+            Text(SafeEatL10n.text(L10nKey.Feedback.thanks))
                 .font(SafeEatFont.custom(16, relativeTo: .footnote))
         }
         .foregroundStyle(colorScheme == .dark ? Color(red: 0.73, green: 0.90, blue: 0.78) : SafeEatTheme.primary)
@@ -623,7 +623,7 @@ struct FeedbackView: View {
             ?? LocalImageLoader.loadRawImage(for: historyItem)?.jpegDataForUpload()
 
         guard let evidenceData = data else {
-            store.errorMessage = "反馈必须附带证据图。"
+            store.errorMessage = SafeEatL10n.text(L10nKey.Feedback.evidenceRequired)
             return
         }
 

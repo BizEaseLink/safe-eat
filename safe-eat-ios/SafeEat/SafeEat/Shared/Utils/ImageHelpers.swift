@@ -62,6 +62,28 @@ extension UIImage {
         normalizedUprightImage().jpegData(compressionQuality: AppConfig.imageCompressionQuality)
     }
 
+    func avatarUploadData() -> Data? {
+        var workingImage = normalizedUprightImage().scaledDown(maxDimension: AppConfig.avatarMaxDimension)
+        var compressionQuality: CGFloat = 0.88
+        var data = workingImage.jpegData(compressionQuality: compressionQuality)
+
+        while let currentData = data, currentData.count > AppConfig.avatarTargetMaxBytes, compressionQuality > 0.42 {
+            compressionQuality -= 0.08
+            data = workingImage.jpegData(compressionQuality: compressionQuality)
+        }
+
+        while let currentData = data, currentData.count > AppConfig.avatarTargetMaxBytes {
+            let nextDimension = max(max(workingImage.size.width, workingImage.size.height) * 0.82, 320)
+            guard nextDimension < max(workingImage.size.width, workingImage.size.height) else {
+                break
+            }
+            workingImage = workingImage.scaledDown(maxDimension: nextDimension)
+            data = workingImage.jpegData(compressionQuality: compressionQuality)
+        }
+
+        return data
+    }
+
     func pngDataForPreview() -> Data? {
         normalizedUprightImage().pngData()
     }
@@ -86,6 +108,12 @@ extension UIImage {
         return UIGraphicsImageRenderer(size: targetSize, format: format).image { _ in
             baseImage.draw(in: CGRect(origin: .zero, size: targetSize))
         }
+    }
+
+    func loadingOverlayPreviewImage(maxDimension: CGFloat = 720) -> UIImage {
+        let baseImage = normalizedUprightImage()
+        let displayImage = baseImage.hasAlphaChannel ? baseImage.croppedToVisibleContent() : baseImage
+        return displayImage.scaledDown(maxDimension: maxDimension)
     }
 
     func croppedToVisibleContent(alphaThreshold: UInt8 = 3) -> UIImage {
@@ -320,19 +348,23 @@ enum LocalImageLoader {
     static func invalidateCache(for item: LocalHistoryItem) {
         stickerCache.removeObject(forKey: "\(item.displayImageUri)#sticker" as NSString)
     }
+
+    static func clearAllCaches() {
+        stickerCache.removeAllObjects()
+    }
 }
 
 enum AdviceLevelMapper {
     static func title(_ level: String?) -> String {
         switch level {
         case "recommended":
-            return "推荐食用"
+            return SafeEatL10n.text(L10nKey.Advice.titleRecommended)
         case "caution":
-            return "谨慎食用"
+            return SafeEatL10n.text(L10nKey.Advice.titleCaution)
         case "avoid":
-            return "不建议食用"
+            return SafeEatL10n.text(L10nKey.Advice.titleAvoid)
         default:
-            return "建议评估"
+            return SafeEatL10n.text(L10nKey.Advice.titleEvaluate)
         }
     }
 
@@ -365,13 +397,13 @@ enum AdviceLevelMapper {
     static func compactTitle(_ level: String?) -> String {
         switch level {
         case "recommended":
-            return "推荐"
+            return SafeEatL10n.text(L10nKey.Advice.compactRecommended)
         case "caution":
-            return "谨慎"
+            return SafeEatL10n.text(L10nKey.Advice.compactCaution)
         case "avoid":
-            return "避免"
+            return SafeEatL10n.text(L10nKey.Advice.compactAvoid)
         default:
-            return "评估"
+            return SafeEatL10n.text(L10nKey.Advice.compactEvaluate)
         }
     }
 
@@ -382,14 +414,38 @@ enum AdviceLevelMapper {
 
         switch level {
         case "recommended":
-            return "整体更适合当前饮食方向，可以作为这次的优先选择。"
+            return SafeEatL10n.text(L10nKey.Advice.summaryRecommended)
         case "caution":
-            return "可以继续吃，但建议控制份量，并留意搭配与频率。"
+            return SafeEatL10n.text(L10nKey.Advice.summaryCaution)
         case "avoid":
-            return "当前更不建议继续食用，优先换成更稳妥的选择。"
+            return SafeEatL10n.text(L10nKey.Advice.summaryAvoid)
         default:
-            return "建议结合身体状态和本次搭配，再做进一步判断。"
+            return SafeEatL10n.text(L10nKey.Advice.summaryEvaluate)
         }
+    }
+}
+
+enum StickerTextFormatter {
+    static func score(_ value: Int) -> String {
+        SafeEatL10n.format(L10nKey.Common.scoreUnitFormat, value)
+    }
+
+    static func adviceScore(level: String?, score: Int) -> String {
+        SafeEatL10n.format(
+            L10nKey.Common.adviceScoreFormat,
+            AdviceLevelMapper.compactTitle(level),
+            score
+        )
+    }
+
+    static func adviceScore(for item: LocalHistoryItem) -> String {
+        adviceScore(level: item.adviceLevel, score: item.foodScore)
+    }
+
+    static func isScoreTag(_ text: String) -> Bool {
+        let normalized = text.lowercased()
+        return normalized.rangeOfCharacter(from: .decimalDigits) != nil
+            && (normalized.contains("pts") || normalized.contains("分"))
     }
 }
 
@@ -504,131 +560,342 @@ struct SafeEatDottedRecordBackground: View {
 }
 
 struct SafeEatLoadingOverlay: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     var title: String
     var subtitle: String? = nil
     var previewImage: UIImage? = nil
+
+    @State private var activeStep = 0
+    @State private var isPulsing = false
+
+    private let loadingTimer = Timer.publish(every: 0.9, on: .main, in: .common).autoconnect()
+
+    private var loadingSteps: [String] {
+        [
+            SafeEatL10n.text(L10nKey.Home.loadingStepCrop),
+            SafeEatL10n.text(L10nKey.Home.loadingStepRemoveBackground),
+            SafeEatL10n.text(L10nKey.Home.loadingStepSync),
+        ]
+    }
+
+    private var brandLabelColor: Color {
+        colorScheme == .dark ? Color(red: 0.67, green: 0.86, blue: 0.73) : SafeEatTheme.primaryDeep
+    }
+
+    private var topPillFill: Color {
+        colorScheme == .dark
+            ? Color.white.opacity(0.08)
+            : Color(red: 0.97, green: 0.98, blue: 0.97).opacity(0.96)
+    }
+
+    private var topPillStroke: Color {
+        colorScheme == .dark
+            ? Color.white.opacity(0.10)
+            : Color(red: 0.83, green: 0.89, blue: 0.85).opacity(0.92)
+    }
+
+    private var heroPillFill: Color {
+        colorScheme == .dark
+            ? Color.white.opacity(0.06)
+            : Color(red: 0.975, green: 0.982, blue: 0.975).opacity(0.96)
+    }
+
+    private var heroPillStroke: Color {
+        colorScheme == .dark
+            ? Color.white.opacity(0.08)
+            : Color(red: 0.84, green: 0.90, blue: 0.86).opacity(0.94)
+    }
+
+    private var panelFill: LinearGradient {
+        LinearGradient(
+            colors: colorScheme == .dark
+                ? [Color.white.opacity(0.08), Color.white.opacity(0.04)]
+                : [Color.white.opacity(0.88), Color.white.opacity(0.72)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private var panelStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.line
+    }
+
+    private var previewStageFill: LinearGradient {
+        LinearGradient(
+            colors: colorScheme == .dark
+                ? [Color(red: 0.10, green: 0.15, blue: 0.13), Color(red: 0.08, green: 0.11, blue: 0.10)]
+                : [Color.white.opacity(0.96), Color(red: 0.95, green: 0.97, blue: 0.95)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
 
     var body: some View {
         ZStack {
             loadingBackground
 
-            VStack(spacing: 24) {
-                if let previewImage {
-                    VStack(spacing: 16) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                                .fill(Color.white.opacity(0.86))
-                                .frame(width: 188, height: 188)
-                                .shadow(color: .black.opacity(0.08), radius: 18, y: 10)
-
-                            Image(uiImage: previewImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 148, height: 148)
-                        }
-
-                        AvocadoLoadingView()
-                            .frame(height: 72)
-                    }
-                } else {
-                    AvocadoLoadingView()
+            VStack(spacing: 22) {
+                HStack {
+                    brandPill
+                    Spacer()
                 }
+                .padding(.top, 14)
 
-                VStack(spacing: 8) {
-                    Text(title)
-                        .font(SafeEatFont.custom(22, relativeTo: .title3))
-                        .foregroundStyle(.primary)
+                Spacer(minLength: 12)
 
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(SafeEatFont.textStyle(.subheadline))
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                }
+                loadingPanel
 
                 HStack(spacing: 10) {
-                    loadingStep("裁切白框内主体")
-                    loadingStep("移除背景")
-                    loadingStep("同步识别结果")
+                    footerPill(SafeEatL10n.text(L10nKey.Home.heroTagHealth))
+                    footerPill(SafeEatL10n.text(L10nKey.Home.heroTagHistory))
                 }
+
+                Spacer(minLength: 8)
             }
-            .padding(28)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 18)
         }
         .ignoresSafeArea()
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.45).repeatForever(autoreverses: true)) {
+                isPulsing = true
+            }
+        }
+        .onReceive(loadingTimer) { _ in
+            activeStep = (activeStep + 1) % max(loadingSteps.count, 1)
+        }
     }
 
     private var loadingBackground: some View {
         ZStack {
-            Color(.systemBackground)
+            SafeEatMainGradientBackground()
+
+            RadialGradient(
+                colors: [
+                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.16 : 0.34),
+                    Color.clear,
+                ],
+                center: .topLeading,
+                startRadius: 12,
+                endRadius: 360
+            )
+
             SafeEatDottedRecordBackground()
-                .opacity(0.82)
+                .opacity(colorScheme == .dark ? 0.26 : 0.38)
+
+            LinearGradient(
+                colors: [
+                    Color.black.opacity(colorScheme == .dark ? 0.24 : 0.04),
+                    Color.black.opacity(colorScheme == .dark ? 0.10 : 0.02),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
         }
     }
 
-    private func loadingStep(_ text: String) -> some View {
-        Text(text)
-            .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-            .foregroundStyle(SafeEatTheme.textSecondary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(
-                Capsule()
-                    .fill(Color.white.opacity(0.82))
-            )
+    private var brandPill: some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(SafeEatTheme.primary.opacity(0.22))
+                .frame(width: 22, height: 22)
+                .overlay(
+                    Circle()
+                        .fill(SafeEatTheme.primary)
+                        .frame(width: 8, height: 8)
+                )
+
+            Text(SafeEatL10n.text(L10nKey.Home.brandPill))
+                .font(SafeEatFont.custom(16, relativeTo: .headline))
+                .foregroundStyle(brandLabelColor)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(
+            Capsule()
+                .fill(topPillFill)
+        )
+        .overlay(
+            Capsule()
+                .stroke(topPillStroke, lineWidth: 1)
+        )
     }
-}
 
-private struct AvocadoLoadingView: View {
-    @Environment(\.colorScheme) private var colorScheme
-    @State private var phase = 0
+    private var loadingPanel: some View {
+        VStack(spacing: 22) {
+            previewStage
 
-    private let timer = Timer.publish(every: 0.22, on: .main, in: .common).autoconnect()
-    private let layerScales: [CGFloat] = [0.44, 0.62, 0.80, 1.0]
+            VStack(spacing: 10) {
+                Text(title)
+                    .font(SafeEatFont.custom(28, relativeTo: .title2))
+                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .multilineTextAlignment(.center)
 
-    var body: some View {
+                if let subtitle {
+                    Text(subtitle)
+                        .font(SafeEatFont.textStyle(.subheadline))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(2)
+                }
+            }
+
+            VStack(spacing: 12) {
+                ForEach(Array(loadingSteps.enumerated()), id: \.offset) { index, text in
+                    loadingStepRow(text: text, index: index)
+                }
+            }
+        }
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                .fill(panelFill)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                .stroke(panelStroke, lineWidth: 1)
+        )
+        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.22 : 0.12), radius: 24, y: 16)
+    }
+
+    private var previewStage: some View {
         ZStack {
-            ForEach(Array(layerScales.enumerated()), id: \.offset) { index, scale in
-                Image("AvocadoPattern")
-                    .renderingMode(.template)
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(previewStageFill)
+
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(colorScheme == .dark ? 0.10 : 0.75),
+                            SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.24 : 0.18),
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.28 : 0.18), lineWidth: 1.5)
+                .padding(14)
+                .scaleEffect(isPulsing ? 1.0 : 0.965)
+                .opacity(isPulsing ? 1 : 0.5)
+
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.30 : 0.16),
+                            SafeEatTheme.primary.opacity(0.02),
+                            SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.30 : 0.16),
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .frame(height: 74)
+                .padding(.horizontal, 20)
+                .offset(y: isPulsing ? 98 : -98)
+                .blur(radius: 12)
+                .mask(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .padding(12)
+                )
+
+            if let previewImage {
+                Image(uiImage: previewImage)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 132 * scale, height: 132 * scale)
-                    .foregroundStyle(loaderColor)
-                    .opacity(layerOpacity(for: index))
-                    .scaleEffect(layerScaleEffect(for: index))
-                    .shadow(color: loaderColor.opacity(0.16), radius: 8, y: 4)
+                    .frame(maxWidth: 220, maxHeight: 260)
+                    .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.24 : 0.12), radius: 18, y: 10)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 12)
+            } else {
+                Image(systemName: "camera.viewfinder")
+                    .font(.system(size: 54, weight: .medium))
+                    .foregroundStyle(SafeEatTheme.primary.opacity(0.68))
             }
         }
-        .frame(width: 150, height: 150)
-        .onReceive(timer) { _ in
-            withAnimation(.easeInOut(duration: 0.2)) {
-                phase = (phase + 1) % 9
+        .frame(maxWidth: .infinity)
+        .frame(height: 318)
+    }
+
+    private func loadingStepRow(text: String, index: Int) -> some View {
+        let isActive = index == activeStep
+        let isCompleted = index < activeStep
+
+        return HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(stepFill(isActive: isActive, isCompleted: isCompleted))
+                    .frame(width: 26, height: 26)
+
+                if isCompleted {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(.white)
+                } else {
+                    Circle()
+                        .fill(isActive ? SafeEatTheme.primary : SafeEatTheme.textSecondary.opacity(0.45))
+                        .frame(width: isActive ? 10 : 8, height: isActive ? 10 : 8)
+                        .scaleEffect(isActive && isPulsing ? 1.12 : 1)
+                }
             }
+
+            Text(text)
+                .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+
+            Spacer(minLength: 12)
+
+            Capsule()
+                .fill(stepFill(isActive: isActive, isCompleted: isCompleted))
+                .frame(width: isActive ? 46 : 28, height: 8)
+                .overlay(
+                    Capsule()
+                        .fill(Color.white.opacity(isActive ? 0.42 : 0.22))
+                        .frame(width: isActive ? 24 : 0, height: 8)
+                        .opacity(isActive ? 1 : 0)
+                )
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(colorScheme == .dark ? Color.white.opacity(0.04) : Color.white.opacity(0.46))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.54), lineWidth: 1)
+        )
     }
 
-    private var visibleLayerCount: Int {
-        switch phase {
-        case 0:
-            return 0
-        case 1 ... 4:
-            return phase
-        default:
-            return max(0, 8 - phase)
+    private func stepFill(isActive: Bool, isCompleted: Bool) -> Color {
+        if isCompleted {
+            return SafeEatTheme.success
         }
+        if isActive {
+            return SafeEatTheme.primary.opacity(0.86)
+        }
+        return colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.primary.opacity(0.12)
     }
 
-    private var loaderColor: Color {
-        colorScheme == .dark ? StickerPalette.loaderIconDark : StickerPalette.loaderIconLight
-    }
-
-    private func layerOpacity(for index: Int) -> Double {
-        index < visibleLayerCount ? 1 : 0
-    }
-
-    private func layerScaleEffect(for index: Int) -> CGFloat {
-        index < visibleLayerCount ? 1 : 0.92
+    private func footerPill(_ text: String) -> some View {
+        Text(text)
+            .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+            .foregroundStyle(brandLabelColor)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(heroPillFill)
+            )
+            .overlay(
+                Capsule()
+                    .stroke(heroPillStroke, lineWidth: 1)
+            )
     }
 }
 
@@ -681,7 +948,7 @@ struct RecognitionStickerThumbnailView: View {
     init(item: LocalHistoryItem, imageHeight: CGFloat, labelMaxWidth: CGFloat) {
         self.stickerImage = LocalImageLoader.loadStickerImage(for: item)
         self.titleText = item.recognizedName
-        self.metaText = "\(AdviceLevelMapper.compactTitle(item.adviceLevel)) · \(item.foodScore) 分"
+        self.metaText = StickerTextFormatter.adviceScore(for: item)
         self.imageHeight = imageHeight
         self.labelMaxWidth = labelMaxWidth
         self.style = .card
@@ -822,7 +1089,7 @@ struct RecognitionStickerThumbnailView: View {
 
     private var displayTitle: String {
         let trimmed = titleText.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "未命名" : trimmed
+        return trimmed.isEmpty ? SafeEatL10n.text(L10nKey.Common.unnamed) : trimmed
     }
 
     private var metaTags: [String] {
@@ -833,7 +1100,9 @@ struct RecognitionStickerThumbnailView: View {
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
 
-        if tags.count == 2, tags[0].contains("分"), !tags[1].contains("分") {
+        if tags.count == 2,
+           StickerTextFormatter.isScoreTag(tags[0]),
+           !StickerTextFormatter.isScoreTag(tags[1]) {
             return [tags[1], tags[0]]
         }
         return tags
@@ -856,14 +1125,14 @@ struct RecognitionStickerThumbnailView: View {
     }
 
     private func metaTextColor(for index: Int, text: String) -> Color {
-        if text.contains("分") {
+        if StickerTextFormatter.isScoreTag(text) {
             return SafeEatTheme.warning
         }
         return index == 0 ? SafeEatTheme.primaryDeep : SafeEatTheme.textSecondary
     }
 
     private func metaBackgroundColor(for index: Int, text: String) -> Color {
-        if text.contains("分") {
+        if StickerTextFormatter.isScoreTag(text) {
             return SafeEatTheme.warning.opacity(colorScheme == .dark ? 0.20 : 0.14)
         }
         if index == 0 {
@@ -873,7 +1142,7 @@ struct RecognitionStickerThumbnailView: View {
     }
 
     private func metaBubbleTextColor(for index: Int, text: String) -> Color {
-        if text.contains("分") {
+        if StickerTextFormatter.isScoreTag(text) {
             return SafeEatTheme.warning
         }
         return index == 0 ? SafeEatTheme.primaryDeep : SafeEatTheme.textSecondary
@@ -906,13 +1175,13 @@ struct RecognitionStickerExpandedView: View {
             RecognitionStickerThumbnailView(
                 image: LocalImageLoader.loadStickerImage(for: item),
                 titleText: item.recognizedName,
-                metaText: "\(AdviceLevelMapper.compactTitle(item.adviceLevel)) · \(item.foodScore) 分",
+                metaText: StickerTextFormatter.adviceScore(for: item),
                 imageHeight: height * 0.56,
                 labelMaxWidth: width * 0.82
             )
 
             StickerTextBubble(
-                text: "左右滑动查看结果",
+                text: SafeEatL10n.text(L10nKey.Sticker.swipeHint),
                 font: SafeEatFont.custom(12, relativeTo: .caption),
                 maxWidth: width * 0.58,
                 lineLimit: 1,
@@ -925,7 +1194,7 @@ struct RecognitionStickerExpandedView: View {
     private func backSide(width: CGFloat, height: CGFloat) -> some View {
         VStack(spacing: 10) {
             StickerTextBubble(
-                text: "识别结果",
+                text: SafeEatL10n.text(L10nKey.Sticker.resultTitle),
                 font: SafeEatFont.custom(13, relativeTo: .footnote),
                 maxWidth: width * 0.44,
                 lineLimit: 1
@@ -940,7 +1209,7 @@ struct RecognitionStickerExpandedView: View {
 
             HStack(spacing: 10) {
                 StickerTextBubble(
-                    text: "\(item.foodScore) 分",
+                    text: StickerTextFormatter.score(item.foodScore),
                     font: SafeEatFont.custom(12, relativeTo: .caption),
                     maxWidth: width * 0.28,
                     lineLimit: 1,
@@ -978,8 +1247,8 @@ struct RecognitionStickerExpandedView: View {
 extension Date {
     var historyTimestampText: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "MM 月 dd 日 HH:mm"
+        formatter.locale = AppSettingsStore.shared.displayLocale
+        formatter.dateFormat = AppSettingsStore.shared.language == .en ? "MMM d HH:mm" : "MM 月 dd 日 HH:mm"
         return formatter.string(from: self)
     }
 }
