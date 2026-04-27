@@ -9,7 +9,7 @@ struct OnboardingView: View {
     private let pages: [(icon: String, titleKey: String, bodyKey: String)] = [
         ("camera.fill", L10nKey.Onboarding.page1Title, L10nKey.Onboarding.page1Body),
         ("exclamationmark.triangle.fill", L10nKey.Onboarding.page2Title, L10nKey.Onboarding.page2Body),
-        ("clock.arrow.circlepath.fill", L10nKey.Onboarding.page3Title, L10nKey.Onboarding.page3Body),
+        ("clock.badge.checkmark.fill", L10nKey.Onboarding.page3Title, L10nKey.Onboarding.page3Body),
     ]
 
     var body: some View {
@@ -22,22 +22,22 @@ struct OnboardingView: View {
                     .padding(.horizontal, 20)
                     .zIndex(10)
 
-                TabView(selection: $currentPage) {
-                    ForEach(Array(pages.enumerated()), id: \.offset) { index, page in
-                        onboardingPage(index: index, page: page)
-                            .tag(index)
+                ZStack(alignment: .bottom) {
+                    TabView(selection: $currentPage) {
+                        ForEach(Array(pages.enumerated()), id: \.offset) { index, page in
+                            onboardingPage(index: index, page: page)
+                                .tag(index)
+                        }
                     }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .padding(.bottom, 80)
+                    .tabViewStyle(.page(indexDisplayMode: .never))
 
-                VStack(spacing: 0) {
-                    Spacer()
-                    pageIndicator
-                    startButton
+                    VStack(spacing: 0) {
+                        pageIndicator
+                        startButton
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 48)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 48)
             }
         }
         .toolbar(.hidden, for: .navigationBar)
@@ -124,7 +124,6 @@ struct OnboardingView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 36)
 
-            Spacer()
             Spacer()
         }
     }

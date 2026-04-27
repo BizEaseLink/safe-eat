@@ -5,9 +5,15 @@ struct SafeEatSettingsSheetContainer<Content: View>: View {
     let subtitle: String
     @ViewBuilder let content: Content
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         GeometryReader { proxy in
             ZStack {
+                // 底色：确保深色模式下无白色漏出
+                (colorScheme == .dark ? Color(red: 0.12, green: 0.13, blue: 0.15) : Color.white)
+                    .ignoresSafeArea()
+
                 SafeEatMainGradientBackground()
 
                 ScrollView(showsIndicators: false) {

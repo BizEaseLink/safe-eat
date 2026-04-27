@@ -57,24 +57,31 @@ struct MealPeriodSection: View {
             }
         }
         .padding(18)
-        .background(cardBackground)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(SafeEatTheme.line, lineWidth: 1)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.ultraThinMaterial)
         )
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(cardFill)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(cardStroke, lineWidth: 1)
+        )
+        .shadow(color: SafeEatTheme.primaryDeep.opacity(0.10), radius: 22, y: 14)
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
     @Environment(\.colorScheme) private var colorScheme
 
-    private var cardBackground: some View {
-        Group {
-            if colorScheme == .dark {
-                Color(red: 0.11, green: 0.12, blue: 0.15).opacity(0.84)
-            } else {
-                Color.white.opacity(0.84)
-            }
-        }
+    private var cardFill: Color {
+        colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.52)
+    }
+
+    private var cardStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
     }
 
     // MARK: Period Picker
@@ -168,6 +175,8 @@ struct NotificationBellButton: View {
     let isEnabled: Bool
     let onTap: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         Button(action: onTap) {
             ZStack(alignment: .topTrailing) {
@@ -177,7 +186,7 @@ struct NotificationBellButton: View {
                     .frame(width: 40, height: 40)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(isEnabled ? SafeEatTheme.primarySoft : bellBackground)
+                            .fill(isEnabled ? bellActiveFill : bellBackground)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
@@ -195,13 +204,79 @@ struct NotificationBellButton: View {
         .buttonStyle(.plain)
     }
 
-    @Environment(\.colorScheme) private var colorScheme
+    private var bellActiveFill: Color {
+        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.18) : SafeEatTheme.primarySoft
+    }
 
     private var bellBackground: Color {
         colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.76)
     }
 
     private var bellBorder: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
+    }
+}
+
+// MARK: - Record Shortcut Button (Redesigned)
+
+struct RecordShortcutButton: View {
+    let title: String
+    let icon: String
+    let count: Int
+    let action: () -> Void
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 0) {
+                // 图标区域
+                ZStack {
+                    Circle()
+                        .fill(iconCircleFill)
+                        .frame(width: 44, height: 44)
+
+                    Image(systemName: icon)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(SafeEatTheme.primary)
+                }
+                .padding(.top, 16)
+
+                // 标题
+                Text(title)
+                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .padding(.top, 10)
+
+                // 计数标签
+                Text("\(count)")
+                    .font(SafeEatFont.custom(24, relativeTo: .title2, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.primary)
+                    .padding(.top, 4)
+                    .padding(.bottom, 14)
+            }
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(cardFill)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(cardStroke, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var iconCircleFill: Color {
+        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.18) : SafeEatTheme.primarySoft
+    }
+
+    private var cardFill: Color {
+        colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.52)
+    }
+
+    private var cardStroke: Color {
         colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
     }
 }

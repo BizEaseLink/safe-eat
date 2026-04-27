@@ -223,47 +223,51 @@ struct FeedbackView: View {
     }
 
     private var correctionZone: some View {
-//        GeometryReader { proxy in
-//            let leftWidth = min(max(proxy.size.width * 0.36, 126), 158)
-//            let arrowWidth: CGFloat = 28
-//            let rightWidth = max(proxy.size.width - leftWidth - arrowWidth - 24, 160)
-//
-//            HStack(alignment: .center, spacing: 12) {
-//                currentRecognitionCard
-//                    .frame(width: leftWidth)
-//
-//                Image(systemName: "arrow.right")
-//                    .font(.system(size: 24, weight: .semibold))
-//                    .foregroundStyle(SafeEatTheme.textSecondary)
-//                    .frame(width: arrowWidth)
-//
-//                correctionCard
-//                    .frame(width: rightWidth)
-//            }
-//            .frame(maxWidth: .infinity, alignment: .leading)
-//        }
-        VStack(alignment: .leading, spacing: 16) {
-            currentRecognitionCard
+        GeometryReader { proxy in
+            let useHorizontal = proxy.size.width >= 360
 
-            HStack {
-                Spacer()
-                Image(systemName: "arrow.down")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
-                    .frame(width: 36, height: 36)
-                    .background(
-                        Circle()
-                            .fill(colorScheme == .dark
-                                  ? Color.white.opacity(0.08)
-                                  : Color.white.opacity(0.82))
-                    )
-                Spacer()
+            if useHorizontal {
+                let leftWidth = min(max(proxy.size.width * 0.36, 126), 158)
+                let arrowWidth: CGFloat = 34
+                let rightWidth = max(proxy.size.width - leftWidth - arrowWidth - 24, 140)
+
+                HStack(alignment: .center, spacing: 0) {
+                    currentRecognitionCard
+                        .frame(width: leftWidth)
+
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.44))
+                        .frame(width: arrowWidth)
+
+                    correctionCard
+                        .frame(width: rightWidth)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                VStack(alignment: .leading, spacing: 16) {
+                    currentRecognitionCard
+
+                    HStack {
+                        Spacer()
+                        Image(systemName: "arrow.down")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .frame(width: 36, height: 36)
+                            .background(
+                                Circle()
+                                    .fill(colorScheme == .dark
+                                          ? Color.white.opacity(0.08)
+                                          : Color.white.opacity(0.82))
+                            )
+                        Spacer()
+                    }
+
+                    correctionCard
+                }
             }
-
-            correctionCard
         }
-        .padding(.bottom, 16)
-//        .frame(height: 272)
+        .frame(height: 272)
     }
 
     private var currentRecognitionCard: some View {

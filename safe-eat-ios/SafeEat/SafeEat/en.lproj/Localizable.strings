@@ -226,7 +226,7 @@
 "error.decode_failed" = "Failed to decode response: %@";
 "request.quota_exceeded" = "Today's free recognition quota is used up. Free users can recognize 3 times per day.";
 
-"profile.root.title" = "Me";
+"profile.root.title" = "Profile";
 "profile.hero.default_name" = "Safe Eat User";
 "profile.member_entry.title" = "Membership";
 "profile.member_entry.subtitle" = "View available plans and new-user offers.";
@@ -288,11 +288,52 @@
 "profile.cache.confirm_title" = "Clear cache?";
 "profile.cache.confirm_message" = "This removes local history images and sticker cache, but keeps you signed in.";
 
-"profile.security.title" = "Security";
-"profile.security.subtitle" = "Review your current session, profile sync, and local cache safety details.";
+"profile.security.title" = "Account & Security";
+"profile.security.subtitle" = "Manage phone number, password, account deletion, and restore purchases.";
 "profile.security.session" = "The current sign-in session uses an accessToken + refreshToken flow.";
 "profile.security.sync" = "Avatar, profile data, and membership status sync with the backend.";
 "profile.security.cache" = "Local cache is only used for history images, stickers, and page performance.";
+"profile.security.change_phone" = "Change Phone Number";
+"profile.security.change_password" = "Change Password";
+"profile.security.delete_account" = "Delete Account";
+"profile.security.restore_purchases" = "Restore Purchases";
+
+"profile.change_phone.title" = "Change Phone Number";
+"profile.change_phone.subtitle" = "Verify your current phone, then bind a new one.";
+"profile.change_phone.step_verify_current" = "Verify Current Phone";
+"profile.change_phone.step_input_new" = "Bind New Phone";
+"profile.change_phone.current_phone_label" = "Current Phone";
+"profile.change_phone.new_phone_label" = "New Phone";
+"profile.change_phone.verify_current_code" = "Verify Current Phone Code";
+"profile.change_phone.send_new_code" = "Send New Phone Code";
+"profile.change_phone.success" = "Phone number updated";
+
+"profile.change_password.title" = "Change Password";
+"profile.change_password.subtitle" = "Enter your old password and set a new one.";
+"profile.change_password.old_password" = "Old Password";
+"profile.change_password.new_password" = "New Password";
+"profile.change_password.confirm_password" = "Confirm New Password";
+"profile.change_password.old_password_placeholder" = "Enter current password";
+"profile.change_password.new_password_placeholder" = "Enter new password";
+"profile.change_password.confirm_password_placeholder" = "Re-enter new password";
+"profile.change_password.mismatch_error" = "The new passwords do not match.";
+"profile.change_password.success" = "Password changed";
+
+"profile.delete_account.title" = "Delete Account";
+"profile.delete_account.subtitle" = "Account data cannot be recovered after deletion.";
+"profile.delete_account.warning_title" = "Deletion Consequences";
+"profile.delete_account.warning_body" = "After deletion, the following will be permanently removed and cannot be recovered:\n1. All recognition records and history\n2. Membership status and remaining benefits\n3. Personal profile and health portrait\n4. Local cache and preferences\n\nPlease confirm you understand these consequences before proceeding.";
+"profile.delete_account.confirm_button" = "Confirm Deletion";
+"profile.delete_account.confirm_dialog_title" = "Final Confirmation";
+"profile.delete_account.confirm_dialog_message" = "Account data cannot be recovered after deletion. Are you sure you want to delete your account?";
+"profile.delete_account.success" = "Account deleted";
+
+"profile.restore_purchases.title" = "Restore Purchases";
+"profile.restore_purchases.subtitle" = "If you purchased membership but it's not active on this device, restore it here.";
+"profile.restore_purchases.restoring" = "Restoring…";
+"profile.restore_purchases.success" = "Membership restored";
+"profile.restore_purchases.empty" = "No subscriptions found to restore";
+"profile.restore_purchases.failed" = "Restore failed. Please try again later.";
 
 "profile.feedback.title" = "Report an Issue";
 "profile.feedback.subtitle" = "Check your version and device information before sending feedback.";
@@ -301,12 +342,14 @@
 "profile.feedback.version" = "App Version: %@";
 "profile.feedback.device" = "%@";
 "profile.feedback.hint" = "If a recognition result is wrong, you can submit feedback directly from the result page.";
+"profile.feedback.email_action" = "Send feedback email";
 
 "profile.update.title" = "Check for Updates";
 "profile.update.subtitle" = "Review the current version. This phase always reports the latest build.";
 "profile.update.version_label" = "Current Version";
 "profile.update.version" = "Current Version: %@";
 "profile.update.latest" = "You're on the latest version.";
+"profile.update.check_action" = "Open App Store to check for updates";
 
 "profile.about.page_title" = "About Safe Eat";
 "profile.about.page_subtitle" = "See what Safe Eat is building right now.";
@@ -314,6 +357,28 @@
 "profile.about.intro" = "Safe Eat provides lightweight food recognition, dietary suggestions, and local history for Chinese-speaking users.";
 "profile.about.section_title" = "What we're building";
 "profile.about.section_body" = "1. Recognize food from photos\n2. Give recommended / caution / avoid advice based on your health direction\n3. Save results into daily / weekly / monthly records";
+"profile.about.disclosure_section" = "Agreements & Certificates";
+"profile.about.user_agreement" = "User Agreement";
+"profile.about.privacy_policy" = "Privacy Policy";
+"profile.about.value_added" = "Value-Added Service Agreement";
+"profile.about.certificate" = "Certificates";
+"profile.about.copyright" = "© 2026 Zheng Kaijie";
+
+"order.history.title" = "Order History";
+"order.history.subtitle" = "View your purchase history";
+"order.history.empty_title" = "No Orders Yet";
+"order.history.empty_message" = "Your order history will appear here after purchasing a membership";
+"order.status.pending" = "Pending";
+"order.status.paid" = "Paid";
+"order.status.failed" = "Failed";
+"order.status.cancelled" = "Cancelled";
+"order.detail.order_no" = "Order No.";
+"order.detail.plan" = "Plan";
+"order.detail.amount" = "Amount";
+"order.detail.status" = "Status";
+"order.detail.channel" = "Channel";
+"order.detail.created_at" = "Created";
+"order.detail.paid_at" = "Paid At";
 
 "membership.purchase.title" = "Membership";
 "membership.purchase.subtitle" = "Browse plans, choose a payment channel, and create a pending order.";
@@ -337,14 +402,47 @@
 "membership.purchase.badge.recommended" = "Recommended";
 "membership.purchase.badge.advanced" = "Advanced";
 "membership.purchase.badge.default" = "Default";
+"membership.purchase.badge.premium" = "Premium";
+"membership.purchase.new_member_offer" = "Exclusive offer for new members";
+"membership.purchase.plan_subtitle.premium" = "The %@ plan for power users with unlimited recognitions";
+"membership.purchase.restore_purchases" = "Restore Purchases";
+"membership.purchase.purchasing" = "Processing…";
+"membership.purchase.subscribe_with_price" = "Subscribe %@";
+"membership.purchase.purchase_success" = "Membership activated! Enjoy all benefits.";
+"membership.purchase.purchase_pending" = "Purchase pending approval. It will activate automatically.";
+"membership.purchase.restore_empty" = "No subscriptions found to restore";
+"membership.purchase.product_not_ready" = "Product not ready. Please try again later.";
+"membership.purchase.verify_failed" = "Receipt verification failed. Please contact support.";
+"membership.purchase.verify_error" = "Receipt verification encountered an issue. Your membership will sync shortly.";
+"membership.purchase.countdown_label" = "Limited Offer";
+"membership.purchase.countdown_format" = "Limited Offer · %@";
+"membership.purchase.original_price" = "Original";
+"membership.purchase.discount_detail_title" = "Discount Details";
+"membership.purchase.final_price" = "Total";
+"membership.purchase.discount_code_input" = "Enter Discount Code";
+"membership.purchase.discount_code_placeholder" = "Enter discount code";
+"membership.purchase.discount_code_confirm" = "Apply";
+"membership.purchase.discount_code_success" = "Discount code applied";
+"membership.purchase.discount_code_invalid" = "Invalid or expired code";
+"membership.purchase.trial_prompt_title" = "Free Trial";
+"membership.purchase.trial_prompt_body" = "You have one free trial opportunity. Try now?";
+"membership.purchase.trial_prompt_action" = "Start Trial";
+"membership.purchase.free_plan_description" = "3 free recognitions per day. Great for trying out basic features.";
+"home.quota_exceeded.title" = "Daily Recognition Limit Reached";
+"home.quota_exceeded.message" = "Free users can recognize 3 times per day. Upgrade to unlock more.";
+"home.quota_exceeded.upgrade" = "Upgrade";
+"home.quota_exceeded.tomorrow" = "Free recognition resets tomorrow";
+"home.quota_remaining.format" = "%d remaining today";
 
 "user.unnamed" = "Unnamed User";
 "user.tier.free.title" = "Free User";
 "user.tier.lite.title" = "Lite Membership";
 "user.tier.pro.title" = "Pro Membership";
+"user.tier.premium.title" = "Premium Membership";
 "user.tier.free.short" = "Free";
 "user.tier.lite.short" = "Lite";
 "user.tier.pro.short" = "Pro";
+"user.tier.premium.short" = "Premium";
 "user.gender.male" = "Male";
 "user.gender.female" = "Female";
 "user.gender.other" = "Other";
@@ -361,6 +459,7 @@
 "user.goal.cardiovascular_health" = "Cardiovascular Friendly";
 "user.payment.alipay" = "Alipay";
 "user.payment.wechat" = "WeChat Pay";
+"user.payment.apple_iap" = "Apple In-App Purchase";
 
 "home.title" = "Home";
 "home.brand_pill" = "Safe Eat";
@@ -471,6 +570,7 @@
 "result.action.continue" = "Continue Review";
 "result.action.retake" = "Retake";
 "result.action.feedback" = "Report an Error";
+"result.action.back_to_front" = "Back to Front";
 "result.detail.syncing" = "Syncing full result…";
 "result.detail.local_only" = "Showing local result only";
 "result.section.nutrition" = "Nutrition";

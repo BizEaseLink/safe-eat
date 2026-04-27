@@ -10,7 +10,7 @@ struct MainTabView: View {
             }
             .tag(AppRootTab.home)
             .tabItem {
-                Label("首页", systemImage: "camera.viewfinder")
+                Label(SafeEatL10n.text(L10nKey.Home.title), systemImage: "camera.viewfinder")
             }
 
             NavigationStack {
@@ -18,7 +18,7 @@ struct MainTabView: View {
             }
             .tag(AppRootTab.history)
             .tabItem {
-                Label("菜单", systemImage: "list.bullet.rectangle")
+                Label(SafeEatL10n.text(L10nKey.Menu.title), systemImage: "list.bullet.rectangle")
             }
 
             NavigationStack {
@@ -26,7 +26,7 @@ struct MainTabView: View {
             }
             .tag(AppRootTab.profile)
             .tabItem {
-                Label("个人", systemImage: "person.crop.circle")
+                Label(SafeEatL10n.text(L10nKey.Profile.title), systemImage: "person.crop.circle")
             }
         }
     }

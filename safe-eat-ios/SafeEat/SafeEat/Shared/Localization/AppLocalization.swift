@@ -164,6 +164,13 @@ enum L10nKey {
         static let serviceGroupTitle = "profile.service.group_title"
         static let notLoggedInTitle = "profile.not_logged_in.title"
         static let notLoggedInMessage = "profile.not_logged_in.message"
+        static let healthProfileTitle = "profile.health_profile.title"
+        static let healthProfileEdit = "profile.health_profile.edit"
+        static let healthProfileEmpty = "profile.health_profile.empty"
+        static let healthTagHighBloodSugar = "profile.health_profile.tag.high_blood_sugar"
+        static let healthTagHighBloodPressure = "profile.health_profile.tag.high_blood_pressure"
+        static let healthTagFatLoss = "profile.health_profile.tag.fat_loss"
+        static let healthTagAvoid = "profile.health_profile.tag.avoid"
 
         enum Edit {
             static let subtitle = "profile.edit.subtitle.long"
@@ -210,6 +217,55 @@ enum L10nKey {
             static let session = "profile.security.session"
             static let sync = "profile.security.sync"
             static let cache = "profile.security.cache"
+            static let changePhone = "profile.security.change_phone"
+            static let changePassword = "profile.security.change_password"
+            static let deleteAccount = "profile.security.delete_account"
+            static let restorePurchases = "profile.security.restore_purchases"
+        }
+
+        enum ChangePhone {
+            static let title = "profile.change_phone.title"
+            static let subtitle = "profile.change_phone.subtitle"
+            static let stepVerifyCurrent = "profile.change_phone.step_verify_current"
+            static let stepInputNew = "profile.change_phone.step_input_new"
+            static let currentPhoneLabel = "profile.change_phone.current_phone_label"
+            static let newPhoneLabel = "profile.change_phone.new_phone_label"
+            static let verifyCurrentCode = "profile.change_phone.verify_current_code"
+            static let sendNewCode = "profile.change_phone.send_new_code"
+            static let success = "profile.change_phone.success"
+        }
+
+        enum ChangePassword {
+            static let title = "profile.change_password.title"
+            static let subtitle = "profile.change_password.subtitle"
+            static let oldPassword = "profile.change_password.old_password"
+            static let newPassword = "profile.change_password.new_password"
+            static let confirmPassword = "profile.change_password.confirm_password"
+            static let oldPasswordPlaceholder = "profile.change_password.old_password_placeholder"
+            static let newPasswordPlaceholder = "profile.change_password.new_password_placeholder"
+            static let confirmPasswordPlaceholder = "profile.change_password.confirm_password_placeholder"
+            static let mismatchError = "profile.change_password.mismatch_error"
+            static let success = "profile.change_password.success"
+        }
+
+        enum DeleteAccount {
+            static let title = "profile.delete_account.title"
+            static let subtitle = "profile.delete_account.subtitle"
+            static let warningTitle = "profile.delete_account.warning_title"
+            static let warningBody = "profile.delete_account.warning_body"
+            static let confirmButton = "profile.delete_account.confirm_button"
+            static let confirmDialogTitle = "profile.delete_account.confirm_dialog_title"
+            static let confirmDialogMessage = "profile.delete_account.confirm_dialog_message"
+            static let success = "profile.delete_account.success"
+        }
+
+        enum RestorePurchases {
+            static let title = "profile.restore_purchases.title"
+            static let subtitle = "profile.restore_purchases.subtitle"
+            static let restoring = "profile.restore_purchases.restoring"
+            static let success = "profile.restore_purchases.success"
+            static let empty = "profile.restore_purchases.empty"
+            static let failed = "profile.restore_purchases.failed"
         }
 
         enum Feedback {
@@ -220,6 +276,7 @@ enum L10nKey {
             static let version = "profile.feedback.version"
             static let device = "profile.feedback.device"
             static let hint = "profile.feedback.hint"
+            static let emailAction = "profile.feedback.email_action"
         }
 
         enum Update {
@@ -228,6 +285,7 @@ enum L10nKey {
             static let versionLabel = "profile.update.version_label"
             static let version = "profile.update.version"
             static let latest = "profile.update.latest"
+            static let checkAction = "profile.update.check_action"
         }
 
         enum About {
@@ -237,6 +295,12 @@ enum L10nKey {
             static let intro = "profile.about.intro"
             static let sectionTitle = "profile.about.section_title"
             static let sectionBody = "profile.about.section_body"
+            static let disclosureSection = "profile.about.disclosure_section"
+            static let userAgreement = "profile.about.user_agreement"
+            static let privacyPolicy = "profile.about.privacy_policy"
+            static let valueAdded = "profile.about.value_added"
+            static let certificate = "profile.about.certificate"
+            static let copyright = "profile.about.copyright"
         }
     }
 
@@ -263,6 +327,32 @@ enum L10nKey {
         static let badgeRecommended = "membership.purchase.badge.recommended"
         static let badgeAdvanced = "membership.purchase.badge.advanced"
         static let badgeDefault = "membership.purchase.badge.default"
+        static let newMemberOffer = "membership.purchase.new_member_offer"
+        static let badgePremium = "membership.purchase.badge.premium"
+        static let subtitlePremium = "membership.purchase.plan_subtitle.premium"
+        static let restorePurchases = "membership.purchase.restore_purchases"
+        static let purchasing = "membership.purchase.purchasing"
+        static let subscribeWithPrice = "membership.purchase.subscribe_with_price"
+        static let purchaseSuccess = "membership.purchase.purchase_success"
+        static let purchasePending = "membership.purchase.purchase_pending"
+        static let restoreEmpty = "membership.purchase.restore_empty"
+        static let productNotReady = "membership.purchase.product_not_ready"
+        static let verifyFailed = "membership.purchase.verify_failed"
+        static let verifyError = "membership.purchase.verify_error"
+        static let freePlanDescription = "membership.purchase.free_plan_description"
+        static let countdownLabel = "membership.purchase.countdown_label"
+        static let countdownFormat = "membership.purchase.countdown_format"
+        static let originalPrice = "membership.purchase.original_price"
+        static let discountDetailTitle = "membership.purchase.discount_detail_title"
+        static let finalPrice = "membership.purchase.final_price"
+        static let discountCodeInput = "membership.purchase.discount_code_input"
+        static let discountCodePlaceholder = "membership.purchase.discount_code_placeholder"
+        static let discountCodeConfirm = "membership.purchase.discount_code_confirm"
+        static let discountCodeSuccess = "membership.purchase.discount_code_success"
+        static let discountCodeInvalid = "membership.purchase.discount_code_invalid"
+        static let trialPromptTitle = "membership.purchase.trial_prompt_title"
+        static let trialPromptBody = "membership.purchase.trial_prompt_body"
+        static let trialPromptAction = "membership.purchase.trial_prompt_action"
     }
 
     enum Home {
@@ -290,6 +380,11 @@ enum L10nKey {
         static let cameraStartFailed = "home.camera.start_failed"
         static let cameraCaptureFailed = "home.camera.capture_failed"
         static let imageProcessFailed = "home.error.image_process_failed"
+        static let quotaExceededTitle = "home.quota_exceeded.title"
+        static let quotaExceededMessage = "home.quota_exceeded.message"
+        static let quotaExceededUpgrade = "home.quota_exceeded.upgrade"
+        static let quotaExceededTomorrow = "home.quota_exceeded.tomorrow"
+        static let quotaRemainingFormat = "home.quota_remaining.format"
         static let loadingStepCrop = "home.loading.step_crop"
         static let loadingStepRemoveBackground = "home.loading.step_remove_bg"
         static let loadingStepSync = "home.loading.step_sync"
@@ -374,6 +469,7 @@ enum L10nKey {
         static let actionContinue = "result.action.continue"
         static let actionRetake = "result.action.retake"
         static let actionFeedback = "result.action.feedback"
+        static let actionBackToFront = "result.action.back_to_front"
         static let detailSyncing = "result.detail.syncing"
         static let detailLocalOnly = "result.detail.local_only"
         static let nutritionSectionTitle = "result.section.nutrition"
@@ -440,14 +536,34 @@ enum L10nKey {
         static let resultTitle = "sticker.result_title"
     }
 
+    enum Order {
+        static let title = "order.history.title"
+        static let subtitle = "order.history.subtitle"
+        static let emptyTitle = "order.history.empty_title"
+        static let emptyMessage = "order.history.empty_message"
+        static let statusPending = "order.status.pending"
+        static let statusPaid = "order.status.paid"
+        static let statusFailed = "order.status.failed"
+        static let statusCancelled = "order.status.cancelled"
+        static let orderNoLabel = "order.detail.order_no"
+        static let planLabel = "order.detail.plan"
+        static let amountLabel = "order.detail.amount"
+        static let statusLabel = "order.detail.status"
+        static let channelLabel = "order.detail.channel"
+        static let createdAtLabel = "order.detail.created_at"
+        static let paidAtLabel = "order.detail.paid_at"
+    }
+
     enum User {
         static let unnamed = "user.unnamed"
         static let tierFreeTitle = "user.tier.free.title"
         static let tierLiteTitle = "user.tier.lite.title"
         static let tierProTitle = "user.tier.pro.title"
+        static let tierPremiumTitle = "user.tier.premium.title"
         static let tierFreeShort = "user.tier.free.short"
         static let tierLiteShort = "user.tier.lite.short"
         static let tierProShort = "user.tier.pro.short"
+        static let tierPremiumShort = "user.tier.premium.short"
         static let genderMale = "user.gender.male"
         static let genderFemale = "user.gender.female"
         static let genderOther = "user.gender.other"
@@ -464,6 +580,7 @@ enum L10nKey {
         static let goalCardio = "user.goal.cardiovascular_health"
         static let paymentAlipay = "user.payment.alipay"
         static let paymentWechat = "user.payment.wechat"
+        static let paymentAppleIAP = "user.payment.apple_iap"
     }
 }
 
@@ -508,16 +625,26 @@ enum ReminderStartDay: Int, CaseIterable, Identifiable {
 }
 
 enum SafeEatL10n {
+    private static let languageKey = "safeeat.settings.language"
+
     static func text(_ key: String) -> String {
-        bundle(for: AppSettingsStore.shared.language)
+        bundle(for: currentLanguage)
             .localizedString(forKey: key, value: key, table: nil)
     }
 
     static func format(_ key: String, _ arguments: CVarArg...) -> String {
-        String(format: text(key), locale: AppSettingsStore.shared.language.locale, arguments: arguments)
+        String(format: text(key), locale: currentLanguage.locale, arguments: arguments)
     }
 
-    private static func bundle(for language: AppLanguage) -> Bundle {
+    nonisolated private static var currentLanguage: AppLanguage {
+        if let rawValue = UserDefaults.standard.string(forKey: languageKey),
+           let stored = AppLanguage(rawValue: rawValue) {
+            return stored
+        }
+        return AppLanguage.deviceDefault
+    }
+
+    nonisolated private static func bundle(for language: AppLanguage) -> Bundle {
         guard
             let path = Bundle.main.path(forResource: language.rawValue, ofType: "lproj"),
             let bundle = Bundle(path: path)
@@ -530,9 +657,23 @@ enum SafeEatL10n {
 }
 
 enum SafeEatHistoryL10n {
+    private static var currentDisplayLocale: Locale {
+        currentLanguage.locale
+    }
+
+    private static let languageKey = "safeeat.settings.language"
+
+    private static var currentLanguage: AppLanguage {
+        if let rawValue = UserDefaults.standard.string(forKey: languageKey),
+           let stored = AppLanguage(rawValue: rawValue) {
+            return stored
+        }
+        return AppLanguage.deviceDefault
+    }
+
     static func shortDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.locale = AppSettingsStore.shared.displayLocale
+        formatter.locale = currentDisplayLocale
         formatter.dateFormat = SafeEatL10n.text(L10nKey.History.dateShortFormat)
         return formatter.string(from: date)
     }

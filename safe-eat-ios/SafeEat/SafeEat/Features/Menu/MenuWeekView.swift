@@ -174,6 +174,7 @@ struct MenuWeekView: View {
 
     @State private var selectedDate = Date()
     @State private var showNotificationSheet = false
+    @State private var showMonthView = false
 
     @State private var dayRoute: HistoryDayRoute?
     @State private var weekRoute: HistoryWeekRoute?
@@ -249,6 +250,7 @@ struct MenuWeekView: View {
             .padding(.bottom, 100)
         }
         .background(homeBackground.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showNotificationSheet) {
             SafeEatReminderSettingsSheet()
                 .presentationDetents([.height(600)])
@@ -260,6 +262,9 @@ struct MenuWeekView: View {
         }
         .navigationDestination(item: $weekRoute) { route in
             HistoryWeekView(referenceDate: route.referenceDate)
+        }
+        .navigationDestination(isPresented: $showMonthView) {
+            HistoryMonthView()
         }
         .task {
             await settings.refreshNotificationStatus()
@@ -296,19 +301,22 @@ struct MenuWeekView: View {
                 }
             }
 
+            // 今日占比精简进度条（只显示条，不显示图例）
+            AdviceRatioBar(stats: .from(items: todayItems), showLabels: false, barHeight: 8)
+
             HStack(spacing: 12) {
-                quickAccessButton(
+                RecordShortcutButton(
                     title: SafeEatL10n.text(L10nKey.Menu.dayRecordTitle),
-                    subtitle: SafeEatL10n.text(L10nKey.Menu.dayRecordSubtitle),
-                    systemImage: "calendar"
+                    icon: "calendar",
+                    count: todayItems.count
                 ) {
                     dayRoute = HistoryDayRoute(date: selectedDate)
                 }
 
-                quickAccessButton(
+                RecordShortcutButton(
                     title: SafeEatL10n.text(L10nKey.Menu.weekRecordTitle),
-                    subtitle: SafeEatL10n.text(L10nKey.Menu.weekRecordSubtitle),
-                    systemImage: "square.stack.3d.up"
+                    icon: "square.stack.3d.up",
+                    count: weekItems.count
                 ) {
                     let weekStart = Calendar.current.dateInterval(of: .weekOfYear, for: selectedDate)?.start ?? selectedDate
                     weekRoute = HistoryWeekRoute(referenceDate: weekStart)
@@ -327,13 +335,29 @@ struct MenuWeekView: View {
     // MARK: - Top Bar
 
     private var topBar: some View {
-        HStack {
+        HStack(spacing: 12) {
             SafeEatPageHeader(title: SafeEatL10n.text(L10nKey.Menu.title), subtitle: headerSubtitle)
-//            Text("菜单")
-//                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
-//                .foregroundStyle(SafeEatTheme.textPrimary)
 
             Spacer()
+
+            // 周/月视图切换按钮（参照原型 view-toggle）
+            Button {
+                showMonthView = true
+            } label: {
+                Image(systemName: "calendar")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .frame(width: 36, height: 36)
+                    .background(
+                        Circle()
+                            .fill(colorScheme == .dark ? Color.white.opacity(0.08) : Color.white.opacity(0.72))
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.line, lineWidth: 1)
+                    )
+            }
+            .buttonStyle(.plain)
 
             NotificationBellButton(isEnabled: settings.reminderEnabled) {
                 showNotificationSheet = true
@@ -358,49 +382,6 @@ struct MenuWeekView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(Color.white.opacity(colorScheme == .dark ? 0.08 : 0.62))
         )
-    }
-
-    private func quickAccessButton(
-        title: String,
-        subtitle: String,
-        systemImage: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.primary)
-                    .frame(width: 38, height: 38)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.32 : 0.92))
-                    )
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(SafeEatFont.custom(15, relativeTo: .headline, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
-
-                    Text(subtitle)
-                        .font(SafeEatFont.custom(12, relativeTo: .caption))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
-                }
-
-                Spacer(minLength: 0)
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.white.opacity(colorScheme == .dark ? 0.05 : 0.54))
-            )
-        }
-        .buttonStyle(.plain)
     }
 
     private var heroCardBackground: some View {

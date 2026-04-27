@@ -31,7 +31,51 @@ struct MembershipPlan: Codable, Identifiable {
     let name: String
     let priceFen: Int
     let dailyQuota: Int?
+    let recognitionQuota: Int?
+    let aiQuota: Int?
     let active: Bool?
+    let discountedPriceFen: Int?
+    let appliedDiscount: AppliedDiscountInfo?
+    let availableDiscounts: [DiscountDetail]?
+}
+
+struct AppliedDiscountInfo: Codable {
+    let id: String
+    let name: String
+    let type: String
+    let expiresAt: Date?
+}
+
+// MARK: - 折扣明细
+
+struct DiscountDetail: Codable, Identifiable {
+    let id: String
+    let name: String
+    let type: String
+    let discountAmountFen: Int
+    let stackable: Bool
+}
+
+// MARK: - 折扣码兑换
+
+struct RedeemCodePayload: Encodable {
+    let code: String
+}
+
+struct RedeemCodeResult: Codable {
+    let redeemed: Bool
+    let code: String
+    let discountCalcType: String
+    let discountValue: Double
+    let displayName: String
+}
+
+// MARK: - 会员状态
+enum MemberStatus: String, Codable {
+    case new       // 从未购买过
+    case active    // 当前有有效订阅
+    case expired   // 曾购买但已过期
+    case cancelled // 主动取消
 }
 
 struct MembershipPlanListResponse: Codable {
@@ -59,6 +103,7 @@ struct UserHealthProfileUpdatePayload: Encodable {
 struct MembershipOrderPayload: Encodable {
     let planId: String
     let channel: String
+    let discountId: String?
 }
 
 struct MembershipOrderResult: Codable, Identifiable {
@@ -70,6 +115,62 @@ struct MembershipOrderResult: Codable, Identifiable {
     let amountFen: Int
     let status: String
     let createdAt: Date
+}
+
+// MARK: - IAP 收据验证
+
+struct IAPVerifyReceiptPayload: Encodable {
+    let transactionId: String
+    let orderId: String?
+    let productId: String?
+
+    init(transactionId: String, orderId: String? = nil, productId: String? = nil) {
+        self.transactionId = transactionId
+        self.orderId = orderId
+        self.productId = productId
+    }
+}
+
+struct IAPVerifyReceiptResult: Decodable {
+    let success: Bool
+    let idempotent: Bool
+    let transactionId: String
+}
+
+// MARK: - 订单记录
+
+struct OrderRecord: Codable, Identifiable {
+    let id: String
+    let userId: String
+    let planId: String
+    let orderNo: String
+    let planTier: String
+    let channel: String
+    let amountFen: Int
+    let status: String
+    let paidAt: Date?
+    let createdAt: Date
+}
+
+struct OrderListResponse: Codable {
+    let items: [OrderRecord]
+}
+
+enum OrderStatusMapper {
+    static func title(_ status: String) -> String {
+        switch status {
+        case "pending":
+            return SafeEatL10n.text(L10nKey.Order.statusPending)
+        case "paid":
+            return SafeEatL10n.text(L10nKey.Order.statusPaid)
+        case "failed":
+            return SafeEatL10n.text(L10nKey.Order.statusFailed)
+        case "cancelled":
+            return SafeEatL10n.text(L10nKey.Order.statusCancelled)
+        default:
+            return status
+        }
+    }
 }
 
 extension MembershipPlan {
@@ -107,6 +208,8 @@ enum PlanTierMapper {
             return SafeEatL10n.text(L10nKey.User.tierLiteTitle)
         case "pro":
             return SafeEatL10n.text(L10nKey.User.tierProTitle)
+        case "premium":
+            return SafeEatL10n.text(L10nKey.User.tierPremiumTitle)
         default:
             return SafeEatL10n.text(L10nKey.User.tierFreeTitle)
         }
@@ -118,6 +221,8 @@ enum PlanTierMapper {
             return SafeEatL10n.text(L10nKey.User.tierLiteShort)
         case "pro":
             return SafeEatL10n.text(L10nKey.User.tierProShort)
+        case "premium":
+            return SafeEatL10n.text(L10nKey.User.tierPremiumShort)
         default:
             return SafeEatL10n.text(L10nKey.User.tierFreeShort)
         }
@@ -195,12 +300,14 @@ enum FitnessGoalMapper {
 }
 
 enum PaymentChannelMapper {
-    static let allChannels = ["wechat", "alipay"]
+    static let allChannels = ["wechat", "alipay", "apple_iap"]
 
     static func title(_ channel: String) -> String {
         switch channel {
         case "alipay":
             return SafeEatL10n.text(L10nKey.User.paymentAlipay)
+        case "apple_iap":
+            return SafeEatL10n.text(L10nKey.User.paymentAppleIAP)
         default:
             return SafeEatL10n.text(L10nKey.User.paymentWechat)
         }

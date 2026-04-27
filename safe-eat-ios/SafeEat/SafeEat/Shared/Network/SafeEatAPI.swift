@@ -148,9 +148,45 @@ final class SafeEatAPI {
         return try await send(request, as: UserProfile.self)
     }
 
-    func getPlans(accessToken: String) async throws -> [MembershipPlan] {
-        var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/membership/plans", method: "GET")
+    func changePhone(accessToken: String, newPhone: String, code: String) async throws -> UserProfile {
+        var request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/me/phone",
+            method: "PATCH",
+            body: ChangePhoneBody(newPhone: newPhone, verificationCode: code)
+        )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: UserProfile.self)
+    }
+
+    func changePassword(accessToken: String, oldPassword: String, newPassword: String) async throws -> UserProfile {
+        var request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/me/password",
+            method: "PATCH",
+            body: ChangePasswordBody(oldPassword: oldPassword, newPassword: newPassword)
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: UserProfile.self)
+    }
+
+    func deleteAccount(accessToken: String) async throws {
+        var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/me", method: "DELETE")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        _ = try await send(request, as: DeleteAccountResponse.self)
+    }
+
+    func fetchDisclosure(category: String) async throws -> [DisclosureItem] {
+        var request = try buildRequest(
+            path: "/v1/\(AppConfig.appCode)/disclosures",
+            method: "GET"
+        )
+        var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+        components?.queryItems = [URLQueryItem(name: "category", value: category)]
+        request.url = components?.url
+        return try await send(request, as: [DisclosureItem].self)
+    }
+
+    func getPlans() async throws -> [MembershipPlan] {
+        let request = try buildRequest(path: "/v1/\(AppConfig.appCode)/membership/plans", method: "GET")
         let response = try await send(request, as: MembershipPlanListResponse.self)
         return response.items
     }
@@ -163,6 +199,45 @@ final class SafeEatAPI {
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         return try await send(request, as: MembershipOrderResult.self)
+    }
+
+    func markOrderFailed(accessToken: String, orderId: String) async throws {
+        var request = try buildRequest(
+            path: "/v1/\(AppConfig.appCode)/orders/\(orderId)/mark-failed",
+            method: "POST"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        _ = try await send(request, as: MarkOrderFailedResponse.self)
+    }
+
+    func getUserOrders(accessToken: String) async throws -> [OrderRecord] {
+        var request = try buildRequest(
+            path: "/v1/\(AppConfig.appCode)/orders",
+            method: "GET"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        let response = try await send(request, as: OrderListResponse.self)
+        return response.items
+    }
+
+    func redeemDiscountCode(accessToken: String, code: String) async throws -> RedeemCodeResult {
+        var request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/membership/redeem-code",
+            method: "POST",
+            body: RedeemCodePayload(code: code)
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: RedeemCodeResult.self)
+    }
+
+    func verifyIAPReceipt(accessToken: String, payload: IAPVerifyReceiptPayload) async throws -> IAPVerifyReceiptResult {
+        var request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/iap/verify-receipt",
+            method: "POST",
+            body: payload
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: IAPVerifyReceiptResult.self)
     }
 
     func createRecognition(accessToken: String, imageData: Data, fileName: String) async throws -> RecognitionRecord {
@@ -268,6 +343,7 @@ final class SafeEatAPI {
         }
         var request = URLRequest(url: url)
         request.httpMethod = method
+        request.setValue(Locale.current.language.languageCode?.identifier ?? "zh", forHTTPHeaderField: "Accept-Language")
         return request
     }
 
@@ -330,6 +406,24 @@ private struct PhoneCodePasswordBody: Encodable {
 private struct AppleLoginBody: Encodable {
     let appleSub: String
     let displayName: String?
+}
+
+private struct ChangePhoneBody: Encodable {
+    let newPhone: String
+    let verificationCode: String
+}
+
+private struct ChangePasswordBody: Encodable {
+    let oldPassword: String
+    let newPassword: String
+}
+
+private struct MarkOrderFailedResponse: Decodable {
+    let success: Bool
+}
+
+private struct DeleteAccountResponse: Decodable {
+    let success: Bool
 }
 
 private struct LogoutResponse: Decodable {

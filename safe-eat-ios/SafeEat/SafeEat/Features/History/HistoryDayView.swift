@@ -15,10 +15,6 @@ struct HistoryDayView: View {
     @State private var scrollOffset: CGFloat = 0
 
     private let columns = [GridItem(.flexible(), spacing: 18), GridItem(.flexible(), spacing: 18)]
-    private let stickerOffsets: [(offset: CGFloat, rotation: Double)] = [
-        (0, -2), (8, 3), (0, -4), (-4, 2),
-        (0, 0), (12, -3), (0, 2), (-6, 4)
-    ]
 
     private var dayItems: [LocalHistoryItem] {
         store.localHistory
@@ -94,7 +90,7 @@ struct HistoryDayView: View {
     }
 
     private func stickerCard(for item: LocalHistoryItem, index: Int) -> some View {
-        let config = stickerOffsets[index % stickerOffsets.count]
+        let config = HistoryStickerConfig.offsets[index % HistoryStickerConfig.offsets.count]
 
         return AsyncRecognitionStickerView(
             item: item,

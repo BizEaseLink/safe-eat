@@ -1,6 +1,9 @@
 import Foundation
 import Combine
+#if canImport(UIKit)
 import UIKit
+#endif
+import StoreKit
 
 enum AppRootTab: Hashable {
     case home
@@ -20,21 +23,32 @@ final class AppStore: ObservableObject {
     @Published var hasCompletedOnboarding: Bool
     @Published var showLoginPrompt = false
 
+    // MARK: - 会员购买新增状态
+    @Published var membershipProducts: [Product] = []
+    @Published var isPurchasingMembership = false
+    @Published var purchaseError: String?
+    @Published var isRestoringPurchases = false
+
     let api: SafeEatAPI
     private let sessionStore: AuthSessionStore
     private let historyStore: LocalHistoryStore
+    private let storeKitService: StoreKitServiceProtocol
     private var refreshTask: Task<AuthSession, Error>?
+
+    private var transactionListener: Task<Void, Never>?
 
     private static let onboardingKey = "safe-eat.onboarding.completed"
 
     init(
         api: SafeEatAPI,
         sessionStore: AuthSessionStore,
-        historyStore: LocalHistoryStore
+        historyStore: LocalHistoryStore,
+        storeKitService: StoreKitServiceProtocol = StoreKitService.shared
     ) {
         self.api = api
         self.sessionStore = sessionStore
         self.historyStore = historyStore
+        self.storeKitService = storeKitService
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: Self.onboardingKey)
     }
 
@@ -42,7 +56,8 @@ final class AppStore: ObservableObject {
         self.init(
             api: SafeEatAPI(),
             sessionStore: AuthSessionStore(),
-            historyStore: LocalHistoryStore()
+            historyStore: LocalHistoryStore(),
+            storeKitService: StoreKitService.shared
         )
     }
 
@@ -69,6 +84,9 @@ final class AppStore: ObservableObject {
         if session != nil, !requiresPhoneBinding {
             await refreshProfile()
         }
+
+        // 启动 Transaction 监听，订阅状态变更时自动刷新 profile
+        startTransactionListener()
     }
 
     func sendSMS(phone: String) async throws -> SendSmsResponse {
@@ -170,11 +188,11 @@ final class AppStore: ObservableObject {
         return updated
     }
 
-    func createMembershipOrder(planId: String, channel: String) async throws -> MembershipOrderResult {
+    func createMembershipOrder(planId: String, channel: String, discountId: String? = nil) async throws -> MembershipOrderResult {
         try await authorizedRequest { token in
             try await api.createMembershipOrder(
                 accessToken: token,
-                payload: MembershipOrderPayload(planId: planId, channel: channel)
+                payload: MembershipOrderPayload(planId: planId, channel: channel, discountId: discountId)
             )
         }
     }
@@ -317,6 +335,145 @@ final class AppStore: ObservableObject {
         errorMessage = error.localizedDescription
     }
 
+    // MARK: - 会员购买（StoreKit 2）
+
+    func loadMembershipProducts() async {
+        do {
+            membershipProducts = try await storeKitService.loadProducts()
+        } catch {
+            purchaseError = SafeEatL10n.text(L10nKey.Errors.invalidResponse)
+        }
+    }
+
+    func purchaseMembership(product: Product, planId: String, discountId: String? = nil) async {
+        isPurchasingMembership = true
+        purchaseError = nil
+
+        var orderId: String?
+
+        do {
+            // 1. 先创建后端订单
+            let order = try await createMembershipOrder(planId: planId, channel: "apple_iap", discountId: discountId)
+            orderId = order.id
+
+            // 2. 发起 StoreKit 购买
+            let result = try await storeKitService.purchase(product)
+
+            switch result {
+            case .success(let transaction):
+                // 3. 购买成功，发送收据到后端验证
+                await handleSuccessfulPurchase(transaction: transaction, orderId: order.id)
+
+            case .userCancelled:
+                // 用户取消，通知后端标记订单失败（静默失败）
+                await markOrderFailedSilently(orderId: order.id)
+
+            case .pending:
+                purchaseError = SafeEatL10n.text(L10nKey.Membership.purchasePending)
+
+            case .failed(let error):
+                // 购买失败，通知后端标记订单失败（静默失败）
+                purchaseError = error.localizedDescription
+                await markOrderFailedSilently(orderId: order.id)
+            }
+        } catch {
+            purchaseError = error.localizedDescription
+            // 创建订单后的异常也需要标记失败
+            if let orderId {
+                await markOrderFailedSilently(orderId: orderId)
+            }
+        }
+
+        isPurchasingMembership = false
+    }
+
+    func restorePurchases() async {
+        isRestoringPurchases = true
+        purchaseError = nil
+
+        do {
+            let transactions = try await storeKitService.restorePurchases()
+            if transactions.isEmpty {
+                purchaseError = SafeEatL10n.text(L10nKey.Membership.restoreEmpty)
+            } else {
+                // 对每个恢复的 transaction 发送到后端验证收据
+                for transaction in transactions {
+                    await verifyRestoredTransaction(transaction)
+                }
+                // 恢复购买：刷新 profile 获取最新会员状态
+                await refreshProfile()
+            }
+        } catch {
+            purchaseError = error.localizedDescription
+        }
+
+        isRestoringPurchases = false
+    }
+
+    private func verifyRestoredTransaction(_ transaction: Transaction) async {
+        let transactionID = String(transaction.id)
+        do {
+            _ = try await authorizedRequest { token in
+                try await api.verifyIAPReceipt(
+                    accessToken: token,
+                    payload: IAPVerifyReceiptPayload(
+                        transactionId: transactionID,
+                        productId: transaction.productID
+                    )
+                )
+            }
+        } catch {
+            // 静默失败，后端可能已通过 Apple Server Notifications 处理
+            #if DEBUG
+            print("[AppStore] verifyRestoredTransaction failed: \(error)")
+            #endif
+        }
+    }
+
+    private func handleSuccessfulPurchase(transaction: Transaction, orderId: String) async {
+        let transactionID = String(transaction.id)
+
+        // 发送收据到后端验证
+        do {
+            let result = try await authorizedRequest { token in
+                try await api.verifyIAPReceipt(
+                    accessToken: token,
+                    payload: IAPVerifyReceiptPayload(
+                        transactionId: transactionID,
+                        orderId: orderId,
+                        productId: transaction.productID
+                    )
+                )
+            }
+
+            if result.success {
+                // 验证通过，刷新 profile 获取最新会员状态
+                await refreshProfile()
+            } else {
+                purchaseError = SafeEatL10n.text(L10nKey.Membership.verifyFailed)
+            }
+        } catch {
+            // 收据验证失败，仍然刷新 profile（后端可能已通过 Apple 通知处理）
+            purchaseError = SafeEatL10n.text(L10nKey.Membership.verifyError)
+            await refreshProfile()
+        }
+    }
+
+    // MARK: - 私有方法
+
+    private func markOrderFailedSilently(orderId: String) async {
+        do {
+            try await authorizedRequest { token in
+                try await api.markOrderFailed(accessToken: token, orderId: orderId)
+            }
+        } catch {
+            // 静默失败，不阻塞用户操作
+            #if DEBUG
+            print("[AppStore] markOrderFailed failed: \(error)")
+            #endif
+        }
+    }
+
     private func isUnauthorizedError(_ error: Error) -> Bool {
         guard case let APIError.server(status, _) = error else {
             return false
@@ -407,6 +564,30 @@ final class AppStore: ObservableObject {
 
     private func reloadLocalHistory() {
         localHistory = historyStore.loadItems().sorted { $0.createdAt > $1.createdAt }
+    }
+
+    // MARK: - Transaction 监听
+
+    private func startTransactionListener() {
+        transactionListener = Task { [weak self] in
+            for await result in Transaction.updates {
+                guard let self else { return }
+                guard let transaction = try? self.checkVerifiedTransaction(result) else { continue }
+                await transaction.finish()
+
+                // 订阅状态变更（续费/退款/取消等），刷新 profile
+                await self.refreshProfile()
+            }
+        }
+    }
+
+    private func checkVerifiedTransaction<T>(_ result: VerificationResult<T>) throws -> T {
+        switch result {
+        case .unverified(_, let error):
+            throw error
+        case .verified(let safe):
+            return safe
+        }
     }
 
     var requiresPhoneBinding: Bool {

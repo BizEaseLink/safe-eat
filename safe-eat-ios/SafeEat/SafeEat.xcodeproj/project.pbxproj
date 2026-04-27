@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		43B55EC62F9CED9400B62CD8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 43604B4E2F87D83A009131CE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 43604B552F87D83A009131CE;
+			remoteInfo = SafeEat;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		43604B562F87D83A009131CE /* SafeEat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SafeEat.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		43B55EC02F9CED9400B62CD8 /* SafeEatUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SafeEatUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -29,10 +40,22 @@
 			path = SafeEat;
 			sourceTree = "<group>";
 		};
+		43B55EC12F9CED9400B62CD8 /* SafeEatUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SafeEatUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		43604B532F87D83A009131CE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		43B55EBD2F9CED9400B62CD8 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -46,6 +69,7 @@
 			isa = PBXGroup;
 			children = (
 				43604B582F87D83A009131CE /* SafeEat */,
+				43B55EC12F9CED9400B62CD8 /* SafeEatUITests */,
 				43604B572F87D83A009131CE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,6 +78,7 @@
 			isa = PBXGroup;
 			children = (
 				43604B562F87D83A009131CE /* SafeEat.app */,
+				43B55EC02F9CED9400B62CD8 /* SafeEatUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -83,6 +108,29 @@
 			productReference = 43604B562F87D83A009131CE /* SafeEat.app */;
 			productType = "com.apple.product-type.application";
 		};
+		43B55EBF2F9CED9400B62CD8 /* SafeEatUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 43B55EC82F9CED9400B62CD8 /* Build configuration list for PBXNativeTarget "SafeEatUITests" */;
+			buildPhases = (
+				43B55EBC2F9CED9400B62CD8 /* Sources */,
+				43B55EBD2F9CED9400B62CD8 /* Frameworks */,
+				43B55EBE2F9CED9400B62CD8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				43B55EC72F9CED9400B62CD8 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				43B55EC12F9CED9400B62CD8 /* SafeEatUITests */,
+			);
+			name = SafeEatUITests;
+			packageProductDependencies = (
+			);
+			productName = SafeEatUITests;
+			productReference = 43B55EC02F9CED9400B62CD8 /* SafeEatUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -95,6 +143,10 @@
 				TargetAttributes = {
 					43604B552F87D83A009131CE = {
 						CreatedOnToolsVersion = 26.4;
+					};
+					43B55EBF2F9CED9400B62CD8 = {
+						CreatedOnToolsVersion = 26.4;
+						TestTargetID = 43604B552F87D83A009131CE;
 					};
 				};
 			};
@@ -114,12 +166,20 @@
 			projectRoot = "";
 			targets = (
 				43604B552F87D83A009131CE /* SafeEat */,
+				43B55EBF2F9CED9400B62CD8 /* SafeEatUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		43604B542F87D83A009131CE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		43B55EBE2F9CED9400B62CD8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -136,7 +196,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		43B55EBC2F9CED9400B62CD8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		43B55EC72F9CED9400B62CD8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 43604B552F87D83A009131CE /* SafeEat */;
+			targetProxy = 43B55EC62F9CED9400B62CD8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		43604B652F87D83D009131CE /* Debug */ = {
@@ -341,6 +416,51 @@
 			};
 			name = Release;
 		};
+		43B55EC92F9CED9400B62CD8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M99NCSX352;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bizeasylink.SafeEatUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = SafeEat;
+			};
+			name = Debug;
+		};
+		43B55ECA2F9CED9400B62CD8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M99NCSX352;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bizeasylink.SafeEatUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = SafeEat;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -358,6 +478,15 @@
 			buildConfigurations = (
 				43604B652F87D83D009131CE /* Debug */,
 				43604B662F87D83D009131CE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		43B55EC82F9CED9400B62CD8 /* Build configuration list for PBXNativeTarget "SafeEatUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				43B55EC92F9CED9400B62CD8 /* Debug */,
+				43B55ECA2F9CED9400B62CD8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

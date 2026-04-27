@@ -432,27 +432,27 @@ struct LoginView: View {
     private var appleCircleButton: some View {
         VStack(spacing: 8) {
             ZStack {
-                SignInWithAppleButton(.continue) { request in
+                SignInWithAppleButton(.signIn) { request in
                     request.requestedScopes = [.fullName]
                 } onCompletion: { result in
                     handleAppleResult(result)
                 }
-                .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
+                .signInWithAppleButtonStyle(.black)
                 .frame(width: 56, height: 56)
                 .clipShape(Circle())
 
                 Circle()
-                    .fill(colorScheme == .dark ? Color.white.opacity(0.10) : Color.white.opacity(0.88))
+                    .fill(Color.black)
                     .frame(width: 56, height: 56)
                     .overlay(
                         Circle()
-                            .stroke(colorScheme == .dark ? Color.white.opacity(0.12) : SafeEatTheme.line, lineWidth: 1)
+                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
                     )
                     .allowsHitTesting(false)
 
                 Image(systemName: "apple.logo")
                     .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .foregroundStyle(.white)
                     .allowsHitTesting(false)
             }
 

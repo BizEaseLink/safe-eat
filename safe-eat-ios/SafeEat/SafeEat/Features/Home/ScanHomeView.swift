@@ -1,5 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 
 private struct ResultRoute: Identifiable, Hashable {
     let id: String
@@ -25,11 +27,29 @@ struct ScanHomeView: View {
     @State private var scrollOffset: CGFloat = 0
     @State private var recognizingPreviewImage: UIImage?
     @State private var showMembership = false
+    @State private var showQuotaExceeded = false
 
     private let scrollCoordinateSpace = "safeeat.home.scroll"
 
     private var latestRecord: LocalHistoryItem? {
         store.localHistory.first
+    }
+
+    private var freeDailyLimit: Int { 3 }
+
+    private var todayScanCount: Int {
+        let calendar = Calendar.current
+        return store.localHistory.filter { calendar.isDateInToday($0.createdAt) }.count
+    }
+
+    private var isFreeQuotaExceeded: Bool {
+        guard store.profile?.currentPlanTier == nil || store.profile?.currentPlanTier == "free" else { return false }
+        return todayScanCount >= freeDailyLimit
+    }
+
+    private var remainingFreeQuota: Int {
+        guard store.profile?.currentPlanTier == nil || store.profile?.currentPlanTier == "free" else { return -1 }
+        return max(0, freeDailyLimit - todayScanCount)
     }
 
     private var brandLabelColor: Color {
@@ -38,18 +58,6 @@ struct ScanHomeView: View {
 
     private var secondaryButtonTextColor: Color {
         colorScheme == .dark ? Color.white.opacity(0.92) : SafeEatTheme.primaryDeep
-    }
-
-    private var topPillFill: Color {
-        colorScheme == .dark
-            ? Color.white.opacity(0.08)
-            : Color(red: 0.97, green: 0.98, blue: 0.97).opacity(0.96)
-    }
-
-    private var topPillStroke: Color {
-        colorScheme == .dark
-            ? Color.white.opacity(0.10)
-            : Color(red: 0.83, green: 0.89, blue: 0.85).opacity(0.92)
     }
 
     private var heroPillFill: Color {
@@ -64,6 +72,36 @@ struct ScanHomeView: View {
             : Color(red: 0.84, green: 0.90, blue: 0.86).opacity(0.94)
     }
 
+    // privilege-bar 样式（参照原型 CSS .privilege-bar）
+    private var privilegeBarForeground: Color {
+        colorScheme == .dark
+            ? Color(red: 0.95, green: 0.84, blue: 0.67)
+            : Color(red: 0.54, green: 0.39, blue: 0.20)
+    }
+
+    private var privilegeBarFill: some ShapeStyle {
+        LinearGradient(
+            stops: [
+                .init(color: Color(red: 1.0, green: 0.96, blue: 0.90).opacity(colorScheme == .dark ? 0.20 : 0.96), location: 0),
+                .init(color: Color(red: 0.98, green: 0.93, blue: 0.84).opacity(colorScheme == .dark ? 0.16 : 0.92), location: 1),
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+
+    private var privilegeBarStroke: Color {
+        colorScheme == .dark
+            ? Color(red: 0.48, green: 0.40, blue: 0.29).opacity(0.30)
+            : Color(red: 0.89, green: 0.74, blue: 0.54).opacity(0.24)
+    }
+
+    private var privilegeBarShadow: Color {
+        colorScheme == .dark
+            ? Color(red: 0.65, green: 0.50, blue: 0.25).opacity(0.06)
+            : Color(red: 0.65, green: 0.50, blue: 0.25).opacity(0.08)
+    }
+
     var body: some View {
         GeometryReader { proxy in
             ZStack(alignment: .top) {
@@ -73,9 +111,7 @@ struct ScanHomeView: View {
                     VStack(alignment: .leading, spacing: 26) {
                         SafeEatScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
 
-                        topMetaBar
-
-                        SafeEatPageHeader(title: SafeEatL10n.text(L10nKey.Home.title))
+                        homeHeaderBar
 
                         heroSection
 
@@ -122,62 +158,44 @@ struct ScanHomeView: View {
         .navigationDestination(isPresented: $showMembership) {
             MembershipPurchaseView()
         }
+        .sheet(isPresented: $showQuotaExceeded) {
+            QuotaExceededSheet(onUpgrade: { showMembership = true })
+        }
     }
 
     private var homeBackground: some View {
         SafeEatMainGradientBackground()
     }
 
-    private var topMetaBar: some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(SafeEatTheme.primary.opacity(0.22))
-                    .frame(width: 22, height: 22)
-                    .overlay(
-                        Circle()
-                            .fill(SafeEatTheme.primary)
-                            .frame(width: 8, height: 8)
-                    )
+    private var homeHeaderBar: some View {
+        HStack(alignment: .center, spacing: 8) {
+            Text(SafeEatL10n.text(L10nKey.Home.title))
+                .font(SafeEatFont.custom(34, relativeTo: .largeTitle))
+                .foregroundStyle(SafeEatTheme.textPrimary)
 
-                Text(SafeEatL10n.text(L10nKey.Home.brandPill))
-                    .font(SafeEatFont.custom(16, relativeTo: .headline))
-                    .foregroundStyle(brandLabelColor)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(
-                Capsule()
-                    .fill(topPillFill)
-            )
-            .clipShape(Capsule())
-            .overlay(
-                Capsule()
-                    .stroke(topPillStroke, lineWidth: 1)
-            )
-
-            Spacer(minLength: 12)
+            Spacer()
 
             Button {
                 showMembership = true
             } label: {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(SafeEatL10n.text(L10nKey.Home.promoTag))
-                        .font(SafeEatFont.custom(12, relativeTo: .caption))
+                        .font(SafeEatFont.custom(11, relativeTo: .caption))
                     Text(SafeEatL10n.text(L10nKey.Home.promoValue))
-                        .font(SafeEatFont.custom(16, relativeTo: .headline))
+                        .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
                 }
-                .foregroundStyle(colorScheme == .dark ? Color(red: 0.95, green: 0.84, blue: 0.67) : Color(red: 0.62, green: 0.46, blue: 0.18))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .foregroundStyle(privilegeBarForeground)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
                 .background(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .fill(colorScheme == .dark ? Color(red: 0.25, green: 0.22, blue: 0.18) : Color(red: 1.0, green: 0.95, blue: 0.89))
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(privilegeBarFill)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(colorScheme == .dark ? Color(red: 0.48, green: 0.40, blue: 0.29) : Color(red: 0.96, green: 0.88, blue: 0.76), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(privilegeBarStroke, lineWidth: 1)
                 )
+                .shadow(color: privilegeBarShadow, radius: 8, y: 4)
             }
             .buttonStyle(.plain)
         }
@@ -200,7 +218,11 @@ struct ScanHomeView: View {
 
             HStack(spacing: 12) {
                 Button {
-                    showCamera = true
+                    if isFreeQuotaExceeded {
+                        showQuotaExceeded = true
+                    } else {
+                        showCamera = true
+                    }
                 } label: {
                     Group {
                         if isRecognizing {
@@ -247,6 +269,16 @@ struct ScanHomeView: View {
                         )
                 }
                 .buttonStyle(.plain)
+            }
+
+            if remainingFreeQuota >= 0 && remainingFreeQuota > 0 {
+                Text(SafeEatL10n.format(L10nKey.Home.quotaRemainingFormat, remainingFreeQuota))
+                    .font(SafeEatFont.custom(13, relativeTo: .caption))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
+            } else if isFreeQuotaExceeded {
+                Text(SafeEatL10n.text(L10nKey.Home.quotaExceededTitle))
+                    .font(SafeEatFont.custom(13, relativeTo: .caption))
+                    .foregroundStyle(SafeEatTheme.danger)
             }
         }
     }
@@ -359,8 +391,19 @@ struct ScanHomeView: View {
 
             resultRoute = ResultRoute(id: item.id, itemId: item.id)
         } catch {
-            store.handleAPIError(error)
+            if isQuotaExceededError(error) {
+                showQuotaExceeded = true
+            } else {
+                store.handleAPIError(error)
+            }
         }
+    }
+
+    private func isQuotaExceededError(_ error: Error) -> Bool {
+        guard case let APIError.server(status, message) = error else { return false }
+        // 后端额度耗尽返回 400 + 特定消息
+        // localizedMessage 已将原始消息转为本地化文本，这里匹配本地化后的文本
+        return status == 400 && message == SafeEatL10n.text(L10nKey.Errors.requestQuotaExceeded)
     }
 }
 
@@ -419,7 +462,8 @@ private struct HomeRecentRecordCard: View {
 
     private var displayName: String {
         let trimmed = item.recognizedName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.isEmpty || trimmed == "未知食物" {
+        let unknownFoodNames = ["未知食物", "Unrecognized food", SafeEatL10n.text(L10nKey.Common.unknownFood)]
+        if trimmed.isEmpty || unknownFoodNames.contains(trimmed) {
             return SafeEatL10n.text(L10nKey.Home.unknownFood)
         }
         return trimmed

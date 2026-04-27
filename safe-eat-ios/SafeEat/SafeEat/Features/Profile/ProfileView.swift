@@ -31,6 +31,7 @@ struct ProfileView: View {
                             notLoggedInView
                         } else {
                             heroSection
+                            healthProfileSection
                             membershipEntry
                             infoEntrySection
                             systemSettingsSection
@@ -122,43 +123,113 @@ struct ProfileView: View {
         }
     }
 
-    private var membershipEntry: some View {
-        NavigationLink {
-            MembershipPurchaseView()
-        } label: {
-            ProfileSurfaceCard {
-                HStack(alignment: .center, spacing: 14) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(SafeEatL10n.text(L10nKey.Profile.memberEntryTitle))
-                            .font(SafeEatFont.textStyle(.headline))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
+    // MARK: - 健康画像摘要区（参照 html-prototype impact-chip）
 
-                        if let highlightedPlan = highlightedPlan {
-                            Text(
-                                SafeEatL10n.format(
-                                    L10nKey.Profile.memberEntryFormat,
-                                    priceText(highlightedPlan.priceFen),
-                                    highlightedPlan.localizedDisplayName
-                                )
-                            )
-                            .font(SafeEatFont.textStyle(.subheadline))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
-                        } else {
-                            Text(SafeEatL10n.text(L10nKey.Profile.memberEntrySubtitle))
-                                .font(SafeEatFont.textStyle(.subheadline))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-                        }
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+    private var healthProfileSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(SafeEatL10n.text(L10nKey.Profile.healthProfileTitle))
+                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .semibold))
+                    .foregroundStyle(SafeEatTheme.textPrimary)
+                Spacer()
+                NavigationLink {
+                    PreferenceSettingsView()
+                } label: {
+                    Text(SafeEatL10n.text(L10nKey.Profile.healthProfileEdit))
+                        .font(SafeEatFont.custom(13, relativeTo: .caption))
+                        .foregroundStyle(SafeEatTheme.primary)
                 }
             }
+
+            let tags = healthImpactTags
+            if tags.isEmpty {
+                Text(SafeEatL10n.text(L10nKey.Profile.healthProfileEmpty))
+                    .font(SafeEatFont.custom(13, relativeTo: .caption))
+                    .foregroundStyle(SafeEatTheme.textPrimary.opacity(0.5))
+            } else {
+                WrappingHStack(tags: tags, foregroundColor: healthChipForeground, backgroundColor: healthChipBackground, borderColor: healthChipBorder)
+            }
         }
-        .buttonStyle(.plain)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(SafeEatTheme.primarySoft)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(SafeEatTheme.line.opacity(0.12), lineWidth: 1)
+        )
+    }
+
+    private var healthImpactTags: [String] {
+        var tags: [String] = []
+        if let profile = store.profile {
+            if profile.healthTags?.contains("high_blood_sugar") == true {
+                tags.append(SafeEatL10n.text(L10nKey.Profile.healthTagHighBloodSugar))
+            }
+            if profile.healthTags?.contains("high_blood_pressure") == true {
+                tags.append(SafeEatL10n.text(L10nKey.Profile.healthTagHighBloodPressure))
+            }
+            if profile.healthTags?.contains("fat_loss") == true {
+                tags.append(SafeEatL10n.text(L10nKey.Profile.healthTagFatLoss))
+            }
+            if let avoid = profile.avoidIngredients, !avoid.isEmpty {
+                tags.append(SafeEatL10n.text(L10nKey.Profile.healthTagAvoid))
+            }
+        }
+        return tags
+    }
+
+    private var healthChipForeground: Color {
+        colorScheme == .dark ? Color(red: 0.85, green: 0.72, blue: 0.55) : Color(red: 0.55, green: 0.40, blue: 0.15)
+    }
+
+    private var healthChipBackground: Color {
+        colorScheme == .dark ? Color(red: 0.22, green: 0.18, blue: 0.14) : Color(red: 1.0, green: 0.96, blue: 0.90)
+    }
+
+    private var healthChipBorder: Color {
+        colorScheme == .dark ? Color(red: 0.42, green: 0.35, blue: 0.25) : Color(red: 0.92, green: 0.84, blue: 0.72)
+    }
+
+    private var membershipEntry: some View {
+        ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.memberEntryTitle)) {
+            NavigationLink {
+                MembershipPurchaseView()
+            } label: {
+                if let highlightedPlan = highlightedPlan {
+                    ProfileNavigationRow(
+                        icon: "crown.fill",
+                        title: highlightedPlan.localizedDisplayName,
+                        subtitle: SafeEatL10n.format(
+                            L10nKey.Profile.memberEntryFormat,
+                            SafeEatTheme.priceText(highlightedPlan.priceFen),
+                            highlightedPlan.localizedDisplayName
+                        )
+                    )
+                } else {
+                    ProfileNavigationRow(
+                        icon: "crown.fill",
+                        title: SafeEatL10n.text(L10nKey.Profile.memberEntryTitle),
+                        subtitle: SafeEatL10n.text(L10nKey.Profile.memberEntrySubtitle)
+                    )
+                }
+            }
+            .buttonStyle(.plain)
+
+            Divider().overlay(SafeEatTheme.line)
+
+            NavigationLink {
+                OrderHistoryView()
+            } label: {
+                ProfileNavigationRow(
+                    icon: "receipt",
+                    title: SafeEatL10n.text(L10nKey.Order.title),
+                    subtitle: SafeEatL10n.text(L10nKey.Order.subtitle)
+                )
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     private var infoEntrySection: some View {
@@ -410,17 +481,10 @@ struct ProfileView: View {
         defer { loadingPlans = false }
 
         do {
-            plans = try await store.authorizedRequest { token in
-                try await store.api.getPlans(accessToken: token)
-            }
+            plans = try await store.api.getPlans()
         } catch {
             store.handleAPIError(error)
         }
-    }
-
-    private func priceText(_ fen: Int) -> String {
-        let amount = Double(fen) / 100
-        return String(format: "¥%.2f", amount)
     }
 
     private func requestAppReview() {
@@ -436,6 +500,33 @@ private enum ProfileSheet: String, Identifiable {
     case language
 
     var id: String { rawValue }
+}
+
+private struct WrappingHStack: View {
+    let tags: [String]
+    let foregroundColor: Color
+    let backgroundColor: Color
+    let borderColor: Color
+
+    var body: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 80), spacing: 8)], spacing: 8) {
+            ForEach(tags, id: \.self) { tag in
+                Text(tag)
+                    .font(SafeEatFont.custom(12, relativeTo: .caption))
+                    .foregroundStyle(foregroundColor)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(backgroundColor)
+                    )
+                    .overlay(
+                        Capsule()
+                            .stroke(borderColor, lineWidth: 1)
+                    )
+            }
+        }
+    }
 }
 
 #Preview {

@@ -58,8 +58,15 @@
 "error.decode_failed" = "响应解析失败：%@";
 "request.quota_exceeded" = "今日免费识别次数已用完，免费用户每天可识别 3 次。";
 
-"profile.root.title" = "我的";
+"profile.root.title" = "个人";
 "profile.hero.default_name" = "食安安用户";
+"profile.health_profile.title" = "健康画像";
+"profile.health_profile.edit" = "编辑";
+"profile.health_profile.empty" = "暂未设置健康偏好";
+"profile.health_profile.tag.high_blood_sugar" = "控糖";
+"profile.health_profile.tag.high_blood_pressure" = "控压";
+"profile.health_profile.tag.fat_loss" = "减脂";
+"profile.health_profile.tag.avoid" = "忌口食材";
 "profile.member_entry.title" = "会员入口";
 "profile.member_entry.subtitle" = "查看当前可购买套餐与新用户优惠。";
 "profile.member_entry.format" = "从 %@ 起，解锁 %@ 的更多识别次数。";
@@ -120,11 +127,52 @@
 "profile.cache.confirm_title" = "确认清理缓存？";
 "profile.cache.confirm_message" = "会删除本地历史图片与贴纸缓存，但不会退出登录。";
 
-"profile.security.title" = "系统安全";
-"profile.security.subtitle" = "查看当前登录态、资料同步和本地缓存的安全说明。";
+"profile.security.title" = "账号与安全";
+"profile.security.subtitle" = "管理手机号、密码、注销与恢复购买。";
 "profile.security.session" = "当前登录态采用 accessToken + refreshToken 机制。";
 "profile.security.sync" = "头像、资料与会员状态会与后端同步。";
 "profile.security.cache" = "本地缓存仅用于识别历史、贴纸图和页面提速。";
+"profile.security.change_phone" = "修改手机号";
+"profile.security.change_password" = "修改密码";
+"profile.security.delete_account" = "注销账号";
+"profile.security.restore_purchases" = "恢复购买";
+
+"profile.change_phone.title" = "修改手机号";
+"profile.change_phone.subtitle" = "验证当前手机后，绑定新的手机号。";
+"profile.change_phone.step_verify_current" = "验证当前手机";
+"profile.change_phone.step_input_new" = "绑定新手机";
+"profile.change_phone.current_phone_label" = "当前手机号";
+"profile.change_phone.new_phone_label" = "新手机号";
+"profile.change_phone.verify_current_code" = "验证当前手机验证码";
+"profile.change_phone.send_new_code" = "发送新手机验证码";
+"profile.change_phone.success" = "手机号已更新";
+
+"profile.change_password.title" = "修改密码";
+"profile.change_password.subtitle" = "输入旧密码后设置新密码。";
+"profile.change_password.old_password" = "旧密码";
+"profile.change_password.new_password" = "新密码";
+"profile.change_password.confirm_password" = "确认新密码";
+"profile.change_password.old_password_placeholder" = "输入当前密码";
+"profile.change_password.new_password_placeholder" = "输入新密码";
+"profile.change_password.confirm_password_placeholder" = "再次输入新密码";
+"profile.change_password.mismatch_error" = "两次输入的新密码不一致。";
+"profile.change_password.success" = "密码已修改";
+
+"profile.delete_account.title" = "注销账号";
+"profile.delete_account.subtitle" = "注销后账号数据将无法恢复。";
+"profile.delete_account.warning_title" = "注销后果说明";
+"profile.delete_account.warning_body" = "注销后以下内容将永久删除且无法恢复：\n1. 所有识别记录与历史数据\n2. 会员状态与剩余权益\n3. 个人资料与健康画像\n4. 本地缓存与偏好设置\n\n请确认你已了解以上后果后再继续。";
+"profile.delete_account.confirm_button" = "确认注销";
+"profile.delete_account.confirm_dialog_title" = "最终确认";
+"profile.delete_account.confirm_dialog_message" = "注销后数据无法恢复，是否确认注销账号？";
+"profile.delete_account.success" = "账号已注销";
+
+"profile.restore_purchases.title" = "恢复购买";
+"profile.restore_purchases.subtitle" = "如果你曾购买会员但在新设备上未生效，可以在这里恢复。";
+"profile.restore_purchases.restoring" = "正在恢复…";
+"profile.restore_purchases.success" = "会员已恢复";
+"profile.restore_purchases.empty" = "未找到可恢复的订阅";
+"profile.restore_purchases.failed" = "恢复失败，请稍后重试";
 
 "profile.feedback.title" = "反馈问题";
 "profile.feedback.subtitle" = "如果识别结果有误，可以从这里确认版本和设备信息。";
@@ -133,12 +181,14 @@
 "profile.feedback.version" = "应用版本：%@";
 "profile.feedback.device" = "%@";
 "profile.feedback.hint" = "如果识别结果有误，可以在识别结果页直接提交反馈。";
+"profile.feedback.email_action" = "发送邮件反馈";
 
 "profile.update.title" = "检查更新";
 "profile.update.subtitle" = "查看当前版本信息，本阶段固定提示为最新版本。";
 "profile.update.version_label" = "当前版本";
 "profile.update.version" = "当前版本：%@";
 "profile.update.latest" = "已是最新版本。";
+"profile.update.check_action" = "前往 App Store 检查更新";
 
 "profile.about.page_title" = "关于食安安";
 "profile.about.page_subtitle" = "看看食安安现在正在做什么。";
@@ -146,6 +196,31 @@
 "profile.about.intro" = "食安安面向中文用户提供更轻量的食物识别、饮食建议与本地记录能力。";
 "profile.about.section_title" = "我们在做什么";
 "profile.about.section_body" = "1. 拍照识别食物\n2. 结合健康方向给出推荐 / 谨慎 / 避免建议\n3. 把识别结果沉淀到日 / 周 / 月记录里";
+"profile.about.disclosure_section" = "协议与证照";
+"profile.about.user_agreement" = "用户协议";
+"profile.about.privacy_policy" = "隐私政策";
+"profile.about.value_added" = "增值服务协议";
+"profile.about.certificate" = "证照展示";
+"profile.about.copyright" = "© 2026 郑凯杰";
+
+"profile.not_logged_in.title" = "尚未登录";
+"profile.not_logged_in.message" = "登录后可以查看个人资料、会员状态和更多功能。";
+
+"order.history.title" = "订单记录";
+"order.history.subtitle" = "查看您的购买历史";
+"order.history.empty_title" = "暂无订单记录";
+"order.history.empty_message" = "您还没有购买记录，购买会员后这里会显示订单信息";
+"order.status.pending" = "待支付";
+"order.status.paid" = "已支付";
+"order.status.failed" = "支付失败";
+"order.status.cancelled" = "已取消";
+"order.detail.order_no" = "订单号";
+"order.detail.plan" = "套餐";
+"order.detail.amount" = "金额";
+"order.detail.status" = "状态";
+"order.detail.channel" = "支付渠道";
+"order.detail.created_at" = "创建时间";
+"order.detail.paid_at" = "支付时间";
 
 "membership.purchase.title" = "会员购买";
 "membership.purchase.subtitle" = "查看套餐、选择支付方式，并创建待支付订单。";
@@ -169,6 +244,32 @@
 "membership.purchase.badge.recommended" = "推荐";
 "membership.purchase.badge.advanced" = "高阶";
 "membership.purchase.badge.default" = "默认";
+"membership.purchase.free_plan_description" = "每日可识别 3 次，适合先体验基础功能";
+"membership.purchase.badge.premium" = "旗舰";
+"membership.purchase.new_member_offer" = "新用户首购享专属优惠";
+"membership.purchase.plan_subtitle.premium" = "重度用户首选的 %@ 方案，识别不限量";
+"membership.purchase.restore_purchases" = "恢复购买";
+"membership.purchase.purchasing" = "处理中…";
+"membership.purchase.subscribe_with_price" = "订阅 %@";
+"membership.purchase.purchase_success" = "会员已激活，享受全部权益！";
+"membership.purchase.purchase_pending" = "购买待审批，完成后将自动激活";
+"membership.purchase.restore_empty" = "未找到可恢复的订阅";
+"membership.purchase.product_not_ready" = "商品未就绪，请稍后重试";
+"membership.purchase.verify_failed" = "收据验证未通过，请联系客服";
+"membership.purchase.verify_error" = "收据验证遇到问题，会员状态将在后台同步";
+"membership.purchase.countdown_label" = "限时优惠";
+"membership.purchase.countdown_format" = "限时优惠 · %@";
+"membership.purchase.original_price" = "原价";
+"membership.purchase.discount_detail_title" = "折扣明细";
+"membership.purchase.final_price" = "实付";
+"membership.purchase.discount_code_input" = "输入折扣码";
+"membership.purchase.discount_code_placeholder" = "请输入折扣码";
+"membership.purchase.discount_code_confirm" = "确认";
+"membership.purchase.discount_code_success" = "折扣码已生效";
+"membership.purchase.discount_code_invalid" = "折扣码无效或已过期";
+"membership.purchase.trial_prompt_title" = "免费试用机会";
+"membership.purchase.trial_prompt_body" = "每位用户只有一次试用机会，是否现在体验？";
+"membership.purchase.trial_prompt_action" = "立即试用";
 
 "home.title" = "首页";
 "home.brand_pill" = "食安安";
@@ -194,6 +295,11 @@
 "home.camera.start_failed" = "相机启动失败，请稍后重试。";
 "home.camera.capture_failed" = "拍照失败，请重试。";
 "home.error.image_process_failed" = "图片处理失败，请重试。";
+"home.quota_exceeded.title" = "今日识别次数已用完";
+"home.quota_exceeded.message" = "免费用户每天可识别 3 次，升级会员可解锁更多次数。";
+"home.quota_exceeded.upgrade" = "升级会员";
+"home.quota_exceeded.tomorrow" = "明天刷新后可继续免费识别";
+"home.quota_remaining.format" = "今日剩余 %d 次";
 "home.loading.step_crop" = "裁切白框内主体";
 "home.loading.step_remove_bg" = "移除背景";
 "home.loading.step_sync" = "同步识别结果";
@@ -256,9 +362,11 @@
 "user.tier.free.title" = "免费用户";
 "user.tier.lite.title" = "轻享会员";
 "user.tier.pro.title" = "专业会员";
+"user.tier.premium.title" = "旗舰会员";
 "user.tier.free.short" = "免费";
 "user.tier.lite.short" = "轻享";
 "user.tier.pro.short" = "专业";
+"user.tier.premium.short" = "旗舰";
 "user.gender.male" = "男";
 "user.gender.female" = "女";
 "user.gender.other" = "其他";
@@ -275,6 +383,7 @@
 "user.goal.cardiovascular_health" = "心血管友好";
 "user.payment.alipay" = "支付宝";
 "user.payment.wechat" = "微信支付";
+"user.payment.apple_iap" = "Apple 内购";
 
 "common.unknown_food" = "未识别食物";
 
@@ -303,6 +412,7 @@
 "result.action.continue" = "继续评估";
 "result.action.retake" = "重新拍摄";
 "result.action.feedback" = "反馈错误";
+"result.action.back_to_front" = "返回正面";
 "result.detail.syncing" = "正在同步完整结果…";
 "result.detail.local_only" = "当前仅有本地结果";
 "result.section.nutrition" = "营养分析";

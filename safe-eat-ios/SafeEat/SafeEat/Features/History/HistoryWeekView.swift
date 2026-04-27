@@ -35,10 +35,6 @@ struct HistoryWeekView: View {
 
     private let columns = [GridItem(.flexible(), spacing: 18), GridItem(.flexible(), spacing: 18)]
     private let scrollCoordinateSpace = "safeeat.history.week.scroll"
-    private let stickerOffsets: [(offset: CGFloat, rotation: Double)] = [
-        (0, -2), (8, 3), (0, -4), (-4, 2),
-        (0, 0), (12, -3), (0, 2), (-6, 4)
-    ]
 
     private var weekInterval: DateInterval? {
         Calendar.current.dateInterval(of: .weekOfYear, for: referenceDate)
@@ -186,7 +182,7 @@ struct HistoryWeekView: View {
     }
 
     private func stickerCard(for item: LocalHistoryItem, index: Int) -> some View {
-        let config = stickerOffsets[index % stickerOffsets.count]
+        let config = HistoryStickerConfig.offsets[index % HistoryStickerConfig.offsets.count]
 
         return AsyncRecognitionStickerView(
             item: item,

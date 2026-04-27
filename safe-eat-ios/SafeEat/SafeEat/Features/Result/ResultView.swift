@@ -185,28 +185,55 @@ struct ResultView: View {
 
     private func resultPage(item: LocalHistoryItem, recognition: RecognitionRecord) -> some View {
         GeometryReader { proxy in
+            let contentHeight = proxy.size.height - proxy.safeAreaInsets.top - proxy.safeAreaInsets.bottom
+
             ZStack(alignment: .topLeading) {
                 pageBackground
 
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 22) {
-                        SafeEatGlobalScrollOffsetReader(
-                            scrollOffset: $scrollOffset
-                        )
-                        .id(item.id)
+                // 全页双面卡：正面和背面各占全屏高度，通过翻转切换
+                ZStack {
+                    // 正面
+                    ScrollView(showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 22) {
+                            Color.clear
+                                .frame(height: proxy.safeAreaInsets.top + 36)
 
-                        // 顶部占位，避免内容被 sticky header 遮挡
-                        Color.clear
-                            .frame(height: proxy.safeAreaInsets.top + 36)
-
-                        flipCard(item: item, recognition: recognition)
+                            frontCard(item: item)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 40)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 40)
+                    .opacity(isFlipped ? 0 : 1)
+                    .rotation3DEffect(
+                        .degrees(isFlipped ? 180 * flipDirection : 0),
+                        axis: (x: 0, y: 1, z: 0),
+                        perspective: 0.9
+                    )
+
+                    // 背面
+                    ScrollView(showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 22) {
+                            Color.clear
+                                .frame(height: proxy.safeAreaInsets.top + 36)
+
+                            backCard(recognition: recognition)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 40)
+                    }
+                    .opacity(isFlipped ? 1 : 0)
+                    .rotation3DEffect(
+                        .degrees(isFlipped ? 0 : -180 * flipDirection),
+                        axis: (x: 0, y: 1, z: 0),
+                        perspective: 0.9
+                    )
                 }
+                .animation(.spring(response: 0.42, dampingFraction: 0.84), value: isFlipped)
 
                 SafeEatTopBackChrome(
-                    title: SafeEatL10n.text(L10nKey.Result.title),
+                    title: isFlipped
+                        ? SafeEatL10n.text(L10nKey.Result.analysisTitle)
+                        : SafeEatL10n.text(L10nKey.Result.title),
                     scrollOffset: scrollOffset,
                     topInset: proxy.safeAreaInsets.top,
                     onBack: { dismiss() }
@@ -215,7 +242,6 @@ struct ResultView: View {
             .ignoresSafeArea()
         }
         .onAppear {
-            // 确保 scrollOffset 在视图出现时被重置
             scrollOffset = 0
         }
     }
@@ -256,27 +282,6 @@ struct ResultView: View {
                 endRadius: 280
             )
         }
-    }
-
-    private func flipCard(item: LocalHistoryItem, recognition: RecognitionRecord) -> some View {
-        ZStack {
-            frontCard(item: item)
-                .opacity(isFlipped ? 0 : 1)
-                .rotation3DEffect(
-                    .degrees(isFlipped ? 180 * flipDirection : 0),
-                    axis: (x: 0, y: 1, z: 0),
-                    perspective: 0.9
-                )
-
-            backCard(recognition: recognition)
-                .opacity(isFlipped ? 1 : 0)
-                .rotation3DEffect(
-                    .degrees(isFlipped ? 0 : -180 * flipDirection),
-                    axis: (x: 0, y: 1, z: 0),
-                    perspective: 0.9
-                )
-        }
-        .animation(.spring(response: 0.42, dampingFraction: 0.84), value: isFlipped)
     }
 
     private func frontCard(item: LocalHistoryItem) -> some View {
@@ -470,9 +475,9 @@ struct ResultView: View {
                 }
             }
 
-//            primaryButton(title: "返回正面") {
-//                flipCard(direction: 1)
-//            }
+            primaryButton(title: SafeEatL10n.text(L10nKey.Result.actionBackToFront)) {
+                flipCard(direction: 1)
+            }
 
             inlineFeedbackAction(title: SafeEatL10n.text(L10nKey.Result.actionFeedback))
 
