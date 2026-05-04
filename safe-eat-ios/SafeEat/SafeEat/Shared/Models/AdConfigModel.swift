@@ -20,4 +20,5 @@ enum AdPlacementCode: String, CaseIterable {
     case interstitial = "interstitial"
     case native = "native"
     case banner = "banner"
+    case floatWindow = "float_window"
 }

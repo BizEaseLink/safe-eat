@@ -38,6 +38,10 @@ final class AdConfigStore {
         placement(for: .banner)?.enabled == true
     }
 
+    var floatWindowEnabled: Bool {
+        placement(for: .floatWindow)?.enabled == true
+    }
+
     func slotId(for code: AdPlacementCode) -> String? {
         placement(for: code)?.slotId
     }

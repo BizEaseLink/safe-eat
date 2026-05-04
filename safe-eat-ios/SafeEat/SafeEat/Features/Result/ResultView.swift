@@ -15,6 +15,11 @@ struct ResultView: View {
     @State private var flipDirection: Double = -1
     @State private var scrollOffset: CGFloat = 0
 
+    private var isPaidMember: Bool {
+        guard let tier = store.profile?.currentPlanTier else { return false }
+        return tier != "free"
+    }
+
     private var item: LocalHistoryItem? {
         store.historyItem(id: itemId)
     }
@@ -337,6 +342,11 @@ struct ResultView: View {
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
 
+            if !isPaidMember {
+                NativeAdView()
+                    .frame(height: 80)
+            }
+
             HStack(spacing: 12) {
                 primaryButton(title: SafeEatL10n.text(L10nKey.Result.actionContinue)) {
                     flipCard(direction: -1)
@@ -481,6 +491,11 @@ struct ResultView: View {
                         }
                     }
                 }
+            }
+
+            if !isPaidMember {
+                NativeAdView()
+                    .frame(height: 80)
             }
 
             primaryButton(title: SafeEatL10n.text(L10nKey.Result.actionBackToFront)) {
@@ -702,7 +717,9 @@ struct ResultView: View {
     }
 
     private func flipCard(direction: Double) {
-        flipDirection = direction >= 0 ? 1 : -1
+        // 正面翻到背面：向左翻（direction = -1）
+        // 背面翻回正面：向右翻（direction = 1）
+        flipDirection = isFlipped ? 1 : -1
         withAnimation(.spring(response: 0.42, dampingFraction: 0.84)) {
             isFlipped.toggle()
         }

@@ -19,7 +19,7 @@ final class RewardAdManager: NSObject, UMUnionRewardVideoAdDelegate {
         rewardAd?.delegate = self
         rewardAd?.userId = storeUserId()
         // 先只加载，渲染成功后再手动展示
-        rewardAd?.load()
+        rewardAd?.loadAd()
     }
 
     // MARK: - UMUnionRewardVideoAdDelegate
@@ -38,7 +38,7 @@ final class RewardAdManager: NSObject, UMUnionRewardVideoAdDelegate {
         DispatchQueue.main.async {
             if let vc = self.topViewController() {
                 print("[UMeng] 用 topVC 展示: \(vc)")
-                rewardVideoAd.present(withRootViewController: vc)
+                rewardVideoAd.presentAd(withRootViewController: vc)
             } else {
                 print("[UMeng] 找不到 topViewController")
                 self.onClose?(false)

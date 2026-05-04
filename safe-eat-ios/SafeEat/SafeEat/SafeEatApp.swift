@@ -17,6 +17,8 @@ struct SafeEatApp: App {
 
     @State private var launchPhase: LaunchPhase = .logoAnimation
     @State private var showSplashAd = false
+    @State private var hasCompletedLaunch = false
+    @AppStorage("hasEnteredBackground") private var hasEnteredBackground = false
 
     /// Logo 动画时长（秒）
     private static let logoAnimationDuration: TimeInterval = 1.67
@@ -90,14 +92,45 @@ struct SafeEatApp: App {
                 }
             }
             .onChange(of: isPaidMember) { paid in
-                if paid { showSplashAd = false }
+                if paid {
+                    showSplashAd = false
+                    FloatingIconAdManager.shared.dismiss()
+                }
             }
             .onChange(of: adConfig.splashEnabled) { enabled in
                 if !enabled { showSplashAd = false }
             }
-            // App 从后台回到前台时，如果距上次获取超过 24h 则重新拉取
+            // App 从后台回到前台时，先刷新配置再决定是否展示插屏
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
-                Task { await adConfig.fetchConfig() }
+                Task {
+                    await adConfig.fetchConfig()
+                    // 插屏广告：只在从后台恢复时展示，冷启动不展示
+                    if hasCompletedLaunch && hasEnteredBackground && !isPaidMember && adConfig.interstitialEnabled {
+                        InterstitialAdManager.shared.showAdIfReady()
+                        hasEnteredBackground = false
+                    }
+                }
+            }
+            // 标记 App 进入后台
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+                hasEnteredBackground = true
+            }
+            .task {
+                // 标记冷启动完成（延迟到首屏就绪后）
+                try? await Task.sleep(for: .seconds(2))
+                hasCompletedLaunch = true
+
+                // 预加载插屏广告
+                if !isPaidMember && adConfig.interstitialEnabled {
+                    InterstitialAdManager.shared.preloadAd()
+                }
+                // 浮窗广告：首次进入主页面时展示（非付费会员 + 配置启用）
+                if !isPaidMember && adConfig.floatWindowEnabled {
+                    let scenes = UIApplication.shared.connectedScenes
+                    let windowScene = scenes.first as? UIWindowScene
+                    let window = windowScene?.windows.first(where: { $0.isKeyWindow })
+                    FloatingIconAdManager.shared.loadAndShow(from: window?.rootViewController)
+                }
             }
         }
     }

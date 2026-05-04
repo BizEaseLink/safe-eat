@@ -10,13 +10,27 @@ enum UMengConfig {
         }
 
         static var splash: String {
-            AdConfigStore.shared.slotId(for: .splash)
-                ?? "100009243"
+            AdConfigStore.shared.slotId(for: .splash) ?? ""
         }
 
         static var native: String {
             AdConfigStore.shared.slotId(for: .native)
                 ?? "100009241"
+        }
+
+        static var banner: String {
+            AdConfigStore.shared.slotId(for: .banner)
+                ?? "100009250"
+        }
+
+        static var interstitial: String {
+            AdConfigStore.shared.slotId(for: .interstitial)
+                ?? "100009251"
+        }
+
+        static var floatWindow: String {
+            AdConfigStore.shared.slotId(for: .floatWindow)
+                ?? "100009243"
         }
     }
 }

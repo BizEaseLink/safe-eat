@@ -40,6 +40,11 @@ struct ScanHomeView: View {
 
     let scrollCoordinateSpace = "safeeat.home.scroll"
 
+    private var isPaidMember: Bool {
+        guard let tier = store.profile?.currentPlanTier else { return false }
+        return tier != "free"
+    }
+
     private var latestRecord: LocalHistoryItem? {
         store.localHistory.first
     }
@@ -131,6 +136,11 @@ struct ScanHomeView: View {
 
                         if isLoggedIn {
                             recentRecordSection
+                        }
+
+                        if !isPaidMember && adConfig.bannerEnabled {
+                            BannerAdView()
+                                .frame(height: 50)
                         }
                     }
                     .padding(.horizontal, 20)
