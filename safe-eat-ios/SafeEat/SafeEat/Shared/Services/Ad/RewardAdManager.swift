@@ -38,7 +38,7 @@ final class RewardAdManager: NSObject, UMUnionRewardVideoAdDelegate {
         DispatchQueue.main.async {
             if let vc = self.topViewController() {
                 print("[UMeng] 用 topVC 展示: \(vc)")
-                rewardVideoAd.show(withRootViewController: vc)
+                rewardVideoAd.present(withRootViewController: vc)
             } else {
                 print("[UMeng] 找不到 topViewController")
                 self.onClose?(false)

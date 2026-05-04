@@ -27,7 +27,7 @@ final class InterstitialAdManager: NSObject {
             print("[UMeng] 插屏广告找不到 topViewController")
             return
         }
-        ad.show(withRootViewController: vc)
+        ad.present(withRootViewController: vc)
         isAdReady = false
     }
 
