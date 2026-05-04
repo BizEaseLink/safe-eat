@@ -19,7 +19,7 @@ struct NativeAdView: UIViewRepresentable {
         nativeAd.delegate = context.coordinator
         context.coordinator.nativeAd = nativeAd
         context.coordinator.container = container
-        nativeAd.loadAd()
+        nativeAd.load()
         return container
     }
 

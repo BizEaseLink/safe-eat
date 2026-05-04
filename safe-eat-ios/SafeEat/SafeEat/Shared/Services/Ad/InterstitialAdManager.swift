@@ -18,7 +18,7 @@ final class InterstitialAdManager: NSObject {
         print("[UMeng] 插屏广告预加载, slotId=\(slotId)")
         interstitialAd = UMUnionIntersititialAd(slotId: slotId)
         interstitialAd?.delegate = self
-        interstitialAd?.loadAd()
+        interstitialAd?.load()
     }
 
     func showAdIfReady() {
@@ -27,7 +27,7 @@ final class InterstitialAdManager: NSObject {
             print("[UMeng] 插屏广告找不到 topViewController")
             return
         }
-        ad.presentAd(withRootViewController: vc)
+        ad.show(withRootViewController: vc)
         isAdReady = false
     }
 

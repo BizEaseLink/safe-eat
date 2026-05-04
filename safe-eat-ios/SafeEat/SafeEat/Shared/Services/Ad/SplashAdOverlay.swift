@@ -23,7 +23,7 @@ struct SplashAdOverlay: UIViewRepresentable {
         context.coordinator.splashAd = splashAd
         context.coordinator.isShowing = $isShowing
         context.coordinator.startTime = Date()
-        splashAd.loadAd()
+        splashAd.load()
 
         // 启动基于实际时间的超时检查
         context.coordinator.scheduleTimeoutCheck(interval: Self.timeoutInterval)
