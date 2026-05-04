@@ -60,7 +60,7 @@ struct SplashAdOverlay: UIViewRepresentable {
                 let windowScene = scenes.first as? UIWindowScene
                 let window = windowScene?.windows.first(where: { $0.isKeyWindow })
                 if let window {
-                    splashAd.showFullScreenAd(in: window, skipView: nil)
+                    splashAd.showFullScreenAd(in: window, skip: nil)
                 } else {
                     print("[UMeng] 开屏广告找不到 keyWindow")
                     self.dismiss()
