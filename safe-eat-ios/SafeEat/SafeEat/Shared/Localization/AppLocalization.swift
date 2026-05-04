@@ -913,7 +913,7 @@ final class AppSettingsStore: ObservableObject {
             content.sound = .default
 
             var dateComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: scheduledDate)
-            dateComponents.timeZone = calendar.timeZone
+            dateComponents.timeZone = TimeZone.current
             let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
             let request = UNNotificationRequest(
                 identifier: Self.reminderIdentifier(for: index),
@@ -939,7 +939,7 @@ final class AppSettingsStore: ObservableObject {
         comps.hour = hour
         comps.minute = minute
         comps.second = 0
-        comps.timeZone = calendar.timeZone
+        comps.timeZone = TimeZone.current
 
         guard var firstFire = calendar.date(from: comps) else { return baseDate }
         if firstFire <= now {

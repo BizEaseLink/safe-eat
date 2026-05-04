@@ -11,6 +11,11 @@ struct BannerAdView: UIViewRepresentable {
         let container = UIView()
         container.backgroundColor = .clear
 
+        guard !slotId.isEmpty else {
+            print("[UMeng] Banner 广告无有效 slotId，跳过")
+            return container
+        }
+
         guard let vc = topViewController() else {
             print("[UMeng] Banner 广告找不到 topViewController")
             return container

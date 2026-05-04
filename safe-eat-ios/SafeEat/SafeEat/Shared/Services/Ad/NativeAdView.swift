@@ -10,6 +10,11 @@ struct NativeAdView: UIViewRepresentable {
         guard adConfig.nativeEnabled else { return container }
 
         let slotId = UMengConfig.SlotId.native
+        guard !slotId.isEmpty else {
+            print("[UMeng] 信息流广告无有效 slotId，跳过")
+            return container
+        }
+
         let nativeAd = UMUnionNativeAd(slotId: slotId, type: .feed)
         nativeAd.delegate = context.coordinator
         context.coordinator.nativeAd = nativeAd

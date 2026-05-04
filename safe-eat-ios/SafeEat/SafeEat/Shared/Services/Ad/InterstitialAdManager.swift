@@ -11,6 +11,10 @@ final class InterstitialAdManager: NSObject {
     func preloadAd() {
         guard AdConfigStore.shared.interstitialEnabled else { return }
         let slotId = UMengConfig.SlotId.interstitial
+        guard !slotId.isEmpty else {
+            print("[UMeng] 插屏广告无有效 slotId，跳过")
+            return
+        }
         print("[UMeng] 插屏广告预加载, slotId=\(slotId)")
         interstitialAd = UMUnionIntersititialAd(slotId: slotId)
         interstitialAd?.delegate = self
