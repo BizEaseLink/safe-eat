@@ -4,6 +4,9 @@ struct AuthSession: Codable {
     let accessToken: String
     let refreshToken: String
     let requiresPhoneBinding: Bool?
+    let isNewUser: Bool?
+
+    var isNew: Bool { isNewUser == true }
 }
 
 struct SendSmsResponse: Codable {

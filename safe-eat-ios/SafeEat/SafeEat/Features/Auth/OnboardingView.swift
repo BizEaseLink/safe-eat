@@ -2,208 +2,192 @@ import SwiftUI
 
 struct OnboardingView: View {
     @EnvironmentObject private var store: AppStore
-    @Environment(\.colorScheme) private var colorScheme
 
     @State private var currentPage = 0
+    @State private var showsFinalButton = false
 
-    private let pages: [(icon: String, titleKey: String, bodyKey: String)] = [
-        ("camera.fill", L10nKey.Onboarding.page1Title, L10nKey.Onboarding.page1Body),
-        ("exclamationmark.triangle.fill", L10nKey.Onboarding.page2Title, L10nKey.Onboarding.page2Body),
-        ("clock.badge.checkmark.fill", L10nKey.Onboarding.page3Title, L10nKey.Onboarding.page3Body),
+    private let pages: [(artwork: String, titleKey: String, bodyKey: String)] = [
+        ("OnboardingPage1", L10nKey.Onboarding.page1Title, L10nKey.Onboarding.page1Body),
+        ("OnboardingPage2", L10nKey.Onboarding.page2Title, L10nKey.Onboarding.page2Body),
+        ("OnboardingPage3", L10nKey.Onboarding.page3Title, L10nKey.Onboarding.page3Body),
     ]
 
     var body: some View {
-        ZStack {
-            onboardingBackground
+        GeometryReader { proxy in
+            ZStack {
+                onboardingBackground
 
-            VStack(spacing: 0) {
-                skipButton
-                    .padding(.top, 16)
-                    .padding(.horizontal, 20)
-                    .zIndex(10)
+                VStack(spacing: 0) {
+                    HStack {
+                        Spacer()
+                        skipButton
+                    }
+                    .padding(.top, SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
+                    .padding(.horizontal, 22)
 
-                ZStack(alignment: .bottom) {
                     TabView(selection: $currentPage) {
                         ForEach(Array(pages.enumerated()), id: \.offset) { index, page in
-                            onboardingPage(index: index, page: page)
+                            onboardingPage(page: page, proxy: proxy)
                                 .tag(index)
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
-
-                    VStack(spacing: 0) {
-                        pageIndicator
-                        startButton
+                    .onChange(of: currentPage) { _, newValue in
+                        handlePageChange(newValue)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 48)
+
+                    VStack(spacing: showsFinalButton ? 22 : 0) {
+                        pageIndicator
+                        if showsFinalButton {
+                            startButton
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, max(proxy.safeAreaInsets.bottom, 16) + 24)
                 }
             }
+            .ignoresSafeArea()
         }
         .toolbar(.hidden, for: .navigationBar)
+        .preferredColorScheme(.light)
     }
 
     private var onboardingBackground: some View {
-        ZStack {
-            SafeEatMainGradientBackground()
-
-            Circle()
-                .fill(SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.06 : 0.40))
-                .frame(width: 320, height: 320)
-                .blur(radius: 6)
-                .offset(x: -80, y: -200)
-
-            RoundedRectangle(cornerRadius: 48, style: .continuous)
-                .fill(Color(red: 0.96, green: 0.90, blue: 0.80).opacity(colorScheme == .dark ? 0.06 : 0.45))
-                .frame(width: 240, height: 160)
-                .rotationEffect(.degrees(-12))
-                .offset(x: 140, y: -240)
-
-            Circle()
-                .fill(SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.05 : 0.18))
-                .frame(width: 200, height: 200)
-                .offset(x: 120, y: 280)
-
-            RoundedRectangle(cornerRadius: 40, style: .continuous)
-                .fill(Color.white.opacity(colorScheme == .dark ? 0.03 : 0.35))
-                .frame(width: 180, height: 120)
-                .rotationEffect(.degrees(8))
-                .offset(x: -140, y: 120)
-        }
-        .ignoresSafeArea()
+        Color.white
     }
 
     private var skipButton: some View {
-        HStack {
-            Spacer()
-            Button {
-                store.completeOnboarding()
-            } label: {
-                Text(SafeEatL10n.text(L10nKey.Onboarding.skip))
-                    .font(SafeEatFont.custom(15, relativeTo: .body, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .background(
-                        Capsule()
-                            .fill(.ultraThinMaterial)
+        Button {
+            store.completeOnboarding(allowsGuestHome: true)
+        } label: {
+            Text(SafeEatL10n.text(L10nKey.Onboarding.skip))
+                .font(SafeEatFont.custom(14, relativeTo: .body, weight: .semibold))
+                .foregroundStyle(SafeEatTheme.primaryDeep)
+                .frame(minWidth: 72)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 10)
+                .background(
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                )
+                .background(
+                    Capsule()
+                        .fill(Color.white.opacity(0.82))
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(SafeEatTheme.line.opacity(0.95), lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func onboardingPage(page: (artwork: String, titleKey: String, bodyKey: String), proxy: GeometryProxy) -> some View {
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                Spacer()
+                    .frame(height: 28)
+
+                Image(page.artwork)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(
+                        width: proxy.size.width * 1.28,
+                        height: min(proxy.size.height * 0.58, 660),
+                        alignment: .center
                     )
-                    .background(
-                        Capsule()
-                            .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.52))
-                    )
-                    .overlay(
-                        Capsule()
-                            .stroke(colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.line, lineWidth: 1)
-                    )
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .offset(y: 80)
+
+                Spacer(minLength: 0)
             }
-            .buttonStyle(.plain)
+            .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
+
+            LinearGradient(
+                stops: [
+                    .init(color: Color.clear, location: 0.30),
+                    .init(color: Color.white.opacity(0.18), location: 0.52),
+                    .init(color: Color.white.opacity(0.95), location: 0.73),
+                    .init(color: Color.white, location: 1),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+
+            VStack(spacing: 14) {
+                Text(SafeEatL10n.text(page.titleKey))
+                    .font(SafeEatFont.custom(28, relativeTo: .largeTitle, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.primaryDeep)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 28)
+
+                Text(SafeEatL10n.text(page.bodyKey))
+                    .font(SafeEatFont.custom(16, relativeTo: .body, weight: .semibold))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(5)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 34)
+            }
+            .padding(.bottom, currentPage == pages.count - 1 ? 122 : 82)
         }
-    }
-
-    private func onboardingPage(index: Int, page: (icon: String, titleKey: String, bodyKey: String)) -> some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            iconCircle(systemName: page.icon)
-                .padding(.bottom, 40)
-
-            Text(SafeEatL10n.text(page.titleKey))
-                .font(SafeEatFont.custom(30, relativeTo: .largeTitle, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 28)
-                .padding(.bottom, 16)
-
-            Text(SafeEatL10n.text(page.bodyKey))
-                .font(SafeEatFont.custom(16, relativeTo: .body))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(5)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 36)
-
-            Spacer()
-        }
-    }
-
-    private func iconCircle(systemName: String) -> some View {
-        ZStack {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [SafeEatTheme.primaryDeep.opacity(0.14), SafeEatTheme.primary.opacity(0.08)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 150, height: 150)
-
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.08 : 0.50), .clear],
-                        center: .center,
-                        startRadius: 20,
-                        endRadius: 75
-                    )
-                )
-                .frame(width: 150, height: 150)
-
-            Image(systemName: systemName)
-                .font(.system(size: 54, weight: .semibold))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-        }
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.12 : 0.08), radius: 24, y: 12)
+        .frame(width: proxy.size.width, height: proxy.size.height)
     }
 
     private var pageIndicator: some View {
         HStack(spacing: 10) {
             ForEach(0..<pages.count, id: \.self) { index in
                 Capsule()
-                    .fill(currentPage == index ? SafeEatTheme.primary : SafeEatTheme.textSecondary.opacity(0.22))
-                    .frame(width: currentPage == index ? 28 : 8, height: 8)
-                    .animation(.spring(response: 0.35, dampingFraction: 0.8), value: currentPage)
+                    .fill(currentPage == index ? SafeEatTheme.primary : SafeEatTheme.textSecondary.opacity(0.18))
+                    .frame(width: currentPage == index ? 30 : 10, height: 10)
             }
         }
-        .padding(.bottom, 28)
     }
 
     private var startButton: some View {
-        Group {
-            if currentPage == pages.count - 1 {
-                Button {
-                    store.completeOnboarding()
-                } label: {
-                    Text(SafeEatL10n.text(L10nKey.Onboarding.start))
-                        .font(SafeEatFont.custom(19, relativeTo: .headline, weight: .bold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(
-                            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
+        Button {
+            store.completeOnboarding(allowsGuestHome: true)
+        } label: {
+            Text(SafeEatL10n.text(L10nKey.Onboarding.start))
+                .font(SafeEatFont.custom(19, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 58)
+                .background(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
                         )
-                        .shadow(color: SafeEatTheme.primaryDeep.opacity(0.24), radius: 20, y: 10)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .stroke(Color.white.opacity(0.28), lineWidth: 1)
+                )
+                .shadow(color: SafeEatTheme.primaryDeep.opacity(0.20), radius: 22, y: 12)
+        }
+        .buttonStyle(.plain)
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .animation(.easeInOut(duration: 0.52), value: currentPage)
+    }
+
+    private func handlePageChange(_ newValue: Int) {
+        withAnimation(.easeOut(duration: 0.32)) {
+            showsFinalButton = newValue == pages.count - 1
+        }
+        if newValue == pages.count - 1 {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(160))
+                guard currentPage == pages.count - 1 else { return }
+                withAnimation(.easeOut(duration: 0.32)) {
+                    showsFinalButton = true
                 }
-                .buttonStyle(.plain)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: currentPage)
     }
 }
 

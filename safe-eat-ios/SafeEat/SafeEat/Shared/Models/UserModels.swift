@@ -30,6 +30,7 @@ struct MembershipPlan: Codable, Identifiable {
     let billingCycle: String
     let name: String
     let priceFen: Int
+    let yearlyPriceFen: Int?
     let dailyQuota: Int?
     let recognitionQuota: Int?
     let aiQuota: Int?
@@ -68,6 +69,62 @@ struct RedeemCodeResult: Codable {
     let discountCalcType: String
     let discountValue: Double
     let displayName: String
+}
+
+// MARK: - 价格计算
+
+struct PriceCalculationRequest: Encodable {
+    let planId: String
+    let billingCycle: String
+    let discountCodeIds: [String]?
+}
+
+struct PriceCalculationResult: Decodable {
+    let originalPriceFen: Int
+    let billingCycle: String
+    let nonStackableDiscount: NonStackableDiscountResult?
+    let stackableDiscounts: [StackableDiscountResult]
+    let totalDiscountFen: Int
+    let finalPriceFen: Int
+    let freeTrial: FreeTrialResult?
+}
+
+struct NonStackableDiscountResult: Decodable {
+    let id: String
+    let name: String
+    let type: String
+    let discountAmountFen: Int
+}
+
+struct StackableDiscountResult: Decodable, Identifiable {
+    let id: String
+    let name: String
+    let type: String
+    let discountAmountFen: Int
+}
+
+struct FreeTrialResult: Decodable {
+    let trialDays: Int
+    let planId: String
+    let planTier: String
+}
+
+// MARK: - 折扣码验证
+
+struct ValidateDiscountCodeRequest: Encodable {
+    let code: String
+    let planId: String
+}
+
+struct ValidateDiscountCodeResult: Decodable {
+    let valid: Bool
+    let discountId: String?
+    let name: String?
+    let type: String?
+    let discountCalcType: String?
+    let discountValue: Double?
+    let stackable: Bool?
+    let message: String?
 }
 
 // MARK: - 会员状态
@@ -135,6 +192,33 @@ struct IAPVerifyReceiptResult: Decodable {
     let success: Bool
     let idempotent: Bool
     let transactionId: String
+}
+
+// MARK: - 广告奖励领取
+
+struct ClaimAdRewardPayload: Encodable {
+    let placementCode: String
+    let proofToken: String
+}
+
+struct ClaimAdRewardResult: Decodable {
+    let rewardLog: AdRewardLog
+    let quota: AdRewardQuota
+}
+
+struct AdRewardLog: Decodable {
+    let id: String
+    let placementId: String
+    let proofToken: String
+    let rewardQuota: Int
+    let claimedOn: String
+}
+
+struct AdRewardQuota: Decodable {
+    let id: String
+    let totalQuota: Int
+    let usedCount: Int
+    let adClaimsCount: Int
 }
 
 // MARK: - 订单记录

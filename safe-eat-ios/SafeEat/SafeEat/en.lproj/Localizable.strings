@@ -197,6 +197,8 @@
 "reminder.off" = "Off";
 "reminder.system_denied" = "System Permission Off";
 "brand.app_name" = "Safe Eat";
+"brand.slogan" = "Every bite, a safer choice.";
+"brand.slogan_en" = "Every bite, a safer choice.";
 
 "reminder.enable_failed" = "Notifications are disabled. Please allow Safe Eat notifications in system settings first.";
 "reminder.enabled" = "Reminders enabled.";
@@ -232,7 +234,7 @@
 "profile.member_entry.subtitle" = "View available plans and new-user offers.";
 "profile.member_entry.format" = "Starting from %@, unlock more recognitions with %@.";
 "profile.info.section_title" = "Profile";
-"profile.edit.group_title" = "Edit & Preferences";
+"profile.edit.group_title" = "Account & Preferences";
 "profile.edit.title" = "Edit Profile";
 "profile.edit.subtitle" = "Name, gender, height, weight, and avatar";
 "profile.preference.title" = "Preferences";
@@ -241,7 +243,7 @@
 "profile.system.reminder" = "Reminders";
 "profile.system.language" = "Language";
 "profile.system.language.subtitle" = "Chinese / English";
-"profile.system.security" = "Security";
+"profile.system.security" = "Account Security";
 "profile.system.security.subtitle" = "Session, privacy, and local cache details";
 "profile.system.cache" = "Data & Cache";
 "profile.system.cache.subtitle" = "Clear local history images and sticker cache";
@@ -430,8 +432,19 @@
 "membership.purchase.free_plan_description" = "3 free recognitions per day. Great for trying out basic features.";
 "home.quota_exceeded.title" = "Daily Recognition Limit Reached";
 "home.quota_exceeded.message" = "Free users can recognize 3 times per day. Upgrade to unlock more.";
-"home.quota_exceeded.upgrade" = "Upgrade";
-"home.quota_exceeded.tomorrow" = "Free recognition resets tomorrow";
+"home.quota_exceeded.status_format" = "You have used %d / %d free recognitions today";
+"home.quota_exceeded.progress_label" = "Free recognitions";
+"home.quota_exceeded.member_hint" = "Members can continue recognizing this food and view complete nutrition and risk analysis";
+"home.quota_exceeded.upgrade" = "Upgrade to continue";
+"home.quota_exceeded.watch_ad" = "Watch an ad for 1 more scan";
+"home.quota_exceeded.tomorrow" = "3 free recognitions restore after midnight";
+"home.ad_reward.claim_failed" = "Failed to claim reward. Please try again later";
+"home.ad_reward.load_failed" = "Failed to load ad. Please try again later";
+"home.ad_reward.success" = "Scan quota restored";
+"home.ad_reward.success_title" = "Reward Claimed";
+"home.ad_reward.claim_failed_title" = "Claim Failed";
+"home.ad_reward.load_failed_title" = "Ad Load Failed";
+"home.ad_reward.retry" = "Got it";
 "home.quota_remaining.format" = "%d remaining today";
 
 "user.unnamed" = "Unnamed User";
@@ -539,6 +552,8 @@
 "menu.meal.breakfast" = "Breakfast";
 "menu.meal.lunch" = "Lunch";
 "menu.meal.dinner" = "Dinner";
+"menu.not_logged_in.title" = "No Menu Data";
+"menu.not_logged_in.message" = "Sign in to view menus and scan history";
 
 "sticker.swipe_hint" = "Swipe to view results";
 "sticker.result_title" = "Recognition Result";
@@ -667,16 +682,25 @@
 "auth.apple.name_fallback" = "Apple User";
 "auth.go_login" = "Sign In";
 "auth.login_prompt.message" = "This feature requires you to sign in. Would you like to sign in now?";
+"auth.login_prompt.title" = "Sign in to unlock more features";
+"auth.login_prompt.feature_format" = "\"%@\" requires you to sign in";
+"auth.login_prompt.later" = "Later";
 "auth.or_divider" = "or";
+"auth.new_user.welcome_title" = "Welcome to SafeEat!";
+"auth.new_user.welcome_message" = "Please set a password to secure your account";
+"auth.new_user.set_password" = "Set Password";
+"auth.password_login.error_title" = "Login Failed";
+"auth.password_login.error_message" = "Incorrect phone or password. This phone may not be registered. Would you like to sign up?";
 
 "onboarding.skip" = "Skip";
 "onboarding.start" = "Get Started";
-"onboarding.page1.title" = "Snap & Eat Safe";
-"onboarding.page1.body" = "Point your camera at any food label, and AI instantly identifies ingredients to help you decide if it's safe.";
-"onboarding.page2.title" = "Risks Made Clear";
-"onboarding.page2.body" = "High-risk additives and allergens are flagged automatically — no more guessing over ingredient lists.";
-"onboarding.page3.title" = "Always on Record";
-"onboarding.page3.body" = "Scan history is saved automatically. Look back anytime and keep your family's food safety on track.";
+"onboarding.page1.title" = "Scan Labels, Choose with Confidence";
+"onboarding.page1.body" = "Point your camera at food packaging to quickly read ingredients and nutrition details, then decide if it fits your current needs.";
+"onboarding.page2.title" = "Risk Signals at a Glance";
+"onboarding.page2.body" = "High-risk additives, allergens, and key nutrition reminders are surfaced automatically, so decisions feel faster and clearer.";
+"onboarding.page3.title" = "History That Keeps Watching";
+"onboarding.page3.body" = "Your scans and judgments are saved automatically, making it easy to look back and manage daily eating over time.";
 
-"profile.not_logged_in.title" = "Not Signed In";
-"profile.not_logged_in.message" = "Sign in to view your profile, membership status, and more features.";
+"profile.not_logged_in.title" = "Sign In Required";
+"profile.not_logged_in.message" = "Sign in to view your profile and use membership features";
+"profile.not_logged_in.action" = "Sign In";

@@ -6,6 +6,15 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		43B562FB2FA4AC8A00B62CD8 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B562FA2FA4AC8A00B62CD8 /* CoreTelephony.framework */; };
+		43B562FD2FA4AC9400B62CD8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B562FC2FA4AC9400B62CD8 /* SystemConfiguration.framework */; };
+		43B562FF2FA4AC9D00B62CD8 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B562FE2FA4AC9D00B62CD8 /* AdSupport.framework */; };
+		43B563032FA4ACB000B62CD8 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B563022FA4ACB000B62CD8 /* WebKit.framework */; };
+		43B563062FA4ACCD00B62CD8 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B563052FA4ACC000B62CD8 /* libsqlite3.tbd */; };
+		43B563072FA4ACD800B62CD8 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B563042FA4ACB800B62CD8 /* libz.tbd */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		43B55EC62F9CED9400B62CD8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -16,9 +25,29 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		43B562F82FA4AC7100B62CD8 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		43604B562F87D83A009131CE /* SafeEat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SafeEat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		43B55EC02F9CED9400B62CD8 /* SafeEatUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SafeEatUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		43B562FA2FA4AC8A00B62CD8 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreTelephony.framework; sourceTree = DEVELOPER_DIR; };
+		43B562FC2FA4AC9400B62CD8 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
+		43B562FE2FA4AC9D00B62CD8 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/AdSupport.framework; sourceTree = DEVELOPER_DIR; };
+		43B563002FA4ACA500B62CD8 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/StoreKit.framework; sourceTree = DEVELOPER_DIR; };
+		43B563022FA4ACB000B62CD8 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
+		43B563042FA4ACB800B62CD8 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
+		43B563052FA4ACC000B62CD8 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/usr/lib/libsqlite3.tbd; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -26,23 +55,42 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				ThirdParty/UMeng/UTDID.framework,
+				ThirdParty/UMeng/UYuMao.xcframework,
 			);
 			target = 43604B552F87D83A009131CE /* SafeEat */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		43B562F92FA4AC7100B62CD8 /* Exceptions for "SafeEat" folder in "Embed Frameworks" phase from "SafeEat" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			attributesByRelativePath = {
+				ThirdParty/UMeng/UMCommon.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+				ThirdParty/UMeng/UMCommonLog.framework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+				ThirdParty/UMeng/UMDevice.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+				ThirdParty/UMeng/UMRemoteConfig.framework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+				ThirdParty/UMeng/UMUnionSDK.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+			};
+			buildPhase = 43B562F82FA4AC7100B62CD8 /* Embed Frameworks */;
+			membershipExceptions = (
+				ThirdParty/UMeng/UMCommon.xcframework,
+				ThirdParty/UMeng/UMCommonLog.framework,
+				ThirdParty/UMeng/UMDevice.xcframework,
+				ThirdParty/UMeng/UMRemoteConfig.framework,
+				ThirdParty/UMeng/UMUnionSDK.xcframework,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		43604B582F87D83A009131CE /* SafeEat */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				43604B632F87D83D009131CE /* Exceptions for "SafeEat" folder in "SafeEat" target */,
+				43B562F92FA4AC7100B62CD8 /* Exceptions for "SafeEat" folder in "Embed Frameworks" phase from "SafeEat" target */,
 			);
 			path = SafeEat;
-			sourceTree = "<group>";
-		};
-		43B55EC12F9CED9400B62CD8 /* SafeEatUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = SafeEatUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -52,6 +100,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				43B562FD2FA4AC9400B62CD8 /* SystemConfiguration.framework in Frameworks */,
+				43B562FB2FA4AC8A00B62CD8 /* CoreTelephony.framework in Frameworks */,
+				43B563062FA4ACCD00B62CD8 /* libsqlite3.tbd in Frameworks */,
+				43B563072FA4ACD800B62CD8 /* libz.tbd in Frameworks */,
+				43B562FF2FA4AC9D00B62CD8 /* AdSupport.framework in Frameworks */,
+				43B563032FA4ACB000B62CD8 /* WebKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -69,7 +123,7 @@
 			isa = PBXGroup;
 			children = (
 				43604B582F87D83A009131CE /* SafeEat */,
-				43B55EC12F9CED9400B62CD8 /* SafeEatUITests */,
+				43B562E92FA4AC7000B62CD8 /* Frameworks */,
 				43604B572F87D83A009131CE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -83,6 +137,20 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		43B562E92FA4AC7000B62CD8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				43B563052FA4ACC000B62CD8 /* libsqlite3.tbd */,
+				43B563042FA4ACB800B62CD8 /* libz.tbd */,
+				43B563022FA4ACB000B62CD8 /* WebKit.framework */,
+				43B563002FA4ACA500B62CD8 /* StoreKit.framework */,
+				43B562FE2FA4AC9D00B62CD8 /* AdSupport.framework */,
+				43B562FC2FA4AC9400B62CD8 /* SystemConfiguration.framework */,
+				43B562FA2FA4AC8A00B62CD8 /* CoreTelephony.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -93,6 +161,7 @@
 				43604B522F87D83A009131CE /* Sources */,
 				43604B532F87D83A009131CE /* Frameworks */,
 				43604B542F87D83A009131CE /* Resources */,
+				43B562F82FA4AC7100B62CD8 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -120,9 +189,6 @@
 			);
 			dependencies = (
 				43B55EC72F9CED9400B62CD8 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				43B55EC12F9CED9400B62CD8 /* SafeEatUITests */,
 			);
 			name = SafeEatUITests;
 			packageProductDependencies = (
@@ -219,6 +285,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M99NCSX352;
@@ -226,6 +293,10 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SafeEat/ThirdParty/UMeng",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SafeEat/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -242,8 +313,10 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = bizeasylink.SafeEat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -251,6 +324,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "SafeEat/SafeEat-Bridging-Header.h";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -262,6 +336,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M99NCSX352;
@@ -269,6 +344,10 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SafeEat/ThirdParty/UMeng",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SafeEat/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -285,8 +364,10 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = bizeasylink.SafeEat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -294,6 +375,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "SafeEat/SafeEat-Bridging-Header.h";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

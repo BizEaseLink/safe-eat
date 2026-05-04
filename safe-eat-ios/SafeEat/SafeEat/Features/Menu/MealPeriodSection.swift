@@ -132,10 +132,8 @@ struct MealPeriodSection: View {
     }
 
     private func foodCard(item: LocalHistoryItem) -> some View {
-        RecognitionStickerThumbnailView(
-            image: LocalImageLoader.loadStickerImage(for: item),
-            titleText: item.recognizedName,
-            metaText: StickerTextFormatter.adviceScore(for: item),
+        AsyncRecognitionStickerView(
+            item: item,
             imageHeight: 104,
             labelMaxWidth: 124,
             style: .floating

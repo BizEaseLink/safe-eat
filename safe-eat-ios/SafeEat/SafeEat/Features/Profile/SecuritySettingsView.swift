@@ -7,9 +7,7 @@ struct SecuritySettingsView: View {
             subtitle: SafeEatL10n.text(L10nKey.Profile.Security.subtitle)
         ) {
             ProfileSurfaceCard {
-                NavigationLink {
-                    ChangePhoneView()
-                } label: {
+                NavigationLink(value: ProfileRoute.changePhone) {
                     ProfileNavigationRow(
                         icon: "phone.fill",
                         title: SafeEatL10n.text(L10nKey.Profile.Security.changePhone)
@@ -19,9 +17,7 @@ struct SecuritySettingsView: View {
 
                 Divider().overlay(SafeEatTheme.line)
 
-                NavigationLink {
-                    ChangePasswordView()
-                } label: {
+                NavigationLink(value: ProfileRoute.changePassword) {
                     ProfileNavigationRow(
                         icon: "lock.fill",
                         title: SafeEatL10n.text(L10nKey.Profile.Security.changePassword)
@@ -31,9 +27,7 @@ struct SecuritySettingsView: View {
 
                 Divider().overlay(SafeEatTheme.line)
 
-                NavigationLink {
-                    RestorePurchasesView()
-                } label: {
+                NavigationLink(value: ProfileRoute.restorePurchases) {
                     ProfileNavigationRow(
                         icon: "arrow.clockwise.icloud.fill",
                         title: SafeEatL10n.text(L10nKey.Profile.Security.restorePurchases)
@@ -43,9 +37,7 @@ struct SecuritySettingsView: View {
 
                 Divider().overlay(SafeEatTheme.line)
 
-                NavigationLink {
-                    DeleteAccountView()
-                } label: {
+                NavigationLink(value: ProfileRoute.deleteAccount) {
                     ProfileNavigationRow(
                         icon: "person.crop.circle.badge.xmark",
                         title: SafeEatL10n.text(L10nKey.Profile.Security.deleteAccount)

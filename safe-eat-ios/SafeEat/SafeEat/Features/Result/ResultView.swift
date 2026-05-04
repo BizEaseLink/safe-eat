@@ -378,7 +378,15 @@ struct ResultView: View {
             }
 
             if isLoadingDetail && !hasFullRecognitionDetail {
-                subtleChip(text: SafeEatL10n.text(L10nKey.Result.detailSyncing))
+                VStack(spacing: 8) {
+                    ProgressView()
+                        .tint(SafeEatTheme.primary)
+                    Text(SafeEatL10n.text(L10nKey.Result.detailSyncing))
+                        .font(SafeEatFont.textStyle(.caption))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
             } else if !hasFullRecognitionDetail {
                 subtleChip(text: SafeEatL10n.text(L10nKey.Result.detailLocalOnly))
             }
@@ -789,6 +797,11 @@ struct ResultView: View {
                     Color.clear
                         .frame(height: proxy.safeAreaInsets.top + 74)
 
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 40, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.warning)
+                        .symbolRenderingMode(.hierarchical)
+
                     Text(SafeEatL10n.text(L10nKey.Result.missingTitle))
                         .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
                         .foregroundStyle(SafeEatTheme.textPrimary)
@@ -796,6 +809,11 @@ struct ResultView: View {
                     Text(SafeEatL10n.text(L10nKey.Result.missingMessage))
                         .font(SafeEatFont.textStyle(.body))
                         .foregroundStyle(SafeEatTheme.textSecondary)
+
+                    primaryButton(title: SafeEatL10n.text(L10nKey.Result.missingRetry)) {
+                        dismiss()
+                    }
+                    .padding(.top, 8)
                 }
                 .padding(.horizontal, 20)
 

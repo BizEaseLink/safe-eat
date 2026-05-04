@@ -9,28 +9,17 @@ struct ContentView: View {
                 ProgressView()
             } else if !store.hasCompletedOnboarding {
                 OnboardingView()
-            } else if store.session == nil || store.requiresPhoneBinding {
+            } else if store.shouldShowLoginAfterOnboarding {
                 LoginView()
             } else {
                 MainTabView()
             }
         }
-        .alert(
-            SafeEatL10n.text(L10nKey.Errors.sessionExpired),
-            isPresented: $store.showLoginPrompt,
-            actions: {
-                Button(SafeEatL10n.text(L10nKey.Auth.goLogin)) {
-                    store.showLoginPrompt = false
-                    store.logout()
-                }
-                Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {
-                    store.showLoginPrompt = false
-                }
-            },
-            message: {
-                Text(SafeEatL10n.text(L10nKey.Auth.loginPromptMessage))
-            }
-        )
+        .sheet(isPresented: $store.showLoginPrompt, onDismiss: {
+            store.dismissLoginPrompt()
+        }) {
+            LoginPromptSheet(featureHint: store.loginPromptFeature)
+        }
     }
 }
 

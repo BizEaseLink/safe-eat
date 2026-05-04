@@ -25,10 +25,6 @@ struct ProfileSurfaceCard<Content: View>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .fill(.ultraThinMaterial)
-        )
-        .background(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
                 .fill(profileSurfaceFill(for: colorScheme))
         )
         .overlay(
@@ -337,6 +333,29 @@ struct ProfileTextField: View {
     }
 }
 
+struct ProfileSecureField: View {
+    @Environment(\.colorScheme) private var colorScheme
+    let title: String
+    @Binding var text: String
+
+    var body: some View {
+        SecureField(title, text: $text)
+            .textInputAutocapitalization(.never)
+            .font(SafeEatFont.custom(16, relativeTo: .body))
+            .foregroundStyle(SafeEatTheme.textPrimary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(profileControlFill(for: colorScheme))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(profileStrokeColor(for: colorScheme), lineWidth: 1)
+            )
+    }
+}
+
 struct ProfileMenuField: View {
     @Environment(\.colorScheme) private var colorScheme
     let value: String
@@ -461,6 +480,7 @@ struct ProfileSecondaryPage<Content: View, Footer: View>: View {
 
     let title: String
     var subtitle: String? = nil
+    var onBack: (() -> Void)? = nil
     @ViewBuilder let content: Content
     @ViewBuilder let footer: Footer
 
@@ -470,11 +490,13 @@ struct ProfileSecondaryPage<Content: View, Footer: View>: View {
     init(
         title: String,
         subtitle: String? = nil,
+        onBack: (() -> Void)? = nil,
         @ViewBuilder content: () -> Content,
         @ViewBuilder footer: () -> Footer
     ) {
         self.title = title
         self.subtitle = subtitle
+        self.onBack = onBack
         self.content = content()
         self.footer = footer()
     }
@@ -482,9 +504,10 @@ struct ProfileSecondaryPage<Content: View, Footer: View>: View {
     init(
         title: String,
         subtitle: String? = nil,
+        onBack: (() -> Void)? = nil,
         @ViewBuilder content: () -> Content
     ) where Footer == EmptyView {
-        self.init(title: title, subtitle: subtitle, content: content, footer: { EmptyView() })
+        self.init(title: title, subtitle: subtitle, onBack: onBack, content: content, footer: { EmptyView() })
     }
 
     var body: some View {
@@ -519,7 +542,7 @@ struct ProfileSecondaryPage<Content: View, Footer: View>: View {
                     title: title,
                     scrollOffset: scrollOffset,
                     topInset: topInset,
-                    onBack: { dismiss() }
+                    onBack: { onBack?() ?? dismiss() }
                 )
             }
         }

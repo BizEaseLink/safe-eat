@@ -4,7 +4,9 @@ struct QuotaExceededSheet: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var store: AppStore
     @Environment(\.colorScheme) private var colorScheme
+
     let onUpgrade: () -> Void
+    var onWatchAd: (() -> Void)? = nil
 
     private var freeDailyLimit: Int { 3 }
 
@@ -14,75 +16,283 @@ struct QuotaExceededSheet: View {
         return todayItems.count
     }
 
-    var body: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(.orange)
-                .padding(.top, 20)
+    private var usedCount: Int {
+        min(max(todayScanCount, 0), freeDailyLimit)
+    }
 
+    private var progressValue: Double {
+        guard freeDailyLimit > 0 else { return 0 }
+        return min(Double(usedCount) / Double(freeDailyLimit), 1)
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            VStack(spacing: 0) {
+                Capsule()
+                    .fill(dragIndicatorColor)
+                    .frame(width: 42, height: 6)
+                    .padding(.top, 10)
+                    .padding(.bottom, 14)
+
+                VStack(spacing: 16) {
+                    warningIcon
+
+                    titleBlock
+
+                    quotaProgress
+
+                    memberHintCard
+
+                    actionArea
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, max(proxy.safeAreaInsets.bottom, 10))
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(sheetFill)
+            .background(.ultraThinMaterial)
+            .shadow(color: sheetShadow, radius: 28, y: -8)
+        }
+        .presentationDetents([.height(sheetHeight)])
+        .presentationDragIndicator(.hidden)
+        .presentationBackground(.clear)
+        .presentationCornerRadius(36)
+    }
+
+    private var sheetHeight: CGFloat {
+        onWatchAd == nil ? 382 : 440
+    }
+
+    private var statusText: String {
+        SafeEatL10n.format(L10nKey.Home.quotaExceededStatusFormat, usedCount, freeDailyLimit)
+    }
+
+    private var titleBlock: some View {
+        VStack(spacing: 7) {
             Text(SafeEatL10n.text(L10nKey.Home.quotaExceededTitle))
-                .font(SafeEatFont.custom(20, relativeTo: .headline))
+                .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
                 .foregroundStyle(SafeEatTheme.textPrimary)
                 .multilineTextAlignment(.center)
+                .lineLimit(2)
 
-            Text(SafeEatL10n.text(L10nKey.Home.quotaExceededMessage))
-                .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+            Text(statusText)
+                .font(SafeEatFont.custom(14, relativeTo: .subheadline))
                 .foregroundStyle(SafeEatTheme.textSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 16)
-
-            quotaProgress
-
-            VStack(spacing: 12) {
-                Button {
-                    dismiss()
-                    onUpgrade()
-                } label: {
-                    Text(SafeEatL10n.text(L10nKey.Home.quotaExceededUpgrade))
-                        .font(SafeEatFont.custom(17, relativeTo: .headline))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(SafeEatTheme.primaryDeep)
-                        )
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    dismiss()
-                } label: {
-                    Text(SafeEatL10n.text(L10nKey.Home.quotaExceededTomorrow))
-                        .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.horizontal, 24)
         }
-        .padding(.bottom, 24)
-        .background(colorScheme == .dark ? Color(red: 0.12, green: 0.12, blue: 0.12) : Color(.systemBackground))
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
     }
 
     private var quotaProgress: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             HStack {
-                Text(SafeEatL10n.text(L10nKey.User.tierFreeShort))
-                    .font(SafeEatFont.custom(12, relativeTo: .caption))
+                Text(SafeEatL10n.text(L10nKey.Home.quotaExceededProgressLabel))
+                    .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textSecondary)
                 Spacer()
-                Text("\(todayScanCount)/\(freeDailyLimit)")
-                    .font(SafeEatFont.custom(12, relativeTo: .caption))
+                Text("\(usedCount)/\(freeDailyLimit)")
+                    .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textSecondary)
             }
 
-            ProgressView(value: Double(todayScanCount), total: Double(freeDailyLimit))
-                .tint(todayScanCount >= freeDailyLimit ? SafeEatTheme.danger : SafeEatTheme.primary)
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(progressTrack)
+
+                    Capsule()
+                        .fill(progressFill)
+                        .frame(width: max(proxy.size.width * progressValue, 10))
+                }
+            }
+            .frame(height: 10)
+            .overlay(
+                Capsule()
+                    .stroke(progressStroke, lineWidth: 1)
+            )
+            .animation(.easeOut(duration: 0.24), value: progressValue)
         }
-        .padding(.horizontal, 40)
+        .padding(.horizontal, 12)
+    }
+
+    private var memberHintCard: some View {
+        Button {
+            dismiss()
+            onUpgrade()
+        } label: {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(memberIconFill)
+                        .frame(width: 42, height: 42)
+
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(SafeEatTheme.primary)
+                }
+
+                Text(SafeEatL10n.text(L10nKey.Home.quotaExceededMemberHint))
+                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+
+                Spacer(minLength: 8)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.74))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(memberCardFill)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(memberCardStroke, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var actionArea: some View {
+        VStack(spacing: 10) {
+            Button {
+                dismiss()
+                onUpgrade()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 16, weight: .bold))
+                    Text(SafeEatL10n.text(L10nKey.Home.quotaExceededUpgrade))
+                        .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.86)
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                )
+                .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.20), radius: 18, y: 10)
+            }
+            .buttonStyle(.plain)
+
+            if let onWatchAd {
+                Button {
+                    dismiss()
+                    onWatchAd()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "play.rectangle.fill")
+                            .font(.system(size: 16, weight: .bold))
+                        Text(SafeEatL10n.text(L10nKey.Home.quotaExceededWatchAd))
+                            .font(SafeEatFont.custom(16, relativeTo: .subheadline, weight: .bold))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.82)
+                    }
+                    .foregroundStyle(SafeEatTheme.primary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(adButtonFill)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .stroke(adButtonStroke, lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+
+            HStack(spacing: 6) {
+                Image(systemName: "clock")
+                    .font(.system(size: 13, weight: .semibold))
+                Text(SafeEatL10n.text(L10nKey.Home.quotaExceededTomorrow))
+                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
+            }
+            .foregroundStyle(SafeEatTheme.textSecondary)
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    private var warningIcon: some View {
+        ZStack {
+            Circle()
+                .fill(SafeEatTheme.warning.opacity(colorScheme == .dark ? 0.16 : 0.14))
+                .frame(width: 58, height: 58)
+
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 30, weight: .bold))
+                .foregroundStyle(SafeEatTheme.warning)
+                .symbolRenderingMode(.hierarchical)
+        }
+        .shadow(color: SafeEatTheme.warning.opacity(0.14), radius: 18, y: 8)
+    }
+
+    private var sheetFill: Color {
+        colorScheme == .dark
+            ? Color(red: 0.10, green: 0.12, blue: 0.11).opacity(0.72)
+            : Color.white.opacity(0.78)
+    }
+
+    private var sheetShadow: Color {
+        colorScheme == .dark ? Color.black.opacity(0.32) : SafeEatTheme.primaryDeep.opacity(0.12)
+    }
+
+    private var dragIndicatorColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.22) : Color.black.opacity(0.24)
+    }
+
+    private var progressTrack: Color {
+        colorScheme == .dark ? Color.white.opacity(0.10) : Color(red: 0.89, green: 0.86, blue: 0.80).opacity(0.62)
+    }
+
+    private var progressStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.68)
+    }
+
+    private var progressFill: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color(red: 0.72, green: 0.36, blue: 0.27),
+                Color(red: 0.84, green: 0.48, blue: 0.34),
+            ],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
+
+    private var memberCardFill: Color {
+        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.16) : SafeEatTheme.primarySoft.opacity(0.72)
+    }
+
+    private var memberCardStroke: Color {
+        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.16) : SafeEatTheme.primary.opacity(0.08)
+    }
+
+    private var memberIconFill: Color {
+        colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.accent.opacity(0.46)
+    }
+
+    private var adButtonFill: Color {
+        colorScheme == .dark ? Color.white.opacity(0.04) : Color.white.opacity(0.56)
+    }
+
+    private var adButtonStroke: Color {
+        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.34) : SafeEatTheme.primary.opacity(0.32)
     }
 }

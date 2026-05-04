@@ -1,26 +1,71 @@
 import AuthenticationServices
 import SwiftUI
 
-private enum AuthScreen {
-    case passwordLogin
+// MARK: - 登录页路由
+
+enum LoginRoute: Hashable {
     case codeLogin
+    case passwordLogin
     case register
     case bindPhone
 }
+
+// MARK: - 登录页主视图
 
 struct LoginView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.colorScheme) private var colorScheme
 
-    @State private var screen: AuthScreen = .passwordLogin
     @State private var phone = ""
     @State private var code = ""
     @State private var password = ""
     @State private var confirmPassword = ""
     @State private var devCodeHint: String?
-    @State private var sendingSMS = false
+    @State private var showNewUserAlert = false
+    @State private var showPasswordLoginError = false
+    @State private var loginRoute: LoginRoute? = nil
 
     var body: some View {
+        NavigationStack {
+            codeLoginPage
+                .navigationDestination(item: $loginRoute) { route in
+                    switch route {
+                    case .codeLogin:
+                        codeLoginPage
+                    case .passwordLogin:
+                        passwordLoginPage
+                    case .register:
+                        registerPage
+                    case .bindPhone:
+                        bindPhonePage
+                    }
+                }
+        }
+        .onChange(of: store.requiresPhoneBinding) { _ in
+            syncRouteWithSession()
+        }
+        .onChange(of: store.session?.accessToken) { _ in
+            syncRouteWithSession()
+        }
+        .onChange(of: store.isNewUser) { newValue in
+            if newValue {
+                showNewUserAlert = true
+            }
+        }
+        .sheet(isPresented: $showNewUserAlert) {
+            NewUserWelcomeSheet(
+                onSetPassword: {
+                    showNewUserAlert = false
+                    store.isNewUser = false
+                    loginRoute = .register
+                }
+            )
+        }
+    }
+
+    // MARK: - 验证码登录页（默认页）
+
+    private var codeLoginPage: some View {
         GeometryReader { proxy in
             ZStack {
                 authBackground
@@ -31,26 +76,98 @@ struct LoginView: View {
                             .frame(height: SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
 
                         backButton
-                        heroBlock
-                        contentCard
+                        heroBlock(title: SafeEatL10n.text(L10nKey.Auth.codeTitle))
+                        codeLoginContent
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 36)
                 }
             }
             .contentShape(Rectangle())
-            .onTapGesture {
-                hideKeyboard()
-            }
+            .onTapGesture { hideKeyboard() }
         }
         .toolbar(.hidden, for: .navigationBar)
-        .onChange(of: store.requiresPhoneBinding) { _ in
-            syncScreenWithSession()
-        }
-        .onChange(of: store.session?.accessToken) { _ in
-            syncScreenWithSession()
-        }
     }
+
+    // MARK: - 密码登录页
+
+    private var passwordLoginPage: some View {
+        GeometryReader { proxy in
+            ZStack {
+                authBackground
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 24) {
+                        Color.clear
+                            .frame(height: SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
+
+                        backButton
+                        heroBlock(title: SafeEatL10n.text(L10nKey.Auth.passwordTitle))
+                        passwordLoginContent
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 36)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture { hideKeyboard() }
+        }
+        .toolbar(.hidden, for: .navigationBar)
+    }
+
+    // MARK: - 注册页
+
+    private var registerPage: some View {
+        GeometryReader { proxy in
+            ZStack {
+                authBackground
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 24) {
+                        Color.clear
+                            .frame(height: SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
+
+                        backButton
+                        heroBlock(title: SafeEatL10n.text(L10nKey.Auth.registerTitle))
+                        registerContent
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 36)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture { hideKeyboard() }
+        }
+        .toolbar(.hidden, for: .navigationBar)
+    }
+
+    // MARK: - 绑定手机页
+
+    private var bindPhonePage: some View {
+        GeometryReader { proxy in
+            ZStack {
+                authBackground
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 24) {
+                        Color.clear
+                            .frame(height: SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
+
+                        backButton
+                        heroBlock(title: SafeEatL10n.text(L10nKey.Auth.bindTitle))
+                        bindPhoneContent
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 36)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture { hideKeyboard() }
+        }
+        .toolbar(.hidden, for: .navigationBar)
+    }
+
+    // MARK: - 共享组件
 
     private func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
@@ -112,100 +229,29 @@ struct LoginView: View {
         .buttonStyle(.plain)
     }
 
-    private var heroBlock: some View {
+    private func heroBlock(title: String) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(SafeEatTheme.primary.opacity(0.22))
-                    .frame(width: 22, height: 22)
-                    .overlay(
-                        Circle()
-                            .fill(SafeEatTheme.primary)
-                            .frame(width: 8, height: 8)
-                    )
+            HStack(spacing: 14) {
+                AppLogoView(size: 44, animate: false)
 
-                Text(SafeEatL10n.text(L10nKey.Auth.onboardingEyebrow))
-                    .font(SafeEatFont.custom(15, relativeTo: .headline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.primaryDeep)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(
-                Capsule()
-                    .fill(colorScheme == .dark ? Color.white.opacity(0.08) : Color.white.opacity(0.78))
-            )
-            .overlay(
-                Capsule()
-                    .stroke(colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.line, lineWidth: 1)
-            )
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(SafeEatL10n.text(L10nKey.Brand.appName))
+                        .font(SafeEatFont.custom(22, relativeTo: .title2, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
 
-            VStack(alignment: .leading, spacing: 10) {
-                Text(heroTitle)
-                    .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-
-                Text(heroSubtitle)
-                    .font(SafeEatFont.custom(15, relativeTo: .body))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
-                    .lineSpacing(2)
-            }
-        }
-    }
-
-    private var contentCard: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            switch screen {
-            case .passwordLogin:
-                passwordLoginContent
-            case .codeLogin:
-                codeLoginContent
-            case .register:
-                registerContent
-            case .bindPhone:
-                bindPhoneContent
-            }
-        }
-        .padding(24)
-        .background(
-            RoundedRectangle(cornerRadius: 32, style: .continuous)
-                .fill(.ultraThinMaterial)
-        )
-        .background(
-            RoundedRectangle(cornerRadius: 32, style: .continuous)
-                .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.64))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 32, style: .continuous)
-                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
-        )
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
-    }
-
-    private var passwordLoginContent: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            authField(title: SafeEatL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
-            authSecureField(title: SafeEatL10n.text(L10nKey.Auth.passwordLabel), text: $password)
-
-            authPrimaryButton(title: SafeEatL10n.text(L10nKey.Auth.actionLogin), isLoading: store.isLoading) {
-                Task {
-                    await store.loginWithPassword(phone: phone, password: password)
-                }
-            }
-            .disabled(phone.trimmingCharacters(in: .whitespacesAndNewlines).count != 11 || password.count < 6 || store.isLoading)
-
-            HStack {
-                miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToCode)) {
-                    screen = .codeLogin
-                }
-                Spacer()
-                miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToRegister)) {
-                    screen = .register
+                    Text(SafeEatL10n.text(L10nKey.Brand.slogan))
+                        .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.primaryDeep)
                 }
             }
 
-            appleCircleButton
+            Text(title)
+                .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
+                .foregroundStyle(SafeEatTheme.textPrimary)
         }
     }
+
+    // MARK: - 验证码登录内容
 
     private var codeLoginContent: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -222,17 +268,64 @@ struct LoginView: View {
 
             HStack {
                 miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToPassword)) {
-                    screen = .passwordLogin
+                    loginRoute = .passwordLogin
                 }
                 Spacer()
                 miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToRegister)) {
-                    screen = .register
+                    loginRoute = .register
                 }
             }
 
             appleCircleButton
         }
+        .padding(24)
+        .background(cardBackground)
+        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
     }
+
+    // MARK: - 密码登录内容
+
+    private var passwordLoginContent: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            authField(title: SafeEatL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
+            authSecureField(title: SafeEatL10n.text(L10nKey.Auth.passwordLabel), text: $password)
+
+            authPrimaryButton(title: SafeEatL10n.text(L10nKey.Auth.actionLogin), isLoading: store.isLoading) {
+                Task {
+                    await store.loginWithPassword(phone: phone, password: password)
+                    if store.isNewUser == false && store.session == nil && !store.isLoading {
+                        showPasswordLoginError = true
+                    }
+                }
+            }
+            .disabled(phone.trimmingCharacters(in: .whitespacesAndNewlines).count != 11 || password.count < 6 || store.isLoading)
+            .alert(SafeEatL10n.text(L10nKey.Auth.passwordLoginErrorTitle), isPresented: $showPasswordLoginError) {
+                Button(SafeEatL10n.text(L10nKey.Auth.switchToRegister)) {
+                    loginRoute = .register
+                }
+                Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+            } message: {
+                Text(SafeEatL10n.text(L10nKey.Auth.passwordLoginErrorMessage))
+            }
+
+            HStack {
+                miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToCode)) {
+                    loginRoute = .codeLogin
+                }
+                Spacer()
+                miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToRegister)) {
+                    loginRoute = .register
+                }
+            }
+
+            appleCircleButton
+        }
+        .padding(24)
+        .background(cardBackground)
+        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
+    }
+
+    // MARK: - 注册内容
 
     private var registerContent: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -251,17 +344,22 @@ struct LoginView: View {
 
             HStack {
                 miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToPassword)) {
-                    screen = .passwordLogin
+                    loginRoute = .passwordLogin
                 }
                 Spacer()
                 miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToCode)) {
-                    screen = .codeLogin
+                    loginRoute = .codeLogin
                 }
             }
 
             appleCircleButton
         }
+        .padding(24)
+        .background(cardBackground)
+        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
     }
+
+    // MARK: - 绑定手机内容
 
     private var bindPhoneContent: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -279,9 +377,27 @@ struct LoginView: View {
             miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchBackWelcome)) {
                 store.logout()
                 resetFields()
-                screen = .passwordLogin
+                loginRoute = nil
             }
         }
+        .padding(24)
+        .background(cardBackground)
+        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
+    }
+
+    // MARK: - 共享子组件
+
+    private var cardBackground: some View {
+        Group {
+            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                .fill(.ultraThinMaterial)
+            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.64))
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+        )
     }
 
     private var codeField: some View {
@@ -293,7 +409,7 @@ struct LoginView: View {
                     await requestSMS()
                 }
             } label: {
-                Text(sendingSMS ? SafeEatL10n.text(L10nKey.Common.sending) : SafeEatL10n.text(L10nKey.Common.sendCode))
+                Text(smsCountdownManager.countdown > 0 ? "\(smsCountdownManager.countdown)s" : (smsCountdownManager.isSending ? SafeEatL10n.text(L10nKey.Common.sending) : SafeEatL10n.text(L10nKey.Common.sendCode)))
                     .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 18)
@@ -310,7 +426,7 @@ struct LoginView: View {
                     )
             }
             .buttonStyle(.plain)
-            .disabled(sendingSMS || phone.trimmingCharacters(in: .whitespacesAndNewlines).count != 11)
+            .disabled(smsCountdownManager.isSending || smsCountdownManager.countdown > 0 || phone.trimmingCharacters(in: .whitespacesAndNewlines).count != 11)
         }
     }
 
@@ -320,32 +436,6 @@ struct LoginView: View {
             Text(SafeEatL10n.format(L10nKey.Auth.smsHintFormat, devCodeHint))
                 .font(SafeEatFont.textStyle(.footnote))
                 .foregroundStyle(Color(red: 0.82, green: 0.47, blue: 0.18))
-        }
-    }
-
-    private var heroTitle: String {
-        switch screen {
-        case .passwordLogin:
-            return SafeEatL10n.text(L10nKey.Auth.passwordTitle)
-        case .codeLogin:
-            return SafeEatL10n.text(L10nKey.Auth.codeTitle)
-        case .register:
-            return SafeEatL10n.text(L10nKey.Auth.registerTitle)
-        case .bindPhone:
-            return SafeEatL10n.text(L10nKey.Auth.bindTitle)
-        }
-    }
-
-    private var heroSubtitle: String {
-        switch screen {
-        case .passwordLogin:
-            return SafeEatL10n.text(L10nKey.Auth.passwordSubtitle)
-        case .codeLogin:
-            return SafeEatL10n.text(L10nKey.Auth.codeSubtitle)
-        case .register:
-            return SafeEatL10n.text(L10nKey.Auth.registerSubtitle)
-        case .bindPhone:
-            return SafeEatL10n.text(L10nKey.Auth.bindSubtitle)
         }
     }
 
@@ -463,13 +553,20 @@ struct LoginView: View {
         .frame(maxWidth: .infinity)
     }
 
+    // MARK: - 倒计时管理器
+
+    @ObservedObject private var smsCountdownManager = SMSCountdownManager.shared
+
+    // MARK: - 操作方法
+
     private func requestSMS() async {
-        sendingSMS = true
-        defer { sendingSMS = false }
+        smsCountdownManager.isSending = true
+        defer { smsCountdownManager.isSending = false }
 
         do {
             let response = try await store.sendSMS(phone: phone)
             devCodeHint = response.devCode
+            smsCountdownManager.markSent()
         } catch {
             store.errorMessage = error.localizedDescription
         }
@@ -485,24 +582,18 @@ struct LoginView: View {
     }
 
     private func handleBack() {
-        switch screen {
-        case .codeLogin, .register:
-            resetFields()
-            screen = .passwordLogin
-        case .bindPhone:
-            store.logout()
-            resetFields()
-            screen = .passwordLogin
-        case .passwordLogin:
+        if loginRoute == nil {
             store.resetOnboarding()
+        } else {
+            loginRoute = nil
         }
     }
 
-    private func syncScreenWithSession() {
+    private func syncRouteWithSession() {
         if store.requiresPhoneBinding {
-            screen = .bindPhone
-        } else if store.session == nil, screen == .bindPhone {
-            screen = .passwordLogin
+            loginRoute = .bindPhone
+        } else if store.session == nil, loginRoute == .bindPhone {
+            loginRoute = nil
         }
     }
 

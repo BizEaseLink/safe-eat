@@ -9,6 +9,7 @@ struct WeekDayItem: Identifiable {
     let dayNumber: String
     let isToday: Bool
     let isSelected: Bool
+    let isFuture: Bool
 }
 
 // MARK: - Week Date Picker
@@ -21,6 +22,17 @@ struct WeekDatePicker: View {
         calendar.locale = AppSettingsStore.shared.displayLocale
         return calendar
     }
+    private var minDate: Date {
+        var comps = DateComponents(year: 2020, month: 1, day: 1)
+        return calendar.date(from: comps) ?? Date()
+    }
+
+    private var maxDate: Date {
+        let year = calendar.component(.year, from: Date())
+        var comps = DateComponents(year: year, month: 12, day: 31)
+        return calendar.date(from: comps) ?? Date()
+    }
+
     private var weekDays: [WeekDayItem] {
         let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: selectedDate)?.start ?? selectedDate
         let symbols = calendar.shortStandaloneWeekdaySymbols
@@ -38,7 +50,8 @@ struct WeekDatePicker: View {
                     ? SafeEatL10n.text(L10nKey.Menu.todayMarker)
                     : "\(calendar.component(.day, from: date))",
                 isToday: calendar.isDateInToday(date),
-                isSelected: calendar.isDate(date, inSameDayAs: selectedDate)
+                isSelected: calendar.isDate(date, inSameDayAs: selectedDate),
+                isFuture: calendar.compare(date, to: Date(), toGranularity: .day) == .orderedDescending
             )
         }
     }
@@ -97,6 +110,7 @@ struct WeekDatePicker: View {
                     ForEach(weekDays) { day in
                         dayCell(for: day, cellWidth: cellWidth)
                             .onTapGesture {
+                                guard !day.isFuture else { return }
                                 withAnimation(.easeInOut(duration: 0.22)) {
                                     selectedDate = day.date
                                 }
@@ -128,7 +142,13 @@ struct WeekDatePicker: View {
     private func navigateWeek(_ direction: Int) {
         withAnimation(.easeInOut(duration: 0.22)) {
             if let newDate = calendar.date(byAdding: .weekOfYear, value: direction, to: selectedDate) {
-                selectedDate = newDate
+                if calendar.compare(newDate, to: minDate, toGranularity: .day) == .orderedAscending {
+                    selectedDate = minDate
+                } else if calendar.compare(newDate, to: maxDate, toGranularity: .day) == .orderedDescending {
+                    selectedDate = maxDate
+                } else {
+                    selectedDate = newDate
+                }
             }
         }
     }
@@ -137,24 +157,31 @@ struct WeekDatePicker: View {
         VStack(spacing: 6) {
             Text(item.weekdaySymbol)
                 .font(SafeEatFont.custom(13, relativeTo: .caption2))
-                .foregroundStyle(item.isSelected ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
+                .foregroundStyle(
+                    item.isFuture ? SafeEatTheme.textSecondary.opacity(0.4)
+                    : item.isSelected ? SafeEatTheme.primary
+                    : SafeEatTheme.textSecondary
+                )
 
             ZStack {
-                if item.isSelected {
+                if item.isSelected && !item.isFuture {
                     RoundedRectangle(cornerRadius: 20)
                         .fill(item.isToday ? SafeEatTheme.primary : SafeEatTheme.primarySoft)
-                        // 让背景也一起动画，更统一
                         .animation(.easeInOut(duration: 0.2), value: item.isSelected)
                 }
 
                 VStack(spacing: 2) {
                     Text(item.dayNumber)
                         .font(
-                            item.isSelected
+                            item.isSelected && !item.isFuture
                                 ? SafeEatFont.custom(20, relativeTo: .body, weight: .bold)
                                 : SafeEatFont.custom(16, relativeTo: .body, weight: .bold)
                         )
-                        .foregroundStyle(item.isSelected ? (item.isToday ? .white : SafeEatTheme.primary) : SafeEatTheme.textPrimary)
+                        .foregroundStyle(
+                            item.isFuture ? SafeEatTheme.textSecondary.opacity(0.4)
+                            : item.isSelected ? (item.isToday ? .white : SafeEatTheme.primary)
+                            : SafeEatTheme.textPrimary
+                        )
                         .animation(.easeInOut(duration: 0.2), value: item.isSelected)
                 }
                 .padding(.vertical, 8)
@@ -174,7 +201,6 @@ struct MenuWeekView: View {
 
     @State private var selectedDate = Date()
     @State private var showNotificationSheet = false
-    @State private var showMonthView = false
 
     @State private var dayRoute: HistoryDayRoute?
     @State private var weekRoute: HistoryWeekRoute?
@@ -221,29 +247,52 @@ struct MenuWeekView: View {
             VStack(alignment: .leading, spacing: 20) {
                 topBar
 
-                overviewCard
+                if store.session == nil {
+                    // 未登录时显示空内容模板
+                    EmptyStateView(
+                        icon: "fork.knife",
+                        title: SafeEatL10n.text(L10nKey.Menu.notLoggedInTitle),
+                        message: SafeEatL10n.text(L10nKey.Menu.notLoggedInMessage),
+                        actionTitle: SafeEatL10n.text(L10nKey.Auth.goLogin),
+                        action: { store.goToLogin() }
+                    )
+                } else {
+                    overviewCard
 
-                WeekDatePicker(selectedDate: $selectedDate)
+                    WeekDatePicker(selectedDate: $selectedDate)
 
-                DailyPerformanceCard(items: todayItems, date: selectedDate) {
-                    dayRoute = HistoryDayRoute(date: selectedDate)
+                    DailyPerformanceCard(items: todayItems, date: selectedDate) {
+                        guard store.session != nil else {
+                            store.requireLogin()
+                            return
+                        }
+                        dayRoute = HistoryDayRoute(date: selectedDate)
+                    }
+
+                    MealPeriodSection(
+                        items: todayItems,
+                        selectedDate: selectedDate,
+                        onDayTapped: { date in
+                            guard store.session != nil else {
+                                store.requireLogin()
+                                return
+                            }
+                            dayRoute = HistoryDayRoute(date: date)
+                        }
+                    )
+
+                    WeeklySummaryCard(
+                        items: weekItems,
+                        weekStartDate: Calendar.current.dateInterval(of: .weekOfYear, for: selectedDate)?.start ?? Date(),
+                        onTapped: { monday in
+                            guard store.session != nil else {
+                                store.requireLogin()
+                                return
+                            }
+                            weekRoute = HistoryWeekRoute(referenceDate: monday)
+                        }
+                    )
                 }
-
-                MealPeriodSection(
-                    items: todayItems,
-                    selectedDate: selectedDate,
-                    onDayTapped: { date in
-                        dayRoute = HistoryDayRoute(date: date)
-                    }
-                )
-
-                WeeklySummaryCard(
-                    items: weekItems,
-                    weekStartDate: Calendar.current.dateInterval(of: .weekOfYear, for: selectedDate)?.start ?? Date(),
-                    onTapped: { monday in
-                        weekRoute = HistoryWeekRoute(referenceDate: monday)
-                    }
-                )
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
@@ -262,9 +311,6 @@ struct MenuWeekView: View {
         }
         .navigationDestination(item: $weekRoute) { route in
             HistoryWeekView(referenceDate: route.referenceDate)
-        }
-        .navigationDestination(isPresented: $showMonthView) {
-            HistoryMonthView()
         }
         .task {
             await settings.refreshNotificationStatus()
@@ -303,25 +349,6 @@ struct MenuWeekView: View {
 
             // 今日占比精简进度条（只显示条，不显示图例）
             AdviceRatioBar(stats: .from(items: todayItems), showLabels: false, barHeight: 8)
-
-            HStack(spacing: 12) {
-                RecordShortcutButton(
-                    title: SafeEatL10n.text(L10nKey.Menu.dayRecordTitle),
-                    icon: "calendar",
-                    count: todayItems.count
-                ) {
-                    dayRoute = HistoryDayRoute(date: selectedDate)
-                }
-
-                RecordShortcutButton(
-                    title: SafeEatL10n.text(L10nKey.Menu.weekRecordTitle),
-                    icon: "square.stack.3d.up",
-                    count: weekItems.count
-                ) {
-                    let weekStart = Calendar.current.dateInterval(of: .weekOfYear, for: selectedDate)?.start ?? selectedDate
-                    weekRoute = HistoryWeekRoute(referenceDate: weekStart)
-                }
-            }
         }
         .padding(20)
         .background(heroCardBackground)
@@ -339,25 +366,6 @@ struct MenuWeekView: View {
             SafeEatPageHeader(title: SafeEatL10n.text(L10nKey.Menu.title), subtitle: headerSubtitle)
 
             Spacer()
-
-            // 周/月视图切换按钮（参照原型 view-toggle）
-            Button {
-                showMonthView = true
-            } label: {
-                Image(systemName: "calendar")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
-                    .frame(width: 36, height: 36)
-                    .background(
-                        Circle()
-                            .fill(colorScheme == .dark ? Color.white.opacity(0.08) : Color.white.opacity(0.72))
-                    )
-                    .overlay(
-                        Circle()
-                            .stroke(colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.line, lineWidth: 1)
-                    )
-            }
-            .buttonStyle(.plain)
 
             NotificationBellButton(isEnabled: settings.reminderEnabled) {
                 showNotificationSheet = true

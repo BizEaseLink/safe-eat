@@ -1,0 +1,6 @@
+framework module UYuMao {
+  umbrella header "UYuMao.h"
+  export *
+
+  module * { export * }
+}

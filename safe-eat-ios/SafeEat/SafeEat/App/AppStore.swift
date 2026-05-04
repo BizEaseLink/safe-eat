@@ -21,7 +21,11 @@ final class AppStore: ObservableObject {
     @Published var errorMessage: String?
     @Published var selectedRootTab: AppRootTab = .home
     @Published var hasCompletedOnboarding: Bool
+    @Published var allowsGuestHome: Bool
     @Published var showLoginPrompt = false
+    @Published var loginPromptFeature: String?
+    @Published var isNewUser: Bool = false
+    @Published private(set) var localCacheUsageBytes: Int64 = 0
 
     // MARK: - 会员购买新增状态
     @Published var membershipProducts: [Product] = []
@@ -38,6 +42,7 @@ final class AppStore: ObservableObject {
     private var transactionListener: Task<Void, Never>?
 
     private static let onboardingKey = "safe-eat.onboarding.completed"
+    private static let guestHomeKey = "safe-eat.onboarding.guest-home"
 
     init(
         api: SafeEatAPI,
@@ -50,6 +55,7 @@ final class AppStore: ObservableObject {
         self.historyStore = historyStore
         self.storeKitService = storeKitService
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: Self.onboardingKey)
+        self.allowsGuestHome = UserDefaults.standard.bool(forKey: Self.guestHomeKey)
     }
 
     convenience init() {
@@ -61,19 +67,38 @@ final class AppStore: ObservableObject {
         )
     }
 
-    func completeOnboarding() {
+    func completeOnboarding(allowsGuestHome: Bool = false) {
         hasCompletedOnboarding = true
         UserDefaults.standard.set(true, forKey: Self.onboardingKey)
+        self.allowsGuestHome = allowsGuestHome
+        UserDefaults.standard.set(allowsGuestHome, forKey: Self.guestHomeKey)
+        selectedRootTab = .home
     }
 
     func resetOnboarding() {
         hasCompletedOnboarding = false
         UserDefaults.standard.set(false, forKey: Self.onboardingKey)
+        allowsGuestHome = false
+        UserDefaults.standard.set(false, forKey: Self.guestHomeKey)
     }
 
-    func requireLogin() {
+    func requireLogin(featureHint: String? = nil) {
         guard session == nil else { return }
+        loginPromptFeature = featureHint
         showLoginPrompt = true
+    }
+
+    func goToLogin() {
+        allowsGuestHome = false
+        UserDefaults.standard.set(false, forKey: Self.guestHomeKey)
+        showLoginPrompt = false
+        loginPromptFeature = nil
+        selectedRootTab = .home
+    }
+
+    func dismissLoginPrompt() {
+        showLoginPrompt = false
+        loginPromptFeature = nil
     }
 
     func bootstrap() async {
@@ -100,6 +125,7 @@ final class AppStore: ObservableObject {
     }
 
     func loginWithPassword(phone: String, password: String) async {
+        isNewUser = false
         await handleLoginTask {
             try await api.loginWithPassword(phone: phone, password: password)
         }
@@ -204,7 +230,7 @@ final class AppStore: ObservableObject {
     }
 
     var localCacheSizeText: String {
-        ByteCountFormatter.string(fromByteCount: historyStore.storageUsageBytes(), countStyle: .file)
+        ByteCountFormatter.string(fromByteCount: localCacheUsageBytes, countStyle: .file)
     }
 
     var localCacheCount: Int {
@@ -505,7 +531,8 @@ final class AppStore: ObservableObject {
             return AuthSession(
                 accessToken: refreshed.accessToken,
                 refreshToken: refreshed.refreshToken,
-                requiresPhoneBinding: currentSession.requiresPhoneBinding
+                requiresPhoneBinding: currentSession.requiresPhoneBinding,
+                isNewUser: nil
             )
         }
         refreshTask = task
@@ -545,6 +572,9 @@ final class AppStore: ObservableObject {
 
     private func finishLogin(with session: AuthSession) {
         applySession(session)
+        isNewUser = session.isNew
+        allowsGuestHome = true
+        UserDefaults.standard.set(true, forKey: Self.guestHomeKey)
         #if DEBUG
         print("[AppStore] login success, session updated")
         #endif
@@ -563,7 +593,10 @@ final class AppStore: ObservableObject {
     }
 
     private func reloadLocalHistory() {
-        localHistory = historyStore.loadItems().sorted { $0.createdAt > $1.createdAt }
+        let items = historyStore.loadItems().sorted { $0.createdAt > $1.createdAt }
+        let usageBytes = historyStore.storageUsageBytes()
+        localHistory = items
+        localCacheUsageBytes = usageBytes
     }
 
     // MARK: - Transaction 监听
@@ -592,5 +625,12 @@ final class AppStore: ObservableObject {
 
     var requiresPhoneBinding: Bool {
         session?.requiresPhoneBinding == true
+    }
+
+    var shouldShowLoginAfterOnboarding: Bool {
+        if requiresPhoneBinding {
+            return true
+        }
+        return session == nil && !allowsGuestHome
     }
 }

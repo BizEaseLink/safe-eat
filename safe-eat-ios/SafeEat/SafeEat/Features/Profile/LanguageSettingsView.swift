@@ -26,7 +26,7 @@ struct LanguageSettingsView: View {
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .frame(minHeight: 52)
+                        .frame(minHeight: 44)
                         .padding(.vertical, 6)
                         .padding(.horizontal, 2)
                         .contentShape(Rectangle())

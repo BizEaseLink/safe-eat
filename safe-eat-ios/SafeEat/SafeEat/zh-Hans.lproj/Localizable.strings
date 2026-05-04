@@ -1,4 +1,6 @@
 "brand.app_name" = "食安安";
+"brand.slogan" = "每一口，都更安心";
+"brand.slogan_en" = "Every bite, a safer choice.";
 
 "language.option.zh_hans" = "中文";
 "language.option.en" = "English";
@@ -57,6 +59,8 @@
 "error.request_failed" = "请求失败：%d";
 "error.decode_failed" = "响应解析失败：%@";
 "request.quota_exceeded" = "今日免费识别次数已用完，免费用户每天可识别 3 次。";
+"error.network_unavailable" = "网络不可用，请检查网络连接后重试";
+"error.image_capture_failed" = "图片处理失败，请重新拍照";
 
 "profile.root.title" = "个人";
 "profile.hero.default_name" = "食安安用户";
@@ -71,7 +75,7 @@
 "profile.member_entry.subtitle" = "查看当前可购买套餐与新用户优惠。";
 "profile.member_entry.format" = "从 %@ 起，解锁 %@ 的更多识别次数。";
 "profile.info.section_title" = "用户信息";
-"profile.edit.group_title" = "编辑与偏好";
+"profile.edit.group_title" = "账号与偏好";
 "profile.edit.title" = "编辑资料";
 "profile.edit.subtitle" = "名称、性别、身高、体重与头像";
 "profile.preference.title" = "偏好设置";
@@ -80,7 +84,7 @@
 "profile.system.reminder" = "开启提醒";
 "profile.system.language" = "系统语言";
 "profile.system.language.subtitle" = "中文 / English";
-"profile.system.security" = "系统安全";
+"profile.system.security" = "账号安全";
 "profile.system.security.subtitle" = "登录态、隐私与本地缓存说明";
 "profile.system.cache" = "数据和缓存";
 "profile.system.cache.subtitle" = "清理本地历史图片与贴纸缓存";
@@ -203,8 +207,9 @@
 "profile.about.certificate" = "证照展示";
 "profile.about.copyright" = "© 2026 郑凯杰";
 
-"profile.not_logged_in.title" = "尚未登录";
-"profile.not_logged_in.message" = "登录后可以查看个人资料、会员状态和更多功能。";
+"profile.not_logged_in.title" = "需要登录";
+"profile.not_logged_in.message" = "登录后即可查看个人信息和使用会员功能";
+"profile.not_logged_in.action" = "去登录";
 
 "order.history.title" = "订单记录";
 "order.history.subtitle" = "查看您的购买历史";
@@ -270,6 +275,12 @@
 "membership.purchase.trial_prompt_title" = "免费试用机会";
 "membership.purchase.trial_prompt_body" = "每位用户只有一次试用机会，是否现在体验？";
 "membership.purchase.trial_prompt_action" = "立即试用";
+"membership.purchase.yearly_price_hint" = "年费 %@，折合每月 %@";
+"membership.purchase.discount_applied" = "折扣已应用";
+"membership.purchase.invalid_discount_code" = "无效的折扣码";
+"membership.purchase.redeem_success" = "兑换成功";
+"membership.purchase.redeem_code_action" = "兑换码";
+"membership.purchase.trial_prompt_body_with_days" = "您有 %d 天免费试用资格，是否立即激活？";
 
 "home.title" = "首页";
 "home.brand_pill" = "食安安";
@@ -297,8 +308,19 @@
 "home.error.image_process_failed" = "图片处理失败，请重试。";
 "home.quota_exceeded.title" = "今日识别次数已用完";
 "home.quota_exceeded.message" = "免费用户每天可识别 3 次，升级会员可解锁更多次数。";
-"home.quota_exceeded.upgrade" = "升级会员";
-"home.quota_exceeded.tomorrow" = "明天刷新后可继续免费识别";
+"home.quota_exceeded.status_format" = "你今天已使用 %d / %d 次免费识别";
+"home.quota_exceeded.progress_label" = "免费识别次数";
+"home.quota_exceeded.member_hint" = "会员可继续识别当前食物，并查看完整营养与风险分析";
+"home.quota_exceeded.upgrade" = "升级会员继续识别";
+"home.quota_exceeded.watch_ad" = "看广告再识别 1 次";
+"home.quota_exceeded.tomorrow" = "明天 0 点后恢复 3 次免费识别";
+"home.ad_reward.claim_failed" = "奖励领取失败，请稍后重试";
+"home.ad_reward.load_failed" = "广告加载失败，请稍后重试";
+"home.ad_reward.success" = "已恢复识别次数";
+"home.ad_reward.success_title" = "奖励领取成功";
+"home.ad_reward.claim_failed_title" = "领取失败";
+"home.ad_reward.load_failed_title" = "广告加载失败";
+"home.ad_reward.retry" = "我知道了";
 "home.quota_remaining.format" = "今日剩余 %d 次";
 "home.loading.step_crop" = "裁切白框内主体";
 "home.loading.step_remove_bg" = "移除背景";
@@ -354,6 +376,8 @@
 "menu.meal.breakfast" = "早餐";
 "menu.meal.lunch" = "午餐";
 "menu.meal.dinner" = "晚餐";
+"menu.not_logged_in.title" = "暂无菜单数据";
+"menu.not_logged_in.message" = "登录后即可查看菜单和识别记录";
 
 "sticker.swipe_hint" = "左右滑动查看结果";
 "sticker.result_title" = "识别结果";
@@ -419,8 +443,9 @@
 "result.section.advice" = "饮食建议";
 "result.section.risk" = "风险分析";
 "result.image_missing" = "本地图片缺失";
-"result.missing.title" = "识别结果不存在";
-"result.missing.message" = "这条本地记录不存在或已被删除。";
+"result.missing.title" = "识别失败";
+"result.missing.message" = "未能识别该食品，请重新拍照";
+"result.missing.retry" = "重新拍照";
 "result.reason.separator" = "；";
 
 "feedback.title" = "反馈";
@@ -508,17 +533,26 @@
 "auth.error.password_mismatch" = "两次输入的密码不一致。";
 "auth.apple.name_fallback" = "Apple 用户";
 "auth.go_login" = "去登录";
+"auth.login_prompt.title" = "登录后解锁更多功能";
 "auth.login_prompt.message" = "此功能需要登录后才能使用，是否前往登录？";
+"auth.login_prompt.feature_format" = "「%@」需要登录后才能使用";
+"auth.login_prompt.later" = "稍后再说";
 "auth.or_divider" = "或";
+"auth.new_user.welcome_title" = "欢迎加入食安安！";
+"auth.new_user.welcome_message" = "请设置密码以保护您的账户安全";
+"auth.new_user.set_password" = "去设置密码";
+"auth.password_login.error_title" = "登录失败";
+"auth.password_login.error_message" = "手机号或密码错误，该手机号可能未注册，是否去注册？";
 
 "onboarding.skip" = "跳过";
 "onboarding.start" = "开始使用";
-"onboarding.page1.title" = "拍一拍，安心吃";
-"onboarding.page1.body" = "对准食品包装拍照，AI 即刻识别配料表，帮你快速判断食品是否安全";
-"onboarding.page2.title" = "风险一目了然";
-"onboarding.page2.body" = "智能标注高风险添加剂与过敏原，再也不用对着配料表发愁";
-"onboarding.page3.title" = "每次都有记录";
-"onboarding.page3.body" = "自动保存扫描历史，随时回看，守护全家人的饮食安全";
+"onboarding.page1.title" = "拍照识别，更安心地选择";
+"onboarding.page1.body" = "对准食品包装拍照，快速解析配料与营养信息，帮助你判断是否适合当前饮食需求。";
+"onboarding.page2.title" = "风险提示，一眼看懂";
+"onboarding.page2.body" = "自动识别高风险添加项、过敏原与关键营养提醒，让饮食判断更直接、更省心。";
+"onboarding.page3.title" = "识别记录，持续守护";
+"onboarding.page3.body" = "自动保存扫描历史与判断结果，方便随时回看，为你和家人的饮食管理提供长期参考。";
 
-"profile.not_logged_in.title" = "尚未登录";
-"profile.not_logged_in.message" = "登录后可以查看个人资料、会员状态和更多功能。";
+"profile.not_logged_in.title" = "需要登录";
+"profile.not_logged_in.message" = "登录后即可查看个人信息和使用会员功能";
+"profile.not_logged_in.action" = "去登录";

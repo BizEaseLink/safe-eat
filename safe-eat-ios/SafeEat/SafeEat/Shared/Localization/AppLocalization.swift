@@ -5,6 +5,8 @@ import UserNotifications
 enum L10nKey {
     enum Brand {
         static let appName = "brand.app_name"
+        static let slogan = "brand.slogan"
+        static let sloganEn = "brand.slogan_en"
     }
 
     enum Language {
@@ -79,6 +81,8 @@ enum L10nKey {
         static let requestFailed = "error.request_failed"
         static let decodeFailed = "error.decode_failed"
         static let requestQuotaExceeded = "request.quota_exceeded"
+        static let networkUnavailable = "error.network_unavailable"
+        static let imageCaptureFailed = "error.image_capture_failed"
     }
 
     enum Auth {
@@ -116,8 +120,16 @@ enum L10nKey {
         static let passwordMismatch = "auth.error.password_mismatch"
         static let appleNameFallback = "auth.apple.name_fallback"
         static let goLogin = "auth.go_login"
+        static let loginPromptTitle = "auth.login_prompt.title"
         static let loginPromptMessage = "auth.login_prompt.message"
+        static let loginPromptFeatureFormat = "auth.login_prompt.feature_format"
+        static let loginPromptLater = "auth.login_prompt.later"
         static let orDivider = "auth.or_divider"
+        static let newUserWelcomeTitle = "auth.new_user.welcome_title"
+        static let newUserWelcomeMessage = "auth.new_user.welcome_message"
+        static let newUserSetPassword = "auth.new_user.set_password"
+        static let passwordLoginErrorTitle = "auth.password_login.error_title"
+        static let passwordLoginErrorMessage = "auth.password_login.error_message"
     }
 
     enum Onboarding {
@@ -164,6 +176,7 @@ enum L10nKey {
         static let serviceGroupTitle = "profile.service.group_title"
         static let notLoggedInTitle = "profile.not_logged_in.title"
         static let notLoggedInMessage = "profile.not_logged_in.message"
+        static let notLoggedInAction = "profile.not_logged_in.action"
         static let healthProfileTitle = "profile.health_profile.title"
         static let healthProfileEdit = "profile.health_profile.edit"
         static let healthProfileEmpty = "profile.health_profile.empty"
@@ -353,6 +366,12 @@ enum L10nKey {
         static let trialPromptTitle = "membership.purchase.trial_prompt_title"
         static let trialPromptBody = "membership.purchase.trial_prompt_body"
         static let trialPromptAction = "membership.purchase.trial_prompt_action"
+        static let yearlyPriceHint = "membership.purchase.yearly_price_hint"
+        static let discountApplied = "membership.purchase.discount_applied"
+        static let invalidDiscountCode = "membership.purchase.invalid_discount_code"
+        static let redeemSuccess = "membership.purchase.redeem_success"
+        static let redeemCodeAction = "membership.purchase.redeem_code_action"
+        static let trialPromptBodyWithDays = "membership.purchase.trial_prompt_body_with_days"
     }
 
     enum Home {
@@ -382,8 +401,19 @@ enum L10nKey {
         static let imageProcessFailed = "home.error.image_process_failed"
         static let quotaExceededTitle = "home.quota_exceeded.title"
         static let quotaExceededMessage = "home.quota_exceeded.message"
+        static let quotaExceededStatusFormat = "home.quota_exceeded.status_format"
+        static let quotaExceededProgressLabel = "home.quota_exceeded.progress_label"
+        static let quotaExceededMemberHint = "home.quota_exceeded.member_hint"
         static let quotaExceededUpgrade = "home.quota_exceeded.upgrade"
+        static let quotaExceededWatchAd = "home.quota_exceeded.watch_ad"
         static let quotaExceededTomorrow = "home.quota_exceeded.tomorrow"
+        static let adRewardClaimFailed = "home.ad_reward.claim_failed"
+        static let adLoadFailed = "home.ad_reward.load_failed"
+        static let adRewardSuccess = "home.ad_reward.success"
+        static let adRewardSuccessTitle = "home.ad_reward.success_title"
+        static let adRewardClaimFailedTitle = "home.ad_reward.claim_failed_title"
+        static let adLoadFailedTitle = "home.ad_reward.load_failed_title"
+        static let adRewardRetry = "home.ad_reward.retry"
         static let quotaRemainingFormat = "home.quota_remaining.format"
         static let loadingStepCrop = "home.loading.step_crop"
         static let loadingStepRemoveBackground = "home.loading.step_remove_bg"
@@ -441,6 +471,8 @@ enum L10nKey {
         static let mealBreakfast = "menu.meal.breakfast"
         static let mealLunch = "menu.meal.lunch"
         static let mealDinner = "menu.meal.dinner"
+        static let notLoggedInTitle = "menu.not_logged_in.title"
+        static let notLoggedInMessage = "menu.not_logged_in.message"
     }
 
     enum Result {
@@ -478,6 +510,7 @@ enum L10nKey {
         static let imageMissing = "result.image_missing"
         static let missingTitle = "result.missing.title"
         static let missingMessage = "result.missing.message"
+        static let missingRetry = "result.missing.retry"
         static let reasonSeparator = "result.reason.separator"
     }
 
@@ -879,7 +912,8 @@ final class AppSettingsStore: ObservableObject {
             content.body = SafeEatL10n.text(L10nKey.Reminder.body)
             content.sound = .default
 
-            let dateComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: scheduledDate)
+            var dateComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: scheduledDate)
+            dateComponents.timeZone = calendar.timeZone
             let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
             let request = UNNotificationRequest(
                 identifier: Self.reminderIdentifier(for: index),
@@ -901,9 +935,16 @@ final class AppSettingsStore: ObservableObject {
         let hour = reminderTimeMinutes / 60
         let minute = reminderTimeMinutes % 60
 
-        var firstFire = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: baseDate) ?? baseDate
+        var comps = calendar.dateComponents([.year, .month, .day], from: baseDate)
+        comps.hour = hour
+        comps.minute = minute
+        comps.second = 0
+        comps.timeZone = calendar.timeZone
+
+        guard var firstFire = calendar.date(from: comps) else { return baseDate }
         if firstFire <= now {
-            firstFire = calendar.date(byAdding: .day, value: 1, to: firstFire) ?? firstFire
+            comps.day = (comps.day ?? 0) + 1
+            firstFire = calendar.date(from: comps) ?? firstFire
         }
 
         return firstFire

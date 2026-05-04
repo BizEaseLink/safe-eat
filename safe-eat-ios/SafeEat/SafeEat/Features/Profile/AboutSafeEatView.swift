@@ -27,12 +27,7 @@ struct AboutSafeEatView: View {
             }
 
             ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.About.disclosureSection)) {
-                NavigationLink {
-                    DisclosureDetailView(
-                        title: SafeEatL10n.text(L10nKey.Profile.About.userAgreement),
-                        category: "用户协议"
-                    )
-                } label: {
+                NavigationLink(value: ProfileRoute.userAgreement) {
                     ProfileNavigationRow(
                         icon: "doc.text",
                         title: SafeEatL10n.text(L10nKey.Profile.About.userAgreement)
@@ -42,12 +37,7 @@ struct AboutSafeEatView: View {
 
                 Divider().overlay(SafeEatTheme.line)
 
-                NavigationLink {
-                    DisclosureDetailView(
-                        title: SafeEatL10n.text(L10nKey.Profile.About.privacyPolicy),
-                        category: "隐私政策"
-                    )
-                } label: {
+                NavigationLink(value: ProfileRoute.privacyPolicy) {
                     ProfileNavigationRow(
                         icon: "hand.raised",
                         title: SafeEatL10n.text(L10nKey.Profile.About.privacyPolicy)
@@ -57,12 +47,7 @@ struct AboutSafeEatView: View {
 
                 Divider().overlay(SafeEatTheme.line)
 
-                NavigationLink {
-                    DisclosureDetailView(
-                        title: SafeEatL10n.text(L10nKey.Profile.About.valueAdded),
-                        category: "增值服务协议"
-                    )
-                } label: {
+                NavigationLink(value: ProfileRoute.valueAdded) {
                     ProfileNavigationRow(
                         icon: "star.circle",
                         title: SafeEatL10n.text(L10nKey.Profile.About.valueAdded)
@@ -72,9 +57,7 @@ struct AboutSafeEatView: View {
 
                 Divider().overlay(SafeEatTheme.line)
 
-                NavigationLink {
-                    CertificateGalleryView()
-                } label: {
+                NavigationLink(value: ProfileRoute.certificate) {
                     ProfileNavigationRow(
                         icon: "checkmark.seal.fill",
                         title: SafeEatL10n.text(L10nKey.Profile.About.certificate)

@@ -230,6 +230,36 @@ final class SafeEatAPI {
         return try await send(request, as: RedeemCodeResult.self)
     }
 
+    func calculatePrice(accessToken: String, payload: PriceCalculationRequest) async throws -> PriceCalculationResult {
+        var request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/membership/calculate-price",
+            method: "POST",
+            body: payload
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: PriceCalculationResult.self)
+    }
+
+    func validateDiscountCode(accessToken: String, payload: ValidateDiscountCodeRequest) async throws -> ValidateDiscountCodeResult {
+        var request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/membership/validate-discount-code",
+            method: "POST",
+            body: payload
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: ValidateDiscountCodeResult.self)
+    }
+
+    func claimAdReward(accessToken: String, payload: ClaimAdRewardPayload) async throws -> ClaimAdRewardResult {
+        var request = try buildJSONRequest(
+            path: "/v1/\(AppConfig.appCode)/ads/rewards/claim",
+            method: "POST",
+            body: payload
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: ClaimAdRewardResult.self)
+    }
+
     func verifyIAPReceipt(accessToken: String, payload: IAPVerifyReceiptPayload) async throws -> IAPVerifyReceiptResult {
         var request = try buildJSONRequest(
             path: "/v1/\(AppConfig.appCode)/iap/verify-receipt",
@@ -264,6 +294,11 @@ final class SafeEatAPI {
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         return try await send(request, as: RecognitionRecord.self)
+    }
+
+    func sendPublicRequest<T: Decodable>(path: String, method: String) async throws -> T {
+        let request = try buildRequest(path: path, method: method)
+        return try await send(request, as: T.self)
     }
 
     @discardableResult

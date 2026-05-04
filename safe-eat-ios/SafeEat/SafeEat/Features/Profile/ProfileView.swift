@@ -7,10 +7,10 @@ struct ProfileView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var plans: [MembershipPlan] = []
-    @State private var loadingPlans = false
     @State private var scrollOffset: CGFloat = 0
     @State private var isLoggingOut = false
     @State private var activeSheet: ProfileSheet?
+    @State private var didWarmProfileData = false
 
     private let scrollCoordinateSpace = "safeeat.profile.scroll"
 
@@ -29,6 +29,8 @@ struct ProfileView: View {
 
                         if store.session == nil {
                             notLoggedInView
+                            systemSettingsSection
+                            serviceSection
                         } else {
                             heroSection
                             healthProfileSection
@@ -70,10 +72,58 @@ struct ProfileView: View {
             .presentationDragIndicator(.visible)
             .presentationBackground(.clear)
         }
+        .navigationDestination(for: ProfileRoute.self, destination: destination)
         .task {
-            await settings.refreshNotificationStatus()
-            await store.refreshProfile()
-            await loadPlansIfNeeded()
+            await warmProfileDataIfNeeded()
+        }
+    }
+
+    @ViewBuilder
+    private func destination(for route: ProfileRoute) -> some View {
+        switch route {
+        case .membership:
+            MembershipPurchaseView()
+        case .orderHistory:
+            OrderHistoryView()
+        case .editProfile:
+            EditProfileView()
+        case .preferences:
+            PreferenceSettingsView()
+        case .security:
+            SecuritySettingsView()
+        case .cache:
+            CacheSettingsView()
+        case .feedback:
+            FeedbackProblemView()
+        case .updates:
+            UpdateSettingsView()
+        case .about:
+            AboutSafeEatView()
+        case .changePhone:
+            ChangePhoneView()
+        case .changePassword:
+            ChangePasswordView()
+        case .restorePurchases:
+            RestorePurchasesView()
+        case .deleteAccount:
+            DeleteAccountView()
+        case .userAgreement:
+            DisclosureDetailView(
+                title: SafeEatL10n.text(L10nKey.Profile.About.userAgreement),
+                category: "用户协议"
+            )
+        case .privacyPolicy:
+            DisclosureDetailView(
+                title: SafeEatL10n.text(L10nKey.Profile.About.privacyPolicy),
+                category: "隐私政策"
+            )
+        case .valueAdded:
+            DisclosureDetailView(
+                title: SafeEatL10n.text(L10nKey.Profile.About.valueAdded),
+                category: "增值服务协议"
+            )
+        case .certificate:
+            CertificateGalleryView()
         }
     }
 
@@ -132,9 +182,7 @@ struct ProfileView: View {
                     .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .semibold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
                 Spacer()
-                NavigationLink {
-                    PreferenceSettingsView()
-                } label: {
+                NavigationLink(value: ProfileRoute.preferences) {
                     Text(SafeEatL10n.text(L10nKey.Profile.healthProfileEdit))
                         .font(SafeEatFont.custom(13, relativeTo: .caption))
                         .foregroundStyle(SafeEatTheme.primary)
@@ -194,9 +242,7 @@ struct ProfileView: View {
 
     private var membershipEntry: some View {
         ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.memberEntryTitle)) {
-            NavigationLink {
-                MembershipPurchaseView()
-            } label: {
+            NavigationLink(value: ProfileRoute.membership) {
                 if let highlightedPlan = highlightedPlan {
                     ProfileNavigationRow(
                         icon: "crown.fill",
@@ -219,9 +265,7 @@ struct ProfileView: View {
 
             Divider().overlay(SafeEatTheme.line)
 
-            NavigationLink {
-                OrderHistoryView()
-            } label: {
+            NavigationLink(value: ProfileRoute.orderHistory) {
                 ProfileNavigationRow(
                     icon: "receipt",
                     title: SafeEatL10n.text(L10nKey.Order.title),
@@ -234,9 +278,7 @@ struct ProfileView: View {
 
     private var infoEntrySection: some View {
         ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.editGroupTitle)) {
-            NavigationLink {
-                EditProfileView()
-            } label: {
+            NavigationLink(value: ProfileRoute.editProfile) {
                 ProfileNavigationRow(
                     icon: "person.crop.circle.badge.plus",
                     title: SafeEatL10n.text(L10nKey.Profile.editTitle),
@@ -248,9 +290,7 @@ struct ProfileView: View {
 
             Divider().overlay(SafeEatTheme.line)
 
-            NavigationLink {
-                PreferenceSettingsView()
-            } label: {
+            NavigationLink(value: ProfileRoute.preferences) {
                 ProfileNavigationRow(
                     icon: "slider.horizontal.3",
                     title: SafeEatL10n.text(L10nKey.Profile.preferenceTitle),
@@ -258,6 +298,30 @@ struct ProfileView: View {
                 )
             }
             .buttonStyle(.plain)
+
+            Divider().overlay(SafeEatTheme.line)
+
+            if store.session != nil {
+                NavigationLink(value: ProfileRoute.security) {
+                    ProfileNavigationRow(
+                        icon: "lock.shield",
+                        title: SafeEatL10n.text(L10nKey.Profile.securityTitle),
+                        subtitle: SafeEatL10n.text(L10nKey.Profile.securitySubtitle)
+                    )
+                }
+                .buttonStyle(.plain)
+            } else {
+                Button {
+                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Profile.securityTitle))
+                } label: {
+                    ProfileNavigationRow(
+                        icon: "lock.shield",
+                        title: SafeEatL10n.text(L10nKey.Profile.securityTitle),
+                        subtitle: SafeEatL10n.text(L10nKey.Profile.securitySubtitle)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 
@@ -291,22 +355,7 @@ struct ProfileView: View {
 
             Divider().overlay(SafeEatTheme.line)
 
-            NavigationLink {
-                SecuritySettingsView()
-            } label: {
-                ProfileNavigationRow(
-                    icon: "lock.shield",
-                    title: SafeEatL10n.text(L10nKey.Profile.securityTitle),
-                    subtitle: SafeEatL10n.text(L10nKey.Profile.securitySubtitle)
-                )
-            }
-            .buttonStyle(.plain)
-
-            Divider().overlay(SafeEatTheme.line)
-
-            NavigationLink {
-                CacheSettingsView()
-            } label: {
+            NavigationLink(value: ProfileRoute.cache) {
                 ProfileNavigationRow(
                     icon: "internaldrive",
                     title: SafeEatL10n.text(L10nKey.Profile.cacheTitle),
@@ -318,9 +367,7 @@ struct ProfileView: View {
 
             Divider().overlay(SafeEatTheme.line)
 
-            NavigationLink {
-                FeedbackProblemView()
-            } label: {
+            NavigationLink(value: ProfileRoute.feedback) {
                 ProfileNavigationRow(
                     icon: "exclamationmark.bubble",
                     title: SafeEatL10n.text(L10nKey.Profile.feedbackTitle),
@@ -331,9 +378,7 @@ struct ProfileView: View {
 
             Divider().overlay(SafeEatTheme.line)
 
-            NavigationLink {
-                UpdateSettingsView()
-            } label: {
+            NavigationLink(value: ProfileRoute.updates) {
                 ProfileNavigationRow(
                     icon: "arrow.triangle.2.circlepath.circle",
                     title: SafeEatL10n.text(L10nKey.Profile.updatesTitle),
@@ -346,9 +391,7 @@ struct ProfileView: View {
 
     private var serviceSection: some View {
         ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.serviceGroupTitle)) {
-            NavigationLink {
-                AboutSafeEatView()
-            } label: {
+            NavigationLink(value: ProfileRoute.about) {
                 ProfileNavigationRow(
                     icon: "leaf.circle",
                     title: SafeEatL10n.text(L10nKey.Profile.aboutTitle),
@@ -374,50 +417,115 @@ struct ProfileView: View {
 
     private var notLoggedInView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "person.crop.circle.badge.xmark")
-                .font(.system(size: 48))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-
-            Text(SafeEatL10n.text(L10nKey.Profile.notLoggedInTitle))
-                .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
-
-            Text(SafeEatL10n.text(L10nKey.Profile.notLoggedInMessage))
-                .font(SafeEatFont.custom(15, relativeTo: .body))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-                .multilineTextAlignment(.center)
-
+            // 头像区域：点击触发登录
             Button {
-                store.requireLogin()
+                store.goToLogin()
             } label: {
-                Text(SafeEatL10n.text(L10nKey.Auth.goLogin))
-                    .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .fill(
-                                LinearGradient(
-                                    colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                    )
+                HStack(spacing: 16) {
+                    ZStack {
+                        Circle()
+                            .fill(SafeEatTheme.primarySoft)
+                            .frame(width: 86, height: 86)
+                        Image(systemName: "person.crop.circle.badge.plus")
+                            .font(.system(size: 32))
+                            .foregroundStyle(SafeEatTheme.primary)
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(SafeEatL10n.text(L10nKey.Profile.notLoggedInTitle))
+                            .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
+                            .foregroundStyle(SafeEatTheme.textPrimary)
+
+                        Text(SafeEatL10n.text(L10nKey.Profile.notLoggedInMessage))
+                            .font(SafeEatFont.custom(14, relativeTo: .body))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .lineLimit(2)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+                }
+                .padding(20)
+                .background(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .fill(.ultraThinMaterial)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                )
             }
             .buttonStyle(.plain)
+
+            // 需要登录的功能入口
+            ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.memberEntryTitle)) {
+                Button {
+                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Profile.memberEntryTitle))
+                } label: {
+                    ProfileNavigationRow(
+                        icon: "crown.fill",
+                        title: SafeEatL10n.text(L10nKey.Profile.memberEntryTitle),
+                        subtitle: SafeEatL10n.text(L10nKey.Profile.memberEntrySubtitle)
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().overlay(SafeEatTheme.line)
+
+                Button {
+                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Order.title))
+                } label: {
+                    ProfileNavigationRow(
+                        icon: "receipt",
+                        title: SafeEatL10n.text(L10nKey.Order.title),
+                        subtitle: SafeEatL10n.text(L10nKey.Order.subtitle)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+
+            ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.editGroupTitle)) {
+                Button {
+                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Profile.editTitle))
+                } label: {
+                    ProfileNavigationRow(
+                        icon: "person.crop.circle.badge.plus",
+                        title: SafeEatL10n.text(L10nKey.Profile.editTitle),
+                        subtitle: SafeEatL10n.text(L10nKey.Profile.editSubtitle)
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().overlay(SafeEatTheme.line)
+
+                Button {
+                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Profile.preferenceTitle))
+                } label: {
+                    ProfileNavigationRow(
+                        icon: "slider.horizontal.3",
+                        title: SafeEatL10n.text(L10nKey.Profile.preferenceTitle),
+                        subtitle: SafeEatL10n.text(L10nKey.Profile.preferenceSubtitleDefault)
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().overlay(SafeEatTheme.line)
+
+                Button {
+                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Profile.securityTitle))
+                } label: {
+                    ProfileNavigationRow(
+                        icon: "lock.shield",
+                        title: SafeEatL10n.text(L10nKey.Profile.securityTitle),
+                        subtitle: SafeEatL10n.text(L10nKey.Profile.securitySubtitle)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
         }
-        .padding(24)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .fill(.ultraThinMaterial)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
-        )
     }
 
     private var logoutButton: some View {
@@ -466,7 +574,7 @@ struct ProfileView: View {
         var pieces: [String] = []
         if let healthTags = store.profile?.healthTags, !healthTags.isEmpty {
             let separator = settings.language == .en ? ", " : "、"
-            pieces.append(healthTags.prefix(2).map(HealthTagMapper.title).joined(separator: separator))
+            pieces.append(healthTags.prefix(2).map { HealthTagMapper.title($0) }.joined(separator: separator))
         }
         if let fitnessGoal = store.profile?.fitnessGoal {
             pieces.append(FitnessGoalMapper.title(fitnessGoal))
@@ -474,11 +582,19 @@ struct ProfileView: View {
         return pieces.isEmpty ? SafeEatL10n.text(L10nKey.Profile.preferenceSubtitleDefault) : pieces.joined(separator: " · ")
     }
 
+    private func warmProfileDataIfNeeded() async {
+        guard !didWarmProfileData else { return }
+        didWarmProfileData = true
+
+        await settings.refreshNotificationStatus()
+
+        guard store.session != nil else { return }
+        await store.refreshProfile()
+        await loadPlansIfNeeded()
+    }
+
     private func loadPlansIfNeeded() async {
         guard plans.isEmpty else { return }
-
-        loadingPlans = true
-        defer { loadingPlans = false }
 
         do {
             plans = try await store.api.getPlans()
@@ -493,6 +609,26 @@ struct ProfileView: View {
         }
         SKStoreReviewController.requestReview(in: scene)
     }
+}
+
+enum ProfileRoute: Hashable {
+    case membership
+    case orderHistory
+    case editProfile
+    case preferences
+    case security
+    case cache
+    case feedback
+    case updates
+    case about
+    case changePhone
+    case changePassword
+    case restorePurchases
+    case deleteAccount
+    case userAgreement
+    case privacyPolicy
+    case valueAdded
+    case certificate
 }
 
 private enum ProfileSheet: String, Identifiable {

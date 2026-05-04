@@ -3,6 +3,12 @@ import SwiftUI
 import UIKit
 #endif
 
+enum AdRewardResultType {
+    case claimFailed
+    case loadFailed
+    case success
+}
+
 private struct ResultRoute: Identifiable, Hashable {
     let id: String
     let itemId: LocalHistoryItem.ID
@@ -19,6 +25,7 @@ private struct ResultRoute: Identifiable, Hashable {
 struct ScanHomeView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var settings: AppSettingsStore
+    private var adConfig: AdConfigStore { AdConfigStore.shared }
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var showCamera = false
@@ -28,8 +35,10 @@ struct ScanHomeView: View {
     @State private var recognizingPreviewImage: UIImage?
     @State private var showMembership = false
     @State private var showQuotaExceeded = false
+    @State private var showAdRewardResult = false
+    @State private var adRewardResultType: AdRewardResultType = .claimFailed
 
-    private let scrollCoordinateSpace = "safeeat.home.scroll"
+    let scrollCoordinateSpace = "safeeat.home.scroll"
 
     private var latestRecord: LocalHistoryItem? {
         store.localHistory.first
@@ -102,6 +111,11 @@ struct ScanHomeView: View {
             : Color(red: 0.65, green: 0.50, blue: 0.25).opacity(0.08)
     }
 
+    private var isLoggedIn: Bool {
+        guard store.hasBootstrapped else { return true }
+        return store.session != nil
+    }
+
     var body: some View {
         GeometryReader { proxy in
             ZStack(alignment: .top) {
@@ -115,7 +129,9 @@ struct ScanHomeView: View {
 
                         heroSection
 
-                        recentRecordSection
+                        if isLoggedIn {
+                            recentRecordSection
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
@@ -146,6 +162,10 @@ struct ScanHomeView: View {
         .toolbar(.hidden, for: .navigationBar)
         .fullScreenCover(isPresented: $showCamera) {
             CameraCaptureView { payload in
+                guard !isFreeQuotaExceeded else {
+                    showQuotaExceeded = true
+                    return
+                }
                 recognizingPreviewImage = payload.croppedImage.loadingOverlayPreviewImage()
                 Task {
                     await recognize(croppedImage: payload.croppedImage, rawImage: payload.rawImage)
@@ -159,8 +179,27 @@ struct ScanHomeView: View {
             MembershipPurchaseView()
         }
         .sheet(isPresented: $showQuotaExceeded) {
-            QuotaExceededSheet(onUpgrade: { showMembership = true })
+            QuotaExceededSheet(
+                onUpgrade: { showMembership = true },
+                onWatchAd: adConfig.rewardVideoEnabled ? { watchRewardAd() } : nil
+            )
         }
+        .sheet(isPresented: $showAdRewardResult) {
+            AdRewardResultSheet(resultType: adRewardResultType)
+        }
+        .alert(
+            SafeEatL10n.text(L10nKey.Common.notice),
+            isPresented: Binding<Bool>(
+                get: { store.errorMessage != nil },
+                set: { if !$0 { store.errorMessage = nil } }
+            ),
+            actions: {
+                Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) { store.errorMessage = nil }
+            },
+            message: {
+                Text(store.errorMessage ?? "")
+            }
+        )
     }
 
     private var homeBackground: some View {
@@ -176,6 +215,10 @@ struct ScanHomeView: View {
             Spacer()
 
             Button {
+                guard isLoggedIn else {
+                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.memberAction))
+                    return
+                }
                 showMembership = true
             } label: {
                 VStack(alignment: .trailing, spacing: 2) {
@@ -218,11 +261,7 @@ struct ScanHomeView: View {
 
             HStack(spacing: 12) {
                 Button {
-                    if isFreeQuotaExceeded {
-                        showQuotaExceeded = true
-                    } else {
-                        showCamera = true
-                    }
+                    startScan()
                 } label: {
                     Group {
                         if isRecognizing {
@@ -252,6 +291,10 @@ struct ScanHomeView: View {
                 .disabled(isRecognizing)
 
                 Button {
+                    guard isLoggedIn else {
+                        store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.memberAction))
+                        return
+                    }
                     showMembership = true
                 } label: {
                     Text(SafeEatL10n.text(L10nKey.Home.memberAction))
@@ -310,25 +353,18 @@ struct ScanHomeView: View {
                     }
                 )
             } else {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(SafeEatL10n.text(L10nKey.Home.emptyTitle))
-                        .font(SafeEatFont.textStyle(.headline))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
-                    Text(SafeEatL10n.text(L10nKey.Home.emptyMessage))
-                        .font(SafeEatFont.textStyle(.subheadline))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                SafeEatSurfaceCard(
+                    padding: EdgeInsets(top: 22, leading: 22, bottom: 22, trailing: 22)
+                ) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(SafeEatL10n.text(L10nKey.Home.emptyTitle))
+                            .font(SafeEatFont.textStyle(.headline))
+                            .foregroundStyle(SafeEatTheme.textPrimary)
+                        Text(SafeEatL10n.text(L10nKey.Home.emptyMessage))
+                            .font(SafeEatFont.textStyle(.subheadline))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+                    }
                 }
-                .padding(22)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
-                        .stroke(Color.white.opacity(0.7), lineWidth: 1)
-                )
-                .shadow(color: SafeEatTheme.primaryDeep.opacity(0.08), radius: 20, y: 12)
             }
         }
     }
@@ -349,10 +385,27 @@ struct ScanHomeView: View {
             )
     }
 
+    private func startScan() {
+        guard !isRecognizing else { return }
+
+        // 未登录时弹出登录引导
+        guard store.session != nil else {
+            store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.scanAction))
+            return
+        }
+
+        if isFreeQuotaExceeded {
+            showQuotaExceeded = true
+            return
+        }
+
+        showCamera = true
+    }
+
     @MainActor
     private func recognize(croppedImage: UIImage, rawImage: UIImage) async {
         guard store.session != nil else {
-            store.requireLogin()
+            store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.scanAction))
             return
         }
 
@@ -363,7 +416,7 @@ struct ScanHomeView: View {
         }
 
         guard let uploadData = croppedImage.jpegDataForUpload() else {
-            store.errorMessage = SafeEatL10n.text(L10nKey.Home.imageProcessFailed)
+            store.errorMessage = SafeEatL10n.text(L10nKey.Errors.imageCaptureFailed)
             return
         }
 
@@ -404,6 +457,58 @@ struct ScanHomeView: View {
         // 后端额度耗尽返回 400 + 特定消息
         // localizedMessage 已将原始消息转为本地化文本，这里匹配本地化后的文本
         return status == 400 && message == SafeEatL10n.text(L10nKey.Errors.requestQuotaExceeded)
+    }
+
+    private func watchRewardAd() {
+        let vc = topViewController()
+        guard let vc = vc else {
+            print("[UMeng] 无法获取 rootViewController")
+            return
+        }
+        print("[UMeng] 开始加载激励视频，vc=\(vc)")
+        RewardAdManager.shared.loadAndShow(from: vc,
+            onReward: { proofToken in
+                // 看完广告，先向后端领取奖励，再刷新额度
+                Task {
+                    do {
+                        _ = try await store.authorizedRequest { token in
+                            try await store.api.claimAdReward(
+                                accessToken: token,
+                                payload: ClaimAdRewardPayload(
+                                    placementCode: "reward_video",
+                                    proofToken: proofToken
+                                )
+                            )
+                        }
+                        await store.refreshProfile()
+                        adRewardResultType = .success
+                        showAdRewardResult = true
+                    } catch {
+                        print("[UMeng] claimReward 失败: \(error)")
+                        await store.refreshProfile()
+                        adRewardResultType = .claimFailed
+                        showAdRewardResult = true
+                    }
+                }
+            },
+            onClose: { normalClose in
+                if !normalClose {
+                    adRewardResultType = .loadFailed
+                    showAdRewardResult = true
+                }
+            }
+        )
+    }
+
+    private func topViewController() -> UIViewController? {
+        let scenes = UIApplication.shared.connectedScenes
+        let windowScene = scenes.first as? UIWindowScene
+        let window = windowScene?.windows.first(where: { $0.isKeyWindow })
+        var vc = window?.rootViewController
+        while vc?.presentedViewController != nil {
+            vc = vc?.presentedViewController
+        }
+        return vc
     }
 }
 
@@ -487,113 +592,90 @@ private struct HomeRecentRecordCard: View {
         }
     }
 
-    private var cardFill: Color {
-        colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.52)
-    }
-
-    private var cardStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color.white.opacity(0.76)
-    }
-
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top, spacing: 16) {
-                imagePreview
+        SafeEatSurfaceCard(onTap: onOpenDetail) {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .top, spacing: 16) {
+                    imagePreview
 
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(alignment: .top, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(displayName)
-                                .font(SafeEatFont.custom(28, relativeTo: .title2))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
-                                .lineLimit(2)
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(alignment: .top, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(displayName)
+                                    .font(SafeEatFont.custom(28, relativeTo: .title2))
+                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                                    .lineLimit(2)
 
-                            Text(
-                                SafeEatL10n.format(
-                                    L10nKey.Home.localImageFormat,
-                                    SafeEatL10n.text(L10nKey.Home.localImagePrefix),
-                                    item.createdAt.homeTimeText
+                                Text(
+                                    SafeEatL10n.format(
+                                        L10nKey.Home.localImageFormat,
+                                        SafeEatL10n.text(L10nKey.Home.localImagePrefix),
+                                        item.createdAt.homeTimeText
+                                    )
                                 )
-                            )
-                                .font(SafeEatFont.custom(15, relativeTo: .body))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-                        }
+                                    .font(SafeEatFont.custom(15, relativeTo: .body))
+                                    .foregroundStyle(SafeEatTheme.textSecondary)
+                            }
 
-                        Spacer(minLength: 8)
+                            Spacer(minLength: 8)
 
-                        Text(AdviceLevelMapper.title(item.adviceLevel))
-                            .font(SafeEatFont.custom(13, relativeTo: .subheadline))
-                            .foregroundStyle(statusColor)
-                            .padding(.horizontal, 11)
-                            .padding(.vertical, 7)
-                            .background(statusColor.opacity(0.14))
-                            .clipShape(Capsule())
-                    }
-
-                    HStack(spacing: 8) {
-                        Text(SafeEatL10n.format(L10nKey.Home.scoreFormat, item.foodScore))
-                            .font(SafeEatFont.custom(14, relativeTo: .footnote))
-                            .foregroundStyle(SafeEatTheme.warning)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(SafeEatTheme.warning.opacity(0.12))
-                            .clipShape(Capsule())
-
-                        ForEach(Array(summaryChips.prefix(1).enumerated()), id: \.offset) { _, chip in
-                            Text(chip.0)
-                                .font(SafeEatFont.custom(14, relativeTo: .footnote))
-                                .foregroundStyle(chip.1)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(chip.1.opacity(0.12))
+                            Text(AdviceLevelMapper.title(item.adviceLevel))
+                                .font(SafeEatFont.custom(13, relativeTo: .subheadline))
+                                .foregroundStyle(statusColor)
+                                .padding(.horizontal, 11)
+                                .padding(.vertical, 7)
+                                .background(statusColor.opacity(0.14))
                                 .clipShape(Capsule())
                         }
+
+                        HStack(spacing: 8) {
+                            Text(SafeEatL10n.format(L10nKey.Home.scoreFormat, item.foodScore))
+                                .font(SafeEatFont.custom(14, relativeTo: .footnote))
+                                .foregroundStyle(SafeEatTheme.warning)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(SafeEatTheme.warning.opacity(0.12))
+                                .clipShape(Capsule())
+
+                            ForEach(Array(summaryChips.prefix(1).enumerated()), id: \.offset) { _, chip in
+                                Text(chip.0)
+                                    .font(SafeEatFont.custom(14, relativeTo: .footnote))
+                                    .foregroundStyle(chip.1)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(chip.1.opacity(0.12))
+                                    .clipShape(Capsule())
+                            }
+                        }
+
+                        Text(summaryText)
+                            .font(SafeEatFont.custom(14, relativeTo: .body))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .lineLimit(2)
                     }
-
-                    Text(summaryText)
-                        .font(SafeEatFont.custom(14, relativeTo: .body))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
-                        .lineLimit(2)
                 }
-            }
 
-            Button(action: onOpenDetail) {
-                Text(SafeEatL10n.text(L10nKey.Home.detailAction))
-                    .font(SafeEatFont.custom(20, relativeTo: .headline))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(
-                                LinearGradient(
-                                    colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
+                Button(action: onOpenDetail) {
+                    Text(SafeEatL10n.text(L10nKey.Home.detailAction))
+                        .font(SafeEatFont.custom(20, relativeTo: .headline))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
                                 )
-                            )
-                    )
-                    .shadow(color: SafeEatTheme.primaryDeep.opacity(0.16), radius: 16, y: 10)
+                        )
+                        .shadow(color: SafeEatTheme.primaryDeep.opacity(0.16), radius: 16, y: 10)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .fill(.ultraThinMaterial)
-        )
-        .background(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .fill(cardFill)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .stroke(cardStroke, lineWidth: 1)
-        )
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(0.10), radius: 22, y: 14)
-        .contentShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
-        .onTapGesture(perform: onOpenDetail)
     }
 
     @ViewBuilder
