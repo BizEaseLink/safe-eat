@@ -26,7 +26,7 @@ struct BannerAdView: UIViewRepresentable {
         context.coordinator.bannerAd = banner
         context.coordinator.container = container
         context.coordinator.rootVC = vc
-        banner.loadAdAndShow(vc)
+        banner.loadAndShow(vc)
 
         return container
     }

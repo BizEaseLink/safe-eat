@@ -24,7 +24,7 @@ final class FloatingIconAdManager: NSObject {
         floatingAd = UMUnionFloatingIconAd(slotId: slotId)
         floatingAd?.delegate = self
         floatingAd?.canMove = true
-        floatingAd?.loadAdAndShow(vc)
+        floatingAd?.loadAndShow(vc)
     }
 
     func dismiss() {
