@@ -10,11 +10,13 @@ struct NativeAdView: UIViewRepresentable {
         guard adConfig.nativeEnabled else { return container }
 
         let slotId = UMengConfig.SlotId.native
+        guard !slotId.isEmpty else { return container }
+
         let nativeAd = UMUnionNativeAd(slotId: slotId, type: .feed)
         nativeAd.delegate = context.coordinator
         context.coordinator.nativeAd = nativeAd
         context.coordinator.container = container
-        nativeAd.loadAd()
+        nativeAd.load()
         return container
     }
 
@@ -23,8 +25,8 @@ struct NativeAdView: UIViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     class Coordinator: NSObject, UMUnionNativeAdDelegate {
-        weak var nativeAd: UMUnionNativeAd?
-        weak var container: UIView?
+        var nativeAd: UMUnionNativeAd?
+        var container: UIView?
 
         func nativeAdLoaded(_ nativeAdDataModel: UMUnionNativeAdDataModel?, error: Error?) {
             if let error {
@@ -33,9 +35,16 @@ struct NativeAdView: UIViewRepresentable {
         }
 
         func nativeAdRenderSuccess(_ nativeAd: UMUnionNativeAd, model: UMUnionNativeAdDataModel?) {
-            guard let model, let container else { return }
+            guard let model else { return }
+            DispatchQueue.main.async { [weak self] in
+                guard let self, let container = self.container else { return }
+                self.renderAd(model: model, into: container)
+            }
+        }
+
+        private func renderAd(model: UMUnionNativeAdDataModel, into container: UIView) {
             let bannerAdView = UMUnionNativeBannerAdView()
-            bannerAdView.viewController = topViewController()
+            bannerAdView.viewController = AdTopVC.resolve()
 
             let stack = UIStackView()
             stack.axis = .vertical
@@ -43,14 +52,12 @@ struct NativeAdView: UIViewRepresentable {
             stack.layoutMargins = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
             stack.isLayoutMarginsRelativeArrangement = true
 
-            // 标题
             let titleLabel = UILabel()
             titleLabel.text = model.title
             titleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
             titleLabel.numberOfLines = 2
             stack.addArrangedSubview(titleLabel)
 
-            // 内容描述
             if !model.content.isEmpty {
                 let descLabel = UILabel()
                 descLabel.text = model.content
@@ -60,7 +67,6 @@ struct NativeAdView: UIViewRepresentable {
                 stack.addArrangedSubview(descLabel)
             }
 
-            // 广告标识
             let adBadge = UILabel()
             adBadge.text = "广告"
             adBadge.font = .systemFont(ofSize: 10, weight: .medium)
@@ -77,8 +83,7 @@ struct NativeAdView: UIViewRepresentable {
                 stack.trailingAnchor.constraint(equalTo: bannerAdView.trailingAnchor),
             ])
 
-            // 绑定数据模型和可点击视图
-            bannerAdView.bindDataModel(model, clickableViews: [titleLabel, stack])
+            bannerAdView.bindDataModel(model, clickableViews: [titleLabel])
 
             container.addSubview(bannerAdView)
             bannerAdView.translatesAutoresizingMaskIntoConstraints = false
@@ -92,17 +97,6 @@ struct NativeAdView: UIViewRepresentable {
 
         func nativeAdRenderFail(_ nativeAd: UMUnionNativeAd, model: UMUnionNativeAdDataModel?, error: Error?) {
             print("[UMeng] 信息流广告渲染失败: \(error?.localizedDescription ?? "unknown")")
-        }
-
-        private func topViewController() -> UIViewController? {
-            let scenes = UIApplication.shared.connectedScenes
-            let windowScene = scenes.first as? UIWindowScene
-            let window = windowScene?.windows.first(where: { $0.isKeyWindow })
-            var vc = window?.rootViewController
-            while vc?.presentedViewController != nil {
-                vc = vc?.presentedViewController
-            }
-            return vc
         }
     }
 }

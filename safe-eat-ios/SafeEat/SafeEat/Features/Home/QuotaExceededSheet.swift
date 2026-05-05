@@ -8,17 +8,21 @@ struct QuotaExceededSheet: View {
     let onUpgrade: () -> Void
     var onWatchAd: (() -> Void)? = nil
 
-    private var freeDailyLimit: Int { 3 }
+    private var freeDailyLimit: Int { store.dailyQuota?.totalQuota ?? 3 }
 
-    private var todayScanCount: Int {
-        let calendar = Calendar.current
-        let todayItems = store.localHistory.filter { calendar.isDateInToday($0.createdAt) }
-        return todayItems.count
-    }
+    private var todayScanCount: Int { store.dailyQuota?.usedCount ?? 0 }
 
     private var usedCount: Int {
         min(max(todayScanCount, 0), freeDailyLimit)
     }
+
+    private var remainingAdWatches: Int {
+        // FREE 用户每天最多看 3 次广告，已看次数 = adClaimsCount
+        guard store.profile?.currentPlanTier == nil || store.profile?.currentPlanTier == "free" else { return 0 }
+        return max(0, 3 - (store.dailyQuota?.adClaimsCount ?? 0))
+    }
+
+    private var rewardPerWatch: Int { 3 }
 
     private var progressValue: Double {
         guard freeDailyLimit > 0 else { return 0 }
@@ -41,6 +45,10 @@ struct QuotaExceededSheet: View {
 
                     quotaProgress
 
+                    if onWatchAd != nil && remainingAdWatches > 0 {
+                        adRewardHint
+                    }
+
                     memberHintCard
 
                     actionArea
@@ -60,7 +68,10 @@ struct QuotaExceededSheet: View {
     }
 
     private var sheetHeight: CGFloat {
-        onWatchAd == nil ? 382 : 440
+        if onWatchAd != nil && remainingAdWatches > 0 {
+            return 500
+        }
+        return onWatchAd == nil ? 382 : 440
     }
 
     private var statusText: String {
@@ -80,6 +91,29 @@ struct QuotaExceededSheet: View {
                 .foregroundStyle(SafeEatTheme.textSecondary)
                 .multilineTextAlignment(.center)
         }
+    }
+
+    private var adRewardHint: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "play.rectangle.fill")
+                .font(.system(size: 13, weight: .semibold))
+            Text(SafeEatL10n.format(L10nKey.Home.quotaExceededAdRewardFormat, rewardPerWatch, remainingAdWatches))
+                .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.82)
+        }
+        .foregroundStyle(SafeEatTheme.primary)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(adHintFill)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(adHintStroke, lineWidth: 1)
+        )
     }
 
     private var quotaProgress: some View {
@@ -196,12 +230,14 @@ struct QuotaExceededSheet: View {
                     HStack(spacing: 8) {
                         Image(systemName: "play.rectangle.fill")
                             .font(.system(size: 16, weight: .bold))
-                        Text(SafeEatL10n.text(L10nKey.Home.quotaExceededWatchAd))
+                        Text(remainingAdWatches > 0
+                            ? SafeEatL10n.format(L10nKey.Home.quotaExceededWatchAdWithCount, remainingAdWatches)
+                            : SafeEatL10n.text(L10nKey.Home.quotaExceededWatchAd))
                             .font(SafeEatFont.custom(16, relativeTo: .subheadline, weight: .bold))
                             .lineLimit(1)
                             .minimumScaleFactor(0.82)
                     }
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .foregroundStyle(remainingAdWatches > 0 ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
                     .background(
@@ -214,6 +250,7 @@ struct QuotaExceededSheet: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .disabled(remainingAdWatches <= 0)
             }
 
             HStack(spacing: 6) {
@@ -294,5 +331,13 @@ struct QuotaExceededSheet: View {
 
     private var adButtonStroke: Color {
         colorScheme == .dark ? SafeEatTheme.primary.opacity(0.34) : SafeEatTheme.primary.opacity(0.32)
+    }
+
+    private var adHintFill: Color {
+        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.12) : SafeEatTheme.primarySoft.opacity(0.56)
+    }
+
+    private var adHintStroke: Color {
+        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.20) : SafeEatTheme.primary.opacity(0.16)
     }
 }

@@ -15,11 +15,16 @@ final class FloatingIconAdManager: NSObject {
         }
 
         let slotId = UMengConfig.SlotId.floatWindow
+        guard !slotId.isEmpty else {
+            print("[UMeng] 浮窗广告无有效 slotId，跳过")
+            return
+        }
+
         print("[UMeng] 浮窗广告加载, slotId=\(slotId)")
         floatingAd = UMUnionFloatingIconAd(slotId: slotId)
         floatingAd?.delegate = self
         floatingAd?.canMove = true
-        floatingAd?.loadAdAndShow(vc)
+        floatingAd?.loadAndShow(vc)
     }
 
     func dismiss() {

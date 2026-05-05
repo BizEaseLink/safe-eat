@@ -26,6 +26,8 @@ final class AppStore: ObservableObject {
     @Published var loginPromptFeature: String?
     @Published var isNewUser: Bool = false
     @Published private(set) var localCacheUsageBytes: Int64 = 0
+    @Published var pendingNotificationDate: Date?
+    @Published var dailyQuota: DailyQuotaSnapshot?
 
     // MARK: - 会员购买新增状态
     @Published var membershipProducts: [Product] = []
@@ -164,6 +166,19 @@ final class AppStore: ObservableObject {
             }
         } catch {
             handleAPIError(error)
+        }
+    }
+
+    func refreshDailyQuota() async {
+        do {
+            dailyQuota = try await authorizedRequest { token in
+                try await api.getDailyQuota(accessToken: token)
+            }
+        } catch {
+            // 配额查询失败不阻塞用户操作
+            #if DEBUG
+            print("[AppStore] refreshDailyQuota failed: \(error)")
+            #endif
         }
     }
 

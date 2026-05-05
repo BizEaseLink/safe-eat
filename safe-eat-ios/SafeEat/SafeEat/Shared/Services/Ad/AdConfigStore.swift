@@ -11,7 +11,10 @@ final class AdConfigStore {
     private let api: SafeEatAPI
     private static let cacheKey = "safeeat.adConfig.cache"
     private static let cacheTimestampKey = "safeeat.adConfig.cacheTimestamp"
-    private static let cacheTTL: TimeInterval = 24 * 60 * 60 // 24 小时
+
+    private var refreshInterval: TimeInterval { AppConfig.adConfigRefreshInterval }
+
+    private var refreshTask: Task<Void, Never>?
 
     init(api: SafeEatAPI = SafeEatAPI()) {
         self.api = api
@@ -55,10 +58,10 @@ final class AdConfigStore {
         guard let timestamp = UserDefaults.standard.object(forKey: Self.cacheTimestampKey) as? Date else {
             return false
         }
-        return Date().timeIntervalSince(timestamp) < Self.cacheTTL
+        return Date().timeIntervalSince(timestamp) < refreshInterval
     }
 
-    /// 拉取广告配置，24h 内不重复请求
+    /// 拉取广告配置（仅当缓存过期时请求网络）
     func fetchConfig() async {
         if isCacheValid && !placements.isEmpty {
             return
@@ -73,6 +76,39 @@ final class AdConfigStore {
         } catch {
             print("[AdConfig] 拉取广告配置失败: \(error.localizedDescription)")
         }
+    }
+
+    /// 强制刷新广告配置（忽略缓存），用于定时刷新
+    func forceRefresh() async {
+        do {
+            let response: AdConfigResponse = try await api.sendPublicRequest(
+                path: "/v1/\(AppConfig.appCode)/ads/config",
+                method: "GET"
+            )
+            placements = response.placements
+            cacheConfig(response.placements)
+        } catch {
+            print("[AdConfig] 刷新广告配置失败: \(error.localizedDescription)")
+        }
+    }
+
+    /// 启动定时刷新（主页面就绪后调用）
+    func startPeriodicRefresh() {
+        guard refreshTask == nil else { return }
+        let interval = refreshInterval
+        refreshTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(interval))
+                guard let self else { return }
+                await self.forceRefresh()
+            }
+        }
+    }
+
+    /// 停止定时刷新
+    func stopPeriodicRefresh() {
+        refreshTask?.cancel()
+        refreshTask = nil
     }
 
     private func loadCachedConfig() {

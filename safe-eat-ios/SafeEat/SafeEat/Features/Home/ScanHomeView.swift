@@ -49,21 +49,21 @@ struct ScanHomeView: View {
         store.localHistory.first
     }
 
-    private var freeDailyLimit: Int { 3 }
+    private var freeDailyLimit: Int { store.dailyQuota?.totalQuota ?? 3 }
 
-    private var todayScanCount: Int {
-        let calendar = Calendar.current
-        return store.localHistory.filter { calendar.isDateInToday($0.createdAt) }.count
-    }
+    private var todayScanCount: Int { store.dailyQuota?.usedCount ?? 0 }
 
     private var isFreeQuotaExceeded: Bool {
         guard store.profile?.currentPlanTier == nil || store.profile?.currentPlanTier == "free" else { return false }
-        return todayScanCount >= freeDailyLimit
+        // dailyQuota 为 nil 时（未登录或未获取到远程数据），不判定为已用完
+        guard let quota = store.dailyQuota else { return false }
+        return quota.remainingQuota <= 0
     }
 
     private var remainingFreeQuota: Int {
         guard store.profile?.currentPlanTier == nil || store.profile?.currentPlanTier == "free" else { return -1 }
-        return max(0, freeDailyLimit - todayScanCount)
+        // dailyQuota 为 nil 时回退为默认 3 次
+        return store.dailyQuota?.remainingQuota ?? 3
     }
 
     private var brandLabelColor: Color {
@@ -140,7 +140,7 @@ struct ScanHomeView: View {
 
                         if !isPaidMember && adConfig.bannerEnabled {
                             BannerAdView()
-                                .frame(height: 50)
+                                .frame(maxWidth: .infinity, minHeight: 50, idealHeight: 50, maxHeight: 50)
                         }
                     }
                     .padding(.horizontal, 20)
@@ -210,6 +210,9 @@ struct ScanHomeView: View {
                 Text(store.errorMessage ?? "")
             }
         )
+        .task {
+            await store.refreshDailyQuota()
+        }
     }
 
     private var homeBackground: some View {
@@ -470,8 +473,7 @@ struct ScanHomeView: View {
     }
 
     private func watchRewardAd() {
-        let vc = topViewController()
-        guard let vc = vc else {
+        guard let vc = AdTopVC.resolve() else {
             print("[UMeng] 无法获取 rootViewController")
             return
         }
@@ -491,11 +493,13 @@ struct ScanHomeView: View {
                             )
                         }
                         await store.refreshProfile()
-                        adRewardResultType = .success
+                            await store.refreshDailyQuota()
+                            adRewardResultType = .success
                         showAdRewardResult = true
                     } catch {
                         print("[UMeng] claimReward 失败: \(error)")
                         await store.refreshProfile()
+                        await store.refreshDailyQuota()
                         adRewardResultType = .claimFailed
                         showAdRewardResult = true
                     }
@@ -508,17 +512,6 @@ struct ScanHomeView: View {
                 }
             }
         )
-    }
-
-    private func topViewController() -> UIViewController? {
-        let scenes = UIApplication.shared.connectedScenes
-        let windowScene = scenes.first as? UIWindowScene
-        let window = windowScene?.windows.first(where: { $0.isKeyWindow })
-        var vc = window?.rootViewController
-        while vc?.presentedViewController != nil {
-            vc = vc?.presentedViewController
-        }
-        return vc
     }
 }
 

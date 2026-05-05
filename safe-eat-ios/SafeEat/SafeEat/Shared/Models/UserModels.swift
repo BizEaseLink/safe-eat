@@ -221,6 +221,17 @@ struct AdRewardQuota: Decodable {
     let adClaimsCount: Int
 }
 
+// MARK: - 每日配额快照
+
+struct DailyQuotaSnapshot: Decodable {
+    let planTier: String
+    let totalQuota: Int
+    let usedCount: Int
+    let remainingQuota: Int
+    let adClaimsCount: Int
+    let quotaDate: String
+}
+
 // MARK: - 订单记录
 
 struct OrderRecord: Codable, Identifiable {
