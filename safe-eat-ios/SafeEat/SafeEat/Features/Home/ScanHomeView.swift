@@ -49,10 +49,6 @@ struct ScanHomeView: View {
         store.localHistory.first
     }
 
-    private var freeDailyLimit: Int { store.dailyQuota?.totalQuota ?? 3 }
-
-    private var todayScanCount: Int { store.dailyQuota?.usedCount ?? 0 }
-
     private var isFreeQuotaExceeded: Bool {
         guard store.profile?.currentPlanTier == nil || store.profile?.currentPlanTier == "free" else { return false }
         // dailyQuota 为 nil 时（未登录或未获取到远程数据），不判定为已用完

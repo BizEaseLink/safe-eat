@@ -314,7 +314,7 @@
 "home.error.image_process_failed" = "图片处理失败，请重试。";
 "home.quota_exceeded.title" = "今日识别次数已用完";
 "home.quota_exceeded.message" = "免费用户每天可识别 3 次，升级会员可解锁更多次数。";
-"home.quota_exceeded.status_format" = "你今天已使用 %d / %d 次免费识别";
+"home.quota_exceeded.status_format" = "今日剩余 %d / %d 次识别";
 "home.quota_exceeded.progress_label" = "免费识别次数";
 "home.quota_exceeded.member_hint" = "会员可继续识别当前食物，并查看完整营养与风险分析";
 "home.quota_exceeded.upgrade" = "升级会员继续识别";

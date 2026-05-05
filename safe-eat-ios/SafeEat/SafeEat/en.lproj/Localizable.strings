@@ -438,7 +438,7 @@
 "membership.purchase.free_plan_description" = "3 free recognitions per day. Great for trying out basic features.";
 "home.quota_exceeded.title" = "Daily Recognition Limit Reached";
 "home.quota_exceeded.message" = "Free users can recognize 3 times per day. Upgrade to unlock more.";
-"home.quota_exceeded.status_format" = "You have used %d / %d free recognitions today";
+"home.quota_exceeded.status_format" = "%d / %d recognitions remaining today";
 "home.quota_exceeded.progress_label" = "Free recognitions";
 "home.quota_exceeded.member_hint" = "Members can continue recognizing this food and view complete nutrition and risk analysis";
 "home.quota_exceeded.upgrade" = "Upgrade to continue";

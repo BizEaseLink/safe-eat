@@ -8,16 +8,11 @@ struct QuotaExceededSheet: View {
     let onUpgrade: () -> Void
     var onWatchAd: (() -> Void)? = nil
 
-    private var freeDailyLimit: Int { store.dailyQuota?.totalQuota ?? 3 }
+    private var totalQuota: Int { store.dailyQuota?.totalQuota ?? 3 }
 
-    private var todayScanCount: Int { store.dailyQuota?.usedCount ?? 0 }
-
-    private var usedCount: Int {
-        min(max(todayScanCount, 0), freeDailyLimit)
-    }
+    private var remainingQuota: Int { store.dailyQuota?.remainingQuota ?? 0 }
 
     private var remainingAdWatches: Int {
-        // FREE 用户每天最多看 3 次广告，已看次数 = adClaimsCount
         guard store.profile?.currentPlanTier == nil || store.profile?.currentPlanTier == "free" else { return 0 }
         return max(0, 3 - (store.dailyQuota?.adClaimsCount ?? 0))
     }
@@ -25,8 +20,8 @@ struct QuotaExceededSheet: View {
     private var rewardPerWatch: Int { 3 }
 
     private var progressValue: Double {
-        guard freeDailyLimit > 0 else { return 0 }
-        return min(Double(usedCount) / Double(freeDailyLimit), 1)
+        guard totalQuota > 0 else { return 0 }
+        return min(Double(remainingQuota) / Double(totalQuota), 1)
     }
 
     var body: some View {
@@ -74,10 +69,6 @@ struct QuotaExceededSheet: View {
         return onWatchAd == nil ? 382 : 440
     }
 
-    private var statusText: String {
-        SafeEatL10n.format(L10nKey.Home.quotaExceededStatusFormat, usedCount, freeDailyLimit)
-    }
-
     private var titleBlock: some View {
         VStack(spacing: 7) {
             Text(SafeEatL10n.text(L10nKey.Home.quotaExceededTitle))
@@ -86,7 +77,7 @@ struct QuotaExceededSheet: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
 
-            Text(statusText)
+            Text(SafeEatL10n.format(L10nKey.Home.quotaExceededStatusFormat, remainingQuota, totalQuota))
                 .font(SafeEatFont.custom(14, relativeTo: .subheadline))
                 .foregroundStyle(SafeEatTheme.textSecondary)
                 .multilineTextAlignment(.center)
@@ -123,7 +114,7 @@ struct QuotaExceededSheet: View {
                     .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textSecondary)
                 Spacer()
-                Text("\(usedCount)/\(freeDailyLimit)")
+                Text("\(remainingQuota)/\(totalQuota)")
                     .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textSecondary)
             }
