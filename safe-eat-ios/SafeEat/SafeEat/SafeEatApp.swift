@@ -101,6 +101,7 @@ struct SafeEatApp: App {
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
                 Task {
                     await AdConfigStore.shared.forceRefresh()
+                    await store.refreshDailyQuota()
                     // 插屏广告：只在从后台恢复时展示，冷启动不展示
                     if hasCompletedLaunch && hasEnteredBackground && !isPaidMember && adConfig.interstitialEnabled {
                         InterstitialAdManager.shared.showAdIfReady()

@@ -206,8 +206,8 @@ struct ScanHomeView: View {
                 Text(store.errorMessage ?? "")
             }
         )
-        .onAppear {
-                Task { await store.refreshDailyQuota() }
+        .task {
+                await store.refreshDailyQuota()
             }
     }
 

@@ -28,7 +28,6 @@ final class AppStore: ObservableObject {
     @Published private(set) var localCacheUsageBytes: Int64 = 0
     @Published var pendingNotificationDate: Date?
     @Published var dailyQuota: DailyQuotaSnapshot?
-    private var lastQuotaRefreshAt: Date?
 
     // MARK: - 会员购买新增状态
     @Published var membershipProducts: [Product] = []
@@ -171,15 +170,11 @@ final class AppStore: ObservableObject {
     }
 
     func refreshDailyQuota() async {
-        // 30 秒内不重复请求
-        if let last = lastQuotaRefreshAt, Date().timeIntervalSince(last) < 30 { return }
         do {
             dailyQuota = try await authorizedRequest { token in
                 try await api.getDailyQuota(accessToken: token)
             }
-            lastQuotaRefreshAt = Date()
         } catch {
-            // 配额查询失败不阻塞用户操作
             #if DEBUG
             print("[AppStore] refreshDailyQuota failed: \(error)")
             #endif
