@@ -6,7 +6,8 @@ import Combine
 struct SafeEatApp: App {
     @StateObject private var store = AppStore()
     @StateObject private var settings = AppSettingsStore.shared
-    @State private var adConfig = AdConfigStore.shared
+    private var adConfig: AdConfigStore { AdConfigStore.shared }
+    private let notificationDelegate = NotificationDelegate()
 
     /// 入口流程阶段
     private enum LaunchPhase {
@@ -31,7 +32,7 @@ struct SafeEatApp: App {
 
     /// 开屏广告是否应展示：配置启用 + 非付费会员 + 有有效 slotId
     private var shouldShowSplashAd: Bool {
-        !isPaidMember && adConfig.splashEnabled && adConfig.slotId(for: .splash) != nil
+        !isPaidMember && adConfig.splashEnabled && !(adConfig.slotId(for: .splash) ?? "").isEmpty
     }
 
     init() {
@@ -56,16 +57,12 @@ struct SafeEatApp: App {
                     .environmentObject(settings)
                     .environment(\.locale, settings.displayLocale)
                     .task {
-                        // 并行拉取广告配置和启动业务
-                        await withTaskGroup(of: Void.self) { group in
-                            group.addTask { await adConfig.fetchConfig() }
-                            group.addTask {
-                                ATTrackingManager.requestTrackingAuthorization { status in
-                                    print("[UMeng] IDFA 权限状态: \(status.rawValue)")
-                                }
-                            }
-                            group.addTask { await settings.refreshNotificationStatus() }
-                            group.addTask { await store.bootstrap() }
+                        // 设置通知 delegate + 启动业务（广告配置用缓存，不在此 fetch）
+                        notificationDelegate.configure(store: store)
+                        await store.bootstrap()
+                        await settings.refreshNotificationStatus()
+                        ATTrackingManager.requestTrackingAuthorization { status in
+                            print("[UMeng] IDFA 权限状态: \(status.rawValue)")
                         }
                     }
 
@@ -100,10 +97,10 @@ struct SafeEatApp: App {
             .onChange(of: adConfig.splashEnabled) { enabled in
                 if !enabled { showSplashAd = false }
             }
-            // App 从后台回到前台时，先刷新配置再决定是否展示插屏
+            // App 从后台回到前台时，刷新配置再决定是否展示插屏
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
                 Task {
-                    await adConfig.fetchConfig()
+                    await AdConfigStore.shared.forceRefresh()
                     // 插屏广告：只在从后台恢复时展示，冷启动不展示
                     if hasCompletedLaunch && hasEnteredBackground && !isPaidMember && adConfig.interstitialEnabled {
                         InterstitialAdManager.shared.showAdIfReady()
@@ -119,6 +116,10 @@ struct SafeEatApp: App {
                 // 标记冷启动完成（延迟到首屏就绪后）
                 try? await Task.sleep(for: .seconds(2))
                 hasCompletedLaunch = true
+
+                // 启动广告配置定时刷新（首次立即拉取，之后每 2 小时刷新）
+                await AdConfigStore.shared.fetchConfig()
+                AdConfigStore.shared.startPeriodicRefresh()
 
                 // 预加载插屏广告
                 if !isPaidMember && adConfig.interstitialEnabled {
@@ -145,7 +146,7 @@ struct SafeEatApp: App {
         }
         .transition(.opacity)
         .task {
-            // Logo 动画播放完毕后决定下一步
+            // Logo 动画播放完毕后决定下一步，广告配置用缓存直接判断
             try? await Task.sleep(for: .seconds(Self.logoAnimationDuration))
             withAnimation(.easeOut(duration: 0.3)) {
                 if shouldShowSplashAd {

@@ -1,32 +1,23 @@
 import SwiftUI
+import UMUnionSDK
 
 struct BannerAdView: UIViewRepresentable {
-    private let slotId: String
-
-    init(slotId: String = UMengConfig.SlotId.banner) {
-        self.slotId = slotId
-    }
+    private var adConfig: AdConfigStore { AdConfigStore.shared }
 
     func makeUIView(context: Context) -> UIView {
         let container = UIView()
         container.backgroundColor = .clear
 
-        guard !slotId.isEmpty else {
-            print("[UMeng] Banner 广告无有效 slotId，跳过")
-            return container
-        }
+        guard adConfig.bannerEnabled else { return container }
 
-        guard let vc = topViewController() else {
-            print("[UMeng] Banner 广告找不到 topViewController")
-            return container
-        }
+        let slotId = UMengConfig.SlotId.banner
+        guard !slotId.isEmpty else { return container }
 
-        let banner = UMUnionBannerAd(slotId: slotId)
-        banner.delegate = context.coordinator
-        context.coordinator.bannerAd = banner
+        let nativeAd = UMUnionNativeAd(slotId: slotId, type: .default)
+        nativeAd.delegate = context.coordinator
+        context.coordinator.nativeAd = nativeAd
         context.coordinator.container = container
-        context.coordinator.rootVC = vc
-        banner.loadAndShow(vc)
+        nativeAd.load()
 
         return container
     }
@@ -35,40 +26,79 @@ struct BannerAdView: UIViewRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
-    private func topViewController() -> UIViewController? {
-        let scenes = UIApplication.shared.connectedScenes
-        let windowScene = scenes.first as? UIWindowScene
-        let window = windowScene?.windows.first(where: { $0.isKeyWindow })
-        var vc = window?.rootViewController
-        while vc?.presentedViewController != nil {
-            vc = vc?.presentedViewController
-        }
-        return vc
-    }
+    class Coordinator: NSObject, UMUnionNativeAdDelegate, UMUnionNativeAdViewDelegate {
+        var nativeAd: UMUnionNativeAd?
+        var container: UIView?
+        private var model: UMUnionNativeAdDataModel?
 
-    class Coordinator: NSObject, UMUnionBannerAdDelegate {
-        weak var bannerAd: UMUnionBannerAd?
-        weak var container: UIView?
-        weak var rootVC: UIViewController?
-
-        func uadBannerDidLoad(_ bannerAd: UMUnionBannerAd) {
-            print("[UMeng] Banner 广告加载成功")
+        func nativeAdLoaded(_ nativeAdDataModel: UMUnionNativeAdDataModel?, error: Error?) {
+            if let error {
+                print("[UMeng] Banner 自渲染加载失败: \(error.localizedDescription)")
+                return
+            }
+            guard let model = nativeAdDataModel else { return }
+            self.model = model
+            DispatchQueue.main.async { [weak self] in
+                self?.renderAd()
+            }
         }
 
-        func uadBannerDidLoad(_ bannerAd: UMUnionBannerAd, failWithError error: Error?) {
-            print("[UMeng] Banner 广告加载失败: \(error?.localizedDescription ?? "unknown")")
+        func nativeAdRenderSuccess(_ nativeAd: UMUnionNativeAd, model: UMUnionNativeAdDataModel?) {}
+        func nativeAdRenderFail(_ nativeAd: UMUnionNativeAd, model: UMUnionNativeAdDataModel?, error: Error?) {}
+
+        private func renderAd() {
+            guard let model, let container else { return }
+            guard let vc = AdTopVC.resolve() else { return }
+
+            let adView = UMUnionNativeBannerAdView()
+            adView.delegate = self
+            adView.viewController = vc
+            adView.frame = CGRect(x: 0, y: 0, width: container.bounds.width, height: 50)
+
+            let titleLabel = UILabel()
+            titleLabel.text = model.title
+            titleLabel.font = .systemFont(ofSize: 14, weight: .medium)
+            titleLabel.numberOfLines = 1
+            titleLabel.frame = CGRect(x: 8, y: 4, width: adView.bounds.width - 60, height: 20)
+            adView.addSubview(titleLabel)
+
+            if !model.content.isEmpty {
+                let descLabel = UILabel()
+                descLabel.text = model.content
+                descLabel.font = .systemFont(ofSize: 12)
+                descLabel.textColor = .secondaryLabel
+                descLabel.numberOfLines = 1
+                descLabel.frame = CGRect(x: 8, y: 26, width: adView.bounds.width - 60, height: 18)
+                adView.addSubview(descLabel)
+            }
+
+            let adBadge = UILabel()
+            adBadge.text = "广告"
+            adBadge.font = .systemFont(ofSize: 10, weight: .medium)
+            adBadge.textColor = .tertiaryLabel
+            adBadge.textAlignment = .right
+            adBadge.frame = CGRect(x: adView.bounds.width - 50, y: 15, width: 42, height: 20)
+            adView.addSubview(adBadge)
+
+            adView.bindDataModel(model, clickableViews: [titleLabel])
+
+            container.addSubview(adView)
+            adView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                adView.topAnchor.constraint(equalTo: container.topAnchor),
+                adView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+                adView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+                adView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            ])
         }
 
-        func uadBannerExposeSuccess(_ bannerAd: UMUnionBannerAd) {
-            print("[UMeng] Banner 广告展示成功")
+        func nativeAdViewExpose(_ nativeAdView: UMUnionNativeBannerAdView) {}
+        func nativeAdViewDidClick(_ nativeAdView: UMUnionNativeBannerAdView) {}
+        func nativeAdViewWithError(_ error: Error) {
+            print("[UMeng] Banner 自渲染视图错误: \(error.localizedDescription)")
         }
-
-        func uadBannerClicked(_ bannerAd: UMUnionBannerAd) {
-            print("[UMeng] Banner 广告被点击")
-        }
-
-        func uadBannerClose(_ bannerAd: UMUnionBannerAd) {
-            print("[UMeng] Banner 广告关闭")
-        }
+        func nativeAdView(_ nativeAdView: UMUnionNativeBannerAdView, mediaPlayerStatus status: UMUnionMediaPlayerStatus) {}
+        func nativeAdViewDetailViewWillPresent(_ nativeAdView: UMUnionNativeBannerAdView) {}
+        func nativeAdViewDetailViewClosed(_ nativeAdView: UMUnionNativeBannerAdView) {}
     }
 }

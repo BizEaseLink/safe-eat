@@ -214,6 +214,12 @@
 "reminder.summary.format" = "%@ %@";
 "reminder.notification.title" = "Remember to review today's food records tonight";
 "reminder.notification.body" = "Safe Eat has prepared today's recognition history for you. Come back anytime.";
+"reminder.notification.title_today" = "Today's food records await review";
+"reminder.notification.body_today" = "Tap to view today's dietary performance";
+"reminder.notification.title_yesterday" = "Yesterday's food records await review";
+"reminder.notification.body_yesterday" = "Tap to view yesterday's dietary performance";
+"reminder.notification.title_date" = "%@ food records await review";
+"reminder.notification.body_date" = "Tap to view %@ dietary performance";
 
 "error.avatar_compression_failed" = "Avatar compression failed. Please choose another image.";
 "error.save_original_failed" = "Saving the original image failed. Please try again.";
@@ -437,6 +443,8 @@
 "home.quota_exceeded.member_hint" = "Members can continue recognizing this food and view complete nutrition and risk analysis";
 "home.quota_exceeded.upgrade" = "Upgrade to continue";
 "home.quota_exceeded.watch_ad" = "Watch an ad for 1 more scan";
+"home.quota_exceeded.watch_ad_with_count" = "Watch an ad (%d left today)";
+"home.quota_exceeded.ad_reward_format" = "Watch ads to get %d more scans, %d ads left today";
 "home.quota_exceeded.tomorrow" = "3 free recognitions restore after midnight";
 "home.ad_reward.claim_failed" = "Failed to claim reward. Please try again later";
 "home.ad_reward.load_failed" = "Failed to load ad. Please try again later";

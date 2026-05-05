@@ -315,6 +315,14 @@ struct MenuWeekView: View {
         .task {
             await settings.refreshNotificationStatus()
         }
+        .onChange(of: store.pendingNotificationDate) { date in
+            if let date {
+                withAnimation(.easeInOut(duration: 0.22)) {
+                    selectedDate = date
+                }
+                store.pendingNotificationDate = nil
+            }
+        }
     }
 
     private var overviewCard: some View {

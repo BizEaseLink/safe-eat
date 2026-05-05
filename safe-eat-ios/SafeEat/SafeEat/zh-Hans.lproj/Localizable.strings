@@ -46,6 +46,12 @@
 "reminder.summary.format" = "%@ %@";
 "reminder.notification.title" = "今晚记得回看今天的饮食记录";
 "reminder.notification.body" = "食安安已经整理好今天的识别记录，回来看看吧。";
+"reminder.notification.title_today" = "今天的饮食记录待回看";
+"reminder.notification.body_today" = "点击查看今日食用表现详情";
+"reminder.notification.title_yesterday" = "昨天的饮食记录待回看";
+"reminder.notification.body_yesterday" = "点击查看昨日食用表现详情";
+"reminder.notification.title_date" = "%@的饮食记录待回看";
+"reminder.notification.body_date" = "点击查看%@食用表现详情";
 
 "error.avatar_compression_failed" = "头像压缩失败，请重新选择图片。";
 "error.save_original_failed" = "原图保存失败，请重试。";
@@ -313,6 +319,8 @@
 "home.quota_exceeded.member_hint" = "会员可继续识别当前食物，并查看完整营养与风险分析";
 "home.quota_exceeded.upgrade" = "升级会员继续识别";
 "home.quota_exceeded.watch_ad" = "看广告再识别 1 次";
+"home.quota_exceeded.watch_ad_with_count" = "看广告再识别（今日剩余 %d 次）";
+"home.quota_exceeded.ad_reward_format" = "看广告可额外获得 %d 次识别，今日还可看 %d 次";
 "home.quota_exceeded.tomorrow" = "明天 0 点后恢复 3 次免费识别";
 "home.ad_reward.claim_failed" = "奖励领取失败，请稍后重试";
 "home.ad_reward.load_failed" = "广告加载失败，请稍后重试";

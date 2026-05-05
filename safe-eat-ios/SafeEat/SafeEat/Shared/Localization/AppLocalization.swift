@@ -66,6 +66,12 @@ enum L10nKey {
         static let summaryFormat = "reminder.summary.format"
         static let title = "reminder.notification.title"
         static let body = "reminder.notification.body"
+        static let titleToday = "reminder.notification.title_today"
+        static let bodyToday = "reminder.notification.body_today"
+        static let titleYesterday = "reminder.notification.title_yesterday"
+        static let bodyYesterday = "reminder.notification.body_yesterday"
+        static let titleDate = "reminder.notification.title_date"
+        static let bodyDate = "reminder.notification.body_date"
     }
 
     enum Errors {
@@ -406,6 +412,8 @@ enum L10nKey {
         static let quotaExceededMemberHint = "home.quota_exceeded.member_hint"
         static let quotaExceededUpgrade = "home.quota_exceeded.upgrade"
         static let quotaExceededWatchAd = "home.quota_exceeded.watch_ad"
+        static let quotaExceededWatchAdWithCount = "home.quota_exceeded.watch_ad_with_count"
+        static let quotaExceededAdRewardFormat = "home.quota_exceeded.ad_reward_format"
         static let quotaExceededTomorrow = "home.quota_exceeded.tomorrow"
         static let adRewardClaimFailed = "home.ad_reward.claim_failed"
         static let adLoadFailed = "home.ad_reward.load_failed"
@@ -907,10 +915,21 @@ final class AppSettingsStore: ObservableObject {
         for index in 0..<Self.reminderHorizonDays {
             guard let scheduledDate = calendar.date(byAdding: .day, value: index, to: firstFireDate) else { continue }
 
+            // 通知指向的目标日期：scheduledDate 当天的饮食记录
+            let targetDate = calendar.startOfDay(for: scheduledDate)
+
+            // 根据目标日期与今天的关系动态生成文案
+            let (title, body) = notificationContent(for: targetDate, calendar: calendar)
+
             let content = UNMutableNotificationContent()
-            content.title = SafeEatL10n.text(L10nKey.Reminder.title)
-            content.body = SafeEatL10n.text(L10nKey.Reminder.body)
+            content.title = title
+            content.body = body
             content.sound = .default
+
+            // 存入目标日期供点击跳转使用
+            let isoFormatter = ISO8601DateFormatter()
+            isoFormatter.formatOptions = [.withFullDate]
+            content.userInfo = ["targetDate": isoFormatter.string(from: targetDate)]
 
             var dateComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: scheduledDate)
             dateComponents.timeZone = calendar.timeZone
@@ -922,6 +941,37 @@ final class AppSettingsStore: ObservableObject {
             )
             try? await center.add(request)
         }
+    }
+
+    /// 根据目标日期与今天的关系生成通知文案
+    private func notificationContent(for targetDate: Date, calendar: Calendar) -> (title: String, body: String) {
+        let today = calendar.startOfDay(for: Date())
+        let target = calendar.startOfDay(for: targetDate)
+
+        if calendar.isDate(target, inSameDayAs: today) {
+            return (
+                SafeEatL10n.text(L10nKey.Reminder.titleToday),
+                SafeEatL10n.text(L10nKey.Reminder.bodyToday)
+            )
+        }
+
+        // 目标日期是昨天（选择"明天"时，通知在明天触发，指向昨天的总结）
+        if let yesterday = calendar.date(byAdding: .day, value: -1, to: today), calendar.isDate(target, inSameDayAs: yesterday) {
+            return (
+                SafeEatL10n.text(L10nKey.Reminder.titleYesterday),
+                SafeEatL10n.text(L10nKey.Reminder.bodyYesterday)
+            )
+        }
+
+        // 其他日期：包含日期
+        let formatter = DateFormatter()
+        formatter.locale = AppSettingsStore.shared.displayLocale
+        formatter.dateFormat = AppSettingsStore.shared.language == .en ? "MMM d" : "M月d日"
+        let dateStr = formatter.string(from: target)
+        return (
+            SafeEatL10n.format(L10nKey.Reminder.titleDate, dateStr),
+            SafeEatL10n.format(L10nKey.Reminder.bodyDate, dateStr)
+        )
     }
 
     private func removeReminder() async {
