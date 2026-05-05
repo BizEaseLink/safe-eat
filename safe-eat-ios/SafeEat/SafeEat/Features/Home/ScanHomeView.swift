@@ -206,9 +206,9 @@ struct ScanHomeView: View {
                 Text(store.errorMessage ?? "")
             }
         )
-        .task {
-            await store.refreshDailyQuota()
-        }
+        .onAppear {
+                Task { await store.refreshDailyQuota() }
+            }
     }
 
     private var homeBackground: some View {
