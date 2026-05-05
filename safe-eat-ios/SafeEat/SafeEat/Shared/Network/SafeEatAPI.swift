@@ -117,6 +117,10 @@ final class SafeEatAPI {
         return try await send(request, as: DailyQuotaSnapshot.self)
     }
 
+    func getPublicDailyQuota() async throws -> DailyQuotaSnapshot {
+        try await sendPublicRequest(path: "/v1/\(AppConfig.appCode)/quota/daily", method: "GET")
+    }
+
     func updateProfile(accessToken: String, payload: UserProfileUpdatePayload) async throws -> UserProfile {
         var request = try buildJSONRequest(
             path: "/v1/\(AppConfig.appCode)/me/profile",

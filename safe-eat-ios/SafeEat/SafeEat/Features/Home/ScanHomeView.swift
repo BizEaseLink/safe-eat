@@ -58,8 +58,9 @@ struct ScanHomeView: View {
 
     private var remainingFreeQuota: Int {
         guard store.profile?.currentPlanTier == nil || store.profile?.currentPlanTier == "free" else { return -1 }
-        // dailyQuota 为 nil 时回退为默认 3 次
-        return store.dailyQuota?.remainingQuota ?? 3
+        // dailyQuota 为 nil 时返回 -1，表示数据未就绪，不显示剩余次数
+        guard store.dailyQuota != nil else { return -1 }
+        return store.dailyQuota?.remainingQuota ?? 0
     }
 
     private var brandLabelColor: Color {

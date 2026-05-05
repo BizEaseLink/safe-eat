@@ -171,8 +171,12 @@ final class AppStore: ObservableObject {
 
     func refreshDailyQuota() async {
         do {
-            dailyQuota = try await authorizedRequest { token in
-                try await api.getDailyQuota(accessToken: token)
+            if session != nil {
+                dailyQuota = try await authorizedRequest { token in
+                    try await api.getDailyQuota(accessToken: token)
+                }
+            } else {
+                dailyQuota = try await api.getPublicDailyQuota()
             }
         } catch {
             #if DEBUG
