@@ -68,7 +68,7 @@ final class AdConfigStore {
         }
         do {
             let response: AdConfigResponse = try await api.sendPublicRequest(
-                path: "/v1/\(AppConfig.appCode)/ads/config",
+                path: "/v1/apps/\(AppConfig.appCode)/ads/config",
                 method: "GET"
             )
             placements = response.placements
@@ -82,7 +82,7 @@ final class AdConfigStore {
     func forceRefresh() async {
         do {
             let response: AdConfigResponse = try await api.sendPublicRequest(
-                path: "/v1/\(AppConfig.appCode)/ads/config",
+                path: "/v1/apps/\(AppConfig.appCode)/ads/config",
                 method: "GET"
             )
             placements = response.placements

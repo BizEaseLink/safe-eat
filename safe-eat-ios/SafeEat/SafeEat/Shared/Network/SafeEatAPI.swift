@@ -28,7 +28,7 @@ final class SafeEatAPI {
 
     func sendSMS(phone: String) async throws -> SendSmsResponse {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/sms/send",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/sms/send",
             method: "POST",
             body: PhoneBody(phone: phone)
         )
@@ -38,7 +38,7 @@ final class SafeEatAPI {
 
     func login(phone: String, code: String) async throws -> AuthSession {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/login",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/login",
             method: "POST",
             body: PhoneCodeBody(phone: phone, code: code)
         )
@@ -48,7 +48,7 @@ final class SafeEatAPI {
 
     func loginWithPassword(phone: String, password: String) async throws -> AuthSession {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/password/login",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/password/login",
             method: "POST",
             body: PhonePasswordBody(phone: phone, password: password)
         )
@@ -58,7 +58,7 @@ final class SafeEatAPI {
 
     func setPassword(phone: String, code: String, password: String) async throws -> AuthSession {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/password/set",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/password/set",
             method: "POST",
             body: PhoneCodePasswordBody(phone: phone, code: code, password: password)
         )
@@ -68,7 +68,7 @@ final class SafeEatAPI {
 
     func appleLogin(appleSub: String, displayName: String?) async throws -> AuthSession {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/apple/login",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/apple/login",
             method: "POST",
             body: AppleLoginBody(appleSub: appleSub, displayName: displayName)
         )
@@ -78,7 +78,7 @@ final class SafeEatAPI {
 
     func bindApplePhone(accessToken: String, phone: String, code: String) async throws -> AuthSession {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/apple/bind-phone",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/apple/bind-phone",
             method: "POST",
             body: PhoneCodeBody(phone: phone, code: code)
         )
@@ -88,7 +88,7 @@ final class SafeEatAPI {
 
     func refreshToken(_ refreshToken: String) async throws -> RefreshTokenResponse {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/refresh-token",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/refresh-token",
             method: "POST",
             body: ["refreshToken": refreshToken]
         )
@@ -98,7 +98,7 @@ final class SafeEatAPI {
 
     func logout(_ refreshToken: String) async throws {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/logout",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/logout",
             method: "POST",
             body: ["refreshToken": refreshToken]
         )
@@ -106,24 +106,24 @@ final class SafeEatAPI {
     }
 
     func getProfile(accessToken: String) async throws -> UserProfile {
-        var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/me", method: "GET")
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/me", method: "GET")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         return try await send(request, as: UserProfile.self)
     }
 
     func getDailyQuota(accessToken: String) async throws -> DailyQuotaSnapshot {
-        var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/quota/daily", method: "GET")
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/quota/daily", method: "GET")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         return try await send(request, as: DailyQuotaSnapshot.self)
     }
 
     func getPublicDailyQuota() async throws -> DailyQuotaSnapshot {
-        try await sendPublicRequest(path: "/v1/\(AppConfig.appCode)/quota/daily", method: "GET")
+        try await sendPublicRequest(path: "/v1/apps/\(AppConfig.appCode)/quota/daily", method: "GET")
     }
 
     func updateProfile(accessToken: String, payload: UserProfileUpdatePayload) async throws -> UserProfile {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/me/profile",
+            path: "/v1/apps/\(AppConfig.appCode)/me/profile",
             method: "PATCH",
             body: payload
         )
@@ -133,7 +133,7 @@ final class SafeEatAPI {
 
     func updateHealthProfile(accessToken: String, payload: UserHealthProfileUpdatePayload) async throws -> UserProfile {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/me/health-profile",
+            path: "/v1/apps/\(AppConfig.appCode)/me/health-profile",
             method: "PATCH",
             body: payload
         )
@@ -143,7 +143,7 @@ final class SafeEatAPI {
 
     func updateAvatar(accessToken: String, imageData: Data, fileName: String = "avatar.jpg") async throws -> UserProfile {
         let boundary = "Boundary-\(UUID().uuidString)"
-        var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/me/avatar", method: "PATCH")
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/me/avatar", method: "PATCH")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         request.httpBody = MultipartFormDataBuilder.build(
@@ -160,7 +160,7 @@ final class SafeEatAPI {
 
     func changePhone(accessToken: String, newPhone: String, code: String) async throws -> UserProfile {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/me/phone",
+            path: "/v1/apps/\(AppConfig.appCode)/me/phone",
             method: "PATCH",
             body: ChangePhoneBody(newPhone: newPhone, verificationCode: code)
         )
@@ -170,7 +170,7 @@ final class SafeEatAPI {
 
     func changePassword(accessToken: String, oldPassword: String, newPassword: String) async throws -> UserProfile {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/me/password",
+            path: "/v1/apps/\(AppConfig.appCode)/me/password",
             method: "PATCH",
             body: ChangePasswordBody(oldPassword: oldPassword, newPassword: newPassword)
         )
@@ -179,14 +179,14 @@ final class SafeEatAPI {
     }
 
     func deleteAccount(accessToken: String) async throws {
-        var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/me", method: "DELETE")
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/me", method: "DELETE")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         _ = try await send(request, as: DeleteAccountResponse.self)
     }
 
     func fetchDisclosure(category: String) async throws -> [DisclosureItem] {
         var request = try buildRequest(
-            path: "/v1/\(AppConfig.appCode)/disclosures",
+            path: "/v1/apps/\(AppConfig.appCode)/disclosures",
             method: "GET"
         )
         var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
@@ -196,14 +196,14 @@ final class SafeEatAPI {
     }
 
     func getPlans() async throws -> [MembershipPlan] {
-        let request = try buildRequest(path: "/v1/\(AppConfig.appCode)/membership/plans", method: "GET")
+        let request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/membership/plans", method: "GET")
         let response = try await send(request, as: MembershipPlanListResponse.self)
         return response.items
     }
 
     func createMembershipOrder(accessToken: String, payload: MembershipOrderPayload) async throws -> MembershipOrderResult {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/orders",
+            path: "/v1/apps/\(AppConfig.appCode)/orders",
             method: "POST",
             body: payload
         )
@@ -213,7 +213,7 @@ final class SafeEatAPI {
 
     func markOrderFailed(accessToken: String, orderId: String) async throws {
         var request = try buildRequest(
-            path: "/v1/\(AppConfig.appCode)/orders/\(orderId)/mark-failed",
+            path: "/v1/apps/\(AppConfig.appCode)/orders/\(orderId)/mark-failed",
             method: "POST"
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -222,7 +222,7 @@ final class SafeEatAPI {
 
     func getUserOrders(accessToken: String) async throws -> [OrderRecord] {
         var request = try buildRequest(
-            path: "/v1/\(AppConfig.appCode)/orders",
+            path: "/v1/apps/\(AppConfig.appCode)/orders",
             method: "GET"
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -232,7 +232,7 @@ final class SafeEatAPI {
 
     func redeemDiscountCode(accessToken: String, code: String) async throws -> RedeemCodeResult {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/membership/redeem-code",
+            path: "/v1/apps/\(AppConfig.appCode)/membership/redeem-code",
             method: "POST",
             body: RedeemCodePayload(code: code)
         )
@@ -242,7 +242,7 @@ final class SafeEatAPI {
 
     func calculatePrice(accessToken: String, payload: PriceCalculationRequest) async throws -> PriceCalculationResult {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/membership/calculate-price",
+            path: "/v1/apps/\(AppConfig.appCode)/membership/calculate-price",
             method: "POST",
             body: payload
         )
@@ -252,7 +252,7 @@ final class SafeEatAPI {
 
     func validateDiscountCode(accessToken: String, payload: ValidateDiscountCodeRequest) async throws -> ValidateDiscountCodeResult {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/membership/validate-discount-code",
+            path: "/v1/apps/\(AppConfig.appCode)/membership/validate-discount-code",
             method: "POST",
             body: payload
         )
@@ -262,7 +262,7 @@ final class SafeEatAPI {
 
     func claimAdReward(accessToken: String, payload: ClaimAdRewardPayload) async throws -> ClaimAdRewardResult {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/ads/rewards/claim",
+            path: "/v1/apps/\(AppConfig.appCode)/ads/rewards/claim",
             method: "POST",
             body: payload
         )
@@ -272,7 +272,7 @@ final class SafeEatAPI {
 
     func verifyIAPReceipt(accessToken: String, payload: IAPVerifyReceiptPayload) async throws -> IAPVerifyReceiptResult {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/iap/verify-receipt",
+            path: "/v1/apps/\(AppConfig.appCode)/iap/verify-receipt",
             method: "POST",
             body: payload
         )
@@ -282,7 +282,7 @@ final class SafeEatAPI {
 
     func createRecognition(accessToken: String, imageData: Data, fileName: String) async throws -> RecognitionRecord {
         let boundary = "Boundary-\(UUID().uuidString)"
-        var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/recognitions", method: "POST")
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/recognitions", method: "POST")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         request.httpBody = MultipartFormDataBuilder.build(
@@ -299,7 +299,7 @@ final class SafeEatAPI {
 
     func getRecognition(accessToken: String, recognitionId: String) async throws -> RecognitionRecord {
         var request = try buildRequest(
-            path: "/v1/\(AppConfig.appCode)/recognitions/\(recognitionId)",
+            path: "/v1/apps/\(AppConfig.appCode)/recognitions/\(recognitionId)",
             method: "GET"
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -319,7 +319,7 @@ final class SafeEatAPI {
     ) async throws -> RecognitionRecord {
         let boundary = "Boundary-\(UUID().uuidString)"
         var request = try buildRequest(
-            path: "/v1/\(AppConfig.appCode)/recognitions/\(recognitionId)/feedback",
+            path: "/v1/apps/\(AppConfig.appCode)/recognitions/\(recognitionId)/feedback",
             method: "POST"
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
