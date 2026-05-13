@@ -35,6 +35,15 @@ final class AppStore: ObservableObject {
     @Published var purchaseError: String?
     @Published var isRestoringPurchases = false
 
+    // MARK: - 会员与活动状态（C2-C5）
+    @Published var membershipPlans: [MembershipPlan] = []
+    @Published var campaignBenefits: [CampaignBenefit] = []
+    @Published var membershipStatus: MembershipMeResult?
+    @Published var trialAvailable: Bool = false
+    @Published var trialEligibleFromStoreKit: Bool? = nil
+    @Published var firstPurchaseBonus: FirstPurchaseBonus?
+    @Published var showFirstPurchaseBonus: Bool = false
+
     let api: SafeEatAPI
     private let sessionStore: AuthSessionStore
     private let historyStore: LocalHistoryStore
@@ -232,12 +241,45 @@ final class AppStore: ObservableObject {
         return updated
     }
 
-    func createMembershipOrder(planId: String, channel: String, discountId: String? = nil) async throws -> MembershipOrderResult {
+    func createMembershipOrder(planId: String, channel: String) async throws -> MembershipOrderResult {
         try await authorizedRequest { token in
             try await api.createMembershipOrder(
                 accessToken: token,
-                payload: MembershipOrderPayload(planId: planId, channel: channel, discountId: discountId)
+                payload: MembershipOrderPayload(planId: planId, channel: channel)
             )
+        }
+    }
+
+    // MARK: - 会员与活动 API（C2-C5）
+
+    func loadPlansWithCampaigns() async {
+        do {
+            let response = try await api.getPlans()
+            membershipPlans = response.items
+            campaignBenefits = response.campaigns ?? []
+            trialAvailable = response.trialAvailable ?? false
+        } catch {
+            #if DEBUG
+            print("[AppStore] loadPlansWithCampaigns failed: \(error)")
+            #endif
+        }
+    }
+
+    func loadMembershipStatus() async {
+        do {
+            membershipStatus = try await authorizedRequest { token in
+                try await api.getMembershipMe(accessToken: token)
+            }
+        } catch {
+            #if DEBUG
+            print("[AppStore] loadMembershipStatus failed: \(error)")
+            #endif
+        }
+    }
+
+    func redeemCode(_ code: String) async throws -> RedeemCodeResult {
+        try await authorizedRequest { token in
+            try await api.redeemCode(accessToken: token, code: code)
         }
     }
 
@@ -389,7 +431,23 @@ final class AppStore: ObservableObject {
         }
     }
 
-    func purchaseMembership(product: Product, planId: String, discountId: String? = nil) async {
+    /// 检查 StoreKit Introductory Offer 试用资格
+    /// 优先使用后端 trialAvailable，StoreKit 资格检查作为补充
+    func checkTrialEligibility() async {
+        // 检查第一个付费套餐的 StoreKit 试用资格
+        let firstPaidPlan = membershipPlans.first(where: { $0.tier != "free" && $0.appleProductId != nil })
+        if let plan = firstPaidPlan, let productID = plan.appleProductId {
+            trialEligibleFromStoreKit = await storeKitService.checkIntroOfferEligibility(for: productID)
+        }
+        // 综合判断：后端标记可用 + StoreKit 资格检查
+        // nil 表示无法判断（产品未加载），此时不覆盖后端结果
+        if trialAvailable && trialEligibleFromStoreKit == false {
+            // 后端说可用但 StoreKit 明确说不可用（可能已用过试用），以 StoreKit 为准
+            trialAvailable = false
+        }
+    }
+
+    func purchaseMembership(product: Product, planId: String) async {
         isPurchasingMembership = true
         purchaseError = nil
 
@@ -397,7 +455,7 @@ final class AppStore: ObservableObject {
 
         do {
             // 1. 先创建后端订单
-            let order = try await createMembershipOrder(planId: planId, channel: "apple_iap", discountId: discountId)
+            let order = try await createMembershipOrder(planId: planId, channel: "apple_iap")
             orderId = order.id
 
             // 2. 发起 StoreKit 购买
@@ -458,31 +516,43 @@ final class AppStore: ObservableObject {
         let transactionID = String(transaction.id)
         do {
             _ = try await authorizedRequest { token in
-                try await api.verifyIAPReceipt(
+                try await api.verifyTransaction(
                     accessToken: token,
-                    payload: IAPVerifyReceiptPayload(
+                    payload: IAPVerifyTransactionPayload(
                         transactionId: transactionID,
                         productId: transaction.productID
                     )
                 )
             }
         } catch {
-            // 静默失败，后端可能已通过 Apple Server Notifications 处理
             #if DEBUG
             print("[AppStore] verifyRestoredTransaction failed: \(error)")
             #endif
         }
     }
 
+    // C5: 购买后权益发放对接
+    func verifyTransaction(transaction: Transaction) async throws -> IAPVerifyTransactionResult {
+        try await authorizedRequest { token in
+            try await api.verifyTransaction(
+                accessToken: token,
+                payload: IAPVerifyTransactionPayload(
+                    transactionId: String(transaction.id),
+                    productId: transaction.productID
+                )
+            )
+        }
+    }
+
     private func handleSuccessfulPurchase(transaction: Transaction, orderId: String) async {
         let transactionID = String(transaction.id)
 
-        // 发送收据到后端验证
+        // C5: 使用新的 verify-transaction 接口发放权益
         do {
             let result = try await authorizedRequest { token in
-                try await api.verifyIAPReceipt(
+                try await api.verifyTransaction(
                     accessToken: token,
-                    payload: IAPVerifyReceiptPayload(
+                    payload: IAPVerifyTransactionPayload(
                         transactionId: transactionID,
                         orderId: orderId,
                         productId: transaction.productID
@@ -491,13 +561,13 @@ final class AppStore: ObservableObject {
             }
 
             if result.success {
-                // 验证通过，刷新 profile 获取最新会员状态
+                // 验证通过，刷新 profile + 会员状态
                 await refreshProfile()
+                await loadMembershipStatus()
             } else {
                 purchaseError = SafeEatL10n.text(L10nKey.Membership.verifyFailed)
             }
         } catch {
-            // 收据验证失败，仍然刷新 profile（后端可能已通过 Apple 通知处理）
             purchaseError = SafeEatL10n.text(L10nKey.Membership.verifyError)
             await refreshProfile()
         }

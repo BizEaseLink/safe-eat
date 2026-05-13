@@ -30,113 +30,80 @@ struct MembershipPlan: Codable, Identifiable {
     let billingCycle: String
     let name: String
     let priceFen: Int
-    let yearlyPriceFen: Int?
     let dailyQuota: Int?
     let recognitionQuota: Int?
     let aiQuota: Int?
     let active: Bool?
-    let discountedPriceFen: Int?
-    let appliedDiscount: AppliedDiscountInfo?
-    let availableDiscounts: [DiscountDetail]?
+    // C2 扩展字段
+    let appleProductId: String?
+    let recognitionQuotaMonthly: Int?
+    let aiQuotaMonthly: Int?
+    let priceDisplay: String?
+    let sortOrder: Int?
+    let yearlyPriceFen: Int?
 }
 
-struct AppliedDiscountInfo: Codable {
+// MARK: - 活动权益
+
+struct CampaignBenefit: Codable, Identifiable {
     let id: String
     let name: String
     let type: String
-    let expiresAt: Date?
+    let bonusDays: Int?
+    let bonusRecognitionQuota: Int?
+    let bonusAiQuota: Int?
+    let targetPlanIds: [String]?
+    let targetUserType: String?
+    let endsAt: Date?
+    let planBonus: [CampaignPlanBonus]?
 }
 
-// MARK: - 折扣明细
+// MARK: - 按套餐差异化赠送
 
-struct DiscountDetail: Codable, Identifiable {
+struct CampaignPlanBonus: Codable, Identifiable {
     let id: String
-    let name: String
-    let type: String
-    let discountAmountFen: Int
-    let stackable: Bool
-}
-
-// MARK: - 折扣码兑换
-
-struct RedeemCodePayload: Encodable {
-    let code: String
-}
-
-struct RedeemCodeResult: Codable {
-    let redeemed: Bool
-    let code: String
-    let discountCalcType: String
-    let discountValue: Double
-    let displayName: String
-}
-
-// MARK: - 价格计算
-
-struct PriceCalculationRequest: Encodable {
     let planId: String
-    let billingCycle: String
-    let discountCodeIds: [String]?
+    let bonusDays: Int?
+    let bonusRecognitionQuota: Int?
+    let bonusAiQuota: Int?
 }
 
-struct PriceCalculationResult: Decodable {
-    let originalPriceFen: Int
-    let billingCycle: String
-    let nonStackableDiscount: NonStackableDiscountResult?
-    let stackableDiscounts: [StackableDiscountResult]
-    let totalDiscountFen: Int
-    let finalPriceFen: Int
-    let freeTrial: FreeTrialResult?
-}
+// MARK: - 首购奖励
 
-struct NonStackableDiscountResult: Decodable {
+struct FirstPurchaseBonus: Codable, Identifiable {
     let id: String
-    let name: String
-    let type: String
-    let discountAmountFen: Int
+    let bonusDays: Int?
+    let bonusRecognitionQuota: Int?
+    let bonusAiQuota: Int?
+    let claimed: Bool
+    let claimedAt: Date?
 }
 
-struct StackableDiscountResult: Decodable, Identifiable {
-    let id: String
-    let name: String
-    let type: String
-    let discountAmountFen: Int
+struct FirstPurchaseBonusResponse: Codable {
+    let eligible: Bool
+    let bonus: FirstPurchaseBonus?
 }
 
-struct FreeTrialResult: Decodable {
-    let trialDays: Int
-    let planId: String
-    let planTier: String
-}
-
-// MARK: - 折扣码验证
-
-struct ValidateDiscountCodeRequest: Encodable {
-    let code: String
-    let planId: String
-}
-
-struct ValidateDiscountCodeResult: Decodable {
-    let valid: Bool
-    let discountId: String?
-    let name: String?
-    let type: String?
-    let discountCalcType: String?
-    let discountValue: Double?
-    let stackable: Bool?
-    let message: String?
+struct ClaimFirstPurchaseBonusResponse: Codable {
+    let success: Bool
+    let bonus: FirstPurchaseBonus?
 }
 
 // MARK: - 会员状态
-enum MemberStatus: String, Codable {
-    case new       // 从未购买过
-    case active    // 当前有有效订阅
-    case expired   // 曾购买但已过期
-    case cancelled // 主动取消
+
+struct MembershipStatus: Codable {
+    let planLevel: String
+    let source: String?
+    let entitlementExpiresAt: Date?
+    let bonusRecognitionQuota: Int?
+    let bonusAiQuota: Int?
+    let status: String?
 }
 
 struct MembershipPlanListResponse: Codable {
     let items: [MembershipPlan]
+    let campaigns: [CampaignBenefit]?
+    let trialAvailable: Bool?
 }
 
 struct UserProfileUpdatePayload: Encodable {
@@ -160,7 +127,6 @@ struct UserHealthProfileUpdatePayload: Encodable {
 struct MembershipOrderPayload: Encodable {
     let planId: String
     let channel: String
-    let discountId: String?
 }
 
 struct MembershipOrderResult: Codable, Identifiable {
@@ -174,9 +140,9 @@ struct MembershipOrderResult: Codable, Identifiable {
     let createdAt: Date
 }
 
-// MARK: - IAP 收据验证
+// MARK: - IAP 交易验证（C5: verify-transaction）
 
-struct IAPVerifyReceiptPayload: Encodable {
+struct IAPVerifyTransactionPayload: Encodable {
     let transactionId: String
     let orderId: String?
     let productId: String?
@@ -188,10 +154,65 @@ struct IAPVerifyReceiptPayload: Encodable {
     }
 }
 
-struct IAPVerifyReceiptResult: Decodable {
+struct IAPVerifyTransactionResult: Decodable {
     let success: Bool
     let idempotent: Bool
     let transactionId: String
+}
+
+// MARK: - 兑换码使用（新 Redeem API）
+
+struct RedeemCodePayload: Encodable {
+    let code: String
+}
+
+struct RedeemCodeResult: Decodable {
+    let success: Bool
+    let campaignName: String?
+    let granted: RedeemGranted?
+    let membershipEndsAt: Date?
+}
+
+struct RedeemGranted: Decodable {
+    let days: Int
+    let recognitionQuota: Int
+    let aiQuota: Int
+}
+
+// MARK: - 会员权益查询（/membership/me）
+
+struct MembershipMeResult: Decodable {
+    let planLevel: String
+    let source: String?
+    let entitlementExpiresAt: Date?
+    let bonusRecognitionQuota: Int?
+    let bonusAiQuota: Int?
+    let status: String?
+    let isTrial: Bool?
+    let trialEndsAt: Date?
+}
+
+// MARK: - 可用活动查询（/campaigns/available）
+
+struct AvailableCampaign: Codable, Identifiable {
+    let id: String
+    let name: String
+    let type: String
+    let description: String?
+    let benefitPreview: CampaignBenefitPreview
+    let endsAt: Date
+}
+
+struct CampaignBenefitPreview: Codable {
+    let grantedDays: Int
+    let grantedRecognitionQuota: Int
+    let grantedAiQuota: Int
+}
+
+// MARK: - 领取活动权益（/campaigns/:id/claim）
+
+struct ClaimCampaignPayload: Encodable {
+    let discountCode: String?
 }
 
 // MARK: - 广告奖励领取
@@ -229,6 +250,9 @@ struct DailyQuotaSnapshot: Decodable {
     let usedCount: Int
     let remainingQuota: Int
     let adClaimsCount: Int
+    let adRewardPerWatch: Int?
+    let adWatchLimit: Int?
+    let remainingAdWatchCount: Int?
     let quotaDate: String
 }
 

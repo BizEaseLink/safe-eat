@@ -6,7 +6,7 @@ import UIKit
 enum AdRewardResultType {
     case claimFailed
     case loadFailed
-    case success
+    case success(rewardQuota: Int)
 }
 
 private struct ResultRoute: Identifiable, Hashable {
@@ -491,7 +491,7 @@ struct ScanHomeView: View {
                         }
                         await store.refreshProfile()
                             await store.refreshDailyQuota()
-                            adRewardResultType = .success
+                            adRewardResultType = .success(rewardQuota: adConfig.placement(for: .rewardVideo)?.rewardQuota ?? store.dailyQuota?.adRewardPerWatch ?? 3)
                         showAdRewardResult = true
                     } catch {
                         print("[UMeng] claimReward 失败: \(error)")

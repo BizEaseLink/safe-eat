@@ -9,6 +9,7 @@ protocol StoreKitServiceProtocol {
     func purchase(_ product: Product) async throws -> StoreKitPurchaseResult
     func currentEntitlements() async -> [Transaction]
     func restorePurchases() async throws -> [Transaction]
+    func checkIntroOfferEligibility(for productID: String) async -> Bool?
 }
 
 enum StoreKitPurchaseResult {
@@ -49,6 +50,30 @@ final class StoreKitService: StoreKitServiceProtocol, ObservableObject {
     func product(for planTier: String) -> Product? {
         let productID = MembershipProductID.productID(for: planTier)
         return products.first { $0.id == productID }
+    }
+
+    // MARK: - 试用资格检查
+
+    /// 检查用户是否有资格享受 Introductory Offer（免费试用）
+    /// - Parameter productID: StoreKit 产品 ID
+    /// - Returns: 是否有资格。nil 表示无法判断（产品未加载或无 introductory offer），UI 层应隐藏试用标签
+    func checkIntroOfferEligibility(for productID: String) async -> Bool? {
+        guard let product = try? await Product.products(for: [productID]).first,
+              let subscription = product.subscription,
+              subscription.introductoryOffer != nil else {
+            // 产品未加载、非订阅产品、或未配置 introductory offer
+            return nil
+        }
+        // 检查用户是否有该订阅组的历史付费交易——有则不享有试用资格
+        var hasHistory = false
+        for await result in Transaction.currentEntitlements {
+            guard let transaction = try? self.checkVerified(result) else { continue }
+            if transaction.productID == productID {
+                hasHistory = true
+                break
+            }
+        }
+        return !hasHistory
     }
 
     // MARK: - 购买

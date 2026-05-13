@@ -14,6 +14,8 @@ struct CameraCaptureView: View {
     let onCapture: (CameraCapturePayload) -> Void
 
     private let previewRotationAngle: CGFloat = 90
+    private let topBarHeight: CGFloat = 72
+    private let bottomBarHeight: CGFloat = 188
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
@@ -21,75 +23,39 @@ struct CameraCaptureView: View {
     @State private var pendingCapturedImage: CameraCapturePayload?
 
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
+        GeometryReader { proxy in
+            ZStack {
+                Color.black.ignoresSafeArea()
 
-            if camera.authorizationStatus == .authorized, camera.isConfigured {
-                CameraPreview(
-                    session: camera.session,
-                    rotationAngle: previewRotationAngle,
-                    onPreviewLayerAvailable: { layer in
-                        camera.setPreviewLayer(layer)
-                    }
-                )
-                    .ignoresSafeArea()
-            } else if camera.authorizationStatus == .authorized {
-                ProgressView(SafeEatL10n.text(L10nKey.Home.cameraStarting))
-                    .tint(.white)
-                    .foregroundStyle(.white)
-            } else {
-                permissionPlaceholder
-            }
+                VStack(spacing: 0) {
+                    cameraTopBar(topInset: proxy.safeAreaInsets.top)
 
-            if camera.authorizationStatus == .authorized, camera.isConfigured {
-                CameraGuidanceOverlay()
-            }
-
-            VStack {
-                HStack {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundStyle(.white)
-                            .padding(12)
-                            .background(.black.opacity(0.4))
-                            .clipShape(Circle())
-                    }
-
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-
-                Spacer()
-
-                if let errorMessage = camera.errorMessage {
-                    Text(errorMessage)
-                        .font(SafeEatFont.textStyle(.footnote))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .background(.black.opacity(0.55))
-                        .clipShape(Capsule())
-                        .padding(.bottom, 18)
-                }
-
-                Button {
-                    camera.capturePhoto()
-                } label: {
                     ZStack {
-                        Circle()
-                            .fill(.white.opacity(0.25))
-                            .frame(width: 82, height: 82)
-                        Circle()
-                            .fill(.white)
-                            .frame(width: 64, height: 64)
+                        if camera.authorizationStatus == .authorized, camera.isConfigured {
+                            CameraPreview(
+                                session: camera.session,
+                                rotationAngle: previewRotationAngle,
+                                onPreviewLayerAvailable: { layer in
+                                    camera.setPreviewLayer(layer)
+                                }
+                            )
+                            .ignoresSafeArea()
+                        } else if camera.authorizationStatus == .authorized {
+                            ProgressView(SafeEatL10n.text(L10nKey.Home.cameraStarting))
+                                .tint(.white)
+                                .foregroundStyle(.white)
+                        } else {
+                            permissionPlaceholder
+                        }
+
+                        if camera.authorizationStatus == .authorized, camera.isConfigured {
+                            CameraGuidanceOverlay()
+                        }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    cameraBottomBar(bottomInset: proxy.safeAreaInsets.bottom)
                 }
-                .disabled(!camera.canCapturePhoto)
-                .padding(.bottom, 34)
             }
         }
         .onPreferenceChange(CameraGuideRectPreferenceKey.self) { rect in
@@ -114,6 +80,97 @@ struct CameraCaptureView: View {
             camera.stopSession()
             dismiss()
         }
+    }
+
+    private func cameraTopBar(topInset: CGFloat) -> some View {
+        HStack {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+
+            Text(SafeEatL10n.text(L10nKey.Home.cameraTitle))
+                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+
+            Spacer()
+
+            Button {
+                camera.toggleFlash()
+            } label: {
+                Image(systemName: camera.isFlashEnabled ? "bolt.fill" : "bolt.slash.fill")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(camera.isFlashEnabled ? SafeEatTheme.warning : .white)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .opacity(camera.isFlashAvailable ? 1 : 0.35)
+            .disabled(!camera.isFlashAvailable)
+            .accessibilityLabel(
+                SafeEatL10n.text(
+                    camera.isFlashEnabled ? L10nKey.Home.cameraFlashOn : L10nKey.Home.cameraFlashOff
+                )
+            )
+        }
+        .padding(.horizontal, 22)
+        .frame(height: topBarHeight)
+        .padding(.top, topInset)
+        .background(Color.black)
+    }
+
+    private func cameraBottomBar(bottomInset: CGFloat) -> some View {
+        VStack(spacing: 18) {
+            if let errorMessage = camera.errorMessage {
+                Text(errorMessage)
+                    .font(SafeEatFont.textStyle(.footnote))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(.black.opacity(0.55))
+                    .clipShape(Capsule())
+            }
+
+            Text(SafeEatL10n.text(L10nKey.Home.cameraBottomHint))
+                .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .semibold))
+                .foregroundStyle(Color(red: 1.0, green: 0.90, blue: 0.86))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+
+            Button {
+                camera.capturePhoto()
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(.white.opacity(0.18))
+                        .frame(width: 94, height: 94)
+
+                    Circle()
+                        .stroke(.white, lineWidth: 5)
+                        .frame(width: 82, height: 82)
+
+                    Circle()
+                        .fill(.white)
+                        .frame(width: 66, height: 66)
+                }
+            }
+            .buttonStyle(.plain)
+            .disabled(!camera.canCapturePhoto)
+            .opacity(camera.canCapturePhoto ? 1 : 0.62)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: bottomBarHeight + bottomInset, alignment: .top)
+        .padding(.top, 10)
+        .background(Color.black)
     }
 
     private var permissionPlaceholder: some View {
@@ -146,11 +203,16 @@ final class CameraSessionModel: NSObject, ObservableObject {
     @Published var capturedImage: CameraCapturePayload?
     @Published var isConfigured = false
     @Published var isCapturingPhoto = false
+    @Published var isFlashEnabled = false
 
     let session = AVCaptureSession()
 
     var canCapturePhoto: Bool {
         authorizationStatus == .authorized && isConfigured && !isCapturingPhoto
+    }
+
+    var isFlashAvailable: Bool {
+        videoDevice?.hasFlash ?? false
     }
 
     private let sessionQueue = DispatchQueue(label: "bizeasylink.safeeat.camera.session")
@@ -159,6 +221,7 @@ final class CameraSessionModel: NSObject, ObservableObject {
     private var hasConfiguredSession = false
     private var normalizedGuideRect: CGRect = .zero
     private weak var previewLayer: AVCaptureVideoPreviewLayer?
+    private var videoDevice: AVCaptureDevice?
     @MainActor private var latestGuideRect: CGRect = .zero
 
     func prepare() async {
@@ -220,8 +283,17 @@ final class CameraSessionModel: NSObject, ObservableObject {
         isCapturingPhoto = true
         sessionQueue.async {
             let settings = AVCapturePhotoSettings()
+            if self.videoDevice?.hasFlash == true {
+                settings.flashMode = self.isFlashEnabled ? .on : .off
+            }
             self.photoOutput.capturePhoto(with: settings, delegate: self)
         }
+    }
+
+    @MainActor
+    func toggleFlash() {
+        guard isFlashAvailable else { return }
+        isFlashEnabled.toggle()
     }
 
     func stopSession() {
@@ -258,6 +330,7 @@ final class CameraSessionModel: NSObject, ObservableObject {
         else {
             throw CameraError.cameraUnavailable
         }
+        videoDevice = camera
 
         let input = try AVCaptureDeviceInput(device: camera)
 
@@ -567,27 +640,6 @@ private struct CameraGuidanceOverlay: View {
                     .frame(width: layout.frameRect.width, height: layout.frameRect.height)
                     .position(x: layout.frameRect.midX, y: layout.frameRect.midY)
                     .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
-
-                Text(SafeEatL10n.text(L10nKey.Home.cameraGuide))
-                    .font(SafeEatFont.custom(13, relativeTo: .caption))
-                    .foregroundStyle(.white.opacity(0.72))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.82)
-                    .frame(width: layout.labelWidth)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(.black.opacity(0.08))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .stroke(.white.opacity(0.58), lineWidth: 0)
-                    )
-                    .position(
-                        x: layout.frameRect.midX,
-                        y: layout.frameRect.maxY + 20
-                    )
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .allowsHitTesting(false)
