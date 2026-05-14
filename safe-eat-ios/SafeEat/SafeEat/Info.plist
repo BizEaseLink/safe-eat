@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>UMengAppKey</key>
+	<string>69f4675e9a7f376488d17f59</string>
 	<key>CFBundleDisplayName</key>
 	<string>食安安</string>
 	<key>NSAppTransportSecurity</key>

@@ -1,7 +1,9 @@
 import UIKit
 
 enum UMengConfig {
-    static let appKey = "69f4675e9a7f376488d17f59"
+    static let appKey: String = {
+        Bundle.main.infoDictionary?["UMengAppKey"] as? String ?? ""
+    }()
 
     enum SlotId {
         static var rewardVideo: String {
