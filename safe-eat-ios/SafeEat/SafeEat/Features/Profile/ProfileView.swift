@@ -138,6 +138,7 @@ struct ProfileView: View {
                             .font(SafeEatFont.custom(26, relativeTo: .title2, weight: .bold))
                             .foregroundStyle(SafeEatTheme.textPrimary)
 
+                        HStack(spacing: 8) {
                         Text(PlanTierMapper.shortTitle(store.profile?.currentPlanTier))
                             .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
                             .foregroundStyle(SafeEatTheme.primary)
@@ -147,6 +148,33 @@ struct ProfileView: View {
                                 Capsule()
                                     .fill(SafeEatTheme.primarySoft)
                             )
+
+                        // 试用状态标签
+                        if let status = store.membershipStatus, status.isTrial == true {
+                            Text(SafeEatL10n.text(L10nKey.Membership.trialActive))
+                                .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                                .foregroundStyle(.orange)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(.orange.opacity(0.14))
+                                )
+                        }
+
+                        // 首购奖励已领取标签
+                        if store.hasFirstPurchaseBonusClaimed {
+                            Text(SafeEatL10n.text(L10nKey.Membership.firstPurchaseClaimed))
+                                .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                                .foregroundStyle(.green)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(.green.opacity(0.14))
+                                )
+                        }
+                    }
                     }
 
                     Text(store.profile?.phone ?? "--")
@@ -597,7 +625,8 @@ struct ProfileView: View {
         guard plans.isEmpty else { return }
 
         do {
-            plans = try await store.api.getPlans()
+            let result = try await store.api.getPlans()
+            plans = result.items
         } catch {
             store.handleAPIError(error)
         }

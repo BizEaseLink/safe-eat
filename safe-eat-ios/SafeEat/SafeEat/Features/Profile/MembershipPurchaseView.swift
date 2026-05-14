@@ -5,7 +5,6 @@ import StoreKit
 struct MembershipPurchaseView: View {
     @EnvironmentObject private var store: AppStore
 
-    @State private var plans: [MembershipPlan] = []
     @State private var selectedPlanID: String?
     @State private var selectedChannel = "apple_iap"
     @State private var selectedBillingCycle = "monthly"
@@ -14,20 +13,16 @@ struct MembershipPurchaseView: View {
     @State private var successMessage: String?
     @State private var plansLoadError: String?
     @State private var now = Date()
-    @State private var discountCodeInput = ""
+    @State private var redeemCodeInput = ""
     @State private var isRedeemingCode = false
     @State private var redeemCodeMessage: String?
-    @State private var showDiscountDetailSheet = false
+    @State private var redeemCodeMessageIsSuccess = false
+    @State private var showPriceBreakdownSheet = false
     @State private var showTrialPrompt = false
-    @State private var priceCalculation: PriceCalculationResult?
-    @State private var isCalculatingPrice = false
-    @State private var validatedCodeId: String?
 
-    private var memberStatus: MemberStatus {
-        guard let tier = store.profile?.currentPlanTier, tier != "free" else {
-            return .new
-        }
-        return .active
+    private var isNewUser: Bool {
+        guard let tier = store.profile?.currentPlanTier else { return true }
+        return tier == "free"
     }
 
     var body: some View {
@@ -48,13 +43,25 @@ struct MembershipPurchaseView: View {
             }
         } footer: {
             VStack(spacing: 12) {
-                // 折扣明细展示区（淘宝式价格展示）
-                if let plan = selectedPlan {
-                    priceBreakdownSection(for: plan)
+                // 活动权益标签区
+                if let plan = selectedPlan, !store.campaignBenefits.isEmpty {
+                    campaignBenefitTags(for: plan)
                 }
 
-                // 折扣码输入
-                discountCodeSection
+                // 价格明细弹层入口
+                if let plan = selectedPlan, hasAnyBenefit(for: plan) {
+                    Button {
+                        showPriceBreakdownSheet = true
+                    } label: {
+                        Text(SafeEatL10n.text(L10nKey.Membership.priceBreakdownTitle))
+                            .font(SafeEatFont.custom(13, relativeTo: .caption))
+                            .foregroundStyle(SafeEatTheme.primary)
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                // 兑换码输入
+                redeemCodeSection
 
                 // 购买/订阅按钮
                 ProfilePrimaryActionButton(
@@ -82,16 +89,9 @@ struct MembershipPurchaseView: View {
         }
         .task {
             await loadPlans()
-            await recalculatePrice()
         }
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { time in
             now = time
-        }
-        .onChange(of: selectedPlanID) { _ in
-            Task { await recalculatePrice() }
-        }
-        .onChange(of: selectedBillingCycle) { _ in
-            Task { await recalculatePrice() }
         }
         .alert(SafeEatL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
             get: { successMessage != nil },
@@ -106,13 +106,19 @@ struct MembershipPurchaseView: View {
         .sheet(isPresented: $showTrialPrompt) {
             trialPromptSheet
         }
+        .sheet(isPresented: $showPriceBreakdownSheet) {
+            if let plan = selectedPlan {
+                priceBreakdownSheet(for: plan)
+            }
+        }
         .onChange(of: store.purchaseError) { newValue in
-            // 购买失败或取消时，弹出试用提示
-            if newValue != nil && memberStatus == .new {
+            if newValue != nil && isNewUser {
                 showTrialPrompt = true
             }
         }
     }
+
+    // MARK: - Hero Section
 
     private var heroSection: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -127,8 +133,8 @@ struct MembershipPurchaseView: View {
                             .fill(SafeEatTheme.primarySoft)
                     )
 
-                // 限时优惠倒计时（参照原型 membership-countdown）
-                if let countdown = earliestDiscountCountdown, countdown > 0 {
+                // 活动倒计时
+                if let countdown = earliestCampaignCountdown, countdown > 0 {
                     Text(SafeEatL10n.format(L10nKey.Membership.countdownFormat, countdownText(from: countdown)))
                         .font(SafeEatFont.custom(13, relativeTo: .caption))
                         .foregroundStyle(Color(red: 0.42, green: 0.25, blue: 0.08).opacity(0.72))
@@ -148,16 +154,25 @@ struct MembershipPurchaseView: View {
                     label: SafeEatL10n.text(L10nKey.Membership.currentTier),
                     value: PlanTierMapper.title(store.profile?.currentPlanTier)
                 )
+                if let status = store.membershipStatus {
+                    Divider().overlay(SafeEatTheme.line)
+                    ProfileStaticRow(
+                        label: "会员状态",
+                        value: membershipStatusText(status)
+                    )
+                }
                 if let highlightedPlan = highlightedPlan {
                     Divider().overlay(SafeEatTheme.line)
                     ProfileStaticRow(
                         label: SafeEatL10n.text(L10nKey.Membership.recommendedPlan),
-                        value: "\(highlightedPlan.localizedDisplayName) · \(SafeEatTheme.priceText(highlightedPlan.priceFen))"
+                        value: "\(highlightedPlan.localizedDisplayName) · \(displayPrice(for: highlightedPlan))"
                     )
                 }
             }
         }
     }
+
+    // MARK: - Plan List Section
 
     private var planListSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -167,7 +182,6 @@ struct MembershipPurchaseView: View {
                 billingCyclePicker
             }
 
-            // 加载错误提示
             if let error = plansLoadError {
                 HStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -178,7 +192,6 @@ struct MembershipPurchaseView: View {
                     Spacer()
                     Button("Retry") {
                         plansLoadError = nil
-                        plans = []
                         Task { await loadPlans() }
                     }
                     .font(.footnote)
@@ -192,140 +205,160 @@ struct MembershipPurchaseView: View {
 
             ForEach(filteredPlans) { plan in
                 if plan.tier == "free" {
-                    // Free 方案：信息卡片，不可选中
-                    ProfileSurfaceCard {
-                        HStack(alignment: .top, spacing: 14) {
-                            VStack(alignment: .leading, spacing: 6) {
-                                HStack(spacing: 10) {
-                                    Text(plan.localizedDisplayName)
-                                        .font(SafeEatFont.textStyle(.headline))
-                                        .foregroundStyle(SafeEatTheme.textPrimary)
-
-                                    Text(SafeEatL10n.text(L10nKey.Membership.badgeDefault))
-                                        .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                                        .foregroundStyle(SafeEatTheme.textSecondary)
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 6)
-                                        .background(
-                                            Capsule()
-                                                .fill(SafeEatTheme.textSecondary.opacity(0.14))
-                                        )
-                                }
-
-                                Text(SafeEatL10n.text(L10nKey.Membership.freePlanDescription))
-                                    .font(SafeEatFont.textStyle(.caption))
-                                    .foregroundStyle(SafeEatTheme.textSecondary)
-                            }
-
-                            Spacer()
-
-                            Text(SafeEatTheme.priceText(plan.priceFen))
-                                .font(SafeEatFont.custom(20, relativeTo: .title3, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
-                        }
-                    }
+                    freePlanCard(plan)
                 } else {
-                    // 付费方案：可选中
-                    Button {
-                        selectedPlanID = plan.id
-                } label: {
-                    ProfileSurfaceCard {
-                        HStack(alignment: .top, spacing: 14) {
-                            VStack(alignment: .leading, spacing: 10) {
-                                HStack(spacing: 10) {
-                                    Text(plan.localizedDisplayName)
-                                        .font(SafeEatFont.textStyle(.headline))
-                                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    paidPlanCard(plan)
+                }
+            }
+        }
+    }
 
-                                    Text(planBadge(for: plan))
-                                        .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                                        .foregroundStyle(planBadgeColor(for: plan))
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 6)
-                                        .background(
-                                            Capsule()
-                                                .fill(planBadgeColor(for: plan).opacity(0.14))
-                                        )
-                                }
+    private func freePlanCard(_ plan: MembershipPlan) -> some View {
+        ProfileSurfaceCard {
+            HStack(alignment: .top, spacing: 14) {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 10) {
+                        Text(plan.localizedDisplayName)
+                            .font(SafeEatFont.textStyle(.headline))
+                            .foregroundStyle(SafeEatTheme.textPrimary)
 
-                                Text(planSubtitle(for: plan))
-                                    .font(SafeEatFont.textStyle(.subheadline))
-                                    .foregroundStyle(SafeEatTheme.textSecondary)
+                        Text(SafeEatL10n.text(L10nKey.Membership.badgeDefault))
+                            .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(SafeEatTheme.textSecondary.opacity(0.14))
+                            )
+                    }
 
-                                Text(
-                                    SafeEatL10n.format(
-                                        L10nKey.Membership.dailyQuota,
-                                        plan.dailyQuota ?? 0
-                                    )
+                    Text(SafeEatL10n.text(L10nKey.Membership.freePlanDescription))
+                        .font(SafeEatFont.textStyle(.caption))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+                }
+
+                Spacer()
+
+                Text(displayPrice(for: plan))
+                    .font(SafeEatFont.custom(20, relativeTo: .title3, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.textPrimary)
+            }
+        }
+    }
+
+    private func paidPlanCard(_ plan: MembershipPlan) -> some View {
+        Button {
+            selectedPlanID = plan.id
+        } label: {
+            ProfileSurfaceCard {
+                HStack(alignment: .top, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 10) {
+                            Text(plan.localizedDisplayName)
+                                .font(SafeEatFont.textStyle(.headline))
+                                .foregroundStyle(SafeEatTheme.textPrimary)
+
+                            Text(planBadge(for: plan))
+                                .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                                .foregroundStyle(planBadgeColor(for: plan))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(planBadgeColor(for: plan).opacity(0.14))
                                 )
+                        }
+
+                        Text(planSubtitle(for: plan))
+                            .font(SafeEatFont.textStyle(.subheadline))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+
+                        // 基础权益
+                        if let quota = plan.recognitionQuotaMonthly {
+                            Text("每月识别 \(quota) 次")
                                 .font(SafeEatFont.textStyle(.footnote))
                                 .foregroundStyle(SafeEatTheme.textSecondary)
-                            }
+                        }
+                        if let aiQuota = plan.aiQuotaMonthly {
+                            Text("每月 AI 分析 \(aiQuota) 次")
+                                .font(SafeEatFont.textStyle(.footnote))
+                                .foregroundStyle(SafeEatTheme.textSecondary)
+                        }
 
-                            Spacer()
-
-                            VStack(alignment: .trailing, spacing: 8) {
-                                // 折扣标签
-                                if let discount = plan.appliedDiscount {
-                                    Text(discount.name)
-                                        .font(SafeEatFont.custom(11, relativeTo: .caption2, weight: .bold))
+                        // 试用标签 + 扣费提示（Apple 审核指南 3.1.2(a)）
+                        Group {
+                            if let product = storeKitProduct(for: plan),
+                               let intro = product.subscription?.introductoryOffer,
+                               intro.paymentMode == .freeTrial {
+                                HStack(spacing: 6) {
+                                    Text(SafeEatL10n.format(L10nKey.Membership.freeTrialDays, intro.period.value))
+                                        .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
                                         .foregroundStyle(SafeEatTheme.warning)
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 3)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 6)
                                         .background(
                                             Capsule()
                                                 .fill(SafeEatTheme.warning.opacity(0.14))
                                         )
-                                }
 
-                                // 折扣价格
-                                if let discountedPrice = plan.discountedPriceFen, discountedPrice < plan.priceFen {
-                                    // 划线原价
-                                    Text(displayPrice(for: plan, useOriginal: true))
-                                        .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .regular))
+                                    Text(SafeEatL10n.text(L10nKey.Membership.trialDisclaimer))
+                                        .font(SafeEatFont.custom(11, relativeTo: .caption2))
                                         .foregroundStyle(SafeEatTheme.textSecondary)
-                                        .strikethrough()
-
-                                    // 折扣后价格
-                                    Text(displayPrice(for: plan, useOriginal: false))
-                                        .font(SafeEatFont.custom(26, relativeTo: .title2, weight: .bold))
-                                        .foregroundStyle(SafeEatTheme.warning)
-                                } else {
-                                    Text(displayPrice(for: plan, useOriginal: true))
-                                        .font(SafeEatFont.custom(26, relativeTo: .title2, weight: .bold))
-                                        .foregroundStyle(SafeEatTheme.textPrimary)
-                                }
-
-                                Image(systemName: selectedPlanID == plan.id ? "checkmark.circle.fill" : "circle")
-                                    .font(.system(size: 22, weight: .semibold))
-                                    .foregroundStyle(selectedPlanID == plan.id ? SafeEatTheme.primary : SafeEatTheme.textSecondary.opacity(0.6))
-
-                                // 月费方案展示年费对比
-                                if selectedBillingCycle == "monthly", let yearlyPrice = plan.yearlyPriceFen, yearlyPrice > 0 {
-                                    Text(SafeEatL10n.format(
-                                        L10nKey.Membership.yearlyPriceHint,
-                                        SafeEatTheme.priceText(yearlyPrice),
-                                        SafeEatTheme.priceText(yearlyPrice / 12)
-                                    ))
-                                    .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                                    .foregroundStyle(SafeEatTheme.primary.opacity(0.72))
                                 }
                             }
                         }
                     }
+
+                    Spacer()
+
+                    VStack(alignment: .trailing, spacing: 8) {
+                        // 活动权益标签
+                        ForEach(campaignBenefitsForPlan(plan)) { benefit in
+                            Text(campaignBenefitText(benefit))
+                                .font(SafeEatFont.custom(11, relativeTo: .caption2, weight: .bold))
+                                .foregroundStyle(SafeEatTheme.warning)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                                .background(
+                                    Capsule()
+                                        .fill(SafeEatTheme.warning.opacity(0.14))
+                                )
+                        }
+
+                        // 价格
+                        Text(displayPrice(for: plan))
+                            .font(SafeEatFont.custom(26, relativeTo: .title2, weight: .bold))
+                            .foregroundStyle(SafeEatTheme.textPrimary)
+
+                        Image(systemName: selectedPlanID == plan.id ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundStyle(selectedPlanID == plan.id ? SafeEatTheme.primary : SafeEatTheme.textSecondary.opacity(0.6))
+
+                        // 年费对比
+                        if selectedBillingCycle == "monthly", let yearlyPlan = store.membershipPlans.first(where: { $0.tier == plan.tier && $0.billingCycle == "yearly" }), yearlyPlan.priceFen > 0 {
+                            Text(SafeEatL10n.format(
+                                L10nKey.Membership.yearlyPriceHint,
+                                SafeEatTheme.priceText(yearlyPlan.priceFen),
+                                SafeEatTheme.priceText(yearlyPlan.priceFen / 12)
+                   ))
+                            .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                            .foregroundStyle(SafeEatTheme.primary.opacity(0.72))
+                        }
+                    }
                 }
-                .buttonStyle(.plain)
             }
+            .buttonStyle(.plain)
         }
     }
-    }
+
+    // MARK: - Channel Section
 
     private var channelSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             SafeEatSectionHeader(title: SafeEatL10n.text(L10nKey.Membership.sectionChannel))
 
-            // 新会员首购优惠提示
-            if memberStatus == .new {
+            if isNewUser {
                 HStack(spacing: 6) {
                     Image(systemName: "gift")
                         .foregroundStyle(SafeEatTheme.warning)
@@ -356,15 +389,195 @@ struct MembershipPurchaseView: View {
         }
     }
 
-    private var highlightedPlan: MembershipPlan? {
-        filteredPlans
-            .filter { $0.tier != "free" }
-            .min(by: { $0.priceFen < $1.priceFen })
+    // MARK: - Campaign Benefit Tags
+
+    private func campaignBenefitTags(for plan: MembershipPlan) -> some View {
+        Group {
+            ForEach(campaignBenefitsForPlan(plan)) { benefit in
+                HStack(spacing: 4) {
+                    Image(systemName: "gift")
+                        .font(SafeEatFont.custom(10, relativeTo: .caption2))
+                    Text(campaignBenefitText(benefit))
+                        .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                }
+                .foregroundStyle(SafeEatTheme.warning)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill(SafeEatTheme.warning.opacity(0.1))
+                )
+            }
+        }
     }
 
-    private var filteredPlans: [MembershipPlan] {
-        plans.filter { $0.billingCycle == selectedBillingCycle }
+    // MARK: - Price Breakdown Sheet
+
+    private func priceBreakdownSheet(for plan: MembershipPlan) -> some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 16) {
+                // 套餐原价
+                HStack {
+                    Text(SafeEatL10n.text(L10nKey.Membership.priceBreakdownOriginal))
+                    Spacer()
+                    Text(displayPrice(for: plan))
+                        .strikethrough()
+                }
+                .font(SafeEatFont.custom(16, relativeTo: .body))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+
+                Divider().overlay(SafeEatTheme.line)
+
+                // Apple 优惠
+                if let product = storeKitProduct(for: plan),
+                   let intro = product.subscription?.introductoryOffer, intro.paymentMode != .freeTrial {
+                    HStack {
+                        Text(SafeEatL10n.text(L10nKey.Membership.priceBreakdownAppleOffer))
+                        Spacer()
+                        Text(appleOfferText(intro))
+                    }
+                    .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.warning)
+                }
+
+                // 后台活动
+                ForEach(campaignBenefitsForPlan(plan)) { benefit in
+                    HStack {
+                        Text(benefit.name)
+                        Spacer()
+                        Text("-\(campaignBenefitText(benefit))")
+                    }
+                    .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.warning)
+                }
+
+                // 额外权益
+                let bonusText = bonusSummaryText(for: plan)
+                if !bonusText.isEmpty {
+                    HStack {
+                        Text(SafeEatL10n.text(L10nKey.Membership.priceBreakdownBonus))
+                        Spacer()
+                        Text(bonusText)
+                    }
+                    .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.warning)
+                }
+
+                Divider().overlay(SafeEatTheme.line)
+
+                // 实际支付
+                HStack {
+                    Text(SafeEatL10n.text(L10nKey.Membership.priceBreakdownPayment))
+                    Spacer()
+                    Text("以 Apple 支付弹窗为准")
+                }
+                .font(SafeEatFont.custom(20, relativeTo: .title3, weight: .bold))
+                .foregroundStyle(SafeEatTheme.primary)
+            }
+            .padding(20)
+            .navigationTitle(SafeEatL10n.text(L10nKey.Membership.priceBreakdownTitle))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(SafeEatL10n.text(L10nKey.Common.cancel)) {
+                        showPriceBreakdownSheet = false
+                    }
+                }
+            }
+        }
+        .presentationDetents([.height(380)])
+        .presentationDragIndicator(.visible)
     }
+
+    // MARK: - Redeem Code Section
+
+    private var redeemCodeSection: some View {
+        Group {
+            HStack(spacing: 10) {
+                TextField(SafeEatL10n.text(L10nKey.Membership.redeemCodePlaceholder), text: $redeemCodeInput)
+                    .font(SafeEatFont.custom(14, relativeTo: .subheadline))
+                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(SafeEatTheme.primarySoft)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(SafeEatTheme.line.opacity(0.12), lineWidth: 1)
+                    )
+                    .submitLabel(.done)
+                    .onSubmit {
+                        Task { await redeemCode() }
+                    }
+
+                Button {
+                    Task { await redeemCode() }
+                } label: {
+                    if isRedeemingCode {
+                        ProgressView()
+                            .tint(.white)
+                            .frame(width: 44, height: 44)
+                    } else {
+                        Text(SafeEatL10n.text(L10nKey.Membership.redeemCodeConfirm))
+                            .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 44, height: 44)
+                    }
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(SafeEatTheme.primary)
+                )
+                .buttonStyle(.plain)
+                .disabled(redeemCodeInput.trimmingCharacters(in: .whitespaces).isEmpty || isRedeemingCode)
+            }
+
+            if let message = redeemCodeMessage {
+                Text(message)
+                    .font(SafeEatFont.custom(13, relativeTo: .caption))
+                    .foregroundStyle(redeemCodeMessageIsSuccess ? SafeEatTheme.success : SafeEatTheme.danger)
+                    .padding(.top, 4)
+            }
+        }
+    }
+
+    // MARK: - Trial Prompt Sheet
+
+    private var trialPromptSheet: some View {
+        VStack(spacing: 24) {
+            Image(systemName: "gift")
+                .font(.system(size: 48))
+                .foregroundStyle(SafeEatTheme.primary)
+
+            Text(SafeEatL10n.text(L10nKey.Membership.trialPromptTitle))
+                .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+
+            Text(SafeEatL10n.text(L10nKey.Membership.trialPromptBody))
+                .font(SafeEatFont.custom(15, relativeTo: .body))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+                .multilineTextAlignment(.center)
+
+            ProfilePrimaryActionButton(
+                title: SafeEatL10n.text(L10nKey.Membership.trialPromptAction)
+            ) {
+                showTrialPrompt = false
+            }
+
+            Button(SafeEatL10n.text(L10nKey.Common.cancel)) {
+                showTrialPrompt = false
+            }
+            .font(SafeEatFont.custom(15, relativeTo: .body))
+            .foregroundStyle(SafeEatTheme.textSecondary)
+        }
+        .padding(24)
+        .presentationDetents([.height(360)])
+        .presentationDragIndicator(.visible)
+    }
+
+    // MARK: - Billing Cycle Picker
 
     private var billingCyclePicker: some View {
         HStack(spacing: 0) {
@@ -392,7 +605,23 @@ struct MembershipPurchaseView: View {
         }
     }
 
-    // MARK: - 购买按钮文案
+    // MARK: - Computed Properties
+
+    private var highlightedPlan: MembershipPlan? {
+        filteredPlans
+            .filter { $0.tier != "free" }
+            .min(by: { $0.priceFen < $1.priceFen })
+    }
+
+    private var filteredPlans: [MembershipPlan] {
+        store.membershipPlans.filter { $0.billingCycle == selectedBillingCycle }
+    }
+
+    private var selectedPlan: MembershipPlan? {
+        store.membershipPlans.first(where: { $0.id == selectedPlanID })
+    }
+
+    // MARK: - Purchase Button Text
 
     private var purchaseButtonText: String {
         if store.isPurchasingMembership || creatingOrder {
@@ -400,98 +629,123 @@ struct MembershipPurchaseView: View {
         }
 
         if selectedChannel == "apple_iap",
-           let plan = plans.first(where: { $0.id == selectedPlanID }),
+           let plan = store.membershipPlans.first(where: { $0.id == selectedPlanID }),
            let product = storeKitProduct(for: plan) {
+            let bonusDays = totalBonusDays(for: plan)
+            if bonusDays > 0 {
+                return SafeEatL10n.format(L10nKey.Membership.buyNowWithBonus, bonusDays)
+            }
             return SafeEatL10n.format(L10nKey.Membership.subscribeWithPrice, product.displayPrice)
         }
 
         return SafeEatL10n.text(L10nKey.Membership.createOrder)
     }
 
-    // MARK: - 价格展示（优先 StoreKit 真实价格）
+    // MARK: - Price Display
 
-    private func displayPrice(for plan: MembershipPlan, useOriginal: Bool) -> String {
+    private func displayPrice(for plan: MembershipPlan) -> String {
         if let product = storeKitProduct(for: plan) {
-            // Apple IAP 渠道：使用 StoreKit 真实价格
-            if let discount = plan.appliedDiscount, !useOriginal,
-               let discountedPrice = plan.discountedPriceFen, discountedPrice < plan.priceFen {
-                return SafeEatTheme.priceText(discountedPrice)
-            }
             return product.displayPrice
-        }
-        // 非 IAP 或 StoreKit 商品未加载：使用后端价格
-        if !useOriginal, let discountedPrice = plan.discountedPriceFen, discountedPrice < plan.priceFen {
-            return SafeEatTheme.priceText(discountedPrice)
         }
         return SafeEatTheme.priceText(plan.priceFen)
     }
 
     private func storeKitProduct(for plan: MembershipPlan) -> Product? {
-        // 商品 ID 格式: com.bizeasylink.safeeat.membership.<billingCycle>.<planTier>
-        // 匹配对应 billingCycle + planTier 的商品
-        store.membershipProducts.first { product in
+        if let appleId = plan.appleProductId {
+            return store.membershipProducts.first { $0.id == appleId }
+        }
+        return store.membershipProducts.first { product in
             MembershipProductID.planTier(from: product.id) == plan.tier
             && MembershipProductID.billingCycle(from: product.id) == plan.billingCycle
         }
     }
 
-    // MARK: - 数据加载
+    // MARK: - Campaign Benefits
 
-    private func loadPlans() async {
-        guard plans.isEmpty else { return }
-
-        loadingPlans = true
-        defer { loadingPlans = false }
-
-        do {
-            plans = try await store.api.getPlans()
-            selectedPlanID = plans.first(where: { $0.tier != "free" })?.id ?? plans.first?.id
-        } catch {
-            #if DEBUG
-            print("[MembershipPurchaseView] loadPlans failed: \(error)")
-            #endif
-            plansLoadError = error.localizedDescription
+    private func campaignBenefitsForPlan(_ plan: MembershipPlan) -> [CampaignBenefit] {
+        // 优先使用 plan 上已过滤叠加的活动
+        if let applicable = plan.applicableCampaigns, !applicable.isEmpty {
+            return applicable
         }
-
-        // 同时加载 StoreKit 商品
-        await store.loadMembershipProducts()
-    }
-
-    // MARK: - 购买逻辑
-
-    private func purchase() async {
-        guard let selectedPlanID else { return }
-
-        if selectedChannel == "apple_iap" {
-            // Apple IAP 渠道：使用 StoreKit 2 购买
-            guard let plan = plans.first(where: { $0.id == selectedPlanID }),
-                  let product = storeKitProduct(for: plan) else {
-                store.purchaseError = SafeEatL10n.text(L10nKey.Membership.productNotReady)
-                return
-            }
-
-            await store.purchaseMembership(product: product, planId: plan.id, discountId: plan.appliedDiscount?.id)
-
-            if store.purchaseError == nil && !store.isPurchasingMembership {
-                successMessage = SafeEatL10n.text(L10nKey.Membership.purchaseSuccess)
-            }
-        } else {
-            // 非 IAP 渠道：保留原有订单创建逻辑
-            creatingOrder = true
-            defer { creatingOrder = false }
-
-            do {
-                let order = try await store.createMembershipOrder(
-                    planId: selectedPlanID,
-                    channel: selectedChannel,
-                    discountId: plans.first(where: { $0.id == selectedPlanID })?.appliedDiscount?.id
-                )
-                successMessage = SafeEatL10n.format(L10nKey.Membership.orderCreated, order.orderNo)
-            } catch {
-                store.errorMessage = error.localizedDescription
-            }
+        // 兼容旧版：从全局列表按 targetPlanIds 过滤
+        return store.campaignBenefits.filter { benefit in
+            guard let targetPlans = benefit.targetPlanIds, !targetPlans.isEmpty else { return true }
+            return targetPlans.contains(plan.id)
         }
     }
+
+    private func campaignBenefitText(_ benefit: CampaignBenefit) -> String {
+        if let days = benefit.bonusDays, days > 0 {
+            return SafeEatL10n.format(L10nKey.Membership.campaignBonusDays, days)
+        }
+        if let quota = benefit.bonusRecognitionQuota, quota > 0 {
+            return SafeEatL10n.format(L10nKey.Membership.campaignBonusQuota, quota)
+        }
+        if let aiQuota = benefit.bonusAiQuota, aiQuota > 0 {
+            return SafeEatL10n.format(L10nKey.Membership.campaignBonusAiQuota, aiQuota)
+        }
+        return benefit.name
+    }
+
+    private func hasAnyBenefit(for plan: MembershipPlan) -> Bool {
+        !campaignBenefitsForPlan(plan).isEmpty || hasAppleOffer(for: plan)
+    }
+
+    private func hasAppleOffer(for plan: MembershipPlan) -> Bool {
+        guard let product = storeKitProduct(for: plan) else { return false }
+        return product.subscription?.introductoryOffer != nil
+    }
+
+    private func appleOfferText(_ offer: Product.SubscriptionOffer) -> String {
+        switch offer.paymentMode {
+        case .freeTrial:
+            let period: String
+            switch offer.period.unit {
+            case .day: period = offer.period.value == 1 ? "天" : "\(offer.period.value)天"
+            case .week: period = offer.period.value == 1 ? "周" : "\(offer.period.value)周"
+            case .month: period = offer.period.value == 1 ? "个月" : "\(offer.period.value)个月"
+            case .year: period = offer.period.value == 1 ? "年" : "\(offer.period.value)年"
+            @unknown default: period = ""
+            }
+            return "免费试用 \(period)"
+        case .payUpFront:
+            return "首期优惠"
+        case .payAsYouGo:
+            return "首期折扣"
+        default:
+            return "Apple 优惠"
+        }
+    }
+
+    private func totalBonusDays(for plan: MembershipPlan) -> Int {
+        campaignBenefitsForPlan(plan).reduce(0) { sum, benefit in
+            sum + (benefit.bonusDays ?? 0)
+        }
+    }
+
+    private func bonusSummaryText(for plan: MembershipPlan) -> String {
+        var parts: [String] = []
+        let days = totalBonusDays(for: plan)
+        if days > 0 { parts.append("+\(days)天") }
+        let quota = campaignBenefitsForPlan(plan).reduce(0) { $0 + ($1.bonusRecognitionQuota ?? 0) }
+        if quota > 0 { parts.append("+\(quota)次识别") }
+        let aiQuota = campaignBenefitsForPlan(plan).reduce(0) { $0 + ($1.bonusAiQuota ?? 0) }
+        if aiQuota > 0 { parts.append("+\(aiQuota)次AI") }
+        return parts.joined(separator: "，")
+    }
+
+    private func membershipStatusText(_ status: MembershipMeResult) -> String {
+        switch status.status {
+        case "active": return "生效中"
+        case "expired": return SafeEatL10n.text(L10nKey.Membership.membershipStatusExpired)
+        case "canceled": return SafeEatL10n.text(L10nKey.Membership.membershipStatusCanceled)
+        case "grace_period": return SafeEatL10n.text(L10nKey.Membership.membershipStatusGracePeriod)
+        case "trialing": return SafeEatL10n.text(L10nKey.Membership.membershipStatusTrialing)
+        default: return status.status ?? "未知"
+        }
+    }
+
+    // MARK: - Plan Helpers
 
     private func planSubtitle(for plan: MembershipPlan) -> String {
         let cycleText = plan.billingCycle == "yearly"
@@ -503,6 +757,8 @@ struct MembershipPurchaseView: View {
             return SafeEatL10n.format(L10nKey.Membership.subtitlePro, cycleText)
         case "lite":
             return SafeEatL10n.format(L10nKey.Membership.subtitleLite, cycleText)
+        case "premium":
+            return SafeEatL10n.format(L10nKey.Membership.subtitlePremium, cycleText)
         default:
             return SafeEatL10n.text(L10nKey.Membership.subtitleFree)
         }
@@ -514,6 +770,8 @@ struct MembershipPurchaseView: View {
             return SafeEatL10n.text(L10nKey.Membership.badgeRecommended)
         case "pro":
             return SafeEatL10n.text(L10nKey.Membership.badgeAdvanced)
+        case "premium":
+            return SafeEatL10n.text(L10nKey.Membership.badgePremium)
         default:
             return SafeEatL10n.text(L10nKey.Membership.badgeDefault)
         }
@@ -525,15 +783,17 @@ struct MembershipPurchaseView: View {
             return SafeEatTheme.primary
         case "pro":
             return SafeEatTheme.warning
+        case "premium":
+            return Color.purple
         default:
             return SafeEatTheme.textSecondary
         }
     }
 
-    // MARK: - 倒计时
+    // MARK: - Countdown
 
-    private var earliestDiscountCountdown: TimeInterval? {
-        let deadlines = plans.compactMap { $0.appliedDiscount?.expiresAt }
+    private var earliestCampaignCountdown: TimeInterval? {
+        let deadlines = store.campaignBenefits.compactMap { $0.endsAt }
         guard let earliest = deadlines.min(), earliest > now else { return nil }
         return earliest.timeIntervalSince(now)
     }
@@ -546,362 +806,84 @@ struct MembershipPurchaseView: View {
         return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
 
-    // MARK: - 选中方案
+    // MARK: - Data Loading
 
-    private var selectedPlan: MembershipPlan? {
-        plans.first(where: { $0.id == selectedPlanID })
-    }
-
-    // MARK: - 折扣明细展示区（淘宝式价格展示）
-
-    private func priceBreakdownSection(for plan: MembershipPlan) -> some View {
-        Group {
-            if isCalculatingPrice {
-                ProgressView()
-                    .tint(SafeEatTheme.primary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-            } else if let calc = priceCalculation, calc.totalDiscountFen > 0 {
-                ProfileSurfaceCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        // 原价
-                        HStack {
-                            Text(SafeEatL10n.text(L10nKey.Membership.originalPrice))
-                                .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-
-                            Spacer()
-
-                            Text(SafeEatTheme.priceText(calc.originalPriceFen))
-                                .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-                                .strikethrough()
-                        }
-
-                        // 不可叠加折扣
-                        if let nonStackable = calc.nonStackableDiscount {
-                            HStack {
-                                Text(nonStackable.name)
-                                    .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-                                    .foregroundStyle(SafeEatTheme.warning)
-
-                                Spacer()
-
-                                Text("-\(SafeEatTheme.priceText(nonStackable.discountAmountFen))")
-                                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
-                                    .foregroundStyle(SafeEatTheme.warning)
-                            }
-                        }
-
-                        // 可叠加折扣码
-                        ForEach(calc.stackableDiscounts) { detail in
-                            HStack {
-                                Text(detail.name)
-                                    .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-                                    .foregroundStyle(SafeEatTheme.warning)
-
-                                Spacer()
-
-                                Text("-\(SafeEatTheme.priceText(detail.discountAmountFen))")
-                                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
-                                    .foregroundStyle(SafeEatTheme.warning)
-                            }
-                        }
-
-                        Divider().overlay(SafeEatTheme.line)
-
-                        // 最终价格
-                        HStack {
-                            Text(SafeEatL10n.text(L10nKey.Membership.finalPrice))
-                                .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
-
-                            Spacer()
-
-                            Text(SafeEatTheme.priceText(calc.finalPriceFen))
-                                .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.primary)
-                        }
-
-                        // 查看折扣明细按钮
-                        Button {
-                            showDiscountDetailSheet = true
-                        } label: {
-                            Text(SafeEatL10n.text(L10nKey.Membership.discountDetailTitle))
-                                .font(SafeEatFont.custom(13, relativeTo: .caption))
-                                .foregroundStyle(SafeEatTheme.primary)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .sheet(isPresented: $showDiscountDetailSheet) {
-                    discountDetailSheet(calc: calc)
-                }
-            }
-        }
-    }
-
-    // MARK: - 折扣明细 Sheet
-
-    private func discountDetailSheet(calc: PriceCalculationResult) -> some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
-                // 原价
-                HStack {
-                    Text(SafeEatL10n.text(L10nKey.Membership.originalPrice))
-                    Spacer()
-                    Text(SafeEatTheme.priceText(calc.originalPriceFen))
-                        .strikethrough()
-                }
-                .font(SafeEatFont.custom(16, relativeTo: .body))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-
-                Divider().overlay(SafeEatTheme.line)
-
-                // 不可叠加折扣
-                if let nonStackable = calc.nonStackableDiscount {
-                    HStack {
-                        Text(nonStackable.name)
-                        Spacer()
-                        Text("-\(SafeEatTheme.priceText(nonStackable.discountAmountFen))")
-                    }
-                    .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.warning)
-                }
-
-                // 可叠加折扣码
-                ForEach(calc.stackableDiscounts) { detail in
-                    HStack {
-                        Text(detail.name)
-                        Spacer()
-                        Text("-\(SafeEatTheme.priceText(detail.discountAmountFen))")
-                    }
-                    .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.warning)
-                }
-
-                Divider().overlay(SafeEatTheme.line)
-
-                // 最终价格
-                HStack {
-                    Text(SafeEatL10n.text(L10nKey.Membership.finalPrice))
-                    Spacer()
-                    Text(SafeEatTheme.priceText(calc.finalPriceFen))
-                }
-                .font(SafeEatFont.custom(20, relativeTo: .title3, weight: .bold))
-                .foregroundStyle(SafeEatTheme.primary)
-            }
-            .padding(20)
-            .navigationTitle(SafeEatL10n.text(L10nKey.Membership.discountDetailTitle))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(SafeEatL10n.text(L10nKey.Common.cancel)) {
-                        showDiscountDetailSheet = false
-                    }
-                }
-            }
-        }
-        .presentationDetents([.height(320)])
-        .presentationDragIndicator(.visible)
-    }
-
-    // MARK: - 折扣码输入
-
-    private var discountCodeSection: some View {
-        Group {
-            HStack(spacing: 10) {
-                TextField(SafeEatL10n.text(L10nKey.Membership.discountCodePlaceholder), text: $discountCodeInput)
-                    .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(SafeEatTheme.primarySoft)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(SafeEatTheme.line.opacity(0.12), lineWidth: 1)
-                    )
-                    .submitLabel(.done)
-                    .onSubmit {
-                        Task { await validateAndApplyCode() }
-                    }
-
-                Button {
-                    Task { await validateAndApplyCode() }
-                } label: {
-                    if isRedeemingCode {
-                        ProgressView()
-                            .tint(.white)
-                            .frame(width: 44, height: 44)
-                    } else {
-                        Text(SafeEatL10n.text(L10nKey.Membership.discountCodeConfirm))
-                            .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(width: 44, height: 44)
-                    }
-                }
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(SafeEatTheme.primary)
-                )
-                .buttonStyle(.plain)
-                .disabled(discountCodeInput.trimmingCharacters(in: .whitespaces).isEmpty || isRedeemingCode)
-            }
-
-            // 兑换码入口
-            Button {
-                Task { await redeemCode() }
-            } label: {
-                Text(SafeEatL10n.text(L10nKey.Membership.redeemCodeAction))
-                    .font(SafeEatFont.custom(13, relativeTo: .caption))
-                    .foregroundStyle(SafeEatTheme.primary)
-            }
-            .buttonStyle(.plain)
-            .disabled(discountCodeInput.trimmingCharacters(in: .whitespaces).isEmpty || isRedeemingCode)
-
-            if let message = redeemCodeMessage {
-                Text(message)
-                    .font(SafeEatFont.custom(13, relativeTo: .caption))
-                    .foregroundStyle(validatedCodeId != nil ? SafeEatTheme.success : SafeEatTheme.danger)
-                    .padding(.top, 4)
-            }
-        }
-    }
-
-    // MARK: - 价格计算
-
-    private func recalculatePrice() async {
-        guard let plan = selectedPlan else {
-            priceCalculation = nil
+    private func loadPlans() async {
+        guard store.membershipPlans.isEmpty else {
+            selectedPlanID = filteredPlans.first(where: { $0.tier != "free" })?.id ?? filteredPlans.first?.id
             return
         }
 
-        isCalculatingPrice = true
-        defer { isCalculatingPrice = false }
+        loadingPlans = true
+        defer { loadingPlans = false }
 
-        var codeIds: [String]? = nil
-        if let id = validatedCodeId {
-            codeIds = [id]
-        }
+        await store.loadPlansWithCampaigns()
+        selectedPlanID = filteredPlans.first(where: { $0.tier != "free" })?.id ?? filteredPlans.first?.id
 
-        do {
-            priceCalculation = try await store.authorizedRequest { token in
-                try await store.api.calculatePrice(
-                    accessToken: token,
-                    payload: PriceCalculationRequest(
-                        planId: plan.id,
-                        billingCycle: selectedBillingCycle,
-                        discountCodeIds: codeIds
-                    )
-                )
-            }
-        } catch {
-            priceCalculation = nil
+        // 同时加载 StoreKit 商品
+        await store.loadMembershipProducts()
+
+        // 加载会员状态
+        if store.session != nil {
+            await store.loadMembershipStatus()
         }
     }
 
-    // MARK: - 折扣码验证
+    // MARK: - Purchase Logic
 
-    private func validateAndApplyCode() async {
-        let code = discountCodeInput.trimmingCharacters(in: .whitespaces)
-        guard !code.isEmpty, let plan = selectedPlan else { return }
+    private func purchase() async {
+        guard let selectedPlanID else { return }
 
-        isRedeemingCode = true
-        redeemCodeMessage = nil
-        defer { isRedeemingCode = false }
+        if selectedChannel == "apple_iap" {
+            guard let plan = store.membershipPlans.first(where: { $0.id == selectedPlanID }),
+                  let product = storeKitProduct(for: plan) else {
+                store.purchaseError = SafeEatL10n.text(L10nKey.Membership.productNotReady)
+                return
+            }
 
-        do {
-            let result = try await store.authorizedRequest { token in
-                try await store.api.validateDiscountCode(
-                    accessToken: token,
-                    payload: ValidateDiscountCodeRequest(code: code, planId: plan.id)
+            await store.purchaseMembership(product: product, planId: plan.id)
+
+            if store.purchaseError == nil && !store.isPurchasingMembership {
+                successMessage = SafeEatL10n.text(L10nKey.Membership.purchaseSuccess)
+            }
+        } else {
+            creatingOrder = true
+            defer { creatingOrder = false }
+
+            do {
+                let order = try await store.createMembershipOrder(
+                    planId: selectedPlanID,
+                    channel: selectedChannel
                 )
+                successMessage = SafeEatL10n.format(L10nKey.Membership.orderCreated, order.orderNo)
+            } catch {
+                store.errorMessage = error.localizedDescription
             }
-            if result.valid, let id = result.discountId {
-                validatedCodeId = id
-                redeemCodeMessage = result.name ?? SafeEatL10n.text(L10nKey.Membership.discountApplied)
-                await recalculatePrice()
-            } else {
-                validatedCodeId = nil
-                redeemCodeMessage = result.message ?? SafeEatL10n.text(L10nKey.Membership.invalidDiscountCode)
-            }
-        } catch {
-            validatedCodeId = nil
-            redeemCodeMessage = SafeEatL10n.text(L10nKey.Membership.invalidDiscountCode)
         }
     }
 
-    // MARK: - 兑换码
+    // MARK: - Redeem Code
 
     private func redeemCode() async {
-        let code = discountCodeInput.trimmingCharacters(in: .whitespaces)
+        let code = redeemCodeInput.trimmingCharacters(in: .whitespaces)
         guard !code.isEmpty else { return }
 
         isRedeemingCode = true
         redeemCodeMessage = nil
+        redeemCodeMessageIsSuccess = false
         defer { isRedeemingCode = false }
 
         do {
-            let result = try await store.authorizedRequest { token in
-                try await store.api.redeemDiscountCode(accessToken: token, code: code)
-            }
-            if result.redeemed {
-                redeemCodeMessage = SafeEatL10n.text(L10nKey.Membership.redeemSuccess)
-                discountCodeInput = ""
-                validatedCodeId = nil
-                plans = []
-                await loadPlans()
-                await recalculatePrice()
-            } else {
-                redeemCodeMessage = SafeEatL10n.text(L10nKey.Membership.invalidDiscountCode)
-            }
+            let result = try await store.redeemCode(code)
+            redeemCodeMessageIsSuccess = true
+            redeemCodeMessage = SafeEatL10n.text(L10nKey.Membership.redeemCodeSuccess)
+            redeemCodeInput = ""
+            // 刷新会员状态
+            await store.loadMembershipStatus()
+            await store.refreshProfile()
         } catch {
-            redeemCodeMessage = SafeEatL10n.text(L10nKey.Membership.invalidDiscountCode)
+            redeemCodeMessageIsSuccess = false
+            redeemCodeMessage = SafeEatL10n.text(L10nKey.Membership.redeemCodeInvalid)
         }
-    }
-
-    // MARK: - 试用提示 Sheet
-
-    private var trialPromptSheet: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "gift")
-                .font(.system(size: 48))
-                .foregroundStyle(SafeEatTheme.primary)
-
-            Text(SafeEatL10n.text(L10nKey.Membership.trialPromptTitle))
-                .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
-
-            if let trial = priceCalculation?.freeTrial {
-                Text(SafeEatL10n.format(L10nKey.Membership.trialPromptBodyWithDays, trial.trialDays))
-                    .font(SafeEatFont.custom(15, relativeTo: .body))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
-                    .multilineTextAlignment(.center)
-            } else {
-                Text(SafeEatL10n.text(L10nKey.Membership.trialPromptBody))
-                    .font(SafeEatFont.custom(15, relativeTo: .body))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
-
-            ProfilePrimaryActionButton(
-                title: SafeEatL10n.text(L10nKey.Membership.trialPromptAction)
-            ) {
-                showTrialPrompt = false
-                Task { await redeemCode() }
-            }
-
-            Button(SafeEatL10n.text(L10nKey.Common.cancel)) {
-                showTrialPrompt = false
-            }
-            .font(SafeEatFont.custom(15, relativeTo: .body))
-            .foregroundStyle(SafeEatTheme.textSecondary)
-        }
-        .padding(24)
-        .presentationDetents([.height(360)])
-        .presentationDragIndicator(.visible)
     }
 }

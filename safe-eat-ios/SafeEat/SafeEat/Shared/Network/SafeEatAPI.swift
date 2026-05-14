@@ -17,6 +17,18 @@ enum APIError: LocalizedError {
     }
 }
 
+/// 分页结果：items 数组 + 分页信息 + 额外字段（如 campaigns/trialAvailable）
+struct PaginatedResult<T> {
+    let items: [T]
+    let total: Int
+    let page: Int
+    let pageSize: Int
+    let extra: [String: Any]
+
+    /// 是否还有更多数据可加载
+    var hasMore: Bool { items.count < total }
+}
+
 final class SafeEatAPI {
     private let baseURL: URL
     private let decoder: JSONDecoder
@@ -28,7 +40,7 @@ final class SafeEatAPI {
 
     func sendSMS(phone: String) async throws -> SendSmsResponse {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/sms/send",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/sms/send",
             method: "POST",
             body: PhoneBody(phone: phone)
         )
@@ -38,7 +50,7 @@ final class SafeEatAPI {
 
     func login(phone: String, code: String) async throws -> AuthSession {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/login",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/login",
             method: "POST",
             body: PhoneCodeBody(phone: phone, code: code)
         )
@@ -48,7 +60,7 @@ final class SafeEatAPI {
 
     func loginWithPassword(phone: String, password: String) async throws -> AuthSession {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/password/login",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/password/login",
             method: "POST",
             body: PhonePasswordBody(phone: phone, password: password)
         )
@@ -58,7 +70,7 @@ final class SafeEatAPI {
 
     func setPassword(phone: String, code: String, password: String) async throws -> AuthSession {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/password/set",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/password/set",
             method: "POST",
             body: PhoneCodePasswordBody(phone: phone, code: code, password: password)
         )
@@ -68,7 +80,7 @@ final class SafeEatAPI {
 
     func appleLogin(appleSub: String, displayName: String?) async throws -> AuthSession {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/apple/login",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/apple/login",
             method: "POST",
             body: AppleLoginBody(appleSub: appleSub, displayName: displayName)
         )
@@ -78,7 +90,7 @@ final class SafeEatAPI {
 
     func bindApplePhone(accessToken: String, phone: String, code: String) async throws -> AuthSession {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/apple/bind-phone",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/apple/bind-phone",
             method: "POST",
             body: PhoneCodeBody(phone: phone, code: code)
         )
@@ -88,7 +100,7 @@ final class SafeEatAPI {
 
     func refreshToken(_ refreshToken: String) async throws -> RefreshTokenResponse {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/refresh-token",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/refresh-token",
             method: "POST",
             body: ["refreshToken": refreshToken]
         )
@@ -98,32 +110,32 @@ final class SafeEatAPI {
 
     func logout(_ refreshToken: String) async throws {
         let request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/auth/logout",
+            path: "/v1/apps/\(AppConfig.appCode)/auth/logout",
             method: "POST",
             body: ["refreshToken": refreshToken]
         )
-        _ = try await send(request, as: LogoutResponse.self)
+        try await sendVoid(request)
     }
 
     func getProfile(accessToken: String) async throws -> UserProfile {
-        var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/me", method: "GET")
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/me", method: "GET")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         return try await send(request, as: UserProfile.self)
     }
 
     func getDailyQuota(accessToken: String) async throws -> DailyQuotaSnapshot {
-        var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/quota/daily", method: "GET")
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/quota/daily", method: "GET")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         return try await send(request, as: DailyQuotaSnapshot.self)
     }
 
     func getPublicDailyQuota() async throws -> DailyQuotaSnapshot {
-        try await sendPublicRequest(path: "/v1/\(AppConfig.appCode)/quota/daily", method: "GET")
+        try await sendPublicRequest(path: "/v1/apps/\(AppConfig.appCode)/quota/daily", method: "GET")
     }
 
     func updateProfile(accessToken: String, payload: UserProfileUpdatePayload) async throws -> UserProfile {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/me/profile",
+            path: "/v1/apps/\(AppConfig.appCode)/me/profile",
             method: "PATCH",
             body: payload
         )
@@ -133,7 +145,7 @@ final class SafeEatAPI {
 
     func updateHealthProfile(accessToken: String, payload: UserHealthProfileUpdatePayload) async throws -> UserProfile {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/me/health-profile",
+            path: "/v1/apps/\(AppConfig.appCode)/me/health-profile",
             method: "PATCH",
             body: payload
         )
@@ -143,7 +155,7 @@ final class SafeEatAPI {
 
     func updateAvatar(accessToken: String, imageData: Data, fileName: String = "avatar.jpg") async throws -> UserProfile {
         let boundary = "Boundary-\(UUID().uuidString)"
-        var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/me/avatar", method: "PATCH")
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/me/avatar", method: "PATCH")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         request.httpBody = MultipartFormDataBuilder.build(
@@ -160,7 +172,7 @@ final class SafeEatAPI {
 
     func changePhone(accessToken: String, newPhone: String, code: String) async throws -> UserProfile {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/me/phone",
+            path: "/v1/apps/\(AppConfig.appCode)/me/phone",
             method: "PATCH",
             body: ChangePhoneBody(newPhone: newPhone, verificationCode: code)
         )
@@ -170,7 +182,7 @@ final class SafeEatAPI {
 
     func changePassword(accessToken: String, oldPassword: String, newPassword: String) async throws -> UserProfile {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/me/password",
+            path: "/v1/apps/\(AppConfig.appCode)/me/password",
             method: "PATCH",
             body: ChangePasswordBody(oldPassword: oldPassword, newPassword: newPassword)
         )
@@ -179,31 +191,72 @@ final class SafeEatAPI {
     }
 
     func deleteAccount(accessToken: String) async throws {
-        var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/me", method: "DELETE")
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/me", method: "DELETE")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        _ = try await send(request, as: DeleteAccountResponse.self)
+        try await sendVoid(request)
     }
 
-    func fetchDisclosure(category: String) async throws -> [DisclosureItem] {
+    func fetchDisclosure(category: String, page: Int = 1, pageSize: Int = 20) async throws -> PaginatedResult<DisclosureItem> {
         var request = try buildRequest(
-            path: "/v1/\(AppConfig.appCode)/disclosures",
+            path: "/v1/apps/\(AppConfig.appCode)/disclosures",
             method: "GET"
         )
         var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
-        components?.queryItems = [URLQueryItem(name: "category", value: category)]
+        components?.queryItems = [
+            URLQueryItem(name: "category", value: category),
+            URLQueryItem(name: "page", value: String(page)),
+            URLQueryItem(name: "pageSize", value: String(pageSize)),
+        ]
         request.url = components?.url
-        return try await send(request, as: [DisclosureItem].self)
+        return try await sendPaginated(request, as: DisclosureItem.self)
     }
 
-    func getPlans() async throws -> [MembershipPlan] {
-        let request = try buildRequest(path: "/v1/\(AppConfig.appCode)/membership/plans", method: "GET")
-        let response = try await send(request, as: MembershipPlanListResponse.self)
-        return response.items
+    func getPlans() async throws -> PaginatedResult<MembershipPlan> {
+        let request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/membership/plans", method: "GET")
+        return try await sendPaginated(request, as: MembershipPlan.self)
+    }
+
+    func getMembershipMe(accessToken: String) async throws -> MembershipMeResult {
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/membership/me", method: "GET")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: MembershipMeResult.self)
+    }
+
+    func verifyTransaction(accessToken: String, payload: IAPVerifyTransactionPayload) async throws -> IAPVerifyTransactionResult {
+        var request = try buildJSONRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/membership/apple/verify-transaction",
+            method: "POST",
+            body: payload
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: IAPVerifyTransactionResult.self)
+    }
+
+    func redeemCode(accessToken: String, code: String) async throws -> RedeemCodeResult {
+        var request = try buildJSONRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/membership/redeem",
+            method: "POST",
+            body: RedeemCodePayload(code: code)
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: RedeemCodeResult.self)
+    }
+
+    func getAvailableCampaigns(accessToken: String, page: Int = 1, pageSize: Int = 20) async throws -> PaginatedResult<AvailableCampaign> {
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/membership/campaigns", method: "GET")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "page", value: String(page)),
+            URLQueryItem(name: "pageSize", value: String(pageSize)),
+        ]
+        request.url = components?.url
+        return try await sendPaginated(request, as: AvailableCampaign.self)
     }
 
     func createMembershipOrder(accessToken: String, payload: MembershipOrderPayload) async throws -> MembershipOrderResult {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/orders",
+            path: "/v1/apps/\(AppConfig.appCode)/orders",
             method: "POST",
             body: payload
         )
@@ -213,56 +266,31 @@ final class SafeEatAPI {
 
     func markOrderFailed(accessToken: String, orderId: String) async throws {
         var request = try buildRequest(
-            path: "/v1/\(AppConfig.appCode)/orders/\(orderId)/mark-failed",
+            path: "/v1/apps/\(AppConfig.appCode)/orders/\(orderId)/mark-failed",
             method: "POST"
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        _ = try await send(request, as: MarkOrderFailedResponse.self)
+        try await sendVoid(request)
     }
 
-    func getUserOrders(accessToken: String) async throws -> [OrderRecord] {
+    func getUserOrders(accessToken: String, page: Int = 1, pageSize: Int = 20) async throws -> PaginatedResult<OrderRecord> {
         var request = try buildRequest(
-            path: "/v1/\(AppConfig.appCode)/orders",
+            path: "/v1/apps/\(AppConfig.appCode)/orders",
             method: "GET"
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        let response = try await send(request, as: OrderListResponse.self)
-        return response.items
-    }
-
-    func redeemDiscountCode(accessToken: String, code: String) async throws -> RedeemCodeResult {
-        var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/membership/redeem-code",
-            method: "POST",
-            body: RedeemCodePayload(code: code)
-        )
-        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        return try await send(request, as: RedeemCodeResult.self)
-    }
-
-    func calculatePrice(accessToken: String, payload: PriceCalculationRequest) async throws -> PriceCalculationResult {
-        var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/membership/calculate-price",
-            method: "POST",
-            body: payload
-        )
-        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        return try await send(request, as: PriceCalculationResult.self)
-    }
-
-    func validateDiscountCode(accessToken: String, payload: ValidateDiscountCodeRequest) async throws -> ValidateDiscountCodeResult {
-        var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/membership/validate-discount-code",
-            method: "POST",
-            body: payload
-        )
-        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        return try await send(request, as: ValidateDiscountCodeResult.self)
+        var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "page", value: String(page)),
+            URLQueryItem(name: "pageSize", value: String(pageSize)),
+        ]
+        request.url = components?.url
+        return try await sendPaginated(request, as: OrderRecord.self)
     }
 
     func claimAdReward(accessToken: String, payload: ClaimAdRewardPayload) async throws -> ClaimAdRewardResult {
         var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/ads/rewards/claim",
+            path: "/v1/apps/\(AppConfig.appCode)/ads/rewards/claim",
             method: "POST",
             body: payload
         )
@@ -270,19 +298,9 @@ final class SafeEatAPI {
         return try await send(request, as: ClaimAdRewardResult.self)
     }
 
-    func verifyIAPReceipt(accessToken: String, payload: IAPVerifyReceiptPayload) async throws -> IAPVerifyReceiptResult {
-        var request = try buildJSONRequest(
-            path: "/v1/\(AppConfig.appCode)/iap/verify-receipt",
-            method: "POST",
-            body: payload
-        )
-        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        return try await send(request, as: IAPVerifyReceiptResult.self)
-    }
-
     func createRecognition(accessToken: String, imageData: Data, fileName: String) async throws -> RecognitionRecord {
         let boundary = "Boundary-\(UUID().uuidString)"
-        var request = try buildRequest(path: "/v1/\(AppConfig.appCode)/recognitions", method: "POST")
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/recognitions", method: "POST")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         request.httpBody = MultipartFormDataBuilder.build(
@@ -299,7 +317,7 @@ final class SafeEatAPI {
 
     func getRecognition(accessToken: String, recognitionId: String) async throws -> RecognitionRecord {
         var request = try buildRequest(
-            path: "/v1/\(AppConfig.appCode)/recognitions/\(recognitionId)",
+            path: "/v1/apps/\(AppConfig.appCode)/recognitions/\(recognitionId)",
             method: "GET"
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -319,7 +337,7 @@ final class SafeEatAPI {
     ) async throws -> RecognitionRecord {
         let boundary = "Boundary-\(UUID().uuidString)"
         var request = try buildRequest(
-            path: "/v1/\(AppConfig.appCode)/recognitions/\(recognitionId)/feedback",
+            path: "/v1/apps/\(AppConfig.appCode)/recognitions/\(recognitionId)/feedback",
             method: "POST"
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -339,6 +357,40 @@ final class SafeEatAPI {
         return try await send(request, as: RecognitionRecord.self)
     }
 
+    /// 无返回值请求：只检查 status==1，不解析 data
+    private func sendVoid(_ request: URLRequest) async throws {
+        #if DEBUG
+        if let url = request.url?.absoluteString {
+            print("[SafeEatAPI] \(request.httpMethod ?? "REQUEST") \(url)")
+        }
+        #endif
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+
+        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let status = json["status"] as? Int
+        {
+            if status == 1 { return }
+            let errorMessage = json["message"] as? String
+                ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
+            throw APIError.server(
+                status: httpResponse.statusCode,
+                message: localizedMessage(for: errorMessage, statusCode: httpResponse.statusCode)
+            )
+        }
+
+        guard (200 ..< 300).contains(httpResponse.statusCode) else {
+            let serverMessage = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["message"] as? String
+            throw APIError.server(
+                status: httpResponse.statusCode,
+                message: localizedMessage(for: serverMessage, statusCode: httpResponse.statusCode)
+            )
+        }
+    }
+
     private func send<T: Decodable>(_ request: URLRequest, as type: T.Type) async throws -> T {
         #if DEBUG
         if let url = request.url?.absoluteString {
@@ -355,6 +407,39 @@ final class SafeEatAPI {
         print("[SafeEatAPI] status=\(httpResponse.statusCode)")
         #endif
 
+        // 尝试解析后端全局响应拦截器格式 { status, data, message, code, requestId }
+        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let status = json["status"] as? Int
+        {
+            if status == 1 {
+                // 成功响应：从 data 字段提取并解码
+                guard let responseData = json["data"] else {
+                    throw APIError.server(
+                        status: httpResponse.statusCode,
+                        message: SafeEatL10n.text(L10nKey.Errors.invalidResponse)
+                    )
+                }
+                do {
+                    let dataJSON = try JSONSerialization.data(withJSONObject: responseData)
+                    return try decoder.decode(type, from: dataJSON)
+                } catch {
+                    throw APIError.server(
+                        status: httpResponse.statusCode,
+                        message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription)
+                    )
+                }
+            } else {
+                // 错误响应：从 message 字段提取
+                let errorMessage = json["message"] as? String
+                    ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
+                throw APIError.server(
+                    status: httpResponse.statusCode,
+                    message: localizedMessage(for: errorMessage, statusCode: httpResponse.statusCode)
+                )
+            }
+        }
+
+        // 旧格式兼容：后端拦截器未启用时，直接解码整个 body
         guard (200 ..< 300).contains(httpResponse.statusCode) else {
             let serverMessage = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["message"] as? String
             throw APIError.server(
@@ -365,6 +450,51 @@ final class SafeEatAPI {
 
         do {
             return try decoder.decode(type, from: data)
+        } catch {
+            throw APIError.server(
+                status: httpResponse.statusCode,
+                message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription)
+            )
+        }
+    }
+
+    /// 分页请求：返回 data 数组 + total/page/pageSize + 额外字段
+    private func sendPaginated<T: Decodable>(_ request: URLRequest, as type: T.Type) async throws -> PaginatedResult<T> {
+        #if DEBUG
+        if let url = request.url?.absoluteString {
+            print("[SafeEatAPI] \(request.httpMethod ?? "REQUEST") \(url)")
+        }
+        #endif
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let status = json["status"] as? Int, status == 1,
+              let responseData = json["data"]
+        else {
+            let errorMessage = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["message"] as? String
+                ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
+            throw APIError.server(status: httpResponse.statusCode, message: errorMessage)
+        }
+
+        do {
+            let dataJSON = try JSONSerialization.data(withJSONObject: responseData)
+            let items = try decoder.decode([T].self, from: dataJSON)
+            let total = json["total"] as? Int ?? items.count
+            let page = json["page"] as? Int ?? 1
+            let pageSize = json["pageSize"] as? Int ?? items.count
+
+            // 提取额外字段（排除 status/data/total/page/pageSize）
+            let knownKeys: Set<String> = ["status", "data", "total", "page", "pageSize"]
+            var extra: [String: Any] = [:]
+            for (key, value) in json where !knownKeys.contains(key) {
+                extra[key] = value
+            }
+
+            return PaginatedResult(items: items, total: total, page: page, pageSize: pageSize, extra: extra)
         } catch {
             throw APIError.server(
                 status: httpResponse.statusCode,
@@ -397,6 +527,11 @@ final class SafeEatAPI {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(body)
         return request
+    }
+
+    /// 解码 JSON 数据为指定类型（供外部解码 extra 字段使用）
+    func decodeJSON<T: Decodable>(_ data: Data, as type: T.Type) throws -> T {
+        try decoder.decode(type, from: data)
     }
 
     private func localizedMessage(for serverMessage: String?, statusCode: Int) -> String {
@@ -461,18 +596,6 @@ private struct ChangePhoneBody: Encodable {
 private struct ChangePasswordBody: Encodable {
     let oldPassword: String
     let newPassword: String
-}
-
-private struct MarkOrderFailedResponse: Decodable {
-    let success: Bool
-}
-
-private struct DeleteAccountResponse: Decodable {
-    let success: Bool
-}
-
-private struct LogoutResponse: Decodable {
-    let success: Bool
 }
 
 private enum ISO8601DateFormatter {

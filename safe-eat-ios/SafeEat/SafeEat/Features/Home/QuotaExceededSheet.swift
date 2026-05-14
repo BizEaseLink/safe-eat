@@ -4,24 +4,54 @@ struct QuotaExceededSheet: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var store: AppStore
     @Environment(\.colorScheme) private var colorScheme
+    private var adConfig: AdConfigStore { AdConfigStore.shared }
 
     let onUpgrade: () -> Void
     var onWatchAd: (() -> Void)? = nil
 
-    private var totalQuota: Int { store.dailyQuota?.totalQuota ?? 3 }
+    private var freeQuotaTotal: Int { max(store.dailyQuota?.totalQuota ?? 3, 0) }
+    private var remainingQuota: Int { max(store.dailyQuota?.remainingQuota ?? 0, 0) }
+    private var usedQuota: Int { max(store.dailyQuota?.usedCount ?? (freeQuotaTotal - remainingQuota), 0) }
 
-    private var remainingQuota: Int { store.dailyQuota?.remainingQuota ?? 0 }
+    private var rewardVideoPlacement: AdPlacementConfig? {
+        adConfig.placement(for: .rewardVideo)
+    }
+
+    private var adRewardPerWatch: Int {
+        max(rewardVideoPlacement?.rewardQuota ?? store.dailyQuota?.adRewardPerWatch ?? 3, 1)
+    }
+
+    private var adWatchLimit: Int {
+        max(rewardVideoPlacement?.dailyLimit ?? store.dailyQuota?.adWatchLimit ?? 3, 0)
+    }
 
     private var remainingAdWatches: Int {
         guard store.profile?.currentPlanTier == nil || store.profile?.currentPlanTier == "free" else { return 0 }
-        return max(0, 3 - (store.dailyQuota?.adClaimsCount ?? 0))
+        if let backendRemaining = store.dailyQuota?.remainingAdWatchCount {
+            return max(0, backendRemaining)
+        }
+        return max(0, adWatchLimit - (store.dailyQuota?.adClaimsCount ?? 0))
     }
 
-    private var rewardPerWatch: Int { 3 }
+    private var claimedAdQuota: Int {
+        min((store.dailyQuota?.adClaimsCount ?? 0) * adRewardPerWatch, maxAdRecoverableQuota)
+    }
 
-    private var progressValue: Double {
-        guard totalQuota > 0 else { return 0 }
-        return min(Double(remainingQuota) / Double(totalQuota), 1)
+    private var maxAdRecoverableQuota: Int {
+        adWatchLimit * adRewardPerWatch
+    }
+
+    private var maxTotalQuota: Int {
+        freeQuotaTotal + maxAdRecoverableQuota
+    }
+
+    private var freeQuotaUsed: Int {
+        min(usedQuota, freeQuotaTotal)
+    }
+
+    private var progressRatio: Double {
+        guard maxTotalQuota > 0 else { return 0 }
+        return min(Double(usedQuota) / Double(maxTotalQuota), 1)
     }
 
     var body: some View {
@@ -31,25 +61,17 @@ struct QuotaExceededSheet: View {
                     .fill(dragIndicatorColor)
                     .frame(width: 42, height: 6)
                     .padding(.top, 10)
-                    .padding(.bottom, 14)
+                    .padding(.bottom, 16)
 
                 VStack(spacing: 16) {
-                    warningIcon
-
+                    heroIcon
                     titleBlock
-
-                    quotaProgress
-
-                    if onWatchAd != nil && remainingAdWatches > 0 {
-                        adRewardHint
-                    }
-
-                    memberHintCard
-
+                    quotaCard
+                    metricRow
                     actionArea
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, max(proxy.safeAreaInsets.bottom, 10))
+                .padding(.bottom, max(proxy.safeAreaInsets.bottom, 12))
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background(sheetFill)
@@ -63,11 +85,26 @@ struct QuotaExceededSheet: View {
     }
 
     private var sheetHeight: CGFloat {
-        if onWatchAd != nil && remainingAdWatches > 0 {
-            return 500
-        }
-        return onWatchAd == nil ? 382 : 440
+        onWatchAd == nil ? 520 : 610
     }
+
+    // MARK: - Hero
+
+    private var heroIcon: some View {
+        ZStack {
+            Circle()
+                .fill(SafeEatTheme.warning.opacity(colorScheme == .dark ? 0.16 : 0.14))
+                .frame(width: 58, height: 58)
+
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 28, weight: .bold))
+                .foregroundStyle(SafeEatTheme.warning)
+                .symbolRenderingMode(.hierarchical)
+        }
+        .shadow(color: SafeEatTheme.warning.opacity(0.14), radius: 18, y: 8)
+    }
+
+    // MARK: - Title
 
     private var titleBlock: some View {
         VStack(spacing: 7) {
@@ -75,47 +112,27 @@ struct QuotaExceededSheet: View {
                 .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
                 .foregroundStyle(SafeEatTheme.textPrimary)
                 .multilineTextAlignment(.center)
-                .lineLimit(2)
 
-            Text(SafeEatL10n.format(L10nKey.Home.quotaExceededStatusFormat, remainingQuota, totalQuota))
+            Text(SafeEatL10n.text(L10nKey.Home.quotaExceededSubtitle))
                 .font(SafeEatFont.custom(14, relativeTo: .subheadline))
                 .foregroundStyle(SafeEatTheme.textSecondary)
                 .multilineTextAlignment(.center)
         }
     }
 
-    private var adRewardHint: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "play.rectangle.fill")
-                .font(.system(size: 13, weight: .semibold))
-            Text(SafeEatL10n.format(L10nKey.Home.quotaExceededAdRewardFormat, rewardPerWatch, remainingAdWatches))
-                .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.82)
-        }
-        .foregroundStyle(SafeEatTheme.primary)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(adHintFill)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(adHintStroke, lineWidth: 1)
-        )
-    }
+    // MARK: - Quota Card
 
-    private var quotaProgress: some View {
-        VStack(spacing: 10) {
-            HStack {
-                Text(SafeEatL10n.text(L10nKey.Home.quotaExceededProgressLabel))
-                    .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+    private var quotaCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 6) {
+                Text(SafeEatL10n.text(L10nKey.Home.quotaExceededTotalTitle))
+                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.textPrimary)
+
                 Spacer()
-                Text("\(remainingQuota)/\(totalQuota)")
-                    .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
+
+                Text("\(usedQuota)/\(maxTotalQuota)")
+                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textSecondary)
             }
 
@@ -126,64 +143,61 @@ struct QuotaExceededSheet: View {
 
                     Capsule()
                         .fill(progressFill)
-                        .frame(width: max(proxy.size.width * progressValue, 10))
+                        .frame(width: max(proxy.size.width * progressRatio, progressRatio > 0 ? 10 : 0))
                 }
             }
-            .frame(height: 10)
+            .frame(height: 12)
             .overlay(
                 Capsule()
                     .stroke(progressStroke, lineWidth: 1)
             )
-            .animation(.easeOut(duration: 0.24), value: progressValue)
-        }
-        .padding(.horizontal, 12)
-    }
 
-    private var memberHintCard: some View {
-        Button {
-            dismiss()
-            onUpgrade()
-        } label: {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(memberIconFill)
-                        .frame(width: 42, height: 42)
-
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.primary)
-                }
-
-                Text(SafeEatL10n.text(L10nKey.Home.quotaExceededMemberHint))
-                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-
-                Spacer(minLength: 8)
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.74))
+            HStack(spacing: 4) {
+                Text(SafeEatL10n.format(L10nKey.Home.quotaExceededTotalFootnoteFormat, usedQuota, maxTotalQuota - usedQuota))
+                    .font(SafeEatFont.custom(13, relativeTo: .footnote))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
+                Spacer()
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(memberCardFill)
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(totalCardFill)
+        )
+    }
+
+    // MARK: - Metric Row
+
+    private var metricRow: some View {
+        HStack(spacing: 0) {
+            metricCell(
+                icon: "lock.fill",
+                tint: SafeEatTheme.primary,
+                title: SafeEatL10n.text(L10nKey.Home.quotaExceededFreeQuotaTitle),
+                value: "\(freeQuotaUsed)/\(freeQuotaTotal)",
+                ratio: freeQuotaTotal > 0 ? Double(freeQuotaUsed) / Double(freeQuotaTotal) : 0
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(memberCardStroke, lineWidth: 1)
+
+            Rectangle()
+                .fill(SafeEatTheme.line)
+                .frame(width: 1)
+                .padding(.vertical, 8)
+
+            metricCell(
+                icon: "play.rectangle.fill",
+                tint: SafeEatTheme.warning,
+                title: SafeEatL10n.text(L10nKey.Home.quotaExceededAdQuotaTitle),
+                value: "\(claimedAdQuota)/\(maxAdRecoverableQuota)",
+                ratio: maxAdRecoverableQuota > 0 ? Double(claimedAdQuota) / Double(maxAdRecoverableQuota) : 0
             )
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 4)
     }
+
+    // MARK: - Actions
 
     private var actionArea: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 12) {
             Button {
                 dismiss()
                 onUpgrade()
@@ -200,7 +214,7 @@ struct QuotaExceededSheet: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 54)
                 .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .fill(
                             LinearGradient(
                                 colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
@@ -221,9 +235,7 @@ struct QuotaExceededSheet: View {
                     HStack(spacing: 8) {
                         Image(systemName: "play.rectangle.fill")
                             .font(.system(size: 16, weight: .bold))
-                        Text(remainingAdWatches > 0
-                            ? SafeEatL10n.format(L10nKey.Home.quotaExceededWatchAdWithCount, remainingAdWatches)
-                            : SafeEatL10n.text(L10nKey.Home.quotaExceededWatchAd))
+                        Text(SafeEatL10n.format(L10nKey.Home.quotaExceededWatchAdRecoverFormat, adRewardPerWatch))
                             .font(SafeEatFont.custom(16, relativeTo: .subheadline, weight: .bold))
                             .lineLimit(1)
                             .minimumScaleFactor(0.82)
@@ -237,39 +249,85 @@ struct QuotaExceededSheet: View {
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .stroke(adButtonStroke, lineWidth: 1)
+                            .stroke(adButtonStroke, lineWidth: 1.5)
                     )
                 }
                 .buttonStyle(.plain)
                 .disabled(remainingAdWatches <= 0)
             }
 
-            HStack(spacing: 6) {
-                Image(systemName: "clock")
-                    .font(.system(size: 13, weight: .semibold))
-                Text(SafeEatL10n.text(L10nKey.Home.quotaExceededTomorrow))
-                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.82)
+            VStack(alignment: .leading, spacing: 6) {
+                infoRow(icon: "clock", text: SafeEatL10n.text(L10nKey.Home.quotaExceededTomorrow))
+                infoRow(
+                    icon: "info.circle",
+                    text: SafeEatL10n.format(L10nKey.Home.quotaExceededRuleFormat, adWatchLimit, adRewardPerWatch)
+                )
             }
-            .foregroundStyle(SafeEatTheme.textSecondary)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    private var warningIcon: some View {
-        ZStack {
-            Circle()
-                .fill(SafeEatTheme.warning.opacity(colorScheme == .dark ? 0.16 : 0.14))
-                .frame(width: 58, height: 58)
+    // MARK: - Subviews
 
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 30, weight: .bold))
-                .foregroundStyle(SafeEatTheme.warning)
-                .symbolRenderingMode(.hierarchical)
+    @ViewBuilder
+    private func metricCell(
+        icon: String,
+        tint: Color,
+        title: String,
+        value: String,
+        ratio: Double
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Circle()
+                    .fill(tint.opacity(colorScheme == .dark ? 0.18 : 0.14))
+                    .frame(width: 40, height: 40)
+                    .overlay {
+                        Image(systemName: icon)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(tint)
+                    }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(SafeEatFont.custom(13, relativeTo: .footnote))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+                    Text(value)
+                        .font(SafeEatFont.custom(24, relativeTo: .title2, weight: .bold))
+                        .foregroundStyle(tint)
+                }
+            }
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(tint.opacity(colorScheme == .dark ? 0.14 : 0.12))
+                    Capsule()
+                        .fill(tint)
+                        .frame(width: max(proxy.size.width * ratio, ratio > 0 ? 8 : 0))
+                }
+            }
+            .frame(height: 6)
         }
-        .shadow(color: SafeEatTheme.warning.opacity(0.14), radius: 18, y: 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
     }
+
+    @ViewBuilder
+    private func infoRow(icon: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.7))
+                .frame(width: 16, height: 16)
+            Text(text)
+                .font(SafeEatFont.custom(12, relativeTo: .caption))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+                .multilineTextAlignment(.leading)
+        }
+    }
+
+    // MARK: - Colors
 
     private var sheetFill: Color {
         colorScheme == .dark
@@ -286,7 +344,7 @@ struct QuotaExceededSheet: View {
     }
 
     private var progressTrack: Color {
-        colorScheme == .dark ? Color.white.opacity(0.10) : Color(red: 0.89, green: 0.86, blue: 0.80).opacity(0.62)
+        colorScheme == .dark ? Color.white.opacity(0.10) : Color(red: 0.90, green: 0.92, blue: 0.91).opacity(0.92)
     }
 
     private var progressStroke: Color {
@@ -295,40 +353,21 @@ struct QuotaExceededSheet: View {
 
     private var progressFill: LinearGradient {
         LinearGradient(
-            colors: [
-                Color(red: 0.72, green: 0.36, blue: 0.27),
-                Color(red: 0.84, green: 0.48, blue: 0.34),
-            ],
+            colors: [SafeEatTheme.warning, SafeEatTheme.danger],
             startPoint: .leading,
             endPoint: .trailing
         )
     }
 
-    private var memberCardFill: Color {
-        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.16) : SafeEatTheme.primarySoft.opacity(0.72)
-    }
-
-    private var memberCardStroke: Color {
-        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.16) : SafeEatTheme.primary.opacity(0.08)
-    }
-
-    private var memberIconFill: Color {
-        colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.accent.opacity(0.46)
+    private var totalCardFill: Color {
+        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.12) : SafeEatTheme.primarySoft.opacity(0.36)
     }
 
     private var adButtonFill: Color {
-        colorScheme == .dark ? Color.white.opacity(0.04) : Color.white.opacity(0.56)
+        colorScheme == .dark ? Color.white.opacity(0.04) : Color.white.opacity(0.96)
     }
 
     private var adButtonStroke: Color {
-        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.34) : SafeEatTheme.primary.opacity(0.32)
-    }
-
-    private var adHintFill: Color {
-        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.12) : SafeEatTheme.primarySoft.opacity(0.56)
-    }
-
-    private var adHintStroke: Color {
-        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.20) : SafeEatTheme.primary.opacity(0.16)
+        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.34) : SafeEatTheme.primary.opacity(0.24)
     }
 }
