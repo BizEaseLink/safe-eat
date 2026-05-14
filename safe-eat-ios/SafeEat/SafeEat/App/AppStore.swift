@@ -41,8 +41,18 @@ final class AppStore: ObservableObject {
     @Published var membershipStatus: MembershipMeResult?
     @Published var trialAvailable: Bool = false
     @Published var trialEligibleFromStoreKit: Bool? = nil
-    @Published var firstPurchaseBonus: FirstPurchaseBonus?
-    @Published var showFirstPurchaseBonus: Bool = false
+
+    // MARK: - 首购赠送计算属性
+    /// 从 campaigns 中获取 type=first_purchase 的活动
+    var firstPurchaseCampaign: CampaignBenefit? {
+        campaignBenefits.first(where: { $0.type == "first_purchase" })
+    }
+
+    /// 判断是否已获得首购赠送（通过后端 firstPurchaseBonusClaimed 字段判断）
+    var hasFirstPurchaseBonusClaimed: Bool {
+        guard let status = membershipStatus else { return false }
+        return status.firstPurchaseBonusClaimed == true
+    }
 
     let api: SafeEatAPI
     private let sessionStore: AuthSessionStore
@@ -254,10 +264,18 @@ final class AppStore: ObservableObject {
 
     func loadPlansWithCampaigns() async {
         do {
-            let response = try await api.getPlans()
-            membershipPlans = response.items
-            campaignBenefits = response.campaigns ?? []
-            trialAvailable = response.trialAvailable ?? false
+            let result = try await api.getPlans()
+            membershipPlans = result.items
+            // 从分页结果的 extra 字段提取 campaigns 和 trialAvailable
+            if let campaigns = result.extra["campaigns"] as? [[String: Any]] {
+                let campaignsJSON = try JSONSerialization.data(withJSONObject: campaigns)
+                campaignBenefits = try api.decodeJSON(campaignsJSON, as: [CampaignBenefit].self)
+            }
+            trialAvailable = result.extra["trialAvailable"] as? Bool ?? false
+
+            // 加载 StoreKit 商品后检查试用资格
+            await loadMembershipProducts()
+            await checkTrialEligibility()
         } catch {
             #if DEBUG
             print("[AppStore] loadPlansWithCampaigns failed: \(error)")

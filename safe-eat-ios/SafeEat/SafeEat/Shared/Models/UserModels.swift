@@ -24,7 +24,7 @@ struct UserProfile: Codable {
     let updatedAt: Date?
 }
 
-struct MembershipPlan: Codable, Identifiable {
+struct MembershipPlan: Decodable, Identifiable {
     let id: String
     let tier: String
     let billingCycle: String
@@ -41,11 +41,13 @@ struct MembershipPlan: Codable, Identifiable {
     let priceDisplay: String?
     let sortOrder: Int?
     let yearlyPriceFen: Int?
+    // 每个套餐适用的活动（已过滤叠加）
+    let applicableCampaigns: [CampaignBenefit]?
 }
 
 // MARK: - 活动权益
 
-struct CampaignBenefit: Codable, Identifiable {
+struct CampaignBenefit: Decodable, Identifiable {
     let id: String
     let name: String
     let type: String
@@ -54,40 +56,27 @@ struct CampaignBenefit: Codable, Identifiable {
     let bonusAiQuota: Int?
     let targetPlanIds: [String]?
     let targetUserType: String?
-    let endsAt: Date?
+    let endAt: Date?
     let planBonus: [CampaignPlanBonus]?
+
+    /// 兼容旧字段名
+    var endsAt: Date? { endAt }
 }
 
 // MARK: - 按套餐差异化赠送
 
 struct CampaignPlanBonus: Codable, Identifiable {
-    let id: String
+    var id: String { planId }
     let planId: String
     let bonusDays: Int?
     let bonusRecognitionQuota: Int?
     let bonusAiQuota: Int?
 }
 
-// MARK: - 首购奖励
-
-struct FirstPurchaseBonus: Codable, Identifiable {
-    let id: String
-    let bonusDays: Int?
-    let bonusRecognitionQuota: Int?
-    let bonusAiQuota: Int?
-    let claimed: Bool
-    let claimedAt: Date?
-}
-
-struct FirstPurchaseBonusResponse: Codable {
-    let eligible: Bool
-    let bonus: FirstPurchaseBonus?
-}
-
-struct ClaimFirstPurchaseBonusResponse: Codable {
-    let success: Bool
-    let bonus: FirstPurchaseBonus?
-}
+// MARK: - 首购赠送
+// 后端在 Apple Server Notification 处理中自动发放首购赠送（CampaignBenefitService.applyFirstPurchaseBonus）
+// iOS 端通过 /membership/plans 的 campaigns 中 type=first_purchase 获取活动信息
+// 购买成功后刷新会员状态，通过 firstPurchaseBonusClaimed 字段判断是否获得赠送
 
 // MARK: - 会员状态
 
@@ -98,12 +87,6 @@ struct MembershipStatus: Codable {
     let bonusRecognitionQuota: Int?
     let bonusAiQuota: Int?
     let status: String?
-}
-
-struct MembershipPlanListResponse: Codable {
-    let items: [MembershipPlan]
-    let campaigns: [CampaignBenefit]?
-    let trialAvailable: Bool?
 }
 
 struct UserProfileUpdatePayload: Encodable {
@@ -182,14 +165,36 @@ struct RedeemGranted: Decodable {
 // MARK: - 会员权益查询（/membership/me）
 
 struct MembershipMeResult: Decodable {
-    let planLevel: String
-    let source: String?
-    let entitlementExpiresAt: Date?
+    let active: Bool?
+    let planId: String?
+    let tier: String?
+    let billingCycle: String?
+    let planName: String?
+    let startsAt: Date?
+    let endsAt: Date?
+    let dailyQuota: Int?
+    let recognitionQuotaMonthly: Int?
+    let aiQuotaMonthly: Int?
+    let bonusDays: Int?
     let bonusRecognitionQuota: Int?
     let bonusAiQuota: Int?
-    let status: String?
+    let autoRenew: Bool?
+    let trialUsed: Bool?
     let isTrial: Bool?
-    let trialEndsAt: Date?
+    let trialEndDate: Date?
+    let firstPurchaseBonusClaimed: Bool?
+
+    /// 旧字段兼容：planLevel 映射到 tier
+    var planLevel: String? { tier }
+    /// 旧字段兼容：source 映射到 billingCycle
+    var source: String? { billingCycle }
+    /// 旧字段兼容：entitlementExpiresAt 映射到 endsAt
+    var entitlementExpiresAt: Date? { endsAt }
+    /// 旧字段兼容：status 基于 active 推导
+    var status: String? {
+        guard let active else { return nil }
+        return active ? "active" : "expired"
+    }
 }
 
 // MARK: - 可用活动查询（/campaigns/available）
@@ -199,8 +204,10 @@ struct AvailableCampaign: Codable, Identifiable {
     let name: String
     let type: String
     let description: String?
-    let benefitPreview: CampaignBenefitPreview
-    let endsAt: Date
+    let benefitPreview: CampaignBenefitPreview?
+    let endAt: Date?
+
+    var endsAt: Date? { endAt }
 }
 
 struct CampaignBenefitPreview: Codable {
@@ -269,10 +276,6 @@ struct OrderRecord: Codable, Identifiable {
     let status: String
     let paidAt: Date?
     let createdAt: Date
-}
-
-struct OrderListResponse: Codable {
-    let items: [OrderRecord]
 }
 
 enum OrderStatusMapper {

@@ -30,7 +30,8 @@ struct CertificateGalleryView: View {
 
     private func loadCertificates() async {
         do {
-            items = try await SafeEatAPI().fetchDisclosure(category: "证件公示")
+            let result = try await SafeEatAPI().fetchDisclosure(category: "证件公示")
+            items = result.items
         } catch {
             errorMessage = error.localizedDescription
         }

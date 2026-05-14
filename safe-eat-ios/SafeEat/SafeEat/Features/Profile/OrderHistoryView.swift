@@ -4,6 +4,9 @@ struct OrderHistoryView: View {
     @EnvironmentObject private var store: AppStore
 
     @State private var orders: [OrderRecord] = []
+    @State private var currentPage = 1
+    @State private var totalOrders = 0
+    @State private var isLoadingMore = false
     @State private var isLoading = false
     @State private var loadError: String?
 
@@ -98,11 +101,31 @@ struct OrderHistoryView: View {
         defer { isLoading = false }
 
         do {
-            orders = try await store.authorizedRequest { token in
-                try await store.api.getUserOrders(accessToken: token)
+            let result = try await store.authorizedRequest { token in
+                try await store.api.getUserOrders(accessToken: token, page: currentPage)
             }
+            orders = result.items
+            totalOrders = result.total
         } catch {
             loadError = error.localizedDescription
+        }
+    }
+
+    private func loadMoreOrders() async {
+        guard !isLoadingMore, orders.count < totalOrders else { return }
+        isLoadingMore = true
+        defer { isLoadingMore = false }
+
+        do {
+            let nextPage = currentPage + 1
+            let result = try await store.authorizedRequest { token in
+                try await store.api.getUserOrders(accessToken: token, page: nextPage)
+            }
+            currentPage = nextPage
+            orders.append(contentsOf: result.items)
+            totalOrders = result.total
+        } catch {
+            // 静默失败，不影响已加载的数据
         }
     }
 }

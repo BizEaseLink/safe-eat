@@ -163,7 +163,7 @@ struct ProfileView: View {
                         }
 
                         // 首购奖励已领取标签
-                        if let bonus = store.firstPurchaseBonus, bonus.claimed {
+                        if store.hasFirstPurchaseBonusClaimed {
                             Text(SafeEatL10n.text(L10nKey.Membership.firstPurchaseClaimed))
                                 .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
                                 .foregroundStyle(.green)
@@ -625,8 +625,8 @@ struct ProfileView: View {
         guard plans.isEmpty else { return }
 
         do {
-            let response = try await store.api.getPlans()
-            plans = response.items
+            let result = try await store.api.getPlans()
+            plans = result.items
         } catch {
             store.handleAPIError(error)
         }
