@@ -33,7 +33,8 @@ struct DisclosureDetailView: View {
 
     private func loadDisclosure() async {
         do {
-            items = try await SafeEatAPI().fetchDisclosure(category: category)
+            let result = try await SafeEatAPI().fetchDisclosure(category: category)
+            items = result.items
         } catch {
             errorMessage = error.localizedDescription
         }

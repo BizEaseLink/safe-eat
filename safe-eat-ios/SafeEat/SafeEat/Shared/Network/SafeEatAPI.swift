@@ -17,6 +17,18 @@ enum APIError: LocalizedError {
     }
 }
 
+/// 分页结果：items 数组 + 分页信息 + 额外字段（如 campaigns/trialAvailable）
+struct PaginatedResult<T> {
+    let items: [T]
+    let total: Int
+    let page: Int
+    let pageSize: Int
+    let extra: [String: Any]
+
+    /// 是否还有更多数据可加载
+    var hasMore: Bool { items.count < total }
+}
+
 final class SafeEatAPI {
     private let baseURL: URL
     private let decoder: JSONDecoder
@@ -102,7 +114,7 @@ final class SafeEatAPI {
             method: "POST",
             body: ["refreshToken": refreshToken]
         )
-        _ = try await send(request, as: LogoutResponse.self)
+        try await sendVoid(request)
     }
 
     func getProfile(accessToken: String) async throws -> UserProfile {
@@ -181,23 +193,27 @@ final class SafeEatAPI {
     func deleteAccount(accessToken: String) async throws {
         var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/me", method: "DELETE")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        _ = try await send(request, as: DeleteAccountResponse.self)
+        try await sendVoid(request)
     }
 
-    func fetchDisclosure(category: String) async throws -> [DisclosureItem] {
+    func fetchDisclosure(category: String, page: Int = 1, pageSize: Int = 20) async throws -> PaginatedResult<DisclosureItem> {
         var request = try buildRequest(
             path: "/v1/apps/\(AppConfig.appCode)/disclosures",
             method: "GET"
         )
         var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
-        components?.queryItems = [URLQueryItem(name: "category", value: category)]
+        components?.queryItems = [
+            URLQueryItem(name: "category", value: category),
+            URLQueryItem(name: "page", value: String(page)),
+            URLQueryItem(name: "pageSize", value: String(pageSize)),
+        ]
         request.url = components?.url
-        return try await send(request, as: [DisclosureItem].self)
+        return try await sendPaginated(request, as: DisclosureItem.self)
     }
 
-    func getPlans() async throws -> MembershipPlanListResponse {
+    func getPlans() async throws -> PaginatedResult<MembershipPlan> {
         let request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/membership/plans", method: "GET")
-        return try await send(request, as: MembershipPlanListResponse.self)
+        return try await sendPaginated(request, as: MembershipPlan.self)
     }
 
     func getMembershipMe(accessToken: String) async throws -> MembershipMeResult {
@@ -226,10 +242,16 @@ final class SafeEatAPI {
         return try await send(request, as: RedeemCodeResult.self)
     }
 
-    func getAvailableCampaigns(accessToken: String) async throws -> [AvailableCampaign] {
+    func getAvailableCampaigns(accessToken: String, page: Int = 1, pageSize: Int = 20) async throws -> PaginatedResult<AvailableCampaign> {
         var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/membership/campaigns", method: "GET")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        return try await send(request, as: [AvailableCampaign].self)
+        var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "page", value: String(page)),
+            URLQueryItem(name: "pageSize", value: String(pageSize)),
+        ]
+        request.url = components?.url
+        return try await sendPaginated(request, as: AvailableCampaign.self)
     }
 
     func createMembershipOrder(accessToken: String, payload: MembershipOrderPayload) async throws -> MembershipOrderResult {
@@ -248,17 +270,22 @@ final class SafeEatAPI {
             method: "POST"
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        _ = try await send(request, as: MarkOrderFailedResponse.self)
+        try await sendVoid(request)
     }
 
-    func getUserOrders(accessToken: String) async throws -> [OrderRecord] {
+    func getUserOrders(accessToken: String, page: Int = 1, pageSize: Int = 20) async throws -> PaginatedResult<OrderRecord> {
         var request = try buildRequest(
             path: "/v1/apps/\(AppConfig.appCode)/orders",
             method: "GET"
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        let response = try await send(request, as: OrderListResponse.self)
-        return response.items
+        var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "page", value: String(page)),
+            URLQueryItem(name: "pageSize", value: String(pageSize)),
+        ]
+        request.url = components?.url
+        return try await sendPaginated(request, as: OrderRecord.self)
     }
 
     func claimAdReward(accessToken: String, payload: ClaimAdRewardPayload) async throws -> ClaimAdRewardResult {
@@ -330,6 +357,40 @@ final class SafeEatAPI {
         return try await send(request, as: RecognitionRecord.self)
     }
 
+    /// 无返回值请求：只检查 status==1，不解析 data
+    private func sendVoid(_ request: URLRequest) async throws {
+        #if DEBUG
+        if let url = request.url?.absoluteString {
+            print("[SafeEatAPI] \(request.httpMethod ?? "REQUEST") \(url)")
+        }
+        #endif
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+
+        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let status = json["status"] as? Int
+        {
+            if status == 1 { return }
+            let errorMessage = json["message"] as? String
+                ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
+            throw APIError.server(
+                status: httpResponse.statusCode,
+                message: localizedMessage(for: errorMessage, statusCode: httpResponse.statusCode)
+            )
+        }
+
+        guard (200 ..< 300).contains(httpResponse.statusCode) else {
+            let serverMessage = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["message"] as? String
+            throw APIError.server(
+                status: httpResponse.statusCode,
+                message: localizedMessage(for: serverMessage, statusCode: httpResponse.statusCode)
+            )
+        }
+    }
+
     private func send<T: Decodable>(_ request: URLRequest, as type: T.Type) async throws -> T {
         #if DEBUG
         if let url = request.url?.absoluteString {
@@ -346,6 +407,39 @@ final class SafeEatAPI {
         print("[SafeEatAPI] status=\(httpResponse.statusCode)")
         #endif
 
+        // 尝试解析后端全局响应拦截器格式 { status, data, message, code, requestId }
+        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let status = json["status"] as? Int
+        {
+            if status == 1 {
+                // 成功响应：从 data 字段提取并解码
+                guard let responseData = json["data"] else {
+                    throw APIError.server(
+                        status: httpResponse.statusCode,
+                        message: SafeEatL10n.text(L10nKey.Errors.invalidResponse)
+                    )
+                }
+                do {
+                    let dataJSON = try JSONSerialization.data(withJSONObject: responseData)
+                    return try decoder.decode(type, from: dataJSON)
+                } catch {
+                    throw APIError.server(
+                        status: httpResponse.statusCode,
+                        message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription)
+                    )
+                }
+            } else {
+                // 错误响应：从 message 字段提取
+                let errorMessage = json["message"] as? String
+                    ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
+                throw APIError.server(
+                    status: httpResponse.statusCode,
+                    message: localizedMessage(for: errorMessage, statusCode: httpResponse.statusCode)
+                )
+            }
+        }
+
+        // 旧格式兼容：后端拦截器未启用时，直接解码整个 body
         guard (200 ..< 300).contains(httpResponse.statusCode) else {
             let serverMessage = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["message"] as? String
             throw APIError.server(
@@ -356,6 +450,51 @@ final class SafeEatAPI {
 
         do {
             return try decoder.decode(type, from: data)
+        } catch {
+            throw APIError.server(
+                status: httpResponse.statusCode,
+                message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription)
+            )
+        }
+    }
+
+    /// 分页请求：返回 data 数组 + total/page/pageSize + 额外字段
+    private func sendPaginated<T: Decodable>(_ request: URLRequest, as type: T.Type) async throws -> PaginatedResult<T> {
+        #if DEBUG
+        if let url = request.url?.absoluteString {
+            print("[SafeEatAPI] \(request.httpMethod ?? "REQUEST") \(url)")
+        }
+        #endif
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let status = json["status"] as? Int, status == 1,
+              let responseData = json["data"]
+        else {
+            let errorMessage = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["message"] as? String
+                ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
+            throw APIError.server(status: httpResponse.statusCode, message: errorMessage)
+        }
+
+        do {
+            let dataJSON = try JSONSerialization.data(withJSONObject: responseData)
+            let items = try decoder.decode([T].self, from: dataJSON)
+            let total = json["total"] as? Int ?? items.count
+            let page = json["page"] as? Int ?? 1
+            let pageSize = json["pageSize"] as? Int ?? items.count
+
+            // 提取额外字段（排除 status/data/total/page/pageSize）
+            let knownKeys: Set<String> = ["status", "data", "total", "page", "pageSize"]
+            var extra: [String: Any] = [:]
+            for (key, value) in json where !knownKeys.contains(key) {
+                extra[key] = value
+            }
+
+            return PaginatedResult(items: items, total: total, page: page, pageSize: pageSize, extra: extra)
         } catch {
             throw APIError.server(
                 status: httpResponse.statusCode,
@@ -388,6 +527,11 @@ final class SafeEatAPI {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(body)
         return request
+    }
+
+    /// 解码 JSON 数据为指定类型（供外部解码 extra 字段使用）
+    func decodeJSON<T: Decodable>(_ data: Data, as type: T.Type) throws -> T {
+        try decoder.decode(type, from: data)
     }
 
     private func localizedMessage(for serverMessage: String?, statusCode: Int) -> String {
@@ -452,18 +596,6 @@ private struct ChangePhoneBody: Encodable {
 private struct ChangePasswordBody: Encodable {
     let oldPassword: String
     let newPassword: String
-}
-
-private struct MarkOrderFailedResponse: Decodable {
-    let success: Bool
-}
-
-private struct DeleteAccountResponse: Decodable {
-    let success: Bool
-}
-
-private struct LogoutResponse: Decodable {
-    let success: Bool
 }
 
 private enum ISO8601DateFormatter {
