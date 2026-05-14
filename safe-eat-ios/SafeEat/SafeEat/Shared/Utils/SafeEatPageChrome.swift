@@ -1,4 +1,22 @@
 import SwiftUI
+import UIKit
+
+enum SafeEatSafeArea {
+    static func resolvedTopInset(fallback: CGFloat) -> CGFloat {
+        guard let scene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.activationState == .foregroundActive || $0.activationState == .foregroundInactive })
+        else {
+            return fallback
+        }
+
+        let windowInset = scene.windows.first(where: \.isKeyWindow)?.safeAreaInsets.top
+            ?? scene.windows.first?.safeAreaInsets.top
+            ?? 0
+
+        return max(fallback, windowInset)
+    }
+}
 
 struct SafeEatPageHeader: View {
     let title: String
@@ -45,33 +63,41 @@ struct SafeEatScrollOffsetReader: View {
 
 struct SafeEatGlobalScrollOffsetReader: View {
     @Binding var scrollOffset: CGFloat
-    @State private var initialMinY: CGFloat?
+    @State private var initialMinY: CGFloat = 0
+    @State private var hasInitialized = false
 
     var body: some View {
         GeometryReader { proxy in
             let currentMinY = proxy.frame(in: .global).minY
 
             Color.clear
+                .preference(key: ScrollOffsetPreferenceKey.self, value: currentMinY)
                 .onAppear {
-                    if initialMinY == nil {
-                        initialMinY = currentMinY
-                    }
-                    scrollOffset = currentMinY - (initialMinY ?? currentMinY)
-                    
-                    print("onAppear -> currentMinY:", currentMinY)
-                    print("onAppear -> scrollOffset:", scrollOffset)
+                    resetTracking(to: currentMinY)
                 }
-                .onChange(of: currentMinY) { _, newValue in
-                    if initialMinY == nil {
-                        initialMinY = newValue
+                .onPreferenceChange(ScrollOffsetPreferenceKey.self) { newMinY in
+                    if !hasInitialized {
+                        resetTracking(to: newMinY)
+                        return
                     }
-                    scrollOffset = newValue - (initialMinY ?? newValue)
-                    
-                    print("onAppear -> currentMinY:", currentMinY)
-                    print("onAppear -> scrollOffset:", scrollOffset)
+                    scrollOffset = newMinY - initialMinY
                 }
         }
-        .frame(height: 0)
+        .frame(height: 1)
+    }
+
+    private func resetTracking(to minY: CGFloat) {
+        initialMinY = minY
+        hasInitialized = true
+        scrollOffset = 0
+    }
+}
+
+private struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
 
@@ -80,8 +106,16 @@ struct SafeEatScrollNavChrome: View {
     let scrollOffset: CGFloat
     let topInset: CGFloat
 
+    private var revealedScroll: CGFloat {
+        max(-scrollOffset, 0)
+    }
+
     private var progress: CGFloat {
         min(max((-scrollOffset) / 24, 0), 1)
+    }
+
+    private var showsChrome: Bool {
+        progress > 0.02
     }
 
     var body: some View {
@@ -110,6 +144,7 @@ struct SafeEatScrollNavChrome: View {
                 .opacity(progress)
                 .scaleEffect(0.94 + (progress * 0.06))
         }
+        .ignoresSafeArea()
         .frame(height: topInset + 70, alignment: .top)
         .allowsHitTesting(false)
         .animation(.easeInOut(duration: 0.18), value: progress)
@@ -120,6 +155,11 @@ struct SafeEatTopBackChrome: View {
     let title: String
     let scrollOffset: CGFloat
     let topInset: CGFloat
+    var contentTopSpacing: CGFloat = 8
+    var reservedHeight: CGFloat = 98
+    var minimumBackdropOpacity: CGFloat = 0
+    var emphasizesSafeAreaFill: Bool = false
+    var usesSolidBackdrop: Bool = false
     let onBack: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
@@ -129,30 +169,38 @@ struct SafeEatTopBackChrome: View {
     }
 
     private var appearanceThreshold: CGFloat {
-//        6
         1.5
     }
 
     private var showsChrome: Bool {
-//        revealedScroll > appearanceThreshold
         revealedScroll > 0.02
     }
 
     private var backdropOpacity: CGFloat {
         guard showsChrome else { return 0 }
-        return min(max((revealedScroll - appearanceThreshold) / 18, 0), 1)
+        let animatedOpacity = min(max((revealedScroll - appearanceThreshold) / 18, 0), 1)
+        return max(minimumBackdropOpacity, animatedOpacity)
     }
 
+    /// 内容行顶部padding（相对于组件顶部）
     private var rowTopPadding: CGFloat {
-        topInset + 8
+        topInset + contentTopSpacing
     }
 
+    /// 整个 sticky header 的高度（从屏幕顶部算起）
+    private var chromeHeight: CGFloat {
+        topInset + reservedHeight
+    }
+
+    /// 按钮大小
     private var buttonSize: CGFloat { 50 }
 
-    private var chromeHeight: CGFloat {
-        topInset + 98
+    private var safeAreaFillColor: Color {
+        colorScheme == .dark
+            ? Color.black.opacity(0.54)
+            : Color.white.opacity(0.92)
     }
-    
+
     private var chromeContent: some View {
         HStack(spacing: 0) {
             backButton
@@ -173,6 +221,7 @@ struct SafeEatTopBackChrome: View {
         }
         .padding(.horizontal, 20)
         .padding(.top, rowTopPadding)
+        .frame(height: reservedHeight, alignment: .top)
     }
 
     var body: some View {
@@ -181,26 +230,7 @@ struct SafeEatTopBackChrome: View {
                 .opacity(backdropOpacity)
                 .allowsHitTesting(false)
             chromeContent
-
-//            HStack(spacing: 0) {
-//                backButton
-//
-//                Spacer(minLength: 0)
-//
-//                Text(title)
-//                    .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
-//                    .foregroundStyle(SafeEatTheme.textPrimary)
-//                    .lineLimit(1)
-//                    .opacity(showsChrome ? 1 : 0)
-//                    .offset(y: showsChrome ? 0 : 6)
-//
-//                Spacer(minLength: 0)
-//
-//                Color.clear
-//                    .frame(width: buttonSize, height: buttonSize)
-//            }
-//            .padding(.horizontal, 20)
-//            .padding(.top, rowTopPadding)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .frame(maxWidth: .infinity)
         .frame(height: chromeHeight, alignment: .top)
@@ -210,6 +240,10 @@ struct SafeEatTopBackChrome: View {
     }
 
     private var backdropLayer: some View {
+        legacyGradientBackdrop
+    }
+
+    private var legacyGradientBackdrop: some View {
         ZStack {
             Rectangle()
                 .fill(.ultraThinMaterial)
@@ -234,6 +268,27 @@ struct SafeEatTopBackChrome: View {
                         endPoint: .bottom
                     )
                 )
+
+            if emphasizesSafeAreaFill {
+                VStack(spacing: 0) {
+                    Rectangle()
+                        .fill(
+                            LinearGradient(
+                                stops: colorScheme == .dark
+                                    ? [
+                                        .init(color: Color.black.opacity(0.54), location: 0.0),
+                                    ]
+                                    : [
+                                        .init(color: Color.white.opacity(0.92), location: 0.0),
+                                    ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+
+                    Spacer(minLength: 0)
+                }
+            }
         }
         .mask(
             LinearGradient(

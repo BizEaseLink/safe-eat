@@ -63,6 +63,37 @@ final class LocalHistoryStore {
         }
     }
 
+    func clearAll() {
+        try? fileManager.removeItem(at: historyURL)
+
+        if fileManager.fileExists(atPath: imageDirectoryURL.path) {
+            let childURLs = (try? fileManager.contentsOfDirectory(at: imageDirectoryURL, includingPropertiesForKeys: nil)) ?? []
+            for url in childURLs {
+                try? fileManager.removeItem(at: url)
+            }
+        }
+    }
+
+    func storageUsageBytes() -> Int64 {
+        var total: Int64 = 0
+
+        if let historyAttributes = try? fileManager.attributesOfItem(atPath: historyURL.path),
+           let size = historyAttributes[.size] as? NSNumber {
+            total += size.int64Value
+        }
+
+        let childURLs = (try? fileManager.contentsOfDirectory(
+            at: imageDirectoryURL,
+            includingPropertiesForKeys: [.fileSizeKey]
+        )) ?? []
+        for url in childURLs {
+            let values = try? url.resourceValues(forKeys: [.fileSizeKey])
+            total += Int64(values?.fileSize ?? 0)
+        }
+
+        return total
+    }
+
     func saveRecognitionImages(
         recognitionId: String,
         originalImageData: Data,

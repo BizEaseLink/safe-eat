@@ -14,6 +14,8 @@ struct CameraCaptureView: View {
     let onCapture: (CameraCapturePayload) -> Void
 
     private let previewRotationAngle: CGFloat = 90
+    private let topBarHeight: CGFloat = 72
+    private let bottomBarHeight: CGFloat = 188
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
@@ -21,79 +23,46 @@ struct CameraCaptureView: View {
     @State private var pendingCapturedImage: CameraCapturePayload?
 
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
+        GeometryReader { proxy in
+            ZStack {
+                Color.black.ignoresSafeArea()
 
-            if camera.authorizationStatus == .authorized, camera.isConfigured {
-                CameraPreview(
-                    session: camera.session,
-                    rotationAngle: previewRotationAngle,
-                    onPreviewLayerAvailable: { layer in
-                        camera.setPreviewLayer(layer)
-                    }
-                )
-                    .ignoresSafeArea()
-            } else if camera.authorizationStatus == .authorized {
-                ProgressView("正在启动相机…")
-                    .tint(.white)
-                    .foregroundStyle(.white)
-            } else {
-                permissionPlaceholder
-            }
+                VStack(spacing: 0) {
+                    cameraTopBar(topInset: proxy.safeAreaInsets.top)
 
-            if camera.authorizationStatus == .authorized, camera.isConfigured {
-                CameraGuidanceOverlay()
-            }
-
-            VStack {
-                HStack {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundStyle(.white)
-                            .padding(12)
-                            .background(.black.opacity(0.4))
-                            .clipShape(Circle())
-                    }
-
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-
-                Spacer()
-
-                if let errorMessage = camera.errorMessage {
-                    Text(errorMessage)
-                        .font(SafeEatFont.textStyle(.footnote))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .background(.black.opacity(0.55))
-                        .clipShape(Capsule())
-                        .padding(.bottom, 18)
-                }
-
-                Button {
-                    camera.capturePhoto()
-                } label: {
                     ZStack {
-                        Circle()
-                            .fill(.white.opacity(0.25))
-                            .frame(width: 82, height: 82)
-                        Circle()
-                            .fill(.white)
-                            .frame(width: 64, height: 64)
+                        if camera.authorizationStatus == .authorized, camera.isConfigured {
+                            CameraPreview(
+                                session: camera.session,
+                                rotationAngle: previewRotationAngle,
+                                onPreviewLayerAvailable: { layer in
+                                    camera.setPreviewLayer(layer)
+                                }
+                            )
+                            .ignoresSafeArea()
+                        } else if camera.authorizationStatus == .authorized {
+                            ProgressView(SafeEatL10n.text(L10nKey.Home.cameraStarting))
+                                .tint(.white)
+                                .foregroundStyle(.white)
+                        } else {
+                            permissionPlaceholder
+                        }
+
+                        if camera.authorizationStatus == .authorized, camera.isConfigured {
+                            CameraGuidanceOverlay()
+                        }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    cameraBottomBar(bottomInset: proxy.safeAreaInsets.bottom)
                 }
-                .disabled(!camera.canCapturePhoto)
-                .padding(.bottom, 34)
             }
         }
         .onPreferenceChange(CameraGuideRectPreferenceKey.self) { rect in
             camera.updateGuideRect(rect)
+        }
+        .onPreferenceChange(CameraGuideSizeRatioPreferenceKey.self) { ratio in
+            camera.updateGuideSizeRatio(ratio)
         }
         .task {
             await camera.prepare()
@@ -113,21 +82,112 @@ struct CameraCaptureView: View {
         }
     }
 
+    private func cameraTopBar(topInset: CGFloat) -> some View {
+        HStack {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+
+            Text(SafeEatL10n.text(L10nKey.Home.cameraTitle))
+                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+
+            Spacer()
+
+            Button {
+                camera.toggleFlash()
+            } label: {
+                Image(systemName: camera.isFlashEnabled ? "bolt.fill" : "bolt.slash.fill")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(camera.isFlashEnabled ? SafeEatTheme.warning : .white)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .opacity(camera.isFlashAvailable ? 1 : 0.35)
+            .disabled(!camera.isFlashAvailable)
+            .accessibilityLabel(
+                SafeEatL10n.text(
+                    camera.isFlashEnabled ? L10nKey.Home.cameraFlashOn : L10nKey.Home.cameraFlashOff
+                )
+            )
+        }
+        .padding(.horizontal, 22)
+        .frame(height: topBarHeight)
+        .padding(.top, topInset)
+        .background(Color.black)
+    }
+
+    private func cameraBottomBar(bottomInset: CGFloat) -> some View {
+        VStack(spacing: 18) {
+            if let errorMessage = camera.errorMessage {
+                Text(errorMessage)
+                    .font(SafeEatFont.textStyle(.footnote))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(.black.opacity(0.55))
+                    .clipShape(Capsule())
+            }
+
+            Text(SafeEatL10n.text(L10nKey.Home.cameraBottomHint))
+                .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .semibold))
+                .foregroundStyle(Color(red: 1.0, green: 0.90, blue: 0.86))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+
+            Button {
+                camera.capturePhoto()
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(.white.opacity(0.18))
+                        .frame(width: 94, height: 94)
+
+                    Circle()
+                        .stroke(.white, lineWidth: 5)
+                        .frame(width: 82, height: 82)
+
+                    Circle()
+                        .fill(.white)
+                        .frame(width: 66, height: 66)
+                }
+            }
+            .buttonStyle(.plain)
+            .disabled(!camera.canCapturePhoto)
+            .opacity(camera.canCapturePhoto ? 1 : 0.62)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: bottomBarHeight + bottomInset, alignment: .top)
+        .padding(.top, 10)
+        .background(Color.black)
+    }
+
     private var permissionPlaceholder: some View {
         VStack(spacing: 16) {
             Image(systemName: "camera.fill")
                 .font(.system(size: 42))
                 .foregroundStyle(.white.opacity(0.9))
 
-            Text("需要相机权限才能直接拍照识别")
+            Text(SafeEatL10n.text(L10nKey.Home.cameraPermissionTitle))
                 .font(SafeEatFont.textStyle(.headline))
                 .foregroundStyle(.white)
 
-            Text("请在系统设置中打开相机权限后再试。")
+            Text(SafeEatL10n.text(L10nKey.Home.cameraPermissionBody))
                 .font(SafeEatFont.textStyle(.footnote))
                 .foregroundStyle(.white.opacity(0.75))
 
-            Button("打开设置") {
+            Button(SafeEatL10n.text(L10nKey.Home.cameraOpenSettings)) {
                 guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
                 openURL(settingsURL)
             }
@@ -143,11 +203,16 @@ final class CameraSessionModel: NSObject, ObservableObject {
     @Published var capturedImage: CameraCapturePayload?
     @Published var isConfigured = false
     @Published var isCapturingPhoto = false
+    @Published var isFlashEnabled = false
 
     let session = AVCaptureSession()
 
     var canCapturePhoto: Bool {
         authorizationStatus == .authorized && isConfigured && !isCapturingPhoto
+    }
+
+    var isFlashAvailable: Bool {
+        videoDevice?.hasFlash ?? false
     }
 
     private let sessionQueue = DispatchQueue(label: "bizeasylink.safeeat.camera.session")
@@ -156,6 +221,7 @@ final class CameraSessionModel: NSObject, ObservableObject {
     private var hasConfiguredSession = false
     private var normalizedGuideRect: CGRect = .zero
     private weak var previewLayer: AVCaptureVideoPreviewLayer?
+    private var videoDevice: AVCaptureDevice?
     @MainActor private var latestGuideRect: CGRect = .zero
 
     func prepare() async {
@@ -171,12 +237,12 @@ final class CameraSessionModel: NSObject, ObservableObject {
             if granted {
                 startSession()
             } else {
-                errorMessage = "相机权限未开启。"
+                errorMessage = SafeEatL10n.text(L10nKey.Home.cameraPermissionOff)
             }
         case .denied, .restricted:
-            errorMessage = "相机权限未开启。"
+            errorMessage = SafeEatL10n.text(L10nKey.Home.cameraPermissionOff)
         @unknown default:
-            errorMessage = "当前设备不支持相机。"
+            errorMessage = SafeEatL10n.text(L10nKey.Home.cameraUnsupported)
         }
     }
 
@@ -192,6 +258,24 @@ final class CameraSessionModel: NSObject, ObservableObject {
         recomputeNormalizedGuideRect()
     }
 
+    /// 扫描框相对于屏幕的尺寸比例
+    /// - width: 扫描框宽度占屏幕宽度的比例 (0.0 ~ 1.0)
+    /// - height: 扫描框高度占屏幕宽度的比例 (0.0 ~ 1.0) - 注意：是相对于屏幕宽度，不是高度
+    /// 
+    /// 使用示例：
+    /// ```
+    /// let screenWidth = UIScreen.main.bounds.width
+    /// let screenHeight = UIScreen.main.bounds.height
+    /// let guideWidth = screenWidth * camera.guideSizeRatio.width
+    /// let guideHeight = screenWidth * camera.guideSizeRatio.height  // 注意：高度相对于宽度
+    /// ```
+    @Published private(set) var guideSizeRatio: CGSize = .zero
+
+    @MainActor
+    func updateGuideSizeRatio(_ ratio: CGSize) {
+        guideSizeRatio = ratio
+    }
+
     func capturePhoto() {
         guard canCapturePhoto else { return }
 
@@ -199,8 +283,17 @@ final class CameraSessionModel: NSObject, ObservableObject {
         isCapturingPhoto = true
         sessionQueue.async {
             let settings = AVCapturePhotoSettings()
+            if self.videoDevice?.hasFlash == true {
+                settings.flashMode = self.isFlashEnabled ? .on : .off
+            }
             self.photoOutput.capturePhoto(with: settings, delegate: self)
         }
+    }
+
+    @MainActor
+    func toggleFlash() {
+        guard isFlashAvailable else { return }
+        isFlashEnabled.toggle()
     }
 
     func stopSession() {
@@ -218,7 +311,7 @@ final class CameraSessionModel: NSObject, ObservableObject {
                 self.session.startRunning()
             } catch {
                 Task { @MainActor in
-                    self.errorMessage = "相机启动失败，请稍后重试。"
+                    self.errorMessage = SafeEatL10n.text(L10nKey.Home.cameraStartFailed)
                 }
             }
         }
@@ -237,6 +330,7 @@ final class CameraSessionModel: NSObject, ObservableObject {
         else {
             throw CameraError.cameraUnavailable
         }
+        videoDevice = camera
 
         let input = try AVCaptureDeviceInput(device: camera)
 
@@ -300,7 +394,7 @@ final class CameraSessionModel: NSObject, ObservableObject {
     }
 
     private func cropImageToGuideRectIfPossible(_ image: UIImage) -> UIImage {
-        let normalizedRect = currentNormalizedGuideRect()
+        let normalizedRect = currentNormalizedGuideRect().standardized
         guard !normalizedRect.isNull, !normalizedRect.isEmpty else {
             return image
         }
@@ -313,14 +407,16 @@ final class CameraSessionModel: NSObject, ObservableObject {
         let pixelWidth = CGFloat(cgImage.width)
         let pixelHeight = CGFloat(cgImage.height)
         let fullBounds = CGRect(x: 0, y: 0, width: pixelWidth, height: pixelHeight)
+
+        // 直接按预览层里的白框内区域裁切，避免再次推导比例带来的偏差。
         let pixelRect = CGRect(
             x: normalizedRect.minX * pixelWidth,
             y: normalizedRect.minY * pixelHeight,
             width: normalizedRect.width * pixelWidth,
             height: normalizedRect.height * pixelHeight
         )
-        .integral
-        .intersection(fullBounds)
+            .integral
+            .intersection(fullBounds)
 
         guard
             !pixelRect.isNull,
@@ -344,7 +440,7 @@ extension CameraSessionModel: AVCapturePhotoCaptureDelegate {
         if error != nil {
             Task { @MainActor in
                 self.isCapturingPhoto = false
-                self.errorMessage = "拍照失败，请重试。"
+                self.errorMessage = SafeEatL10n.text(L10nKey.Home.cameraCaptureFailed)
             }
             return
         }
@@ -355,7 +451,7 @@ extension CameraSessionModel: AVCapturePhotoCaptureDelegate {
         else {
             Task { @MainActor in
                 self.isCapturingPhoto = false
-                self.errorMessage = "拍照失败，请重试。"
+                self.errorMessage = SafeEatL10n.text(L10nKey.Home.cameraCaptureFailed)
             }
             return
         }
@@ -451,25 +547,81 @@ private struct CameraGuideRectPreferenceKey: PreferenceKey {
     }
 }
 
+/// 扫描框相对于屏幕的尺寸比例（百分比）
+/// - width: 扫描框宽度占屏幕宽度的比例
+/// - height: 扫描框高度占屏幕宽度的比例（不是屏幕高度！）
+private struct CameraGuideSizeRatioPreferenceKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
+    }
+}
+
+/// 扫描框尺寸配置（百分比）
+/// - 使用屏幕尺寸的百分比，方便裁切时复用
+enum CameraGuideSize {
+    /// 扫描框宽度占屏幕宽度的比例 (0.0 ~ 1.0)
+    static let widthRatio: CGFloat = 0.85
+    
+    /// 扫描框高度相对于宽度的比例
+    static let heightRatio: CGFloat = 1.24
+    
+    /// 扫描框最大宽度（pt）
+    static let maxWidth: CGFloat = 318
+    
+    /// 扫描框最小宽度（pt）
+    static let minWidth: CGFloat = 236
+    
+    /// 左右边距（pt）
+    static let horizontalPadding: CGFloat = 36
+}
+
 private struct CameraGuideLayout {
     let frameRect: CGRect
+    let captureRect: CGRect
     let labelWidth: CGFloat
+    /// 扫描框尺寸占屏幕的比例（用于裁切）
+    let sizeRatio: CGSize
 
     static func make(in proxy: GeometryProxy) -> CameraGuideLayout {
-        let horizontalInset: CGFloat = 36
-        let width = max(236, min(proxy.size.width - horizontalInset * 2, 318))
-        let desiredHeight = width * 1.24
+        let screenWidth = proxy.size.width
+        let screenHeight = proxy.size.height
+        
+        // 使用百分比计算宽度
+        let widthByRatio = screenWidth * CameraGuideSize.widthRatio
+        // 限制最大最小值
+        let width = min(CameraGuideSize.maxWidth, max(CameraGuideSize.minWidth, widthByRatio))
+        
+        // 高度按宽度比例计算
+        let height = width * CameraGuideSize.heightRatio
+        
+        // 计算尺寸比例（相对于屏幕）
+        let sizeRatio = CGSize(width: width / screenWidth, height: height / screenHeight)
+        
         let topSafe = proxy.safeAreaInsets.top + 124
         let bottomControlsSafe = proxy.safeAreaInsets.bottom + 238
-        let availableHeight = max(240, proxy.size.height - topSafe - bottomControlsSafe)
-        let height = min(desiredHeight, availableHeight)
-        let x = (proxy.size.width - width) / 2
-        let preferredY = max(proxy.safeAreaInsets.top + 138, (proxy.size.height - height) / 2 - 46)
-        let maxY = max(proxy.safeAreaInsets.top + 92, proxy.size.height - bottomControlsSafe - height)
+        let availableHeight = max(240, screenHeight - topSafe - bottomControlsSafe)
+        let adjustedHeight = min(height, availableHeight)
+        
+        let x = (screenWidth - width) / 2
+        let preferredY = max(proxy.safeAreaInsets.top + 138, (screenHeight - adjustedHeight) / 2 - 46)
+        let maxY = max(proxy.safeAreaInsets.top + 92, screenHeight - bottomControlsSafe - adjustedHeight)
         let y = min(preferredY, maxY)
-        let rect = CGRect(x: x, y: y, width: width, height: height)
+        
+        let rect = CGRect(x: x, y: y, width: width, height: adjustedHeight)
+        let captureRect = rect.insetBy(
+            dx: max(10, rect.width * 0.045),
+            dy: max(14, rect.height * 0.055)
+        )
         let labelWidth = min(width - 28, 224)
-        return CameraGuideLayout(frameRect: rect, labelWidth: labelWidth)
+        
+        return CameraGuideLayout(
+            frameRect: rect, 
+            captureRect: captureRect, 
+            labelWidth: labelWidth,
+            sizeRatio: sizeRatio
+        )
     }
 }
 
@@ -480,34 +632,14 @@ private struct CameraGuidanceOverlay: View {
 
             ZStack(alignment: .topLeading) {
                 Color.clear
-                    .preference(key: CameraGuideRectPreferenceKey.self, value: layout.frameRect)
+                    .preference(key: CameraGuideRectPreferenceKey.self, value: layout.captureRect)
+                    .preference(key: CameraGuideSizeRatioPreferenceKey.self, value: layout.sizeRatio)
 
                 CameraCornerBrackets()
                     .stroke(.white.opacity(0.86), style: StrokeStyle(lineWidth: 3.2, lineCap: .round, lineJoin: .round))
                     .frame(width: layout.frameRect.width, height: layout.frameRect.height)
                     .position(x: layout.frameRect.midX, y: layout.frameRect.midY)
                     .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
-
-                Text("请将主体放置于框线内")
-                    .font(SafeEatFont.custom(13, relativeTo: .caption))
-                    .foregroundStyle(.white.opacity(0.72))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.82)
-                    .frame(width: layout.labelWidth)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(.black.opacity(0.08))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .stroke(.white.opacity(0.58), lineWidth: 0)
-                    )
-                    .position(
-                        x: layout.frameRect.midX,
-                        y: layout.frameRect.maxY + 20
-                    )
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .allowsHitTesting(false)

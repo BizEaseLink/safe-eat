@@ -67,7 +67,7 @@ struct HistoryMonthView: View {
                             LazyVStack(spacing: 14) {
                                 ForEach(monthGroups) { group in
                                     NavigationLink {
-                                        HistoryDayView(monthKey: group.id, monthDate: group.displayMonthDate)
+                                        HistoryWeekView(referenceDate: group.displayMonthDate)
                                     } label: {
                                         HStack(spacing: 12) {
                                             VStack(alignment: .leading, spacing: 6) {
@@ -124,8 +124,8 @@ struct HistoryMonthView: View {
 private extension Date {
     var monthKey: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "yyyy 年 MM 月"
+        formatter.locale = AppSettingsStore.shared.displayLocale
+        formatter.dateFormat = AppSettingsStore.shared.language == .en ? "MMMM yyyy" : "yyyy 年 MM 月"
         return formatter.string(from: self)
     }
 }

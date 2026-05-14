@@ -24,6 +24,10 @@ enum SafeEatTheme {
     static let dangerUIColor = UIColor(hex: 0xC95B44)
     static let textPrimaryUIColor = UIColor(dynamicLight: 0x19342C, dark: 0xF3F6F4)
     static let textSecondaryUIColor = UIColor(dynamicLight: 0x60746D, dark: 0xC3CBC8)
+
+    static func priceText(_ fen: Int) -> String {
+        String(format: "¥%.2f", Double(fen) / 100)
+    }
 }
 
 private extension Color {

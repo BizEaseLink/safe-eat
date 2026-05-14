@@ -15,6 +15,11 @@ struct ResultView: View {
     @State private var flipDirection: Double = -1
     @State private var scrollOffset: CGFloat = 0
 
+    private var isPaidMember: Bool {
+        guard let tier = store.profile?.currentPlanTier else { return false }
+        return tier != "free"
+    }
+
     private var item: LocalHistoryItem? {
         store.historyItem(id: itemId)
     }
@@ -34,7 +39,7 @@ struct ResultView: View {
         let rawName = recognition?.recognizedName ?? item?.recognizedName ?? ""
         let trimmed = rawName.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty || trimmed == "未知食物" {
-            return "未识别食物"
+            return SafeEatL10n.text(L10nKey.Common.unknownFood)
         }
         return trimmed
     }
@@ -46,11 +51,11 @@ struct ResultView: View {
     private var scoreTitle: String {
         switch scoreValue {
         case 80...:
-            return "较优"
+            return SafeEatL10n.text(L10nKey.Result.scoreLevelHigh)
         case 60...:
-            return "一般"
+            return SafeEatL10n.text(L10nKey.Result.scoreLevelMedium)
         default:
-            return "较低"
+            return SafeEatL10n.text(L10nKey.Result.scoreLevelLow)
         }
     }
 
@@ -67,7 +72,7 @@ struct ResultView: View {
 
     private var statusText: String {
         if !hasFullRecognitionDetail {
-            return "信息不足"
+            return SafeEatL10n.text(L10nKey.Result.statusInsufficient)
         }
         return AdviceLevelMapper.title(recognition?.adviceLevel ?? item?.adviceLevel)
     }
@@ -88,7 +93,7 @@ struct ResultView: View {
         }
 
         if !hasFullRecognitionDetail {
-            return "当前无法识别完整营养信息，建议继续补拍主体或翻到背面查看营养与风险分析。"
+            return SafeEatL10n.text(L10nKey.Result.incompleteSummary)
         }
 
         return AdviceLevelMapper.menuSummary(
@@ -98,22 +103,32 @@ struct ResultView: View {
     }
 
     private var backHeaderNote: String {
-        "具体营养需求：饮食建议仅供参考"
+        SafeEatL10n.text(L10nKey.Result.headerNote)
     }
 
     private var scoreLogicText: String {
-        "当前分数会结合识别完整度、营养指标、风险标签和建议等级综合计算。这里先预留给后续评分解释逻辑。"
+        SafeEatL10n.text(L10nKey.Result.scoreLogicBody)
     }
 
     private var medicalDisclaimerText: String {
-        "Safe-Eat 提供的是日常饮食辅助建议，不替代医院诊断、医生处方或专业营养干预。若你有高血压、高血脂、高血糖、肾病、妊娠或其他特殊健康情况，请以正规医院和专业医生建议为准。"
+        SafeEatL10n.text(L10nKey.Result.medicalDisclaimer)
     }
 
     private var pairedMetrics: [(String, String, String, String)] {
         let nutrition = recognition?.nutritionSnapshot
         return [
-            ("热量", formatMetric(nutrition?.calories), "蛋白质", formatMetric(nutrition?.protein, unit: "g")),
-            ("脂肪", formatMetric(nutrition?.fat, unit: "g"), "碳水", formatMetric(nutrition?.carbs, unit: "g")),
+            (
+                SafeEatL10n.text(L10nKey.Result.metricCalories),
+                formatMetric(nutrition?.calories),
+                SafeEatL10n.text(L10nKey.Result.metricProtein),
+                formatMetric(nutrition?.protein, unit: SafeEatL10n.text(L10nKey.Result.metricGramsUnit))
+            ),
+            (
+                SafeEatL10n.text(L10nKey.Result.metricFat),
+                formatMetric(nutrition?.fat, unit: SafeEatL10n.text(L10nKey.Result.metricGramsUnit)),
+                SafeEatL10n.text(L10nKey.Result.metricCarbs),
+                formatMetric(nutrition?.carbs, unit: SafeEatL10n.text(L10nKey.Result.metricGramsUnit))
+            ),
         ]
     }
 
@@ -131,7 +146,7 @@ struct ResultView: View {
         if let riskFlags = recognition?.nutritionSnapshot?.riskFlags, !riskFlags.isEmpty {
             return riskFlags.map {
                 ResultRiskRow(
-                    title: "营养提醒",
+                    title: SafeEatL10n.text(L10nKey.Result.nutritionAlertTitle),
                     detail: $0,
                     tone: .warning
                 )
@@ -140,8 +155,8 @@ struct ResultView: View {
 
         return [
             ResultRiskRow(
-                title: "信息完整度",
-                detail: "当前缺少可靠营养基线，建议人工确认后再判断。",
+                title: SafeEatL10n.text(L10nKey.Result.completenessTitle),
+                detail: SafeEatL10n.text(L10nKey.Result.completenessDetail),
                 tone: .warning
             )
         ]
@@ -175,31 +190,64 @@ struct ResultView: View {
 
     private func resultPage(item: LocalHistoryItem, recognition: RecognitionRecord) -> some View {
         GeometryReader { proxy in
+            let contentHeight = proxy.size.height - proxy.safeAreaInsets.top - proxy.safeAreaInsets.bottom
+
             ZStack(alignment: .topLeading) {
-  
                 pageBackground
 
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 22) {
-                        SafeEatGlobalScrollOffsetReader(scrollOffset: $scrollOffset)
+                // 全页双面卡：正面和背面各占全屏高度，通过翻转切换
+                ZStack {
+                    // 正面
+                    ScrollView(showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 22) {
+                            Color.clear
+                                .frame(height: proxy.safeAreaInsets.top + 36)
 
-                        Color.clear
-                            .frame(height: proxy.safeAreaInsets.top + 76)
-
-                        flipCard(item: item, recognition: recognition)
+                            frontCard(item: item)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 40)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 40)
+                    .opacity(isFlipped ? 0 : 1)
+                    .rotation3DEffect(
+                        .degrees(isFlipped ? 180 * flipDirection : 0),
+                        axis: (x: 0, y: 1, z: 0),
+                        perspective: 0.9
+                    )
+
+                    // 背面
+                    ScrollView(showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 22) {
+                            Color.clear
+                                .frame(height: proxy.safeAreaInsets.top + 36)
+
+                            backCard(recognition: recognition)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 40)
+                    }
+                    .opacity(isFlipped ? 1 : 0)
+                    .rotation3DEffect(
+                        .degrees(isFlipped ? 0 : -180 * flipDirection),
+                        axis: (x: 0, y: 1, z: 0),
+                        perspective: 0.9
+                    )
                 }
+                .animation(.spring(response: 0.42, dampingFraction: 0.84), value: isFlipped)
 
                 SafeEatTopBackChrome(
-                    title: "识别结果",
+                    title: isFlipped
+                        ? SafeEatL10n.text(L10nKey.Result.analysisTitle)
+                        : SafeEatL10n.text(L10nKey.Result.title),
                     scrollOffset: scrollOffset,
                     topInset: proxy.safeAreaInsets.top,
                     onBack: { dismiss() }
                 )
             }
             .ignoresSafeArea()
+        }
+        .onAppear {
+            scrollOffset = 0
         }
     }
 
@@ -241,43 +289,8 @@ struct ResultView: View {
         }
     }
 
-    private func flipCard(item: LocalHistoryItem, recognition: RecognitionRecord) -> some View {
-        ZStack {
-            frontCard(item: item)
-                .opacity(isFlipped ? 0 : 1)
-                .rotation3DEffect(
-                    .degrees(isFlipped ? 180 * flipDirection : 0),
-                    axis: (x: 0, y: 1, z: 0),
-                    perspective: 0.9
-                )
-
-            backCard(recognition: recognition)
-                .opacity(isFlipped ? 1 : 0)
-                .rotation3DEffect(
-                    .degrees(isFlipped ? 0 : -180 * flipDirection),
-                    axis: (x: 0, y: 1, z: 0),
-                    perspective: 0.9
-                )
-        }
-        .animation(.spring(response: 0.42, dampingFraction: 0.84), value: isFlipped)
-    }
-
     private func frontCard(item: LocalHistoryItem) -> some View {
         VStack(alignment: .leading, spacing: 30) {
-//            VStack(alignment: .leading, spacing: 8) {
-//                Text(backHeaderNote)
-//                    .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-//                    .foregroundStyle(SafeEatTheme.textSecondary)
-//                    .fixedSize(horizontal: false, vertical: true)
-//                Text("识别结果")
-//                    .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
-//                    .foregroundStyle(SafeEatTheme.textPrimary)
-//                    .fixedSize(horizontal: false, vertical: true)
-//
-//                Spacer(minLength: 12)
-//
-//                statusChip(text: statusText, color: statusColor)
-//            }
             VStack(alignment: .leading, spacing: 8) {
  
                 HStack(alignment: .top, spacing: 6) {
@@ -293,7 +306,7 @@ struct ResultView: View {
                 }
                 
 
-                Text("识别结果")
+                Text(SafeEatL10n.text(L10nKey.Result.title))
                     .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -302,15 +315,10 @@ struct ResultView: View {
                     .font(SafeEatFont.custom(18, relativeTo: .title3, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
             }
-
-//            Text(displayName)
-//                .font(SafeEatFont.custom(18, relativeTo: .title3, weight: .bold))
-//                .foregroundStyle(SafeEatTheme.textPrimary)
-//
             heroImageCard(item: item)
 
             VStack(alignment: .leading, spacing: 10) {
-                Text("健康评分")
+                Text(SafeEatL10n.text(L10nKey.Result.scoreSectionTitle))
                     .font(SafeEatFont.custom(16, relativeTo: .subheadline))
                     .foregroundStyle(SafeEatTheme.textSecondary)
                 
@@ -326,24 +334,6 @@ struct ResultView: View {
                         .foregroundStyle(scoreColor.opacity(0.88))
                         .padding(.bottom, 8)
                 }
-                
-//                Text("健康评分")
-//                    .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
-//                    .foregroundStyle(SafeEatTheme.textPrimary)
-//                
-//                statusChip(text: statusText, color: statusColor)
-//
-//                sectionCard {
-//                    
-//                    Text("\(scoreValue)")
-//                        .font(SafeEatFont.custom(58, relativeTo: .largeTitle, weight: .bold))
-//                        .foregroundStyle(scoreColor)
-//
-//                    Text(scoreTitle)
-//                        .font(SafeEatFont.custom(22, relativeTo: .headline, weight: .bold))
-//                        .foregroundStyle(scoreColor.opacity(0.88))
-//                        .padding(.bottom, 8)
-//                }
             }
 
             Text(frontSummaryText)
@@ -352,17 +342,22 @@ struct ResultView: View {
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
 
+            if !isPaidMember {
+                NativeAdView()
+                    .frame(height: 80)
+            }
+
             HStack(spacing: 12) {
-                primaryButton(title: "继续评估") {
+                primaryButton(title: SafeEatL10n.text(L10nKey.Result.actionContinue)) {
                     flipCard(direction: -1)
                 }
 
-                secondaryButton(title: "重新拍摄") {
+                secondaryButton(title: SafeEatL10n.text(L10nKey.Result.actionRetake)) {
                     dismiss()
                 }
             }
 
-            inlineFeedbackAction(title: "反馈错误")
+            inlineFeedbackAction(title: SafeEatL10n.text(L10nKey.Result.actionFeedback))
 
             medicalDisclaimerView
         }
@@ -382,7 +377,7 @@ struct ResultView: View {
                     .foregroundStyle(SafeEatTheme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text("营养与风险分析")
+                Text(SafeEatL10n.text(L10nKey.Result.analysisTitle))
                     .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -393,9 +388,17 @@ struct ResultView: View {
             }
 
             if isLoadingDetail && !hasFullRecognitionDetail {
-                subtleChip(text: "正在同步完整结果…")
+                VStack(spacing: 8) {
+                    ProgressView()
+                        .tint(SafeEatTheme.primary)
+                    Text(SafeEatL10n.text(L10nKey.Result.detailSyncing))
+                        .font(SafeEatFont.textStyle(.caption))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
             } else if !hasFullRecognitionDetail {
-                subtleChip(text: "当前仅有本地结果")
+                subtleChip(text: SafeEatL10n.text(L10nKey.Result.detailLocalOnly))
             }
 
             Button {
@@ -406,11 +409,11 @@ struct ResultView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(alignment: .top, spacing: 10) {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("分数逻辑")
+                            Text(SafeEatL10n.text(L10nKey.Result.scoreLogicTitle))
                                 .font(SafeEatFont.custom(16, relativeTo: .subheadline))
                                 .foregroundStyle(SafeEatTheme.textSecondary)
 
-                            Text("健康评分 \(scoreValue)")
+                            Text(SafeEatL10n.format(L10nKey.Result.scoreLogicFormat, scoreValue))
                                 .font(SafeEatFont.custom(26, relativeTo: .title2, weight: .bold))
                                 .foregroundStyle(scoreColor)
                         }
@@ -422,7 +425,7 @@ struct ResultView: View {
                             .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.84))
                     }
 
-                    Text("点击查看评分说明与计算逻辑")
+                    Text(SafeEatL10n.text(L10nKey.Result.scoreLogicHint))
                         .font(SafeEatFont.custom(13, relativeTo: .footnote))
                         .foregroundStyle(SafeEatTheme.textSecondary)
 
@@ -445,7 +448,7 @@ struct ResultView: View {
             .buttonStyle(.plain)
 
             VStack(alignment: .leading, spacing: 12) {
-                Text("营养分析")
+                Text(SafeEatL10n.text(L10nKey.Result.nutritionSectionTitle))
                     .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
                     .padding(.bottom, 4)
@@ -463,7 +466,7 @@ struct ResultView: View {
             }
 
             VStack(alignment: .leading, spacing: 12) {
-                Text("饮食建议")
+                Text(SafeEatL10n.text(L10nKey.Result.adviceSectionTitle))
                     .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
 
@@ -477,7 +480,7 @@ struct ResultView: View {
             }
 
             VStack(alignment: .leading, spacing: 12) {
-                Text("风险分析")
+                Text(SafeEatL10n.text(L10nKey.Result.riskSectionTitle))
                     .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
 
@@ -490,11 +493,16 @@ struct ResultView: View {
                 }
             }
 
-//            primaryButton(title: "返回正面") {
-//                flipCard(direction: 1)
-//            }
+            if !isPaidMember {
+                NativeAdView()
+                    .frame(height: 80)
+            }
 
-            inlineFeedbackAction(title: "反馈错误")
+            primaryButton(title: SafeEatL10n.text(L10nKey.Result.actionBackToFront)) {
+                flipCard(direction: 1)
+            }
+
+            inlineFeedbackAction(title: SafeEatL10n.text(L10nKey.Result.actionFeedback))
 
             medicalDisclaimerView
         }
@@ -525,7 +533,7 @@ struct ResultView: View {
                     VStack(spacing: 10) {
                         Image(systemName: "photo")
                             .font(.system(size: 28))
-                        Text("本地图片缺失")
+                        Text(SafeEatL10n.text(L10nKey.Result.imageMissing))
                             .font(SafeEatFont.textStyle(.subheadline))
                     }
                     .foregroundStyle(SafeEatTheme.textSecondary)
@@ -709,7 +717,9 @@ struct ResultView: View {
     }
 
     private func flipCard(direction: Double) {
-        flipDirection = direction >= 0 ? 1 : -1
+        // 正面翻到背面：向左翻（direction = -1）
+        // 背面翻回正面：向右翻（direction = 1）
+        flipDirection = isFlipped ? 1 : -1
         withAnimation(.spring(response: 0.42, dampingFraction: 0.84)) {
             isFlipped.toggle()
         }
@@ -725,7 +735,7 @@ struct ResultView: View {
 
     private func backAdviceText(recognition: RecognitionRecord) -> String {
         if let reasons = recognition.reasons, !reasons.isEmpty {
-            return reasons.joined(separator: "；")
+            return reasons.joined(separator: SafeEatL10n.text(L10nKey.Result.reasonSeparator))
         }
         if let advice = recognition.adviceText,
            !advice.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -804,18 +814,28 @@ struct ResultView: View {
                     Color.clear
                         .frame(height: proxy.safeAreaInsets.top + 74)
 
-                    Text("识别结果不存在")
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 40, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.warning)
+                        .symbolRenderingMode(.hierarchical)
+
+                    Text(SafeEatL10n.text(L10nKey.Result.missingTitle))
                         .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
                         .foregroundStyle(SafeEatTheme.textPrimary)
 
-                    Text("这条本地记录不存在或已被删除。")
+                    Text(SafeEatL10n.text(L10nKey.Result.missingMessage))
                         .font(SafeEatFont.textStyle(.body))
                         .foregroundStyle(SafeEatTheme.textSecondary)
+
+                    primaryButton(title: SafeEatL10n.text(L10nKey.Result.missingRetry)) {
+                        dismiss()
+                    }
+                    .padding(.top, 8)
                 }
                 .padding(.horizontal, 20)
 
                 SafeEatTopBackChrome(
-                    title: "识别结果",
+                    title: SafeEatL10n.text(L10nKey.Result.title),
                     scrollOffset: 0,
                     topInset: proxy.safeAreaInsets.top,
                     onBack: { dismiss() }

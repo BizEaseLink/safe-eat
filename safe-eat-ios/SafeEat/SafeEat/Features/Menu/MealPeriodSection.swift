@@ -1,14 +1,24 @@
 import SwiftUI
-import UserNotifications
 
 // MARK: - Meal Period Type
 
 enum MealPeriod: String, CaseIterable, Identifiable {
-    case breakfast = "早餐"
-    case lunch = "午餐"
-    case dinner = "晚餐"
+    case breakfast
+    case lunch
+    case dinner
 
     var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .breakfast:
+            return SafeEatL10n.text(L10nKey.Menu.mealBreakfast)
+        case .lunch:
+            return SafeEatL10n.text(L10nKey.Menu.mealLunch)
+        case .dinner:
+            return SafeEatL10n.text(L10nKey.Menu.mealDinner)
+        }
+    }
 
     var hourRange: ClosedRange<Int> {
         switch self {
@@ -47,24 +57,31 @@ struct MealPeriodSection: View {
             }
         }
         .padding(18)
-        .background(cardBackground)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(SafeEatTheme.line, lineWidth: 1)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.ultraThinMaterial)
         )
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(cardFill)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(cardStroke, lineWidth: 1)
+        )
+        .shadow(color: SafeEatTheme.primaryDeep.opacity(0.10), radius: 22, y: 14)
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
     @Environment(\.colorScheme) private var colorScheme
 
-    private var cardBackground: some View {
-        Group {
-            if colorScheme == .dark {
-                Color(red: 0.11, green: 0.12, blue: 0.15).opacity(0.84)
-            } else {
-                Color.white.opacity(0.84)
-            }
-        }
+    private var cardFill: Color {
+        colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.52)
+    }
+
+    private var cardStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
     }
 
     // MARK: Period Picker
@@ -85,7 +102,7 @@ struct MealPeriodSection: View {
                 selectedPeriod = period
             }
         }) {
-            Text(period.rawValue)
+            Text(period.displayName)
                 .font(SafeEatFont.custom(14, relativeTo: .body, weight: .bold))
                 .foregroundStyle(isSelected ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
                 .padding(.bottom, 6)
@@ -105,66 +122,26 @@ struct MealPeriodSection: View {
 
     private func foodGrid(items: [LocalHistoryItem]) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 14) {
+            HStack(alignment: .top, spacing: 18) {
                 ForEach(items.prefix(4)) { item in
                     foodCard(item: item)
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, 6)
         }
     }
 
     private func foodCard(item: LocalHistoryItem) -> some View {
-        VStack(spacing: 8) {
-            AsyncImage(url: URL(string: item.displayImageUri)) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                case .failure:
-                    fallbackImage(for: item)
-                @unknown default:
-                    ProgressView()
-                }
-            }
-            .frame(width: 110, height: 110)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-
-            Text(mealLabel(for: item))
-                .font(SafeEatFont.textStyle(.body))
-                .foregroundStyle(SafeEatTheme.textPrimary)
-                .lineLimit(1)
-        }
+        AsyncRecognitionStickerView(
+            item: item,
+            imageHeight: 104,
+            labelMaxWidth: 124,
+            style: .floating
+        )
+        .frame(width: 132, alignment: .top)
+        .contentShape(Rectangle())
         .onTapGesture {
             onDayTapped(selectedDate)
-        }
-    }
-
-    private func mealLabel(for item: LocalHistoryItem) -> String {
-        let hour = Calendar.current.component(.hour, from: item.createdAt)
-        if MealPeriod.breakfast.hourRange.contains(hour) { return "早餐" }
-        if MealPeriod.lunch.hourRange.contains(hour) { return "午餐" }
-        return "晚餐"
-    }
-
-    private func fallbackImage(for item: LocalHistoryItem) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            SafeEatTheme.accent.opacity(0.3),
-                            SafeEatTheme.primarySoft,
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-
-            Image(systemName: "photo")
-                .font(.system(size: 24))
-                .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.5))
         }
     }
 
@@ -176,7 +153,7 @@ struct MealPeriodSection: View {
                 .font(.system(size: 28))
                 .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.5))
 
-            Text("暂无\(selectedPeriod.rawValue)记录")
+            Text(SafeEatL10n.format(L10nKey.Menu.mealEmptyFormat, selectedPeriod.displayName))
                 .font(SafeEatFont.textStyle(.caption))
                 .foregroundStyle(SafeEatTheme.textSecondary)
         }
@@ -193,8 +170,10 @@ struct MealPeriodSection: View {
 // MARK: - Notification Bell Button
 
 struct NotificationBellButton: View {
-    @Binding var isEnabled: Bool
+    let isEnabled: Bool
     let onTap: () -> Void
+
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Button(action: onTap) {
@@ -205,7 +184,7 @@ struct NotificationBellButton: View {
                     .frame(width: 40, height: 40)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(isEnabled ? SafeEatTheme.primarySoft : bellBackground)
+                            .fill(isEnabled ? bellActiveFill : bellBackground)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
@@ -223,7 +202,9 @@ struct NotificationBellButton: View {
         .buttonStyle(.plain)
     }
 
-    @Environment(\.colorScheme) private var colorScheme
+    private var bellActiveFill: Color {
+        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.18) : SafeEatTheme.primarySoft
+    }
 
     private var bellBackground: Color {
         colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.76)
@@ -234,176 +215,66 @@ struct NotificationBellButton: View {
     }
 }
 
-// MARK: - Notification Settings Sheet
+// MARK: - Record Shortcut Button (Redesigned)
 
-struct NotificationSettingsSheet: View {
-    @Binding var isEnabled: Bool
-    @Environment(\.dismiss) private var dismiss
+struct RecordShortcutButton: View {
+    let title: String
+    let icon: String
+    let count: Int
+    let action: () -> Void
 
-    @State private var selectedDayIndex = 0 // 0=今天, 1=明天
-    @State private var selectedTimeIndex = 36 // default 09:00 (index in timeOptions)
-
-    private let dayOptions = ["今天", "明天"]
-    private let timeOptions: [String] = {
-        var opts: [String] = []
-        for h in 6..<23 {
-            for m in stride(from: 0, through: 45, by: 15) {
-                opts.append(String(format: "%02d:%02d", h, m))
-            }
-        }
-        return opts
-    }()
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        VStack(spacing: 24) {
-            header
+        Button(action: action) {
+            VStack(spacing: 0) {
+                // 图标区域
+                ZStack {
+                    Circle()
+                        .fill(iconCircleFill)
+                        .frame(width: 44, height: 44)
 
-            toggleSection
-
-            dualWheelPicker
-
-            confirmButton
-        }
-        .padding(24)
-    }
-
-    private var header: some View {
-        VStack(spacing: 6) {
-            Text("饮食提醒")
-                .font(SafeEatFont.custom(20, relativeTo: .title2, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
-
-            Text("每日定时推送今日食用表现总结")
-                .font(SafeEatFont.textStyle(.subheadline))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-        }
-    }
-
-    private var toggleSection: some View {
-        HStack {
-            Text("开启通知提醒")
-                .font(SafeEatFont.textStyle(.body))
-                .foregroundStyle(SafeEatTheme.textPrimary)
-
-            Spacer()
-
-            Toggle("", isOn: $isEnabled)
-                .tint(SafeEatTheme.primary)
-        }
-    }
-
-    // MARK: Dual Wheel Picker (Day + Time)
-
-    private var dualWheelPicker: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("提醒时间")
-                .font(SafeEatFont.textStyle(.caption))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-
-            HStack(spacing: 0) {
-                // Left wheel: 今天 / 明天
-                Picker("日期", selection: $selectedDayIndex) {
-                    ForEach(0..<dayOptions.count, id: \.self) { idx in
-                        Text(dayOptions[idx]).tag(idx)
-                    }
+                    Image(systemName: icon)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(SafeEatTheme.primary)
                 }
-                .pickerStyle(.wheel)
-                .frame(maxWidth: .infinity)
+                .padding(.top, 16)
 
-                // Right wheel: Time options
-                Picker("时间", selection: $selectedTimeIndex) {
-                    ForEach(0..<timeOptions.count, id: \.self) { idx in
-                        Text(timeOptions[idx]).tag(idx)
-                    }
-                }
-                .pickerStyle(.wheel)
-                .frame(maxWidth: .infinity)
-            }
-            .frame(height: 140)
-            .disabled(!isEnabled)
-            .opacity(isEnabled ? 1 : 0.45)
+                // 标题
+                Text(title)
+                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .padding(.top, 10)
 
-            // Selected value display
-            HStack {
-                Spacer()
-                Text("\(dayOptions[selectedDayIndex]) \(timeOptions[selectedTimeIndex])")
-                    .font(SafeEatFont.custom(14, relativeTo: .body, weight: .bold))
+                // 计数标签
+                Text("\(count)")
+                    .font(SafeEatFont.custom(24, relativeTo: .title2, weight: .bold))
                     .foregroundStyle(SafeEatTheme.primary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule().fill(SafeEatTheme.primarySoft)
-                    )
+                    .padding(.top, 4)
+                    .padding(.bottom, 14)
             }
-        }
-    }
-
-    private var confirmButton: some View {
-        Button(action: {
-            scheduleNotification()
-            dismiss()
-        }) {
-            Text("保存设置")
-                .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 48)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(
-                            LinearGradient(
-                                colors: [SafeEatTheme.primary, SafeEatTheme.accent],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                )
-                .shadow(color: SafeEatTheme.primary.opacity(0.25), radius: 12, y: 4)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(cardFill)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(cardStroke, lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
     }
 
-    private func scheduleNotification() {
-        guard isEnabled else { return }
-        
-        // 1. 先请求通知权限（你原来完全没写，这是核心！）
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            guard granted, error == nil else {
-                print("用户拒绝通知权限 或 出错：\(error?.localizedDescription ?? "")")
-                return
-            }
-            
-            // 2. 有权限后才执行通知逻辑
-            let timeStr = timeOptions[selectedTimeIndex]
-            let parts = timeStr.split(separator: ":").compactMap { Int($0) }
-            guard parts.count == 2 else { return }
-            
-            let center = UNUserNotificationCenter.current()
-            center.removeAllPendingNotificationRequests() // 先清掉旧的，避免重复
-            
-            // 每日定时通知
-            let content = UNMutableNotificationContent()
-            content.title = "Safe-Eat 今日饮食总结"
-            content.body = "点击查看今日食用表现详情"
-            content.sound = .default
-            
-            var dateComponents = DateComponents()
-            dateComponents.hour = parts[0]
-            dateComponents.minute = parts[1]
-            
-            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
-            let request = UNNotificationRequest(identifier: "safe-eat-daily-summary", content: content, trigger: trigger)
-            center.add(request)
-            
-            // 测试通知（3秒后弹出）
-            let testContent = UNMutableNotificationContent()
-            testContent.title = "Safe-Eat 提醒已开启"
-            testContent.body = "您将在每天 \(timeStr) 收到饮食总结通知"
-            testContent.sound = .default
-            
-            let testTrigger = UNTimeIntervalNotificationTrigger(timeInterval: 3, repeats: false)
-            let testRequest = UNNotificationRequest(identifier: "safe-eat-test", content: testContent, trigger: testTrigger)
-            center.add(testRequest)
-        }
+    private var iconCircleFill: Color {
+        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.18) : SafeEatTheme.primarySoft
+    }
+
+    private var cardFill: Color {
+        colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.52)
+    }
+
+    private var cardStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
     }
 }

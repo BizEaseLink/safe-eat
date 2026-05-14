@@ -1,5 +1,13 @@
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
+
+enum AdRewardResultType {
+    case claimFailed
+    case loadFailed
+    case success(rewardQuota: Int)
+}
 
 private struct ResultRoute: Identifiable, Hashable {
     let id: String
@@ -16,17 +24,43 @@ private struct ResultRoute: Identifiable, Hashable {
 
 struct ScanHomeView: View {
     @EnvironmentObject private var store: AppStore
+    @EnvironmentObject private var settings: AppSettingsStore
+    private var adConfig: AdConfigStore { AdConfigStore.shared }
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var showCamera = false
     @State private var isRecognizing = false
     @State private var resultRoute: ResultRoute?
     @State private var scrollOffset: CGFloat = 0
+    @State private var recognizingPreviewImage: UIImage?
+    @State private var showMembership = false
+    @State private var showQuotaExceeded = false
+    @State private var showAdRewardResult = false
+    @State private var adRewardResultType: AdRewardResultType = .claimFailed
 
-    private let scrollCoordinateSpace = "safeeat.home.scroll"
+    let scrollCoordinateSpace = "safeeat.home.scroll"
+
+    private var isPaidMember: Bool {
+        guard let tier = store.profile?.currentPlanTier else { return false }
+        return tier != "free"
+    }
 
     private var latestRecord: LocalHistoryItem? {
         store.localHistory.first
+    }
+
+    private var isFreeQuotaExceeded: Bool {
+        guard store.profile?.currentPlanTier == nil || store.profile?.currentPlanTier == "free" else { return false }
+        // dailyQuota 为 nil 时（未登录或未获取到远程数据），不判定为已用完
+        guard let quota = store.dailyQuota else { return false }
+        return quota.remainingQuota <= 0
+    }
+
+    private var remainingFreeQuota: Int {
+        guard store.profile?.currentPlanTier == nil || store.profile?.currentPlanTier == "free" else { return -1 }
+        // dailyQuota 为 nil 时返回 -1，表示数据未就绪，不显示剩余次数
+        guard store.dailyQuota != nil else { return -1 }
+        return store.dailyQuota?.remainingQuota ?? 0
     }
 
     private var brandLabelColor: Color {
@@ -35,18 +69,6 @@ struct ScanHomeView: View {
 
     private var secondaryButtonTextColor: Color {
         colorScheme == .dark ? Color.white.opacity(0.92) : SafeEatTheme.primaryDeep
-    }
-
-    private var topPillFill: Color {
-        colorScheme == .dark
-            ? Color.white.opacity(0.08)
-            : Color(red: 0.97, green: 0.98, blue: 0.97).opacity(0.96)
-    }
-
-    private var topPillStroke: Color {
-        colorScheme == .dark
-            ? Color.white.opacity(0.10)
-            : Color(red: 0.83, green: 0.89, blue: 0.85).opacity(0.92)
     }
 
     private var heroPillFill: Color {
@@ -61,6 +83,41 @@ struct ScanHomeView: View {
             : Color(red: 0.84, green: 0.90, blue: 0.86).opacity(0.94)
     }
 
+    // privilege-bar 样式（参照原型 CSS .privilege-bar）
+    private var privilegeBarForeground: Color {
+        colorScheme == .dark
+            ? Color(red: 0.95, green: 0.84, blue: 0.67)
+            : Color(red: 0.54, green: 0.39, blue: 0.20)
+    }
+
+    private var privilegeBarFill: some ShapeStyle {
+        LinearGradient(
+            stops: [
+                .init(color: Color(red: 1.0, green: 0.96, blue: 0.90).opacity(colorScheme == .dark ? 0.20 : 0.96), location: 0),
+                .init(color: Color(red: 0.98, green: 0.93, blue: 0.84).opacity(colorScheme == .dark ? 0.16 : 0.92), location: 1),
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+
+    private var privilegeBarStroke: Color {
+        colorScheme == .dark
+            ? Color(red: 0.48, green: 0.40, blue: 0.29).opacity(0.30)
+            : Color(red: 0.89, green: 0.74, blue: 0.54).opacity(0.24)
+    }
+
+    private var privilegeBarShadow: Color {
+        colorScheme == .dark
+            ? Color(red: 0.65, green: 0.50, blue: 0.25).opacity(0.06)
+            : Color(red: 0.65, green: 0.50, blue: 0.25).opacity(0.08)
+    }
+
+    private var isLoggedIn: Bool {
+        guard store.hasBootstrapped else { return true }
+        return store.session != nil
+    }
+
     var body: some View {
         GeometryReader { proxy in
             ZStack(alignment: .top) {
@@ -70,13 +127,18 @@ struct ScanHomeView: View {
                     VStack(alignment: .leading, spacing: 26) {
                         SafeEatScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
 
-                        topMetaBar
-
-                        SafeEatPageHeader(title: "首页")
+                        homeHeaderBar
 
                         heroSection
 
-                        recentRecordSection
+                        if isLoggedIn {
+                            recentRecordSection
+                        }
+
+                        if !isPaidMember && adConfig.bannerEnabled {
+                            BannerAdView()
+                                .frame(maxWidth: .infinity, minHeight: 50, idealHeight: 50, maxHeight: 50)
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
@@ -88,15 +150,16 @@ struct ScanHomeView: View {
                 }
 
                 SafeEatScrollNavChrome(
-                    title: "首页",
+                    title: SafeEatL10n.text(L10nKey.Home.title),
                     scrollOffset: scrollOffset,
                     topInset: proxy.safeAreaInsets.top
                 )
 
                 if isRecognizing {
                     SafeEatLoadingOverlay(
-                        title: "正在识别",
-                        subtitle: "Safe-Eat 正在分析这张照片，请稍候。"
+                        title: SafeEatL10n.text(L10nKey.Home.loadingTitle),
+                        subtitle: SafeEatL10n.text(L10nKey.Home.loadingSubtitle),
+                        previewImage: recognizingPreviewImage
                     )
                     .transition(.opacity)
                     .zIndex(30)
@@ -106,6 +169,11 @@ struct ScanHomeView: View {
         .toolbar(.hidden, for: .navigationBar)
         .fullScreenCover(isPresented: $showCamera) {
             CameraCaptureView { payload in
+                guard !isFreeQuotaExceeded else {
+                    showQuotaExceeded = true
+                    return
+                }
+                recognizingPreviewImage = payload.croppedImage.loadingOverlayPreviewImage()
                 Task {
                     await recognize(croppedImage: payload.croppedImage, rawImage: payload.rawImage)
                 }
@@ -114,97 +182,73 @@ struct ScanHomeView: View {
         .navigationDestination(item: $resultRoute) { route in
             ResultView(itemId: route.itemId)
         }
+        .navigationDestination(isPresented: $showMembership) {
+            MembershipPurchaseView()
+        }
+        .sheet(isPresented: $showQuotaExceeded) {
+            QuotaExceededSheet(
+                onUpgrade: { showMembership = true },
+                onWatchAd: adConfig.rewardVideoEnabled ? { watchRewardAd() } : nil
+            )
+        }
+        .sheet(isPresented: $showAdRewardResult) {
+            AdRewardResultSheet(resultType: adRewardResultType)
+        }
+        .alert(
+            SafeEatL10n.text(L10nKey.Common.notice),
+            isPresented: Binding<Bool>(
+                get: { store.errorMessage != nil },
+                set: { if !$0 { store.errorMessage = nil } }
+            ),
+            actions: {
+                Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) { store.errorMessage = nil }
+            },
+            message: {
+                Text(store.errorMessage ?? "")
+            }
+        )
+        .task {
+                await store.refreshDailyQuota()
+            }
     }
 
     private var homeBackground: some View {
-        ZStack {
-            LinearGradient(
-                colors: colorScheme == .dark
-                    ? [
-                        Color(red: 0.12, green: 0.13, blue: 0.15),
-                        Color(red: 0.09, green: 0.10, blue: 0.12),
-                    ]
-                    : [
-                        Color(red: 0.99, green: 0.995, blue: 0.99),
-                        Color(red: 0.965, green: 0.978, blue: 0.968),
-                    ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-
-            RadialGradient(
-                colors: [
-                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.16 : 0.55),
-                    Color.clear,
-                ],
-                center: .topLeading,
-                startRadius: 14,
-                endRadius: 360
-            )
-
-            RadialGradient(
-                colors: [
-                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.12 : 0.42),
-                    Color.clear,
-                ],
-                center: .bottomTrailing,
-                startRadius: 16,
-                endRadius: 380
-            )
-        }
-        .ignoresSafeArea()
+        SafeEatMainGradientBackground()
     }
 
-    private var topMetaBar: some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(SafeEatTheme.primary.opacity(0.22))
-                    .frame(width: 22, height: 22)
-                    .overlay(
-                        Circle()
-                            .fill(SafeEatTheme.primary)
-                            .frame(width: 8, height: 8)
-                    )
+    private var homeHeaderBar: some View {
+        HStack(alignment: .center, spacing: 8) {
+            Text(SafeEatL10n.text(L10nKey.Home.title))
+                .font(SafeEatFont.custom(34, relativeTo: .largeTitle))
+                .foregroundStyle(SafeEatTheme.textPrimary)
 
-                Text("SAFE-EAT")
-                    .font(SafeEatFont.custom(16, relativeTo: .headline))
-                    .foregroundStyle(brandLabelColor)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(
-                Capsule()
-                    .fill(topPillFill)
-            )
-            .clipShape(Capsule())
-            .overlay(
-                Capsule()
-                    .stroke(topPillStroke, lineWidth: 1)
-            )
-
-            Spacer(minLength: 12)
+            Spacer()
 
             Button {
-                store.selectedRootTab = .profile
+                guard isLoggedIn else {
+                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.memberAction))
+                    return
+                }
+                showMembership = true
             } label: {
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text("新用户专享")
-                        .font(SafeEatFont.custom(12, relativeTo: .caption))
-                    Text("29 元立减至 20 元")
-                        .font(SafeEatFont.custom(16, relativeTo: .headline))
+                    Text(SafeEatL10n.text(L10nKey.Home.promoTag))
+                        .font(SafeEatFont.custom(11, relativeTo: .caption))
+                    Text(SafeEatL10n.text(L10nKey.Home.promoValue))
+                        .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
                 }
-                .foregroundStyle(colorScheme == .dark ? Color(red: 0.95, green: 0.84, blue: 0.67) : Color(red: 0.62, green: 0.46, blue: 0.18))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .foregroundStyle(privilegeBarForeground)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
                 .background(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .fill(colorScheme == .dark ? Color(red: 0.25, green: 0.22, blue: 0.18) : Color(red: 1.0, green: 0.95, blue: 0.89))
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(privilegeBarFill)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(colorScheme == .dark ? Color(red: 0.48, green: 0.40, blue: 0.29) : Color(red: 0.96, green: 0.88, blue: 0.76), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(privilegeBarStroke, lineWidth: 1)
                 )
+                .shadow(color: privilegeBarShadow, radius: 8, y: 4)
             }
             .buttonStyle(.plain)
         }
@@ -213,12 +257,12 @@ struct ScanHomeView: View {
     private var heroSection: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(spacing: 10) {
-                heroPill("控糖友好")
-                heroPill("本地历史")
+                heroPill(SafeEatL10n.text(L10nKey.Home.heroTagHealth))
+                heroPill(SafeEatL10n.text(L10nKey.Home.heroTagHistory))
             }
 
             VStack(alignment: .leading, spacing: 10) {
-                Text("今天这道菜，适不适合你继续吃？")
+                Text(SafeEatL10n.text(L10nKey.Home.heroTitle))
                     .font(SafeEatFont.custom(36, relativeTo: .largeTitle))
                     .foregroundStyle(SafeEatTheme.textPrimary)
                     .lineSpacing(-2)
@@ -227,14 +271,14 @@ struct ScanHomeView: View {
 
             HStack(spacing: 12) {
                 Button {
-                    showCamera = true
+                    startScan()
                 } label: {
                     Group {
                         if isRecognizing {
                             ProgressView()
                                 .tint(.white)
                         } else {
-                            Text("开始扫描")
+                            Text(SafeEatL10n.text(L10nKey.Home.scanAction))
                                 .font(SafeEatFont.custom(21, relativeTo: .headline))
                         }
                     }
@@ -257,9 +301,13 @@ struct ScanHomeView: View {
                 .disabled(isRecognizing)
 
                 Button {
-                    store.selectedRootTab = .profile
+                    guard isLoggedIn else {
+                        store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.memberAction))
+                        return
+                    }
+                    showMembership = true
                 } label: {
-                    Text("看会员")
+                    Text(SafeEatL10n.text(L10nKey.Home.memberAction))
                         .font(SafeEatFont.custom(21, relativeTo: .headline))
                         .foregroundStyle(secondaryButtonTextColor)
                         .frame(maxWidth: .infinity)
@@ -275,6 +323,16 @@ struct ScanHomeView: View {
                 }
                 .buttonStyle(.plain)
             }
+
+            if remainingFreeQuota >= 0 && remainingFreeQuota > 0 {
+                Text(SafeEatL10n.format(L10nKey.Home.quotaRemainingFormat, remainingFreeQuota))
+                    .font(SafeEatFont.custom(13, relativeTo: .caption))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
+            } else if isFreeQuotaExceeded {
+                Text(SafeEatL10n.text(L10nKey.Home.quotaExceededTitle))
+                    .font(SafeEatFont.custom(13, relativeTo: .caption))
+                    .foregroundStyle(SafeEatTheme.danger)
+            }
         }
     }
 
@@ -282,7 +340,7 @@ struct ScanHomeView: View {
     private var recentRecordSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 12) {
-                Text("最近记录")
+                Text(SafeEatL10n.text(L10nKey.Home.recentTitle))
                     .font(SafeEatFont.textStyle(.headline))
                     .foregroundStyle(SafeEatTheme.textPrimary)
 
@@ -305,25 +363,18 @@ struct ScanHomeView: View {
                     }
                 )
             } else {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("还没有本地记录")
-                        .font(SafeEatFont.textStyle(.headline))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
-                    Text("先开始一次扫描，识别结果会自动保存在本地菜单历史里。")
-                        .font(SafeEatFont.textStyle(.subheadline))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                SafeEatSurfaceCard(
+                    padding: EdgeInsets(top: 22, leading: 22, bottom: 22, trailing: 22)
+                ) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(SafeEatL10n.text(L10nKey.Home.emptyTitle))
+                            .font(SafeEatFont.textStyle(.headline))
+                            .foregroundStyle(SafeEatTheme.textPrimary)
+                        Text(SafeEatL10n.text(L10nKey.Home.emptyMessage))
+                            .font(SafeEatFont.textStyle(.subheadline))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+                    }
                 }
-                .padding(22)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
-                        .stroke(Color.white.opacity(0.7), lineWidth: 1)
-                )
-                .shadow(color: SafeEatTheme.primaryDeep.opacity(0.08), radius: 20, y: 12)
             }
         }
     }
@@ -344,15 +395,38 @@ struct ScanHomeView: View {
             )
     }
 
+    private func startScan() {
+        guard !isRecognizing else { return }
+
+        // 未登录时弹出登录引导
+        guard store.session != nil else {
+            store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.scanAction))
+            return
+        }
+
+        if isFreeQuotaExceeded {
+            showQuotaExceeded = true
+            return
+        }
+
+        showCamera = true
+    }
+
     @MainActor
     private func recognize(croppedImage: UIImage, rawImage: UIImage) async {
+        guard store.session != nil else {
+            store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.scanAction))
+            return
+        }
+
         isRecognizing = true
         defer {
             isRecognizing = false
+            recognizingPreviewImage = nil
         }
 
         guard let uploadData = croppedImage.jpegDataForUpload() else {
-            store.errorMessage = "图片处理失败，请重试。"
+            store.errorMessage = SafeEatL10n.text(L10nKey.Errors.imageCaptureFailed)
             return
         }
 
@@ -380,8 +454,61 @@ struct ScanHomeView: View {
 
             resultRoute = ResultRoute(id: item.id, itemId: item.id)
         } catch {
-            store.handleAPIError(error)
+            if isQuotaExceededError(error) {
+                showQuotaExceeded = true
+            } else {
+                store.handleAPIError(error)
+            }
         }
+    }
+
+    private func isQuotaExceededError(_ error: Error) -> Bool {
+        guard case let APIError.server(status, message) = error else { return false }
+        // 后端额度耗尽返回 400 + 特定消息
+        // localizedMessage 已将原始消息转为本地化文本，这里匹配本地化后的文本
+        return status == 400 && message == SafeEatL10n.text(L10nKey.Errors.requestQuotaExceeded)
+    }
+
+    private func watchRewardAd() {
+        guard let vc = AdTopVC.resolve() else {
+            print("[UMeng] 无法获取 rootViewController")
+            return
+        }
+        print("[UMeng] 开始加载激励视频，vc=\(vc)")
+        RewardAdManager.shared.loadAndShow(from: vc,
+            onReward: { proofToken in
+                // 看完广告，先向后端领取奖励，再刷新额度
+                Task {
+                    do {
+                        _ = try await store.authorizedRequest { token in
+                            try await store.api.claimAdReward(
+                                accessToken: token,
+                                payload: ClaimAdRewardPayload(
+                                    placementCode: "reward_video",
+                                    proofToken: proofToken
+                                )
+                            )
+                        }
+                        await store.refreshProfile()
+                            await store.refreshDailyQuota()
+                            adRewardResultType = .success(rewardQuota: adConfig.placement(for: .rewardVideo)?.rewardQuota ?? store.dailyQuota?.adRewardPerWatch ?? 3)
+                        showAdRewardResult = true
+                    } catch {
+                        print("[UMeng] claimReward 失败: \(error)")
+                        await store.refreshProfile()
+                        await store.refreshDailyQuota()
+                        adRewardResultType = .claimFailed
+                        showAdRewardResult = true
+                    }
+                }
+            },
+            onClose: { normalClose in
+                if !normalClose {
+                    adRewardResultType = .loadFailed
+                    showAdRewardResult = true
+                }
+            }
+        )
     }
 }
 
@@ -413,13 +540,13 @@ private struct HomeRecentRecordCard: View {
         if let nutrition = item.cachedRecognition?.nutritionSnapshot {
             var chips: [(String, Color)] = []
             if let calories = nutrition.calories {
-                chips.append(("约 \(Int(calories)) kcal", nutritionPrimaryColor))
+                chips.append((SafeEatL10n.format(L10nKey.Home.caloriesFormat, Int(calories)), nutritionPrimaryColor))
             }
             if let protein = nutrition.protein {
-                chips.append(("蛋白质 \(String(format: "%.1f", protein))g", SafeEatTheme.success))
+                chips.append((SafeEatL10n.format(L10nKey.Home.proteinFormat, protein), SafeEatTheme.success))
             }
             if let carbs = nutrition.carbs, chips.count < 2 {
-                chips.append(("碳水 \(String(format: "%.1f", carbs))g", SafeEatTheme.warning))
+                chips.append((SafeEatL10n.format(L10nKey.Home.carbsFormat, carbs), SafeEatTheme.warning))
             }
             if !chips.isEmpty {
                 return Array(chips.prefix(2))
@@ -428,20 +555,21 @@ private struct HomeRecentRecordCard: View {
 
         switch item.adviceLevel {
         case "recommended":
-            return [("整体更友好", SafeEatTheme.success)]
+            return [(SafeEatL10n.text(L10nKey.Home.chipFriendly), SafeEatTheme.success)]
         case "caution":
-            return [("注意份量", SafeEatTheme.warning)]
+            return [(SafeEatL10n.text(L10nKey.Home.chipPortion), SafeEatTheme.warning)]
         case "avoid":
-            return [("建议换一种", SafeEatTheme.danger)]
+            return [(SafeEatL10n.text(L10nKey.Home.chipSwitch), SafeEatTheme.danger)]
         default:
-            return [("建议再确认", SafeEatTheme.textSecondary)]
+            return [(SafeEatL10n.text(L10nKey.Home.chipCheck), SafeEatTheme.textSecondary)]
         }
     }
 
     private var displayName: String {
         let trimmed = item.recognizedName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.isEmpty || trimmed == "未知食物" {
-            return "未识别食物"
+        let unknownFoodNames = ["未知食物", "Unrecognized food", SafeEatL10n.text(L10nKey.Common.unknownFood)]
+        if trimmed.isEmpty || unknownFoodNames.contains(trimmed) {
+            return SafeEatL10n.text(L10nKey.Home.unknownFood)
         }
         return trimmed
     }
@@ -454,117 +582,100 @@ private struct HomeRecentRecordCard: View {
 
         switch item.adviceLevel {
         case "recommended":
-            return "当前信息更偏正向，可以打开卡片继续看更细的营养与建议。"
+            return SafeEatL10n.text(L10nKey.Home.summaryRecommended)
         case "caution":
-            return "当前仍有不确定因素，建议打开卡片继续确认营养与影响细节。"
+            return SafeEatL10n.text(L10nKey.Home.summaryCaution)
         case "avoid":
-            return "当前风险提示偏高，建议打开卡片查看详细原因后再决定。"
+            return SafeEatL10n.text(L10nKey.Home.summaryAvoid)
         default:
-            return "当前仍缺少明确营养基线，建议继续补拍角度或打开卡片查看详情。"
+            return SafeEatL10n.text(L10nKey.Home.summaryUnknown)
         }
-    }
-
-    private var cardFill: Color {
-        colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.52)
-    }
-
-    private var cardStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color.white.opacity(0.76)
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top, spacing: 16) {
-                imagePreview
+        SafeEatSurfaceCard(onTap: onOpenDetail) {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .top, spacing: 16) {
+                    imagePreview
 
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(alignment: .top, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(displayName)
-                                .font(SafeEatFont.custom(28, relativeTo: .title2))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
-                                .lineLimit(2)
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(alignment: .top, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(displayName)
+                                    .font(SafeEatFont.custom(28, relativeTo: .title2))
+                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                                    .lineLimit(2)
 
-                            Text("本地图片 · \(item.createdAt.homeTimeText)")
-                                .font(SafeEatFont.custom(15, relativeTo: .body))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-                        }
+                                Text(
+                                    SafeEatL10n.format(
+                                        L10nKey.Home.localImageFormat,
+                                        SafeEatL10n.text(L10nKey.Home.localImagePrefix),
+                                        item.createdAt.homeTimeText
+                                    )
+                                )
+                                    .font(SafeEatFont.custom(15, relativeTo: .body))
+                                    .foregroundStyle(SafeEatTheme.textSecondary)
+                            }
 
-                        Spacer(minLength: 8)
+                            Spacer(minLength: 8)
 
-                        Text(AdviceLevelMapper.title(item.adviceLevel))
-                            .font(SafeEatFont.custom(13, relativeTo: .subheadline))
-                            .foregroundStyle(statusColor)
-                            .padding(.horizontal, 11)
-                            .padding(.vertical, 7)
-                            .background(statusColor.opacity(0.14))
-                            .clipShape(Capsule())
-                    }
-
-                    HStack(spacing: 8) {
-                        Text("衡量评分 \(item.foodScore)")
-                            .font(SafeEatFont.custom(14, relativeTo: .footnote))
-                            .foregroundStyle(SafeEatTheme.warning)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(SafeEatTheme.warning.opacity(0.12))
-                            .clipShape(Capsule())
-
-                        ForEach(Array(summaryChips.prefix(1).enumerated()), id: \.offset) { _, chip in
-                            Text(chip.0)
-                                .font(SafeEatFont.custom(14, relativeTo: .footnote))
-                                .foregroundStyle(chip.1)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(chip.1.opacity(0.12))
+                            Text(AdviceLevelMapper.title(item.adviceLevel))
+                                .font(SafeEatFont.custom(13, relativeTo: .subheadline))
+                                .foregroundStyle(statusColor)
+                                .padding(.horizontal, 11)
+                                .padding(.vertical, 7)
+                                .background(statusColor.opacity(0.14))
                                 .clipShape(Capsule())
                         }
+
+                        HStack(spacing: 8) {
+                            Text(SafeEatL10n.format(L10nKey.Home.scoreFormat, item.foodScore))
+                                .font(SafeEatFont.custom(14, relativeTo: .footnote))
+                                .foregroundStyle(SafeEatTheme.warning)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(SafeEatTheme.warning.opacity(0.12))
+                                .clipShape(Capsule())
+
+                            ForEach(Array(summaryChips.prefix(1).enumerated()), id: \.offset) { _, chip in
+                                Text(chip.0)
+                                    .font(SafeEatFont.custom(14, relativeTo: .footnote))
+                                    .foregroundStyle(chip.1)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(chip.1.opacity(0.12))
+                                    .clipShape(Capsule())
+                            }
+                        }
+
+                        Text(summaryText)
+                            .font(SafeEatFont.custom(14, relativeTo: .body))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .lineLimit(2)
                     }
-
-                    Text(summaryText)
-                        .font(SafeEatFont.custom(14, relativeTo: .body))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
-                        .lineLimit(2)
                 }
-            }
 
-            Button(action: onOpenDetail) {
-                Text("查看详情")
-                    .font(SafeEatFont.custom(20, relativeTo: .headline))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(
-                                LinearGradient(
-                                    colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
+                Button(action: onOpenDetail) {
+                    Text(SafeEatL10n.text(L10nKey.Home.detailAction))
+                        .font(SafeEatFont.custom(20, relativeTo: .headline))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
                                 )
-                            )
-                    )
-                    .shadow(color: SafeEatTheme.primaryDeep.opacity(0.16), radius: 16, y: 10)
+                        )
+                        .shadow(color: SafeEatTheme.primaryDeep.opacity(0.16), radius: 16, y: 10)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .fill(.ultraThinMaterial)
-        )
-        .background(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .fill(cardFill)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .stroke(cardStroke, lineWidth: 1)
-        )
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(0.10), radius: 22, y: 14)
-        .contentShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
-        .onTapGesture(perform: onOpenDetail)
     }
 
     @ViewBuilder
@@ -613,7 +724,7 @@ private struct HomeRecentRecordCard: View {
 private extension Date {
     var homeTimeText: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = AppSettingsStore.shared.displayLocale
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: self)
     }
