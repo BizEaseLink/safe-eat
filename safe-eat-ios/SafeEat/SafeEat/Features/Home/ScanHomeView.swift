@@ -37,6 +37,7 @@ struct ScanHomeView: View {
     @State private var showQuotaExceeded = false
     @State private var showAdRewardResult = false
     @State private var adRewardResultType: AdRewardResultType = .claimFailed
+    @State private var showSignupBonus = false
 
     let scrollCoordinateSpace = "safeeat.home.scroll"
 
@@ -187,12 +188,35 @@ struct ScanHomeView: View {
         }
         .sheet(isPresented: $showQuotaExceeded) {
             QuotaExceededSheet(
+                snapshot: store.dailyQuota ?? DailyQuotaSnapshot(
+                    planTier: "FREE",
+                    totalQuota: 0,
+                    usedCount: 0,
+                    remainingQuota: 0,
+                    adClaimsCount: 0,
+                    adRewardPerWatch: nil,
+                    adWatchLimit: nil,
+                    remainingAdWatchCount: nil,
+                    quotaDate: "",
+                    monthlyTotalQuota: nil,
+                    monthlyUsedCount: nil,
+                    monthlyRemaining: nil,
+                    periodStart: nil,
+                    periodEnd: nil
+                ),
+                onWatchAd: adConfig.rewardVideoEnabled ? { watchRewardAd() } : nil,
                 onUpgrade: { showMembership = true },
-                onWatchAd: adConfig.rewardVideoEnabled ? { watchRewardAd() } : nil
+                onDismiss: { showQuotaExceeded = false }
             )
         }
         .sheet(isPresented: $showAdRewardResult) {
             AdRewardResultSheet(resultType: adRewardResultType)
+        }
+        .sheet(isPresented: $showSignupBonus) {
+            SignupBonusSheet(bonusQuota: 10) {
+                showSignupBonus = false
+                store.pendingSignupBonus = false
+            }
         }
         .alert(
             SafeEatL10n.text(L10nKey.Common.notice),
@@ -208,8 +232,11 @@ struct ScanHomeView: View {
             }
         )
         .task {
-                await store.refreshDailyQuota()
+            await store.refreshDailyQuota()
+            if store.pendingSignupBonus {
+                showSignupBonus = true
             }
+        }
     }
 
     private var homeBackground: some View {

@@ -11,6 +11,7 @@
 "common.cancel" = "取消";
 "common.clear" = "清理";
 "common.delete" = "删除";
+"common.retry" = "重试";
 "common.not_set" = "未设置";
 "common.unnamed" = "未命名";
 "common.score_unit_format" = "%d 分";
@@ -255,7 +256,7 @@
 "membership.purchase.badge.recommended" = "推荐";
 "membership.purchase.badge.advanced" = "高阶";
 "membership.purchase.badge.default" = "默认";
-"membership.purchase.free_plan_description" = "每日可识别 3 次，适合先体验基础功能";
+"membership.purchase.free_plan_description" = "每日可识别 1 次，看广告最多恢复 3 次";
 "membership.purchase.badge.premium" = "旗舰";
 "membership.purchase.new_member_offer" = "新用户首购享专属优惠";
 "membership.purchase.plan_subtitle.premium" = "重度用户首选的 %@ 方案，识别不限量";
@@ -311,6 +312,28 @@
 "membership.purchase.plan_bonus_days" = "赠送 %d 天";
 "membership.purchase.plan_bonus_recognition" = "赠送 %d 次识别";
 "membership.purchase.plan_bonus_ai" = "赠送 %d 次 AI";
+"membership.purchase.new_user_gift_banner" = "新用户注册赠送 10 次免费识别额度";
+"membership.purchase.badge.lite" = "轻享";
+"membership.purchase.benefit.recognition_monthly" = "每月识别 %d 次";
+"membership.purchase.benefit.ai_monthly" = "每月 AI 分析 %d 次";
+"membership.purchase.benefit.daily_quota" = "每日可识别 %d 次";
+"membership.purchase.benefit.ai_advice_level" = "AI 建议：%@";
+"membership.purchase.benefit.max_health_profiles" = "最多 %d 个健康画像";
+"membership.purchase.benefit.history_limit" = "历史记录 %d 天";
+"membership.purchase.benefit.history_limit_unlimited" = "历史记录不限";
+"membership.purchase.redeem_code_entry_title" = "兑换码";
+"membership.purchase.redeem_code_entry_subtitle" = "输入兑换码获取额外会员权益";
+"membership.purchase.redeem_code_sheet_title" = "输入兑换码";
+"membership.purchase.redeem_code_action" = "兑换";
+"membership.purchase.price_breakdown_apple_final" = "以 Apple 支付弹窗为准";
+"membership.purchase.plans_load_error" = "加载套餐失败，请稍后重试";
+"membership.purchase.no_plans_available" = "暂无可购买套餐";
+"membership.purchase.confirm_sheet_title" = "确认购买";
+"membership.purchase.confirm_original_price" = "原价";
+"membership.purchase.confirm_bonus_title" = "赠送权益";
+"membership.purchase.confirm_apple_offer" = "Apple 优惠";
+"membership.purchase.confirm_final_price_hint" = "实际扣费以 Apple 支付弹窗为准，赠送权益将在购买后自动到账";
+"membership.purchase.confirm_pay_button" = "确认支付 %@";
 
 "home.title" = "首页";
 "home.brand_pill" = "食安安";
@@ -601,3 +624,18 @@
 "profile.not_logged_in.title" = "需要登录";
 "profile.not_logged_in.message" = "登录后即可查看个人信息和使用会员功能";
 "profile.not_logged_in.action" = "去登录";
+
+"home.signup_bonus.welcome_title" = "欢迎加入！";
+"home.signup_bonus.quota_format" = "恭喜获得 %d 次免费识别额度";
+"home.signup_bonus.subtitle" = "立即拍照识别食物安全信息";
+"home.signup_bonus.start_action" = "开始使用";
+
+"home.quota_exceeded.daily_title" = "今日额度已用完";
+"home.quota_exceeded.monthly_title" = "本月额度已用完";
+"home.quota_exceeded.daily_hint_format" = "每日可识别 %d 次，看广告可恢复额度";
+"home.quota_exceeded.monthly_hint_format" = "月度周期至 %@，升级套餐可获得更多额度";
+"home.quota_exceeded.upgrade_hint" = "升级套餐可获得更多额度";
+"home.quota_exceeded.watch_ad_action" = "看广告恢复额度";
+"home.quota_exceeded.upgrade_membership" = "升级会员";
+"home.quota_exceeded.upgrade_plan" = "升级套餐";
+"home.quota_exceeded.later" = "稍后再说";

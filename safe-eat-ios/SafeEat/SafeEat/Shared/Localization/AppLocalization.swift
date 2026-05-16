@@ -31,6 +31,7 @@ enum L10nKey {
         static let unknownFood = "common.unknown_food"
         static let scoreUnitFormat = "common.score_unit_format"
         static let adviceScoreFormat = "common.advice_score_format"
+        static let retry = "common.retry"
     }
 
     enum Advice {
@@ -402,6 +403,28 @@ enum L10nKey {
         static let planBonusDays = "membership.purchase.plan_bonus_days"
         static let planBonusRecognition = "membership.purchase.plan_bonus_recognition"
         static let planBonusAi = "membership.purchase.plan_bonus_ai"
+        static let newUserGiftBanner = "membership.purchase.new_user_gift_banner"
+        static let badgeLite = "membership.purchase.badge.lite"
+        static let benefitRecognitionMonthly = "membership.purchase.benefit.recognition_monthly"
+        static let benefitAiMonthly = "membership.purchase.benefit.ai_monthly"
+        static let benefitDailyQuota = "membership.purchase.benefit.daily_quota"
+        static let benefitAiAdviceLevel = "membership.purchase.benefit.ai_advice_level"
+        static let benefitMaxHealthProfiles = "membership.purchase.benefit.max_health_profiles"
+        static let benefitHistoryLimit = "membership.purchase.benefit.history_limit"
+        static let benefitHistoryLimitUnlimited = "membership.purchase.benefit.history_limit_unlimited"
+        static let redeemCodeEntryTitle = "membership.purchase.redeem_code_entry_title"
+        static let redeemCodeEntrySubtitle = "membership.purchase.redeem_code_entry_subtitle"
+        static let redeemCodeSheetTitle = "membership.purchase.redeem_code_sheet_title"
+        static let redeemCodeAction = "membership.purchase.redeem_code_action"
+        static let priceBreakdownAppleFinal = "membership.purchase.price_breakdown_apple_final"
+        static let plansLoadError = "membership.purchase.plans_load_error"
+        static let noPlansAvailable = "membership.purchase.no_plans_available"
+        static let confirmOriginalPrice = "membership.purchase.confirm_original_price"
+        static let confirmBonusTitle = "membership.purchase.confirm_bonus_title"
+        static let confirmAppleOffer = "membership.purchase.confirm_apple_offer"
+        static let confirmFinalPriceHint = "membership.purchase.confirm_final_price_hint"
+        static let confirmPayButton = "membership.purchase.confirm_pay_button"
+        static let confirmSheetTitle = "membership.purchase.confirm_sheet_title"
     }
 
     enum Home {
@@ -479,6 +502,19 @@ enum L10nKey {
         static let summaryAvoid = "home.record.summary.avoid"
         static let summaryUnknown = "home.record.summary.unknown"
         static let unknownFood = "home.record.unknown_food"
+        static let signupBonusWelcomeTitle = "home.signup_bonus.welcome_title"
+        static let signupBonusQuotaFormat = "home.signup_bonus.quota_format"
+        static let signupBonusSubtitle = "home.signup_bonus.subtitle"
+        static let signupBonusStartAction = "home.signup_bonus.start_action"
+        static let quotaExceededDailyTitle = "home.quota_exceeded.daily_title"
+        static let quotaExceededMonthlyTitle = "home.quota_exceeded.monthly_title"
+        static let quotaExceededDailyHintFormat = "home.quota_exceeded.daily_hint_format"
+        static let quotaExceededMonthlyHintFormat = "home.quota_exceeded.monthly_hint_format"
+        static let quotaExceededUpgradeHint = "home.quota_exceeded.upgrade_hint"
+        static let quotaExceededWatchAdAction = "home.quota_exceeded.watch_ad_action"
+        static let quotaExceededUpgradeMembership = "home.quota_exceeded.upgrade_membership"
+        static let quotaExceededUpgradePlan = "home.quota_exceeded.upgrade_plan"
+        static let quotaExceededLater = "home.quota_exceeded.later"
     }
 
     enum Menu {

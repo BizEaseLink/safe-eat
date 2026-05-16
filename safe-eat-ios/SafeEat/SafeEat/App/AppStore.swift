@@ -25,6 +25,7 @@ final class AppStore: ObservableObject {
     @Published var showLoginPrompt = false
     @Published var loginPromptFeature: String?
     @Published var isNewUser: Bool = false
+    @Published var pendingSignupBonus: Bool = false
     @Published private(set) var localCacheUsageBytes: Int64 = 0
     @Published var pendingNotificationDate: Date?
     @Published var dailyQuota: DailyQuotaSnapshot?
@@ -679,6 +680,7 @@ final class AppStore: ObservableObject {
     private func finishLogin(with session: AuthSession) {
         applySession(session)
         isNewUser = session.isNew
+        pendingSignupBonus = session.isNew
         allowsGuestHome = true
         UserDefaults.standard.set(true, forKey: Self.guestHomeKey)
         #if DEBUG
