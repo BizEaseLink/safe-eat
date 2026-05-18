@@ -593,6 +593,19 @@ enum L10nKey {
         static let missingMessage = "result.missing.message"
         static let missingRetry = "result.missing.retry"
         static let reasonSeparator = "result.reason.separator"
+        // Phase 8C: 评分圆环 + 推荐等级 + 营养指标 + 风险标签 + AI 建议
+        static let scoreLabel = "result.score.label"
+        static let recommendHighly = "result.recommendation.highly"
+        static let recommendYes = "result.recommendation.yes"
+        static let recommendModerate = "result.recommendation.moderate"
+        static let recommendCautious = "result.recommendation.cautious"
+        static let recommendNo = "result.recommendation.no"
+        static let metricTitle = "result.metric_impacts.title"
+        static let metricScoreFormat = "result.metric_impacts.score_format"
+        static let riskTitle = "result.risk_facts.title"
+        static let aiAdviceTitle = "result.ai_advice.title"
+        static let healthTipsTitle = "result.ai_advice.health_tips_title"
+        static let upgradeForMoreAdvice = "result.ai_advice.upgrade_hint"
     }
 
     enum Feedback {

@@ -656,6 +656,19 @@
 "result.missing.message" = "This local record no longer exists or has been removed.";
 "result.reason.separator" = "; ";
 
+"result.score.label" = "pts";
+"result.recommendation.highly" = "Highly Recommended";
+"result.recommendation.yes" = "Recommended";
+"result.recommendation.moderate" = "Moderate";
+"result.recommendation.cautious" = "Caution";
+"result.recommendation.no" = "Not Recommended";
+"result.metric_impacts.title" = "Nutrition Metric Scores";
+"result.metric_impacts.score_format" = "Weighted %d pts";
+"result.risk_facts.title" = "Risk Alerts";
+"result.ai_advice.title" = "AI Advice";
+"result.ai_advice.health_tips_title" = "Health Tips";
+"result.ai_advice.upgrade_hint" = "Upgrade for more advice";
+
 "feedback.title" = "Feedback";
 "feedback.replace_evidence.title" = "Replace Evidence Image";
 "feedback.replace_evidence.camera" = "Retake Photo";

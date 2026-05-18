@@ -516,6 +516,19 @@
 "result.missing.retry" = "重新拍照";
 "result.reason.separator" = "；";
 
+"result.score.label" = "分";
+"result.recommendation.highly" = "非常推荐";
+"result.recommendation.yes" = "推荐";
+"result.recommendation.moderate" = "适量";
+"result.recommendation.cautious" = "谨慎";
+"result.recommendation.no" = "不推荐";
+"result.metric_impacts.title" = "营养指标评分";
+"result.metric_impacts.score_format" = "加权 %d 分";
+"result.risk_facts.title" = "风险提示";
+"result.ai_advice.title" = "AI 建议";
+"result.ai_advice.health_tips_title" = "健康小贴士";
+"result.ai_advice.upgrade_hint" = "升级查看更多建议";
+
 "feedback.title" = "反馈";
 "feedback.replace_evidence.title" = "更换证据图";
 "feedback.replace_evidence.camera" = "拍照补传";

@@ -129,7 +129,12 @@ extension LocalHistoryItem {
             nutritionSnapshot: nil,
             sourceType: nil,
             feedbackEvidence: nil,
-            createdAt: createdAt
+            createdAt: createdAt,
+            overallScore: nil,
+            recommendationLevel: nil,
+            metricImpacts: nil,
+            riskFacts: nil,
+            aiExplanation: nil
         )
     }
 }
