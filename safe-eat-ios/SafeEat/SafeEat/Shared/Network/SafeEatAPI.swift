@@ -124,13 +124,13 @@ final class SafeEatAPI {
     }
 
     func getDailyQuota(accessToken: String) async throws -> DailyQuotaSnapshot {
-        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/quota/daily", method: "GET")
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/quota/daily-snapshot", method: "GET")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         return try await send(request, as: DailyQuotaSnapshot.self)
     }
 
     func getPublicDailyQuota() async throws -> DailyQuotaSnapshot {
-        try await sendPublicRequest(path: "/v1/apps/\(AppConfig.appCode)/quota/daily", method: "GET")
+        try await sendPublicRequest(path: "/v1/apps/\(AppConfig.appCode)/quota/daily-snapshot", method: "GET")
     }
 
     func updateProfile(accessToken: String, payload: UserProfileUpdatePayload) async throws -> UserProfile {
@@ -312,7 +312,7 @@ final class SafeEatAPI {
             fileData: imageData
         )
 
-        return try await send(request, as: RecognitionRecord.self)
+        return try await sendFirst(request, as: RecognitionRecord.self)
     }
 
     func getRecognition(accessToken: String, recognitionId: String) async throws -> RecognitionRecord {
@@ -321,7 +321,17 @@ final class SafeEatAPI {
             method: "GET"
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        // getRecognition 返回 data 为单个对象（不是数组），用 send 直接解码
         return try await send(request, as: RecognitionRecord.self)
+    }
+
+    func getPendingFeedbacks(accessToken: String) async throws -> [PendingFeedbackItem] {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/recognitions/feedbacks/pending",
+            method: "GET"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: [PendingFeedbackItem].self)
     }
 
     func sendPublicRequest<T: Decodable>(path: String, method: String) async throws -> T {
@@ -333,8 +343,12 @@ final class SafeEatAPI {
     func submitFeedback(
         accessToken: String,
         recognitionId: String,
-        payload: FeedbackPayload
-    ) async throws -> RecognitionRecord {
+        proposedName: String,
+        comment: String,
+        evidenceImage: (data: Data, fileName: String)? = nil
+    ) async throws -> [RecognitionRecord] {
+        // 后端路由: POST /v1/apps/:appCode/recognitions/:recognitionId/feedback
+        // matched 时返回 [RecognitionRecord]，pending 时返回 []
         let boundary = "Boundary-\(UUID().uuidString)"
         var request = try buildRequest(
             path: "/v1/apps/\(AppConfig.appCode)/recognitions/\(recognitionId)/feedback",
@@ -342,19 +356,33 @@ final class SafeEatAPI {
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        request.httpBody = MultipartFormDataBuilder.build(
-            boundary: boundary,
-            textFields: [
-                "proposedName": payload.proposedName,
-                "comment": payload.comment,
-            ],
-            fileFieldName: "evidenceImage",
-            fileName: "feedback.jpg",
-            mimeType: "image/jpeg",
-            fileData: payload.evidenceImageData
-        )
 
-        return try await send(request, as: RecognitionRecord.self)
+        let textFields: [String: String] = [
+            "proposedName": proposedName,
+            "comment": comment,
+        ]
+
+        if let image = evidenceImage {
+            request.httpBody = MultipartFormDataBuilder.build(
+                boundary: boundary,
+                textFields: textFields,
+                fileFieldName: "evidenceImage",
+                fileName: image.fileName,
+                mimeType: "image/jpeg",
+                fileData: image.data
+            )
+        } else {
+            request.httpBody = MultipartFormDataBuilder.buildTextOnly(
+                boundary: boundary,
+                textFields: textFields
+            )
+        }
+
+        #if DEBUG
+        print("[SafeEatAPI] submitFeedback fields: \(textFields), hasImage: \(evidenceImage != nil)")
+        #endif
+
+        return try await send(request, as: [RecognitionRecord].self)
     }
 
     /// 无返回值请求：只检查 status==1，不解析 data
@@ -391,6 +419,9 @@ final class SafeEatAPI {
         }
     }
 
+    /// 通用请求：解析拦截器格式，解码 data 字段为指定类型 T
+    /// T 是数组类型（如 [SomeType]）时返回整个数组
+    /// T 是单对象类型时直接解码（适用于 data 不是数组的接口）
     private func send<T: Decodable>(_ request: URLRequest, as type: T.Type) async throws -> T {
         #if DEBUG
         if let url = request.url?.absoluteString {
@@ -405,31 +436,38 @@ final class SafeEatAPI {
 
         #if DEBUG
         print("[SafeEatAPI] status=\(httpResponse.statusCode)")
+        if !(200..<300).contains(httpResponse.statusCode), let responseStr = String(data: data, encoding: .utf8) {
+            print("[SafeEatAPI] error response body: \(responseStr)")
+        }
         #endif
 
-        // 尝试解析后端全局响应拦截器格式 { status, data, message, code, requestId }
+        // 解析后端全局响应拦截器格式 { status, data, message, code, requestId }
         if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
            let status = json["status"] as? Int
         {
             if status == 1 {
-                // 成功响应：从 data 字段提取并解码
                 guard let responseData = json["data"] else {
                     throw APIError.server(
                         status: httpResponse.statusCode,
                         message: SafeEatL10n.text(L10nKey.Errors.invalidResponse)
                     )
                 }
+                let dataJSON = try JSONSerialization.data(withJSONObject: responseData)
                 do {
-                    let dataJSON = try JSONSerialization.data(withJSONObject: responseData)
                     return try decoder.decode(type, from: dataJSON)
                 } catch {
+                    #if DEBUG
+                    print("[SafeEatAPI] Decode failed for type \(type): \(error)")
+                    if let dataStr = String(data: dataJSON, encoding: .utf8) {
+                        print("[SafeEatAPI] Data JSON (first 500 chars): \(String(dataStr.prefix(500)))")
+                    }
+                    #endif
                     throw APIError.server(
                         status: httpResponse.statusCode,
                         message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription)
                     )
                 }
             } else {
-                // 错误响应：从 message 字段提取
                 let errorMessage = json["message"] as? String
                     ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
                 throw APIError.server(
@@ -456,6 +494,19 @@ final class SafeEatAPI {
                 message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription)
             )
         }
+    }
+
+    /// 数组请求：data 是数组，取第一项返回 T
+    /// 适用于识别等返回 data: [T] 但页面只需要单个结果的接口
+    private func sendFirst<T: Decodable>(_ request: URLRequest, as type: T.Type) async throws -> T {
+        let array = try await send(request, as: Array<T>.self)
+        guard let first = array.first else {
+            throw APIError.server(
+                status: 200,
+                message: SafeEatL10n.text(L10nKey.Errors.invalidResponse)
+            )
+        }
+        return first
     }
 
     /// 分页请求：返回 data 数组 + total/page/pageSize + 额外字段
@@ -598,6 +649,12 @@ private struct ChangePasswordBody: Encodable {
     let newPassword: String
 }
 
+private struct FeedbackRequestBody: Encodable {
+    let recognitionId: String
+    let proposedName: String
+    let comment: String
+}
+
 private enum ISO8601DateFormatter {
     static let withFractional: Foundation.ISO8601DateFormatter = {
         let formatter = Foundation.ISO8601DateFormatter()
@@ -613,6 +670,23 @@ private enum ISO8601DateFormatter {
 }
 
 private enum MultipartFormDataBuilder {
+    static func buildTextOnly(
+        boundary: String,
+        textFields: [String: String]
+    ) -> Data {
+        var data = Data()
+        let lineBreak = "\r\n"
+
+        for (key, value) in textFields {
+            data.append("--\(boundary)\(lineBreak)".data(using: .utf8)!)
+            data.append("Content-Disposition: form-data; name=\"\(key)\"\(lineBreak)\(lineBreak)".data(using: .utf8)!)
+            data.append("\(value)\(lineBreak)".data(using: .utf8)!)
+        }
+
+        data.append("--\(boundary)--\(lineBreak)".data(using: .utf8)!)
+        return data
+    }
+
     static func build(
         boundary: String,
         textFields: [String: String],

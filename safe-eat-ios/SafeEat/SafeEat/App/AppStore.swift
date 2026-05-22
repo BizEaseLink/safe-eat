@@ -130,6 +130,8 @@ final class AppStore: ObservableObject {
 
         if session != nil, !requiresPhoneBinding {
             await refreshProfile()
+            // 启动时检查待审核反馈是否已审批
+            await checkPendingFeedbacks()
         }
 
         // 启动 Transaction 监听，订阅状态变更时自动刷新 profile
@@ -692,6 +694,69 @@ final class AppStore: ObservableObject {
             Task {
                 await refreshProfile()
             }
+        }
+    }
+
+    func updateLocalRecognizedName(_ newName: String, for itemID: LocalHistoryItem.ID) {
+        guard var item = historyItem(id: itemID) else { return }
+        item.recognizedName = newName
+        updateHistoryItem(item)
+    }
+
+    /// 反馈匹配成功时，全量替换识别结果（名称、分数、指标等全部替换）
+    func replaceRecognitionData(for itemID: LocalHistoryItem.ID, with updated: RecognitionRecord) {
+        guard var item = historyItem(id: itemID) else { return }
+        item.recognizedName = updated.recognizedName
+        item.feedbackPending = false
+        item.foodScore = updated.foodScore ?? item.foodScore
+        item.cachedRecognition = updated
+        updateHistoryItem(item)
+    }
+
+    /// 反馈待审核时，标记该记录
+    func setFeedbackPending(for itemID: LocalHistoryItem.ID, pending: Bool) {
+        guard var item = historyItem(id: itemID) else { return }
+        item.feedbackPending = pending
+        updateHistoryItem(item)
+    }
+
+    /// 检查待审核反馈：对比本地 pending 标记与后端 pending 列表
+    /// 如果某个本地 pending 的 recognitionId 不在后端 pending 列表中，说明已审批
+    /// 此时拉取最新 recognition 数据并更新本地
+    func checkPendingFeedbacks() async {
+        guard session != nil else { return }
+
+        let pendingItems = localHistory.filter { $0.feedbackPending }
+        if pendingItems.isEmpty { return }
+
+        do {
+            let serverPending = try await authorizedRequest { token in
+                try await api.getPendingFeedbacks(accessToken: token)
+            }
+            let serverPendingIds = Set(serverPending.map { $0.recognitionId })
+
+            for item in pendingItems {
+                if !serverPendingIds.contains(item.recognitionId) {
+                    // 后端已审批，拉取最新数据
+                    if let updated = try? await authorizedRequest { token in
+                        try await api.getRecognition(accessToken: token, recognitionId: item.recognitionId)
+                    } {
+                        var newItem = item
+                        newItem.feedbackPending = false
+                        newItem.recognizedName = updated.recognizedName
+                        newItem.foodScore = updated.foodScore ?? item.foodScore
+                        newItem.cachedRecognition = updated
+                        updateHistoryItem(newItem)
+                    } else {
+                        // 拉取失败，至少清除 pending 标记
+                        setFeedbackPending(for: item.id, pending: false)
+                    }
+                }
+            }
+        } catch {
+            #if DEBUG
+            print("[AppStore] checkPendingFeedbacks 失败: \(error)")
+            #endif
         }
     }
 

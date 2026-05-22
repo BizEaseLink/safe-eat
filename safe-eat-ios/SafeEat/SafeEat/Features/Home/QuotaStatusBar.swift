@@ -14,37 +14,38 @@ struct QuotaStatusBar: View {
 
             if isFreeUser {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("今日剩余")
+                    Text(SafeEatL10n.text(L10nKey.Home.quotaStatusBarDailyLabel))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
-                    Text("\(snapshot.remainingQuota) 次")
+                    Text(SafeEatL10n.format(L10nKey.Home.quotaStatusBarCountFormat, snapshot.remainingQuota))
                         .font(.subheadline)
                         .bold()
                 }
 
-                if let remaining = snapshot.remainingAdWatchCount, remaining > 0 {
+                if let remaining = snapshot.remainingAdWatchCount, remaining > 0,
+                   let reward = snapshot.adRewardPerWatch, reward > 0 {
                     Spacer()
                     HStack(spacing: 4) {
                         Image(systemName: "play.rectangle.fill")
                             .font(.caption)
-                        Text("看广告 +1")
+                        Text(SafeEatL10n.format(L10nKey.Home.quotaStatusBarAdRewardFormat, reward))
                             .font(.caption2)
                     }
                     .foregroundStyle(.green)
                 }
             } else {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("本月剩余")
+                    Text(SafeEatL10n.text(L10nKey.Home.quotaStatusBarMonthlyLabel))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
-                    Text("\(snapshot.monthlyRemaining ?? snapshot.remainingQuota) 次")
+                    Text(SafeEatL10n.format(L10nKey.Home.quotaStatusBarCountFormat, snapshot.monthlyRemaining ?? snapshot.remainingQuota))
                         .font(.subheadline)
                         .bold()
                 }
 
                 if let periodEnd = snapshot.periodEnd {
                     Spacer()
-                    Text("周期至 \(periodEnd)")
+                    Text(SafeEatL10n.format(L10nKey.Home.quotaStatusBarCycleEndFormat, periodEnd))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }

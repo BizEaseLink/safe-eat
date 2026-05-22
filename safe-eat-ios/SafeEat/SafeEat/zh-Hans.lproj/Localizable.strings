@@ -334,6 +334,20 @@
 "membership.purchase.confirm_apple_offer" = "Apple 优惠";
 "membership.purchase.confirm_final_price_hint" = "实际扣费以 Apple 支付弹窗为准，赠送权益将在购买后自动到账";
 "membership.purchase.confirm_pay_button" = "确认支付 %@";
+"membership.purchase.detail.recognition_monthly_label" = "月识别额度";
+"membership.purchase.detail.count_format" = "%d 次";
+"membership.purchase.detail.ai_advice_level_label" = "AI 建议等级";
+"membership.purchase.detail.health_profiles_label" = "健康档案数";
+"membership.purchase.detail.health_profiles_format" = "%d 个";
+"membership.purchase.detail.history_label" = "历史记录";
+"membership.purchase.detail.history_unlimited" = "无限";
+"membership.purchase.detail.history_count_format" = "%d 条";
+"membership.purchase.detail.benefits_title" = "权益详情";
+"membership.purchase.detail.nav_title" = "套餐权益";
+"membership.purchase.bonus.days_format" = "+%d天";
+"membership.purchase.bonus.recognition_format" = "+%d次识别";
+"membership.purchase.bonus.ai_format" = "+%d次AI";
+"membership.purchase.bonus.separator" = "，";
 
 "home.title" = "首页";
 "home.brand_pill" = "食安安";
@@ -390,6 +404,7 @@
 "home.ad_reward.retry" = "我知道了";
 "home.ad_reward.success_quota_format" = "已恢复 %d 次识别额度";
 "home.quota_remaining.format" = "今日剩余 %d 次";
+"home.quota_monthly_remaining.format" = "本月剩余 %d 次";
 "home.loading.step_crop" = "裁切白框内主体";
 "home.loading.step_remove_bg" = "移除背景";
 "home.loading.step_sync" = "同步识别结果";
@@ -652,3 +667,9 @@
 "home.quota_exceeded.upgrade_membership" = "升级会员";
 "home.quota_exceeded.upgrade_plan" = "升级套餐";
 "home.quota_exceeded.later" = "稍后再说";
+
+"home.quota_status_bar.daily_label" = "今日剩余";
+"home.quota_status_bar.monthly_label" = "本月剩余";
+"home.quota_status_bar.count_format" = "%d 次";
+"home.quota_status_bar.ad_reward_format" = "看广告 +%d";
+"home.quota_status_bar.cycle_end_format" = "周期至 %@";

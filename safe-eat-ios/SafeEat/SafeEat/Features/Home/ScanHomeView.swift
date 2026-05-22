@@ -351,14 +351,8 @@ struct ScanHomeView: View {
                 .buttonStyle(.plain)
             }
 
-            if remainingFreeQuota >= 0 && remainingFreeQuota > 0 {
-                Text(SafeEatL10n.format(L10nKey.Home.quotaRemainingFormat, remainingFreeQuota))
-                    .font(SafeEatFont.custom(13, relativeTo: .caption))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
-            } else if isFreeQuotaExceeded {
-                Text(SafeEatL10n.text(L10nKey.Home.quotaExceededTitle))
-                    .font(SafeEatFont.custom(13, relativeTo: .caption))
-                    .foregroundStyle(SafeEatTheme.danger)
+            if let snapshot = store.dailyQuota {
+                QuotaStatusBar(snapshot: snapshot)
             }
         }
     }
@@ -518,7 +512,7 @@ struct ScanHomeView: View {
                         }
                         await store.refreshProfile()
                             await store.refreshDailyQuota()
-                            adRewardResultType = .success(rewardQuota: adConfig.placement(for: .rewardVideo)?.rewardQuota ?? store.dailyQuota?.adRewardPerWatch ?? 3)
+                            adRewardResultType = .success(rewardQuota: store.dailyQuota?.adRewardPerWatch ?? adConfig.placement(for: .rewardVideo)?.rewardQuota ?? 1)
                         showAdRewardResult = true
                     } catch {
                         print("[UMeng] claimReward 失败: \(error)")

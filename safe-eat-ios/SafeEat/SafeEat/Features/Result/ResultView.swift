@@ -12,6 +12,7 @@ struct ResultView: View {
     @State private var isLoadingDetail = false
     @State private var showFeedback = false
     @State private var showScoreLogicDetail = false
+    @State private var showMembership = false
     @State private var flipDirection: Double = -1
     @State private var scrollOffset: CGFloat = 0
 
@@ -172,6 +173,11 @@ struct ResultView: View {
         store.profile?.currentPlanTier ?? "free"
     }
 
+    private var canShowSummary: Bool {
+        let tier = aiAdviceLevel
+        return tier != "free"
+    }
+
     private var canShowDetailedAdvice: Bool {
         let tier = aiAdviceLevel
         return tier == "pro" || tier == "premium"
@@ -182,7 +188,7 @@ struct ResultView: View {
     }
 
     private var showUpgradeHint: Bool {
-        !canShowDetailedAdvice || !canShowHealthTips
+        !canShowHealthTips
     }
 
     var body: some View {
@@ -194,6 +200,9 @@ struct ResultView: View {
                             FeedbackView(recognition: recognition, historyItem: item)
                         }
                         .environmentObject(store)
+                    }
+                    .sheet(isPresented: $showMembership) {
+                        MembershipPurchaseView()
                     }
                     .task(id: item.id) {
                         await loadDetailIfNeeded()
@@ -329,33 +338,21 @@ struct ResultView: View {
                     .foregroundStyle(SafeEatTheme.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text(displayName)
-                    .font(SafeEatFont.custom(18, relativeTo: .title3, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                HStack(spacing: 4) {
+                    Text(displayName)
+                        .font(SafeEatFont.custom(18, relativeTo: .title3, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    if item.feedbackPending {
+                        Image(systemName: "hourglass")
+                            .font(.caption2)
+                            .foregroundStyle(.orange)
+                    }
+                }
             }
             heroImageCard(item: item)
 
-            // Phase 8C: 评分圆环 + 推荐等级
+            // Phase 8C: 评分圆环 + 推荐等级 + 建议等级
             scoreRingSection
-
-            VStack(alignment: .leading, spacing: 10) {
-                Text(SafeEatL10n.text(L10nKey.Result.scoreSectionTitle))
-                    .font(SafeEatFont.custom(16, relativeTo: .subheadline))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
-
-                statusChip(text: statusText, color: statusColor)
-
-                HStack(alignment: .lastTextBaseline, spacing: 10) {
-                    Text("\(scoreValue)")
-                        .font(SafeEatFont.custom(58, relativeTo: .largeTitle, weight: .bold))
-                        .foregroundStyle(scoreColor)
-
-                    Text(scoreTitle)
-                        .font(SafeEatFont.custom(22, relativeTo: .headline, weight: .bold))
-                        .foregroundStyle(scoreColor.opacity(0.88))
-                        .padding(.bottom, 8)
-                }
-            }
 
             Text(frontSummaryText)
                 .font(SafeEatFont.custom(16, relativeTo: .body))
@@ -390,7 +387,7 @@ struct ResultView: View {
         }
     }
 
-    // Phase 8C: 评分圆环
+    // Phase 8C: 评分圆环（整合推荐等级 + 建议等级）
     private var scoreRingSection: some View {
         VStack(spacing: 12) {
             ZStack {
@@ -404,25 +401,29 @@ struct ResultView: View {
                     Text("\(scoreValue)")
                         .font(SafeEatFont.custom(28, relativeTo: .title2, weight: .bold))
                         .foregroundStyle(scoreColor)
-                    Text(SafeEatL10n.text(L10nKey.Result.scoreLabel))
+                    Text(scoreTitle)
                         .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .foregroundStyle(scoreColor.opacity(0.88))
                 }
             }
             .frame(width: 100, height: 100)
 
-            // 推荐等级标签
-            HStack(spacing: 6) {
-                Image(systemName: recommendation.icon)
-                    .font(.system(size: 13))
-                Text(SafeEatL10n.text(recommendation.l10nKey))
-                    .font(SafeEatFont.custom(13, relativeTo: .footnote, weight: .bold))
+            // 推荐等级 + 建议等级同行
+            HStack(spacing: 8) {
+                HStack(spacing: 6) {
+                    Image(systemName: recommendation.icon)
+                        .font(.system(size: 13))
+                    Text(SafeEatL10n.text(recommendation.l10nKey))
+                        .font(SafeEatFont.custom(13, relativeTo: .footnote, weight: .bold))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(recommendation.color.opacity(colorScheme == .dark ? 0.18 : 0.12))
+                .foregroundStyle(recommendation.color)
+                .clipShape(Capsule())
+
+                statusChip(text: statusText, color: statusColor)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(recommendation.color.opacity(colorScheme == .dark ? 0.18 : 0.12))
-            .foregroundStyle(recommendation.color)
-            .clipShape(Capsule())
         }
         .frame(maxWidth: .infinity)
     }
@@ -440,9 +441,16 @@ struct ResultView: View {
                     .foregroundStyle(SafeEatTheme.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text(displayName)
-                    .font(SafeEatFont.custom(18, relativeTo: .title3, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                HStack(spacing: 4) {
+                    Text(displayName)
+                        .font(SafeEatFont.custom(18, relativeTo: .title3, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    if item?.feedbackPending == true {
+                        Image(systemName: "hourglass")
+                            .font(.caption2)
+                            .foregroundStyle(.orange)
+                    }
+                }
             }
 
             if isLoadingDetail && !hasFullRecognitionDetail {
@@ -682,7 +690,7 @@ struct ResultView: View {
 
                     sectionCard {
                         VStack(alignment: .leading, spacing: 10) {
-                            if let summary = explanation.summary {
+                            if canShowSummary, let summary = explanation.summary {
                                 Text(summary)
                                     .font(SafeEatFont.custom(15, relativeTo: .subheadline))
                                     .foregroundStyle(SafeEatTheme.textPrimary.opacity(0.94))
@@ -714,7 +722,7 @@ struct ResultView: View {
 
                             if showUpgradeHint {
                                 Button {
-                                    // 导航到会员购买页
+                                    showMembership = true
                                 } label: {
                                     Label(SafeEatL10n.text(L10nKey.Result.upgradeForMoreAdvice), systemImage: "lock.fill")
                                         .font(SafeEatFont.custom(14, relativeTo: .subheadline))
@@ -723,6 +731,24 @@ struct ResultView: View {
                                 .tint(.green)
                             }
                         }
+                    }
+                }
+            } else if showUpgradeHint {
+                // Free 用户无 AI 建议数据时显示升级占位
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(SafeEatL10n.text(L10nKey.Result.aiAdviceTitle))
+                        .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+
+                    sectionCard {
+                        Button {
+                            showMembership = true
+                        } label: {
+                            Label(SafeEatL10n.text(L10nKey.Result.upgradeForMoreAdvice), systemImage: "lock.fill")
+                                .font(SafeEatFont.custom(14, relativeTo: .subheadline))
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.green)
                     }
                 }
             }

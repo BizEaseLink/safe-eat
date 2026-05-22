@@ -425,6 +425,20 @@ enum L10nKey {
         static let confirmFinalPriceHint = "membership.purchase.confirm_final_price_hint"
         static let confirmPayButton = "membership.purchase.confirm_pay_button"
         static let confirmSheetTitle = "membership.purchase.confirm_sheet_title"
+        static let detailRecognitionMonthlyLabel = "membership.purchase.detail.recognition_monthly_label"
+        static let detailCountFormat = "membership.purchase.detail.count_format"
+        static let detailAiAdviceLevelLabel = "membership.purchase.detail.ai_advice_level_label"
+        static let detailHealthProfilesLabel = "membership.purchase.detail.health_profiles_label"
+        static let detailHealthProfilesFormat = "membership.purchase.detail.health_profiles_format"
+        static let detailHistoryLabel = "membership.purchase.detail.history_label"
+        static let detailHistoryUnlimited = "membership.purchase.detail.history_unlimited"
+        static let detailHistoryCountFormat = "membership.purchase.detail.history_count_format"
+        static let detailBenefitsTitle = "membership.purchase.detail.benefits_title"
+        static let detailNavTitle = "membership.purchase.detail.nav_title"
+        static let bonusDaysFormat = "membership.purchase.bonus.days_format"
+        static let bonusRecognitionFormat = "membership.purchase.bonus.recognition_format"
+        static let bonusAiFormat = "membership.purchase.bonus.ai_format"
+        static let bonusSeparator = "membership.purchase.bonus.separator"
     }
 
     enum Home {
@@ -483,6 +497,7 @@ enum L10nKey {
         static let adRewardRetry = "home.ad_reward.retry"
         static let adRewardSuccessQuotaFormat = "home.ad_reward.success_quota_format"
         static let quotaRemainingFormat = "home.quota_remaining.format"
+        static let quotaMonthlyRemainingFormat = "home.quota_monthly_remaining.format"
         static let loadingStepCrop = "home.loading.step_crop"
         static let loadingStepRemoveBackground = "home.loading.step_remove_bg"
         static let loadingStepSync = "home.loading.step_sync"
@@ -515,6 +530,11 @@ enum L10nKey {
         static let quotaExceededUpgradeMembership = "home.quota_exceeded.upgrade_membership"
         static let quotaExceededUpgradePlan = "home.quota_exceeded.upgrade_plan"
         static let quotaExceededLater = "home.quota_exceeded.later"
+        static let quotaStatusBarDailyLabel = "home.quota_status_bar.daily_label"
+        static let quotaStatusBarMonthlyLabel = "home.quota_status_bar.monthly_label"
+        static let quotaStatusBarCountFormat = "home.quota_status_bar.count_format"
+        static let quotaStatusBarAdRewardFormat = "home.quota_status_bar.ad_reward_format"
+        static let quotaStatusBarCycleEndFormat = "home.quota_status_bar.cycle_end_format"
     }
 
     enum Menu {

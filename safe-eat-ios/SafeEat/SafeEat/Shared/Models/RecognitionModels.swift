@@ -73,8 +73,10 @@ struct FeedbackEvidence: Codable {
     let reviewSource: String?
 }
 
-struct FeedbackPayload {
+struct PendingFeedbackItem: Codable, Identifiable {
+    let id: String
+    let recognitionId: String
+    let originalName: String
     let proposedName: String
-    let comment: String
-    let evidenceImageData: Data
+    let status: String
 }

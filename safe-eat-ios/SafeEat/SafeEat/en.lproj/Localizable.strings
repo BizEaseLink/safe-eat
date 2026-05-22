@@ -471,6 +471,20 @@
 "membership.purchase.confirm_apple_offer" = "Apple Offer";
 "membership.purchase.confirm_final_price_hint" = "Actual charge is per Apple payment dialog. Bonus benefits will be credited after purchase.";
 "membership.purchase.confirm_pay_button" = "Confirm Pay %@";
+"membership.purchase.detail.recognition_monthly_label" = "Monthly Scans";
+"membership.purchase.detail.count_format" = "%d scans";
+"membership.purchase.detail.ai_advice_level_label" = "AI Advice Level";
+"membership.purchase.detail.health_profiles_label" = "Health Profiles";
+"membership.purchase.detail.health_profiles_format" = "%d profiles";
+"membership.purchase.detail.history_label" = "History";
+"membership.purchase.detail.history_unlimited" = "Unlimited";
+"membership.purchase.detail.history_count_format" = "%d records";
+"membership.purchase.detail.benefits_title" = "Benefits";
+"membership.purchase.detail.nav_title" = "Plan Benefits";
+"membership.purchase.bonus.days_format" = "+%d days";
+"membership.purchase.bonus.recognition_format" = "+%d scans";
+"membership.purchase.bonus.ai_format" = "+%d AI credits";
+"membership.purchase.bonus.separator" = ", ";
 "membership.purchase.plan_bonus_badge" = "Plan Bonus";
 "membership.purchase.plan_bonus_days" = "+%d Days Free";
 "membership.purchase.plan_bonus_recognition" = "+%d Scans Free";
@@ -792,3 +806,9 @@
 "home.quota_exceeded.upgrade_membership" = "Upgrade membership";
 "home.quota_exceeded.upgrade_plan" = "Upgrade plan";
 "home.quota_exceeded.later" = "Later";
+
+"home.quota_status_bar.daily_label" = "Remaining today";
+"home.quota_status_bar.monthly_label" = "Remaining this month";
+"home.quota_status_bar.count_format" = "%d scans";
+"home.quota_status_bar.ad_reward_format" = "Watch ad +%d";
+"home.quota_status_bar.cycle_end_format" = "Cycle ends %@";
