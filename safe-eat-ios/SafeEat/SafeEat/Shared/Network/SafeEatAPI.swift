@@ -334,6 +334,21 @@ final class SafeEatAPI {
         return try await send(request, as: [PendingFeedbackItem].self)
     }
 
+    func listMyHistory(accessToken: String, page: Int = 1, pageSize: Int = 20) async throws -> PaginatedResult<RecognitionRecord> {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/recognitions",
+            method: "GET"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "page", value: String(page)),
+            URLQueryItem(name: "pageSize", value: String(pageSize)),
+        ]
+        request.url = components?.url
+        return try await sendPaginated(request, as: RecognitionRecord.self)
+    }
+
     func sendPublicRequest<T: Decodable>(path: String, method: String) async throws -> T {
         let request = try buildRequest(path: path, method: method)
         return try await send(request, as: T.self)

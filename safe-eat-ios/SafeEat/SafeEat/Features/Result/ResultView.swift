@@ -688,39 +688,64 @@ struct ResultView: View {
                         .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
                         .foregroundStyle(SafeEatTheme.textPrimary)
 
-                    sectionCard {
-                        VStack(alignment: .leading, spacing: 10) {
-                            if canShowSummary, let summary = explanation.summary {
+                    // 摘要区
+                    if canShowSummary, let summary = explanation.summary {
+                        sectionCard {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label(SafeEatL10n.text(L10nKey.Result.aiAdviceSummaryLabel), systemImage: "text.quote")
+                                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                                    .foregroundStyle(SafeEatTheme.primary)
                                 Text(summary)
                                     .font(SafeEatFont.custom(15, relativeTo: .subheadline))
                                     .foregroundStyle(SafeEatTheme.textPrimary.opacity(0.94))
                                     .fixedSize(horizontal: false, vertical: true)
                             }
+                        }
+                    }
 
-                            if canShowDetailedAdvice, let detailed = explanation.detailedAdvice {
+                    // 详细建议区
+                    if canShowDetailedAdvice, let detailed = explanation.detailedAdvice {
+                        sectionCard {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label(SafeEatL10n.text(L10nKey.Result.aiAdviceDetailedLabel), systemImage: "doc.text.fill")
+                                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                                    .foregroundStyle(SafeEatTheme.primary)
                                 Text(detailed)
                                     .font(SafeEatFont.custom(14, relativeTo: .body))
                                     .foregroundStyle(SafeEatTheme.textSecondary)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
+                        }
+                    }
 
-                            if canShowHealthTips, let tips = explanation.healthTips, !tips.isEmpty {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text(SafeEatL10n.text(L10nKey.Result.healthTipsTitle))
-                                        .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
-                                        .foregroundStyle(SafeEatTheme.textPrimary)
-                                    ForEach(tips, id: \.self) { tip in
-                                        HStack(alignment: .top, spacing: 6) {
-                                            Text("\u{2022}")
-                                            Text(tip)
-                                        }
-                                        .font(SafeEatFont.custom(13, relativeTo: .caption))
-                                        .foregroundStyle(SafeEatTheme.textSecondary)
+                    // 健康提示区
+                    if canShowHealthTips, let tips = explanation.healthTips, !tips.isEmpty {
+                        sectionCard {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Label(SafeEatL10n.text(L10nKey.Result.healthTipsTitle), systemImage: "heart.text.square.fill")
+                                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                                    .foregroundStyle(.green)
+                                ForEach(tips, id: \.self) { tip in
+                                    HStack(alignment: .top, spacing: 6) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .font(.system(size: 14))
+                                            .foregroundStyle(.green)
+                                        Text(tip)
                                     }
+                                    .font(SafeEatFont.custom(13, relativeTo: .caption))
+                                    .foregroundStyle(SafeEatTheme.textSecondary)
                                 }
                             }
+                        }
+                    }
 
-                            if showUpgradeHint {
+                    // 升级提示（非 Premium 用户）
+                    if showUpgradeHint {
+                        sectionCard {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(SafeEatL10n.format(L10nKey.Result.upgradeTierHintFormat, upgradeTierName))
+                                    .font(SafeEatFont.custom(13, relativeTo: .footnote))
+                                    .foregroundStyle(SafeEatTheme.textSecondary)
                                 Button {
                                     showMembership = true
                                 } label: {
@@ -741,17 +766,32 @@ struct ResultView: View {
                         .foregroundStyle(SafeEatTheme.textPrimary)
 
                     sectionCard {
-                        Button {
-                            showMembership = true
-                        } label: {
-                            Label(SafeEatL10n.text(L10nKey.Result.upgradeForMoreAdvice), systemImage: "lock.fill")
-                                .font(SafeEatFont.custom(14, relativeTo: .subheadline))
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(SafeEatL10n.format(L10nKey.Result.upgradeTierHintFormat, upgradeTierName))
+                                .font(SafeEatFont.custom(13, relativeTo: .footnote))
+                                .foregroundStyle(SafeEatTheme.textSecondary)
+                            Button {
+                                showMembership = true
+                            } label: {
+                                Label(SafeEatL10n.text(L10nKey.Result.upgradeForMoreAdvice), systemImage: "lock.fill")
+                                    .font(SafeEatFont.custom(14, relativeTo: .subheadline))
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(.green)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.green)
                     }
                 }
             }
+        }
+    }
+
+    /// 升级目标 tier 名称
+    private var upgradeTierName: String {
+        let tier = aiAdviceLevel
+        switch tier {
+        case "free": return "Lite"
+        case "lite": return "Pro"
+        default: return "Premium"
         }
     }
 

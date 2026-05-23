@@ -30,6 +30,13 @@ final class AppStore: ObservableObject {
     @Published var pendingNotificationDate: Date?
     @Published var dailyQuota: DailyQuotaSnapshot?
 
+    // MARK: - 服务器历史记录（MOB-2）
+    @Published var serverHistory: [RecognitionRecord] = []
+    @Published var serverHistoryTotal: Int = 0
+    @Published var serverHistoryPage: Int = 1
+    @Published var isLoadingServerHistory = false
+    @Published var serverHistoryLimitReached = false
+
     // MARK: - 会员购买新增状态
     @Published var membershipProducts: [Product] = []
     @Published var isPurchasingMembership = false
@@ -294,6 +301,47 @@ final class AppStore: ObservableObject {
         } catch {
             #if DEBUG
             print("[AppStore] loadMembershipStatus failed: \(error)")
+            #endif
+        }
+    }
+
+    // MARK: - 服务器历史记录（MOB-2）
+
+    /// 当前套餐的历史记录限制数（nil = 无限）
+    var maxHistoryRecords: Int? {
+        let tier = profile?.currentPlanTier ?? "free"
+        let plan = membershipPlans.first(where: { $0.tier == tier && $0.billingCycle == "monthly" })
+        return plan?.maxHistoryRecords
+    }
+
+    /// 是否达到历史记录条数限制
+    var isHistoryLimitReached: Bool {
+        guard let limit = maxHistoryRecords, limit > 0 else { return false }
+        return serverHistoryTotal >= limit
+    }
+
+    func loadServerHistory(refresh: Bool = true) async {
+        guard session != nil else { return }
+        isLoadingServerHistory = true
+        defer { isLoadingServerHistory = false }
+
+        let page = refresh ? 1 : serverHistoryPage + 1
+
+        do {
+            let result = try await authorizedRequest { token in
+                try await api.listMyHistory(accessToken: token, page: page, pageSize: 20)
+            }
+            if refresh {
+                serverHistory = result.items
+            } else {
+                serverHistory.append(contentsOf: result.items)
+            }
+            serverHistoryTotal = result.total
+            serverHistoryPage = page
+            serverHistoryLimitReached = isHistoryLimitReached
+        } catch {
+            #if DEBUG
+            print("[AppStore] loadServerHistory failed: \(error)")
             #endif
         }
     }

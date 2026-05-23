@@ -397,7 +397,7 @@ struct MembershipPurchaseView: View {
                                 .foregroundStyle(SafeEatTheme.textSecondary)
                         }
                     }
-                    if let limit = plan.historyLimit {
+                    if let limit = plan.maxHistoryRecords {
                         HStack(spacing: 6) {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(SafeEatFont.custom(11, relativeTo: .caption2))
@@ -695,7 +695,7 @@ struct MembershipPurchaseView: View {
                 }
 
                 // 历史记录限制
-                if let limit = plan.historyLimit {
+                if let limit = plan.maxHistoryRecords {
                     HStack {
                         Label(SafeEatL10n.text(L10nKey.Membership.detailHistoryLabel), systemImage: "clock.arrow.circlepath")
                             .foregroundStyle(SafeEatTheme.textSecondary)

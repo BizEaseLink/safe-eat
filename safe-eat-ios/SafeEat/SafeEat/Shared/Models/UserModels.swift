@@ -46,7 +46,7 @@ struct MembershipPlan: Decodable, Identifiable {
     // v3 新增：套餐差异化权益
     let aiAdviceLevel: String?
     let maxHealthProfiles: Int?
-    let historyLimit: Int?
+    let maxHistoryRecords: Int?
     // 每个套餐适用的活动（已过滤叠加）
     let applicableCampaigns: [CampaignBenefit]?
 }

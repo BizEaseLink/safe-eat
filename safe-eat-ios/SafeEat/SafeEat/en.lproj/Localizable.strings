@@ -682,6 +682,13 @@
 "result.ai_advice.title" = "AI Advice";
 "result.ai_advice.health_tips_title" = "Health Tips";
 "result.ai_advice.upgrade_hint" = "Upgrade for more advice";
+"result.ai_advice.summary_label" = "Summary";
+"result.ai_advice.detailed_label" = "Detailed Advice";
+"result.ai_advice.upgrade_tier_hint_format" = "Upgrade to %@ for more advice";
+"result.recognition_info_label" = "Recognition Info";
+"result.metric_impacts_label" = "Metric Impacts";
+"result.risk_facts_label" = "Risk Factors";
+"result.ai_advice.health_tips_label" = "Health Tips";
 
 "feedback.title" = "Feedback";
 "feedback.replace_evidence.title" = "Replace Evidence Image";

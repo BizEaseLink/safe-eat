@@ -11,6 +11,7 @@ struct HistoryMonthView: View {
     @EnvironmentObject private var store: AppStore
 
     @State private var scrollOffset: CGFloat = 0
+    @State private var showServerHistory = false
 
     private let scrollCoordinateSpace = "safeeat.history.month.scroll"
 
@@ -41,7 +42,7 @@ struct HistoryMonthView: View {
 
                 if monthGroups.isEmpty {
                     VStack(alignment: .leading, spacing: 0) {
-                        SafeEatPageHeader(title: "菜单")
+                        SafeEatPageHeader(title: SafeEatL10n.text(L10nKey.Menu.title))
                             .padding(.horizontal, 20)
                             .padding(.top, 16)
                             .padding(.bottom, 8)
@@ -49,8 +50,8 @@ struct HistoryMonthView: View {
                         Spacer()
 
                         SafeEatEmptyState(
-                            title: "暂无本地历史",
-                            message: "先去首页完成一次识别，菜单历史会按月自动聚合。",
+                            title: SafeEatL10n.text(L10nKey.History.dayEmptyTitle),
+                            message: SafeEatL10n.text(L10nKey.History.dayEmptyMessage),
                             systemImage: "clock.arrow.circlepath"
                         )
                         .padding(.horizontal, 24)
@@ -62,7 +63,10 @@ struct HistoryMonthView: View {
                         VStack(alignment: .leading, spacing: 18) {
                             SafeEatScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
 
-                            SafeEatPageHeader(title: "菜单")
+                            SafeEatPageHeader(title: SafeEatL10n.text(L10nKey.Menu.title))
+
+                            // 服务器历史记录入口
+                            serverHistoryEntry
 
                             LazyVStack(spacing: 14) {
                                 ForEach(monthGroups) { group in
@@ -74,7 +78,7 @@ struct HistoryMonthView: View {
                                                 Text(group.title)
                                                     .font(SafeEatFont.textStyle(.headline))
                                                     .foregroundStyle(SafeEatTheme.textPrimary)
-                                                Text("\(group.items.count) 条识别记录")
+                                                Text(SafeEatL10n.format(L10nKey.History.recordCountOther, group.items.count))
                                                     .font(SafeEatFont.textStyle(.subheadline))
                                                     .foregroundStyle(SafeEatTheme.textSecondary)
                                             }
@@ -111,13 +115,58 @@ struct HistoryMonthView: View {
                 }
 
                 SafeEatScrollNavChrome(
-                    title: "菜单",
+                    title: SafeEatL10n.text(L10nKey.Menu.title),
                     scrollOffset: scrollOffset,
                     topInset: proxy.safeAreaInsets.top
                 )
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+    }
+
+    /// 服务器历史记录入口（对接后端 API）
+    private var serverHistoryEntry: some View {
+        Button {
+            showServerHistory = true
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "clock.arrow.circlepath")
+                    .font(.system(size: 20))
+                    .foregroundStyle(SafeEatTheme.primary)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(SafeEatL10n.text(L10nKey.History.serverNavTitle))
+                        .font(SafeEatFont.textStyle(.headline))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    Text(SafeEatL10n.text(L10nKey.History.dayEmptyMessage))
+                        .font(SafeEatFont.textStyle(.caption))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(SafeEatTheme.primary.opacity(0.08))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .stroke(SafeEatTheme.primary.opacity(0.3), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .sheet(isPresented: $showServerHistory) {
+            NavigationStack {
+                HistoryServerListView()
+                    .environmentObject(store)
+            }
+        }
     }
 }
 

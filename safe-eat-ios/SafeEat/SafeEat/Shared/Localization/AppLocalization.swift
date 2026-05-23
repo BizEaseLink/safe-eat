@@ -624,8 +624,16 @@ enum L10nKey {
         static let metricScoreFormat = "result.metric_impacts.score_format"
         static let riskTitle = "result.risk_facts.title"
         static let aiAdviceTitle = "result.ai_advice.title"
+        static let aiAdviceSummaryLabel = "result.ai_advice.summary_label"
+        static let aiAdviceDetailedLabel = "result.ai_advice.detailed_label"
         static let healthTipsTitle = "result.ai_advice.health_tips_title"
         static let upgradeForMoreAdvice = "result.ai_advice.upgrade_hint"
+        static let upgradeTierHintFormat = "result.ai_advice.upgrade_tier_hint_format"
+        // MOB-2: 历史记录详情
+        static let recognitionInfoLabel = "result.recognition_info_label"
+        static let metricImpactsLabel = "result.metric_impacts_label"
+        static let riskFactsLabel = "result.risk_facts_label"
+        static let aiAdviceHealthTipsLabel = "result.ai_advice.health_tips_label"
     }
 
     enum Feedback {
@@ -676,6 +684,16 @@ enum L10nKey {
         static let weekdayThursday = "history.weekday.thursday"
         static let weekdayFriday = "history.weekday.friday"
         static let weekdaySaturday = "history.weekday.saturday"
+        // MOB-2: 服务器历史记录
+        static let serverNavTitle = "history.server.nav_title"
+        static let serverEmptyTitle = "history.server.empty_title"
+        static let serverEmptyMessage = "history.server.empty_message"
+        static let serverRecordCountFormat = "history.server.record_count_format"
+        static let upgradePromptTitle = "history.server.upgrade_prompt_title"
+        static let upgradePromptMessageFormat = "history.server.upgrade_prompt_message_format"
+        static let upgradePromptAction = "history.server.upgrade_prompt_action"
+        static let loadingTitle = "history.server.loading_title"
+        static let dateLabel = "history.date_label"
     }
 
     enum Sticker {
@@ -728,6 +746,29 @@ enum L10nKey {
         static let paymentAlipay = "user.payment.alipay"
         static let paymentWechat = "user.payment.wechat"
         static let paymentAppleIAP = "user.payment.apple_iap"
+    }
+
+    enum HealthGoal {
+        static let navTitle = "health_goal.nav_title"
+        static let groupHealthRisk = "health_goal.group.health_risk"
+        static let groupLifeGoal = "health_goal.group.life_goal"
+        static let limitHintFormat = "health_goal.limit_hint_format"
+        static let primaryTag = "health_goal.primary_tag"
+        static let setPrimaryAction = "health_goal.action.set_primary"
+        static let unsetPrimaryAction = "health_goal.action.unset_primary"
+        static let removeAction = "health_goal.action.remove"
+        static let saveAction = "health_goal.action.save"
+        static let cancelAction = "health_goal.action.cancel"
+        static let templateHypertension = "health_goal.template.hypertension"
+        static let templateHyperglycemia = "health_goal.template.hyperglycemia"
+        static let templateHyperlipidemia = "health_goal.template.hyperlipidemia"
+        static let templateGout = "health_goal.template.gout"
+        static let templateKidney = "health_goal.template.kidney"
+        static let templateWeightLoss = "health_goal.template.weight_loss"
+        static let templateMuscleGain = "health_goal.template.muscle_gain"
+        static let templateBalanced = "health_goal.template.balanced"
+        static let templateCardiovascular = "health_goal.template.cardiovascular"
+        static let templateBloodSugarControl = "health_goal.template.blood_sugar_control"
     }
 }
 

@@ -673,3 +673,22 @@
 "home.quota_status_bar.count_format" = "%d 次";
 "home.quota_status_bar.ad_reward_format" = "看广告 +%d";
 "home.quota_status_bar.cycle_end_format" = "周期至 %@";
+
+// MOB-3: AI 建议分区标题
+"result.ai_advice.summary_label" = "摘要";
+"result.ai_advice.detailed_label" = "详细建议";
+"result.ai_advice.upgrade_tier_hint_format" = "升级至 %@ 查看更多建议";
+"result.recognition_info_label" = "识别信息";
+"result.metric_impacts_label" = "指标影响";
+"result.risk_facts_label" = "风险因子";
+"result.ai_advice.health_tips_label" = "健康小贴士";
+
+// MOB-2: 服务器历史记录
+"history.server.nav_title" = "识别历史";
+"history.server.empty_title" = "暂无识别历史";
+"history.server.empty_message" = "完成识别后，记录会自动保存在这里。";
+"history.server.record_count_format" = "共 %d 条识别记录";
+"history.server.upgrade_prompt_title" = "历史记录数量有限";
+"history.server.upgrade_prompt_message_format" = "当前套餐仅可查看最近 %d 条记录，升级后可查看更多。";
+"history.server.upgrade_prompt_action" = "升级查看更多";
+"history.server.loading_title" = "加载中";

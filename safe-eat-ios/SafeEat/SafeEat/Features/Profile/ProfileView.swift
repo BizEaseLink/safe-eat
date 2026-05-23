@@ -12,6 +12,7 @@ struct ProfileView: View {
     @State private var activeSheet: ProfileSheet?
     @State private var didWarmProfileData = false
     @State private var showRedeemCodeSheet = false
+    @State private var showHealthGoal = false
 
     private let scrollCoordinateSpace = "safeeat.profile.scroll"
 
@@ -77,6 +78,10 @@ struct ProfileView: View {
         .sheet(isPresented: $showRedeemCodeSheet) {
             RedeemCodeSheet(store: store)
                 .presentationDetents([.height(260)])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showHealthGoal) {
+            HealthGoalSelectionView()
                 .presentationDragIndicator(.visible)
         }
         .task {
@@ -216,7 +221,9 @@ struct ProfileView: View {
                     .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .semibold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
                 Spacer()
-                NavigationLink(value: ProfileRoute.preferences) {
+                Button {
+                    showHealthGoal = true
+                } label: {
                     Text(SafeEatL10n.text(L10nKey.Profile.healthProfileEdit))
                         .font(SafeEatFont.custom(13, relativeTo: .caption))
                         .foregroundStyle(SafeEatTheme.primary)
