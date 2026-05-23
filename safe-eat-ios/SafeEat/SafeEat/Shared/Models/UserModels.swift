@@ -41,6 +41,12 @@ struct MembershipPlan: Decodable, Identifiable {
     let priceDisplay: String?
     let sortOrder: Int?
     let yearlyPriceFen: Int?
+    // v3 新增：权益描述（后端动态配置，优先展示）
+    let benefitsDescription: String?
+    // v3 新增：套餐差异化权益
+    let aiAdviceLevel: String?
+    let maxHealthProfiles: Int?
+    let historyLimit: Int?
     // 每个套餐适用的活动（已过滤叠加）
     let applicableCampaigns: [CampaignBenefit]?
 }
@@ -261,6 +267,11 @@ struct DailyQuotaSnapshot: Decodable {
     let adWatchLimit: Int?
     let remainingAdWatchCount: Int?
     let quotaDate: String
+    let monthlyTotalQuota: Int?
+    let monthlyUsedCount: Int?
+    let monthlyRemaining: Int?
+    let periodStart: String?
+    let periodEnd: String?
 }
 
 // MARK: - 订单记录
@@ -432,6 +443,21 @@ enum PaymentChannelMapper {
             return SafeEatL10n.text(L10nKey.User.paymentAppleIAP)
         default:
             return SafeEatL10n.text(L10nKey.User.paymentWechat)
+        }
+    }
+}
+
+enum AiAdviceLevelMapper {
+    static func title(_ level: String) -> String {
+        switch level {
+        case "basic":
+            return "简版"
+        case "advanced":
+            return "高级版"
+        case "expert":
+            return "专家版"
+        default:
+            return level
         }
     }
 }

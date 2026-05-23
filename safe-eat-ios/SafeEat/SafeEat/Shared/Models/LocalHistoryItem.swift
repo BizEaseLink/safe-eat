@@ -13,6 +13,7 @@ struct LocalHistoryItem: Codable, Identifiable {
     var createdAt: Date
     var cachedRecognition: RecognitionRecord?
     var imageRotationQuarterTurns: Int
+    var feedbackPending: Bool = false
 
     var displayImageUri: String {
         previewImageUri ?? originalImageUri
@@ -61,6 +62,7 @@ extension LocalHistoryItem {
         case createdAt
         case cachedRecognition
         case imageRotationQuarterTurns
+        case feedbackPending
     }
 
     init(from decoder: Decoder) throws {
@@ -79,6 +81,7 @@ extension LocalHistoryItem {
         let createdAt = try container.decode(Date.self, forKey: .createdAt)
         let cachedRecognition = try container.decodeIfPresent(RecognitionRecord.self, forKey: .cachedRecognition)
         let imageRotationQuarterTurns = try container.decodeIfPresent(Int.self, forKey: .imageRotationQuarterTurns) ?? 0
+        let feedbackPending = try container.decodeIfPresent(Bool.self, forKey: .feedbackPending) ?? false
 
         self.id =
             try container.decodeIfPresent(String.self, forKey: .id)
@@ -111,6 +114,7 @@ extension LocalHistoryItem {
         try container.encode(createdAt, forKey: .createdAt)
         try container.encodeIfPresent(cachedRecognition, forKey: .cachedRecognition)
         try container.encode(imageRotationQuarterTurns, forKey: .imageRotationQuarterTurns)
+        try container.encodeIfPresent(feedbackPending, forKey: .feedbackPending)
     }
 }
 
@@ -129,7 +133,12 @@ extension LocalHistoryItem {
             nutritionSnapshot: nil,
             sourceType: nil,
             feedbackEvidence: nil,
-            createdAt: createdAt
+            createdAt: createdAt,
+            overallScore: nil,
+            recommendationLevel: nil,
+            metricImpacts: nil,
+            riskFacts: nil,
+            aiExplanation: nil
         )
     }
 }

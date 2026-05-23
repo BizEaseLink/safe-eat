@@ -19,7 +19,6 @@ struct SafeEatApp: App {
     @State private var launchPhase: LaunchPhase = .logoAnimation
     @State private var showSplashAd = false
     @State private var hasCompletedLaunch = false
-    @AppStorage("hasEnteredBackground") private var hasEnteredBackground = false
 
     /// Logo 动画时长（秒）
     private static let logoAnimationDuration: TimeInterval = 1.67
@@ -38,6 +37,12 @@ struct SafeEatApp: App {
     init() {
         SafeEatFont.bootstrap()
         SafeEatAppearance.configure()
+
+        // 注入会员判断闭包给插屏广告管理器
+        InterstitialAdManager.shared.isPremiumProvider = { [store] in
+            guard let tier = store.profile?.currentPlanTier else { return false }
+            return tier != "free"
+        }
 
         #if DEBUG
         UMConfigure.setLogEnabled(true)
@@ -97,21 +102,12 @@ struct SafeEatApp: App {
             .onChange(of: adConfig.splashEnabled) { enabled in
                 if !enabled { showSplashAd = false }
             }
-            // App 从后台回到前台时，刷新配置再决定是否展示插屏
+            // App 从后台回到前台时，刷新配置
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
                 Task {
                     await AdConfigStore.shared.forceRefresh()
                     await store.refreshDailyQuota()
-                    // 插屏广告：只在从后台恢复时展示，冷启动不展示
-                    if hasCompletedLaunch && hasEnteredBackground && !isPaidMember && adConfig.interstitialEnabled {
-                        InterstitialAdManager.shared.showAdIfReady()
-                        hasEnteredBackground = false
-                    }
                 }
-            }
-            // 标记 App 进入后台
-            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
-                hasEnteredBackground = true
             }
             .task {
                 // 标记冷启动完成（延迟到首屏就绪后）

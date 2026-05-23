@@ -12,6 +12,7 @@ struct ResultView: View {
     @State private var isLoadingDetail = false
     @State private var showFeedback = false
     @State private var showScoreLogicDetail = false
+    @State private var showMembership = false
     @State private var flipDirection: Double = -1
     @State private var scrollOffset: CGFloat = 0
 
@@ -45,7 +46,7 @@ struct ResultView: View {
     }
 
     private var scoreValue: Int {
-        recognition?.foodScore ?? item?.foodScore ?? 0
+        recognition?.overallScore ?? recognition?.foodScore ?? item?.foodScore ?? 0
     }
 
     private var scoreTitle: String {
@@ -162,6 +163,34 @@ struct ResultView: View {
         ]
     }
 
+    // Phase 8C: 推荐等级
+    private var recommendation: RecommendationLevel {
+        RecommendationLevel(rawValue: recognition?.recommendationLevel ?? "") ?? .neutral
+    }
+
+    // Phase 8C: AI 建议访问控制
+    private var aiAdviceLevel: String {
+        store.profile?.currentPlanTier ?? "free"
+    }
+
+    private var canShowSummary: Bool {
+        let tier = aiAdviceLevel
+        return tier != "free"
+    }
+
+    private var canShowDetailedAdvice: Bool {
+        let tier = aiAdviceLevel
+        return tier == "pro" || tier == "premium"
+    }
+
+    private var canShowHealthTips: Bool {
+        aiAdviceLevel == "premium"
+    }
+
+    private var showUpgradeHint: Bool {
+        !canShowHealthTips
+    }
+
     var body: some View {
         Group {
             if let item, let recognition {
@@ -171,6 +200,9 @@ struct ResultView: View {
                             FeedbackView(recognition: recognition, historyItem: item)
                         }
                         .environmentObject(store)
+                    }
+                    .sheet(isPresented: $showMembership) {
+                        MembershipPurchaseView()
                     }
                     .task(id: item.id) {
                         await loadDetailIfNeeded()
@@ -195,9 +227,7 @@ struct ResultView: View {
             ZStack(alignment: .topLeading) {
                 pageBackground
 
-                // 全页双面卡：正面和背面各占全屏高度，通过翻转切换
                 ZStack {
-                    // 正面
                     ScrollView(showsIndicators: false) {
                         VStack(alignment: .leading, spacing: 22) {
                             Color.clear
@@ -215,7 +245,6 @@ struct ResultView: View {
                         perspective: 0.9
                     )
 
-                    // 背面
                     ScrollView(showsIndicators: false) {
                         VStack(alignment: .leading, spacing: 22) {
                             Color.clear
@@ -292,49 +321,38 @@ struct ResultView: View {
     private func frontCard(item: LocalHistoryItem) -> some View {
         VStack(alignment: .leading, spacing: 30) {
             VStack(alignment: .leading, spacing: 8) {
- 
                 HStack(alignment: .top, spacing: 6) {
                     Image(systemName: "leaf.fill")
                         .font(.system(size: 14))
                         .foregroundStyle(SafeEatTheme.success)
                         .padding(.top, 2)
-                    
+
                     Text(backHeaderNote)
                         .font(SafeEatFont.custom(14, relativeTo: .subheadline))
                         .foregroundStyle(SafeEatTheme.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                
 
                 Text(SafeEatL10n.text(L10nKey.Result.title))
                     .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text(displayName)
-                    .font(SafeEatFont.custom(18, relativeTo: .title3, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                HStack(spacing: 4) {
+                    Text(displayName)
+                        .font(SafeEatFont.custom(18, relativeTo: .title3, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    if item.feedbackPending {
+                        Image(systemName: "hourglass")
+                            .font(.caption2)
+                            .foregroundStyle(.orange)
+                    }
+                }
             }
             heroImageCard(item: item)
 
-            VStack(alignment: .leading, spacing: 10) {
-                Text(SafeEatL10n.text(L10nKey.Result.scoreSectionTitle))
-                    .font(SafeEatFont.custom(16, relativeTo: .subheadline))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
-                
-                statusChip(text: statusText, color: statusColor)
-
-                HStack(alignment: .lastTextBaseline, spacing: 10) {
-                    Text("\(scoreValue)")
-                        .font(SafeEatFont.custom(58, relativeTo: .largeTitle, weight: .bold))
-                        .foregroundStyle(scoreColor)
-
-                    Text(scoreTitle)
-                        .font(SafeEatFont.custom(22, relativeTo: .headline, weight: .bold))
-                        .foregroundStyle(scoreColor.opacity(0.88))
-                        .padding(.bottom, 8)
-                }
-            }
+            // Phase 8C: 评分圆环 + 推荐等级 + 建议等级
+            scoreRingSection
 
             Text(frontSummaryText)
                 .font(SafeEatFont.custom(16, relativeTo: .body))
@@ -369,6 +387,47 @@ struct ResultView: View {
         }
     }
 
+    // Phase 8C: 评分圆环（整合推荐等级 + 建议等级）
+    private var scoreRingSection: some View {
+        VStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : Color(.systemGray5), lineWidth: 10)
+                Circle()
+                    .trim(from: 0, to: min(CGFloat(scoreValue) / 100.0, 1.0))
+                    .stroke(scoreColor, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                VStack(spacing: 2) {
+                    Text("\(scoreValue)")
+                        .font(SafeEatFont.custom(28, relativeTo: .title2, weight: .bold))
+                        .foregroundStyle(scoreColor)
+                    Text(scoreTitle)
+                        .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                        .foregroundStyle(scoreColor.opacity(0.88))
+                }
+            }
+            .frame(width: 100, height: 100)
+
+            // 推荐等级 + 建议等级同行
+            HStack(spacing: 8) {
+                HStack(spacing: 6) {
+                    Image(systemName: recommendation.icon)
+                        .font(.system(size: 13))
+                    Text(SafeEatL10n.text(recommendation.l10nKey))
+                        .font(SafeEatFont.custom(13, relativeTo: .footnote, weight: .bold))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(recommendation.color.opacity(colorScheme == .dark ? 0.18 : 0.12))
+                .foregroundStyle(recommendation.color)
+                .clipShape(Capsule())
+
+                statusChip(text: statusText, color: statusColor)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
     private func backCard(recognition: RecognitionRecord) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading, spacing: 8) {
@@ -382,9 +441,16 @@ struct ResultView: View {
                     .foregroundStyle(SafeEatTheme.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text(displayName)
-                    .font(SafeEatFont.custom(18, relativeTo: .title3, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                HStack(spacing: 4) {
+                    Text(displayName)
+                        .font(SafeEatFont.custom(18, relativeTo: .title3, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    if item?.feedbackPending == true {
+                        Image(systemName: "hourglass")
+                            .font(.caption2)
+                            .foregroundStyle(.orange)
+                    }
+                }
             }
 
             if isLoadingDetail && !hasFullRecognitionDetail {
@@ -447,6 +513,11 @@ struct ResultView: View {
             }
             .buttonStyle(.plain)
 
+            // Phase 8C: 营养指标列表（规则引擎）
+            if let impacts = recognition.metricImpacts, !impacts.isEmpty {
+                metricImpactsSection(impacts)
+            }
+
             VStack(alignment: .leading, spacing: 12) {
                 Text(SafeEatL10n.text(L10nKey.Result.nutritionSectionTitle))
                     .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
@@ -465,6 +536,11 @@ struct ResultView: View {
                 }
             }
 
+            // Phase 8C: 风险标签（规则引擎）
+            if let risks = recognition.riskFacts, !risks.isEmpty {
+                riskFactsSection(risks)
+            }
+
             VStack(alignment: .leading, spacing: 12) {
                 Text(SafeEatL10n.text(L10nKey.Result.adviceSectionTitle))
                     .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
@@ -478,6 +554,9 @@ struct ResultView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
+
+            // Phase 8C: AI 建议区域
+            aiAdviceSection
 
             VStack(alignment: .leading, spacing: 12) {
                 Text(SafeEatL10n.text(L10nKey.Result.riskSectionTitle))
@@ -511,6 +590,168 @@ struct ResultView: View {
         .simultaneousGesture(flipGesture)
         .onTapGesture {
             flipCard(direction: 1)
+        }
+    }
+
+    // Phase 8C: 营养指标 section
+    private func metricImpactsSection(_ impacts: [MetricImpact]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(SafeEatL10n.text(L10nKey.Result.metricTitle))
+                .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+
+            sectionCard {
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(impacts) { impact in
+                        HStack(spacing: 10) {
+                            impactDirectionIcon(impact.impactDirection)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(impact.metric)
+                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                                if let weighted = impact.weightedScore {
+                                    Text(SafeEatL10n.format(L10nKey.Result.metricScoreFormat, Int(weighted)))
+                                        .font(SafeEatFont.custom(12, relativeTo: .caption))
+                                        .foregroundStyle(SafeEatTheme.textSecondary)
+                                }
+                            }
+                            Spacer()
+                            Text("\(impact.score)")
+                                .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                .foregroundStyle(impactScoreColor(impact.score))
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+            }
+        }
+    }
+
+    private func impactDirectionIcon(_ direction: String?) -> some View {
+        Group {
+            switch direction {
+            case "positive":
+                Image(systemName: "arrow.up.circle.fill")
+                    .foregroundStyle(SafeEatTheme.success)
+            case "negative":
+                Image(systemName: "arrow.down.circle.fill")
+                    .foregroundStyle(SafeEatTheme.danger)
+            default:
+                Image(systemName: "minus.circle.fill")
+                    .foregroundStyle(SafeEatTheme.textSecondary)
+            }
+        }
+        .font(.system(size: 18))
+    }
+
+    private func impactScoreColor(_ score: Int) -> Color {
+        if score >= 70 { return SafeEatTheme.success }
+        if score >= 40 { return SafeEatTheme.warning }
+        return SafeEatTheme.danger
+    }
+
+    // Phase 8C: 风险标签 section
+    private func riskFactsSection(_ risks: [RiskFact]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(SafeEatL10n.text(L10nKey.Result.riskTitle))
+                .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+
+            sectionCard {
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(risks) { risk in
+                        HStack(spacing: 10) {
+                            Image(systemName: risk.severity == "danger" ? "exclamationmark.triangle.fill" : "exclamationmark.circle.fill")
+                                .foregroundStyle(risk.severity == "danger" ? SafeEatTheme.danger : SafeEatTheme.warning)
+                                .font(.system(size: 16))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(risk.tag)
+                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                                Text(risk.description)
+                                    .font(SafeEatFont.custom(13, relativeTo: .caption))
+                                    .foregroundStyle(SafeEatTheme.textSecondary)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Phase 8C: AI 建议区域
+    private var aiAdviceSection: some View {
+        Group {
+            if let explanation = recognition?.aiExplanation {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(SafeEatL10n.text(L10nKey.Result.aiAdviceTitle))
+                        .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+
+                    sectionCard {
+                        VStack(alignment: .leading, spacing: 10) {
+                            if canShowSummary, let summary = explanation.summary {
+                                Text(summary)
+                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                                    .foregroundStyle(SafeEatTheme.textPrimary.opacity(0.94))
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+
+                            if canShowDetailedAdvice, let detailed = explanation.detailedAdvice {
+                                Text(detailed)
+                                    .font(SafeEatFont.custom(14, relativeTo: .body))
+                                    .foregroundStyle(SafeEatTheme.textSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+
+                            if canShowHealthTips, let tips = explanation.healthTips, !tips.isEmpty {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text(SafeEatL10n.text(L10nKey.Result.healthTipsTitle))
+                                        .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                                        .foregroundStyle(SafeEatTheme.textPrimary)
+                                    ForEach(tips, id: \.self) { tip in
+                                        HStack(alignment: .top, spacing: 6) {
+                                            Text("\u{2022}")
+                                            Text(tip)
+                                        }
+                                        .font(SafeEatFont.custom(13, relativeTo: .caption))
+                                        .foregroundStyle(SafeEatTheme.textSecondary)
+                                    }
+                                }
+                            }
+
+                            if showUpgradeHint {
+                                Button {
+                                    showMembership = true
+                                } label: {
+                                    Label(SafeEatL10n.text(L10nKey.Result.upgradeForMoreAdvice), systemImage: "lock.fill")
+                                        .font(SafeEatFont.custom(14, relativeTo: .subheadline))
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(.green)
+                            }
+                        }
+                    }
+                }
+            } else if showUpgradeHint {
+                // Free 用户无 AI 建议数据时显示升级占位
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(SafeEatL10n.text(L10nKey.Result.aiAdviceTitle))
+                        .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+
+                    sectionCard {
+                        Button {
+                            showMembership = true
+                        } label: {
+                            Label(SafeEatL10n.text(L10nKey.Result.upgradeForMoreAdvice), systemImage: "lock.fill")
+                                .font(SafeEatFont.custom(14, relativeTo: .subheadline))
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.green)
+                    }
+                }
+            }
         }
     }
 
@@ -717,8 +958,6 @@ struct ResultView: View {
     }
 
     private func flipCard(direction: Double) {
-        // 正面翻到背面：向左翻（direction = -1）
-        // 背面翻回正面：向右翻（direction = 1）
         flipDirection = isFlipped ? 1 : -1
         withAnimation(.spring(response: 0.42, dampingFraction: 0.84)) {
             isFlipped.toggle()
@@ -870,6 +1109,45 @@ private enum ResultRiskTone {
             return SafeEatTheme.warning
         case .danger:
             return SafeEatTheme.danger
+        }
+    }
+}
+
+// Phase 8C: 推荐等级枚举
+enum RecommendationLevel: String, CaseIterable {
+    case highlyRecommended = "highly_recommended"
+    case recommended = "recommended"
+    case neutral = "moderate"
+    case cautious = "cautious"
+    case notRecommended = "not_recommended"
+
+    var icon: String {
+        switch self {
+        case .highlyRecommended: return "checkmark.seal.fill"
+        case .recommended: return "thumbsup.fill"
+        case .neutral: return "hand.raised.fill"
+        case .cautious: return "exclamationmark.triangle.fill"
+        case .notRecommended: return "xmark.shield.fill"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .highlyRecommended: return SafeEatTheme.success
+        case .recommended: return .mint
+        case .neutral: return SafeEatTheme.warning
+        case .cautious: return .orange
+        case .notRecommended: return SafeEatTheme.danger
+        }
+    }
+
+    var l10nKey: String {
+        switch self {
+        case .highlyRecommended: return L10nKey.Result.recommendHighly
+        case .recommended: return L10nKey.Result.recommendYes
+        case .neutral: return L10nKey.Result.recommendModerate
+        case .cautious: return L10nKey.Result.recommendCautious
+        case .notRecommended: return L10nKey.Result.recommendNo
         }
     }
 }

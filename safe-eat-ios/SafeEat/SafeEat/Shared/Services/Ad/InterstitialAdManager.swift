@@ -6,8 +6,39 @@ final class InterstitialAdManager: NSObject {
     private var interstitialAd: UMUnionIntersititialAd?
     private var isAdReady = false
     private weak var adPresentingVC: UIViewController?
+    private var enteredBackgroundAt: Date?
+    private let minimumBackgroundInterval: TimeInterval = 60
+    var isPremiumProvider: (() -> Bool)?
 
-    private override init() { super.init() }
+    private override init() {
+        super.init()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillEnterForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
+    }
+
+    @objc private func appDidEnterBackground() {
+        enteredBackgroundAt = Date()
+    }
+
+    @objc private func appWillEnterForeground() {
+        guard let enteredAt = enteredBackgroundAt else { return }
+        let interval = Date().timeIntervalSince(enteredAt)
+        let isPremium = isPremiumProvider?() ?? false
+        if interval >= minimumBackgroundInterval {
+            showAdIfReady(isPremium: isPremium)
+        }
+        enteredBackgroundAt = nil
+    }
 
     func preloadAd() {
         guard AdConfigStore.shared.interstitialEnabled else { return }
@@ -18,7 +49,8 @@ final class InterstitialAdManager: NSObject {
         interstitialAd?.load()
     }
 
-    func showAdIfReady() {
+    func showAdIfReady(isPremium: Bool = false) {
+        guard !isPremium else { return }
         guard isAdReady, let ad = interstitialAd else { return }
         guard let vc = AdTopVC.resolve(preferRoot: true) else {
             print("[UMeng] 插屏广告找不到 rootViewController")

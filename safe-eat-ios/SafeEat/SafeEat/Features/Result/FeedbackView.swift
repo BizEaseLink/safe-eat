@@ -623,34 +623,37 @@ struct FeedbackView: View {
     }
 
     private func submit() async {
-        let data = replacementImage?.jpegDataForUpload()
-            ?? LocalImageLoader.loadRawImage(for: historyItem)?.jpegDataForUpload()
-
-        guard let evidenceData = data else {
-            store.errorMessage = SafeEatL10n.text(L10nKey.Feedback.evidenceRequired)
-            return
-        }
-
         submitting = true
         defer { submitting = false }
 
-        do {
-            let payload = FeedbackPayload(
-                proposedName: trimmedProposedName,
-                comment: comment.trimmingCharacters(in: .whitespacesAndNewlines),
-                evidenceImageData: evidenceData
-            )
-            let updatedRecognition = try await store.authorizedRequest { token in
-                try await store.api.submitFeedback(
-                    accessToken: token,
-                    recognitionId: recognition.id,
-                    payload: payload
-                )
+        // 异步发给后端，根据响应决定本地更新策略
+        Task {
+            do {
+                let records = try await store.authorizedRequest { token in
+                    try await store.api.submitFeedback(
+                        accessToken: token,
+                        recognitionId: recognition.id,
+                        proposedName: trimmedProposedName,
+                        comment: comment.trimmingCharacters(in: .whitespacesAndNewlines)
+                    )
+                }
+
+                if let updatedRecord = records.first {
+                    // 知识库有匹配：全量替换本地数据
+                    store.replaceRecognitionData(for: historyItem.id, with: updatedRecord)
+                } else {
+                    // 知识库无匹配：只加待审核标记，不改数据
+                    store.setFeedbackPending(for: historyItem.id, pending: true)
+                }
+            } catch {
+                #if DEBUG
+                print("[Feedback] 后端请求失败: \(error)")
+                #endif
+                // 后端失败时，本地只改名称作为降级
+                store.updateLocalRecognizedName(trimmedProposedName, for: historyItem.id)
             }
-            store.cacheRecognition(updatedRecognition, for: historyItem.id)
-            dismiss()
-        } catch {
-            store.handleAPIError(error)
         }
+
+        dismiss()
     }
 }

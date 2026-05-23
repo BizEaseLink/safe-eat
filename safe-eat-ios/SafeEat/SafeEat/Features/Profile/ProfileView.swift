@@ -11,6 +11,7 @@ struct ProfileView: View {
     @State private var isLoggingOut = false
     @State private var activeSheet: ProfileSheet?
     @State private var didWarmProfileData = false
+    @State private var showRedeemCodeSheet = false
 
     private let scrollCoordinateSpace = "safeeat.profile.scroll"
 
@@ -35,7 +36,7 @@ struct ProfileView: View {
                             heroSection
                             healthProfileSection
                             membershipEntry
-                            infoEntrySection
+                            accountSection
                             systemSettingsSection
                             serviceSection
                             logoutButton
@@ -73,6 +74,11 @@ struct ProfileView: View {
             .presentationBackground(.clear)
         }
         .navigationDestination(for: ProfileRoute.self, destination: destination)
+        .sheet(isPresented: $showRedeemCodeSheet) {
+            RedeemCodeSheet(store: store)
+                .presentationDetents([.height(260)])
+                .presentationDragIndicator(.visible)
+        }
         .task {
             await warmProfileDataIfNeeded()
         }
@@ -290,21 +296,12 @@ struct ProfileView: View {
                 }
             }
             .buttonStyle(.plain)
-
-            Divider().overlay(SafeEatTheme.line)
-
-            NavigationLink(value: ProfileRoute.orderHistory) {
-                ProfileNavigationRow(
-                    icon: "receipt",
-                    title: SafeEatL10n.text(L10nKey.Order.title),
-                    subtitle: SafeEatL10n.text(L10nKey.Order.subtitle)
-                )
-            }
-            .buttonStyle(.plain)
         }
     }
 
-    private var infoEntrySection: some View {
+    // MARK: - 账号与偏好（含兑换码、订单历史）
+
+    private var accountSection: some View {
         ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.editGroupTitle)) {
             NavigationLink(value: ProfileRoute.editProfile) {
                 ProfileNavigationRow(
@@ -350,6 +347,30 @@ struct ProfileView: View {
                 }
                 .buttonStyle(.plain)
             }
+
+            Divider().overlay(SafeEatTheme.line)
+
+            NavigationLink(value: ProfileRoute.orderHistory) {
+                ProfileNavigationRow(
+                    icon: "receipt",
+                    title: SafeEatL10n.text(L10nKey.Order.title),
+                    subtitle: SafeEatL10n.text(L10nKey.Order.subtitle)
+                )
+            }
+            .buttonStyle(.plain)
+
+            Divider().overlay(SafeEatTheme.line)
+
+            Button {
+                showRedeemCodeSheet = true
+            } label: {
+                ProfileNavigationRow(
+                    icon: "ticket",
+                    title: SafeEatL10n.text(L10nKey.Membership.redeemCodeEntryTitle),
+                    subtitle: SafeEatL10n.text(L10nKey.Membership.redeemCodeEntrySubtitle)
+                )
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -500,19 +521,6 @@ struct ProfileView: View {
                     )
                 }
                 .buttonStyle(.plain)
-
-                Divider().overlay(SafeEatTheme.line)
-
-                Button {
-                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Order.title))
-                } label: {
-                    ProfileNavigationRow(
-                        icon: "receipt",
-                        title: SafeEatL10n.text(L10nKey.Order.title),
-                        subtitle: SafeEatL10n.text(L10nKey.Order.subtitle)
-                    )
-                }
-                .buttonStyle(.plain)
             }
 
             ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.editGroupTitle)) {
@@ -549,6 +557,32 @@ struct ProfileView: View {
                         icon: "lock.shield",
                         title: SafeEatL10n.text(L10nKey.Profile.securityTitle),
                         subtitle: SafeEatL10n.text(L10nKey.Profile.securitySubtitle)
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().overlay(SafeEatTheme.line)
+
+                Button {
+                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Order.title))
+                } label: {
+                    ProfileNavigationRow(
+                        icon: "receipt",
+                        title: SafeEatL10n.text(L10nKey.Order.title),
+                        subtitle: SafeEatL10n.text(L10nKey.Order.subtitle)
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().overlay(SafeEatTheme.line)
+
+                Button {
+                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Membership.redeemCodeEntryTitle))
+                } label: {
+                    ProfileNavigationRow(
+                        icon: "ticket",
+                        title: SafeEatL10n.text(L10nKey.Membership.redeemCodeEntryTitle),
+                        subtitle: SafeEatL10n.text(L10nKey.Membership.redeemCodeEntrySubtitle)
                     )
                 }
                 .buttonStyle(.plain)

@@ -15,6 +15,29 @@ struct AsyncRecognitionStickerView: View {
     @State private var hasError = false
 
     var body: some View {
+        ZStack(alignment: .topTrailing) {
+            stickerContent
+            if item.feedbackPending {
+                Image(systemName: "hourglass")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(Color.orange.opacity(0.85))
+                    .foregroundColor(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .padding(4)
+            }
+        }
+        .rotationEffect(.degrees(rotationAngle))
+        .offset(y: offsetY)
+        .frame(maxWidth: .infinity, alignment: .top)
+        .task(id: item.id) {
+            await loadImageAsync()
+        }
+    }
+
+    private var stickerContent: some View {
         Group {
             if let image = loadedImage {
                 RecognitionStickerThumbnailView(
@@ -30,12 +53,6 @@ struct AsyncRecognitionStickerView: View {
             } else {
                 skeletonView
             }
-        }
-        .rotationEffect(.degrees(rotationAngle))
-        .offset(y: offsetY)
-        .frame(maxWidth: .infinity, alignment: .top)
-        .task(id: item.id) {
-            await loadImageAsync()
         }
     }
 

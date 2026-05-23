@@ -14,6 +14,13 @@ struct RecognitionRecord: Codable, Identifiable {
     let sourceType: String?
     let feedbackEvidence: FeedbackEvidence?
     let createdAt: Date?
+
+    // Phase 8C: 规则引擎 + AI 建议字段
+    let overallScore: Int?
+    let recommendationLevel: String?
+    let metricImpacts: [MetricImpact]?
+    let riskFacts: [RiskFact]?
+    let aiExplanation: AIExplanation?
 }
 
 struct NutritionSnapshot: Codable {
@@ -35,14 +42,41 @@ struct HealthImpact: Codable, Identifiable {
     let reason: String
 }
 
+struct MetricImpact: Codable, Identifiable {
+    var id: String { metric }
+
+    let metric: String
+    let score: Int
+    let weight: Double?
+    let weightedScore: Double?
+    let impactDirection: String? // "positive" / "neutral" / "negative"
+}
+
+struct RiskFact: Codable, Identifiable {
+    var id: String { tag }
+
+    let tag: String
+    let severity: String // "warning" / "danger"
+    let description: String
+    let affectedMetrics: [String]?
+}
+
+struct AIExplanation: Codable {
+    let summary: String?
+    let detailedAdvice: String?
+    let healthTips: [String]?
+}
+
 struct FeedbackEvidence: Codable {
     let hasEvidence: Bool
     let reviewStatus: String?
     let reviewSource: String?
 }
 
-struct FeedbackPayload {
+struct PendingFeedbackItem: Codable, Identifiable {
+    let id: String
+    let recognitionId: String
+    let originalName: String
     let proposedName: String
-    let comment: String
-    let evidenceImageData: Data
+    let status: String
 }
