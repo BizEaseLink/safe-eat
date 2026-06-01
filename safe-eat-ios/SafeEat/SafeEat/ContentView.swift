@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var store: AppStore
+    private let versionStore = AppVersionStore.shared
 
     var body: some View {
         Group {
@@ -20,19 +21,17 @@ struct ContentView: View {
         }) {
             LoginPromptSheet(featureHint: store.loginPromptFeature)
         }
-        // 强制更新弹窗
-        .sheet(isPresented: Binding<Bool>(
-            get: { AppVersionStore.shared.updateInfo?.forceUpdate == true },
-            set: { if !$0 { AppVersionStore.shared.dismissUpdate() } }
-        )) {
-            ForceUpdateSheet()
-        }
-        // 普通更新弹窗
-        .sheet(isPresented: Binding<Bool>(
-            get: { AppVersionStore.shared.updateInfo?.needsUpdate == true && AppVersionStore.shared.updateInfo?.forceUpdate != true },
-            set: { if !$0 { AppVersionStore.shared.dismissUpdate() } }
-        )) {
-            UpdateAvailableSheet()
+        // 版本更新弹窗：通过直接引用 versionStore 建立 @Observable 观察关系
+        .sheet(item: Binding(
+            get: { versionStore.updateInfo },
+            set: { versionStore.updateInfo = $0 }
+        )) { info in
+            if info.forceUpdate {
+                ForceUpdateSheet()
+                    .interactiveDismissDisabled()
+            } else {
+                UpdateAvailableSheet()
+            }
         }
     }
 }

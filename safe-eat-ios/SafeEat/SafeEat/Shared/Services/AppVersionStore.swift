@@ -9,7 +9,7 @@ final class AppVersionStore {
     private let api: SafeEatAPI
 
     // 状态
-    private(set) var updateInfo: AppVersionCheckResponse?
+    internal(set) var updateInfo: AppVersionCheckResponse?
     private(set) var isChecking = false
 
     // UserDefaults 缓存
