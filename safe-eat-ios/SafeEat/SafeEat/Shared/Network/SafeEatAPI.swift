@@ -312,7 +312,11 @@ final class SafeEatAPI {
             fileData: imageData
         )
 
-        return try await sendFirst(request, as: RecognitionRecord.self)
+        let result = try await sendPaginated(request, as: RecognitionRecord.self)
+        guard let first = result.items.first else {
+            throw APIError.server(status: 200, message: SafeEatL10n.text(L10nKey.Errors.invalidResponse))
+        }
+        return first
     }
 
     func getRecognition(accessToken: String, recognitionId: String) async throws -> RecognitionRecord {
@@ -360,6 +364,7 @@ final class SafeEatAPI {
         recognitionId: String,
         proposedName: String,
         comment: String,
+        feedbackType: FeedbackType? = nil,
         evidenceImage: (data: Data, fileName: String)? = nil
     ) async throws -> [RecognitionRecord] {
         // 后端路由: POST /v1/apps/:appCode/recognitions/:recognitionId/feedback
@@ -372,10 +377,14 @@ final class SafeEatAPI {
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
-        let textFields: [String: String] = [
+        var textFields: [String: String] = [
             "proposedName": proposedName,
             "comment": comment,
         ]
+
+        if let ft = feedbackType {
+            textFields["feedbackType"] = ft.rawValue
+        }
 
         if let image = evidenceImage {
             request.httpBody = MultipartFormDataBuilder.build(
@@ -562,6 +571,12 @@ final class SafeEatAPI {
 
             return PaginatedResult(items: items, total: total, page: page, pageSize: pageSize, extra: extra)
         } catch {
+            #if DEBUG
+            print("[SafeEatAPI] sendPaginated decode failed for type \(T.self): \(error)")
+            if let dataStr = String(data: try JSONSerialization.data(withJSONObject: responseData), encoding: .utf8) {
+                print("[SafeEatAPI] Data JSON (first 1000 chars): \(String(dataStr.prefix(1000)))")
+            }
+            #endif
             throw APIError.server(
                 status: httpResponse.statusCode,
                 message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription)

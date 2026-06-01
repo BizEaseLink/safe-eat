@@ -346,6 +346,7 @@ struct HistoryRecordDetailView: View {
             foodScore: nil,
             healthImpacts: nil,
             nutritionSnapshot: nil,
+            nutritionMetrics: nil,
             sourceType: nil,
             feedbackEvidence: nil,
             createdAt: Date(),

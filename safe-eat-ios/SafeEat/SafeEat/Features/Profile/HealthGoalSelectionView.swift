@@ -36,18 +36,16 @@ struct HealthProfileTemplate: Identifiable, Hashable {
 
 enum HealthProfileTemplateMock {
     static let templates: [HealthProfileTemplate] = [
-        // 健康风险组
-        HealthProfileTemplate(id: "1", code: "hypertension", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateHypertension), icon: "heart.fill", group: .healthRisk, isHighlighted: true),
-        HealthProfileTemplate(id: "2", code: "hyperglycemia", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateHyperglycemia), icon: "drop.fill", group: .healthRisk, isHighlighted: true),
-        HealthProfileTemplate(id: "3", code: "hyperlipidemia", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateHyperlipidemia), icon: "waveform.path.ecg.fill", group: .healthRisk, isHighlighted: false),
-        HealthProfileTemplate(id: "4", code: "gout", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateGout), icon: "bone.fill", group: .healthRisk, isHighlighted: false),
-        HealthProfileTemplate(id: "5", code: "kidney_disease", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateKidney), icon: "kidney.fill", group: .healthRisk, isHighlighted: false),
-        // 生活目标组
-        HealthProfileTemplate(id: "6", code: "weight_loss", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateWeightLoss), icon: "arrow.down.circle.fill", group: .lifeGoal, isHighlighted: true),
-        HealthProfileTemplate(id: "7", code: "muscle_gain", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateMuscleGain), icon: "dumbbell.fill", group: .lifeGoal, isHighlighted: false),
+        // 健康风险组（HealthTag）
+        HealthProfileTemplate(id: "1", code: "high_blood_pressure", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateHypertension), icon: "heart.fill", group: .healthRisk, isHighlighted: true),
+        HealthProfileTemplate(id: "2", code: "high_blood_sugar", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateHyperglycemia), icon: "drop.fill", group: .healthRisk, isHighlighted: true),
+        HealthProfileTemplate(id: "3", code: "high_blood_lipids", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateHyperlipidemia), icon: "waveform.path.ecg.fill", group: .healthRisk, isHighlighted: false),
+        HealthProfileTemplate(id: "4", code: "general_wellness", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateGeneralWellness), icon: "heart.circle.fill", group: .healthRisk, isHighlighted: false),
+        // 生活目标组（FitnessGoal）
+        HealthProfileTemplate(id: "5", code: "fat_loss", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateWeightLoss), icon: "arrow.down.circle.fill", group: .lifeGoal, isHighlighted: true),
+        HealthProfileTemplate(id: "6", code: "muscle_gain", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateMuscleGain), icon: "dumbbell.fill", group: .lifeGoal, isHighlighted: false),
+        HealthProfileTemplate(id: "7", code: "blood_sugar_control", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateBloodSugarControl), icon: "chart.line.downtrend.xyaxis", group: .lifeGoal, isHighlighted: false),
         HealthProfileTemplate(id: "8", code: "balanced", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateBalanced), icon: "leaf.fill", group: .lifeGoal, isHighlighted: true),
-        HealthProfileTemplate(id: "9", code: "cardiovascular", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateCardiovascular), icon: "heart.circle.fill", group: .lifeGoal, isHighlighted: false),
-        HealthProfileTemplate(id: "10", code: "blood_sugar_control", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateBloodSugarControl), icon: "chart.line.downtrend.xyaxis", group: .lifeGoal, isHighlighted: false),
     ]
 }
 

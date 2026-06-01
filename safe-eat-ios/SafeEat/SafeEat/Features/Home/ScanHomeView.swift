@@ -558,15 +558,16 @@ private struct HomeRecentRecordCard: View {
             }
         }
 
-        if let nutrition = item.cachedRecognition?.nutritionSnapshot {
+        if let nutrition = item.cachedRecognition?.effectiveNutrition {
+            let nutrients = nutrition.nutrients
             var chips: [(String, Color)] = []
-            if let calories = nutrition.calories {
+            if let calories = nutrients?.calories.value {
                 chips.append((SafeEatL10n.format(L10nKey.Home.caloriesFormat, Int(calories)), nutritionPrimaryColor))
             }
-            if let protein = nutrition.protein {
+            if let protein = nutrients?.protein.value {
                 chips.append((SafeEatL10n.format(L10nKey.Home.proteinFormat, protein), SafeEatTheme.success))
             }
-            if let carbs = nutrition.carbs, chips.count < 2 {
+            if let carbs = nutrients?.carbohydrates.value, chips.count < 2 {
                 chips.append((SafeEatL10n.format(L10nKey.Home.carbsFormat, carbs), SafeEatTheme.warning))
             }
             if !chips.isEmpty {

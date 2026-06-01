@@ -131,6 +131,7 @@ extension LocalHistoryItem {
             foodScore: foodScore,
             healthImpacts: nil,
             nutritionSnapshot: nil,
+            nutritionMetrics: nil,
             sourceType: nil,
             feedbackEvidence: nil,
             createdAt: createdAt,

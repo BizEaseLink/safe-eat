@@ -488,6 +488,15 @@
 "user.goal.muscle_gain" = "增肌";
 "user.goal.blood_sugar_control" = "控糖";
 "user.goal.cardiovascular_health" = "心血管友好";
+
+"health_goal.template.hypertension" = "高血压";
+"health_goal.template.hyperglycemia" = "高血糖";
+"health_goal.template.hyperlipidemia" = "高血脂";
+"health_goal.template.general_wellness" = "日常保健";
+"health_goal.template.weight_loss" = "减脂";
+"health_goal.template.muscle_gain" = "增肌";
+"health_goal.template.balanced" = "均衡饮食";
+"health_goal.template.blood_sugar_control" = "控糖";
 "user.payment.alipay" = "支付宝";
 "user.payment.wechat" = "微信支付";
 "user.payment.apple_iap" = "Apple 内购";
@@ -567,6 +576,16 @@
 "feedback.suggestion.soba" = "日式荞麦面";
 "feedback.suggestion.cold_soba" = "荞麦冷面";
 "feedback.suggestion.chilled_soba" = "凉拌荞麦面";
+"feedback.type.title" = "反馈类型（可选）";
+"feedback.type.placeholder" = "选择反馈类型";
+"feedback.type.hint" = "选择类型可以帮助我们更快处理你的反馈";
+"feedback.type.wrong_food" = "食物选错了";
+"feedback.type.wrong_name" = "名称不对";
+"feedback.type.wrong_nutrition" = "营养数据不对";
+"feedback.type.wrong_category" = "分类不对";
+"feedback.type.add_alias" = "添加别名";
+"feedback.type.new_food" = "新增食物";
+"feedback.type.other" = "其他";
 
 "history.date.short_format" = "M月d日";
 "history.date.week_range_format" = "%@ - %@";
@@ -682,6 +701,77 @@
 "result.metric_impacts_label" = "指标影响";
 "result.risk_facts_label" = "风险因子";
 "result.ai_advice.health_tips_label" = "健康小贴士";
+
+// T6: 过敏原标签 + 饱腹感指数
+"result.allergen.title" = "过敏原";
+"result.allergen.contains" = "含有";
+"result.allergen.may_contain" = "可能含有";
+"result.satiety.title" = "饱腹感";
+"result.satiety.low" = "低";
+"result.satiety.medium" = "中";
+"result.satiety.high" = "高";
+
+// T7: 背面长滚动 10 Section
+"result.section.macronutrients" = "宏量营养素";
+"result.section.detailed_nutrients" = "详细营养素";
+"result.section.vitamins" = "维生素";
+"result.section.minerals" = "矿物质";
+"result.section.daily_values" = "每日参考值";
+"result.section.glycemic" = "血糖指数";
+"result.section.dietary" = "饮食适配";
+"result.section.ingredients" = "成分与烹饪";
+"result.glycemic.index" = "血糖指数";
+"result.glycemic.load" = "血糖负荷";
+"result.glycemic.insulin_index" = "胰岛素指数";
+"result.glycemic.sugar" = "含糖量";
+"result.diet.vegetarian" = "素食友好";
+"result.diet.vegan" = "纯素友好";
+"result.diet.gluten_free" = "无麸质";
+"result.diet.lactose_free" = "无乳糖";
+"result.diet.halal" = "清真";
+"result.diet.low_fodmap" = "低FODMAP";
+"result.diet.dairy_free" = "无乳制品";
+"result.diet.nut_free" = "无坚果";
+"result.preparation" = "烹饪方式";
+"result.per_serving" = "每份";
+// T7: 详细营养素
+"result.nutrient.saturated_fat" = "饱和脂肪";
+"result.nutrient.trans_fat" = "反式脂肪";
+"result.nutrient.dietary_fiber" = "膳食纤维";
+"result.nutrient.sugar" = "糖";
+"result.nutrient.cholesterol" = "胆固醇";
+"result.nutrient.sodium" = "钠";
+// T7: 矿物质
+"result.mineral.calcium" = "钙";
+"result.mineral.iron" = "铁";
+"result.mineral.magnesium" = "镁";
+"result.mineral.phosphorus" = "磷";
+"result.mineral.potassium" = "钾";
+"result.mineral.sodium" = "钠";
+"result.mineral.zinc" = "锌";
+"result.mineral.selenium" = "硒";
+// T7: 维生素
+"result.vit.a" = "维生素 A";
+"result.vit.b1" = "维生素 B1";
+"result.vit.b2" = "维生素 B2";
+"result.vit.b3" = "维生素 B3";
+"result.vit.b5" = "维生素 B5";
+"result.vit.b6" = "维生素 B6";
+"result.vit.b12" = "维生素 B12";
+"result.vit.c" = "维生素 C";
+"result.vit.d" = "维生素 D";
+"result.vit.e" = "维生素 E";
+"result.vit.k" = "维生素 K";
+"result.vit.folate" = "叶酸";
+// T7: 制备方式
+"result.prep.method" = "烹饪方式";
+"result.prep.oil_type" = "油类";
+"result.prep.oil_amount" = "用油量";
+"result.prep.salt_level" = "盐量";
+"result.prep.sugar_level" = "糖量";
+// T8: 付费墙遮罩
+"result.paywall.upgrade_hint" = "升级解锁";
+"result.paywall.upgrade_action" = "升级查看详情";
 
 // MOB-2: 服务器历史记录
 "history.server.nav_title" = "识别历史";

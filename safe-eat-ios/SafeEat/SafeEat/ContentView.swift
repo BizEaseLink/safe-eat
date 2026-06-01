@@ -20,6 +20,20 @@ struct ContentView: View {
         }) {
             LoginPromptSheet(featureHint: store.loginPromptFeature)
         }
+        // 强制更新弹窗
+        .sheet(isPresented: Binding<Bool>(
+            get: { AppVersionStore.shared.updateInfo?.forceUpdate == true },
+            set: { if !$0 { AppVersionStore.shared.dismissUpdate() } }
+        )) {
+            ForceUpdateSheet()
+        }
+        // 普通更新弹窗
+        .sheet(isPresented: Binding<Bool>(
+            get: { AppVersionStore.shared.updateInfo?.needsUpdate == true && AppVersionStore.shared.updateInfo?.forceUpdate != true },
+            set: { if !$0 { AppVersionStore.shared.dismissUpdate() } }
+        )) {
+            UpdateAvailableSheet()
+        }
     }
 }
 

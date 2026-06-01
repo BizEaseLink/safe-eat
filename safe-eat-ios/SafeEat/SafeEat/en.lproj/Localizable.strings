@@ -540,6 +540,15 @@
 "user.goal.muscle_gain" = "Muscle Gain";
 "user.goal.blood_sugar_control" = "Blood Sugar Control";
 "user.goal.cardiovascular_health" = "Cardiovascular Friendly";
+
+"health_goal.template.hypertension" = "High Blood Pressure";
+"health_goal.template.hyperglycemia" = "High Blood Sugar";
+"health_goal.template.hyperlipidemia" = "High Blood Lipids";
+"health_goal.template.general_wellness" = "General Wellness";
+"health_goal.template.weight_loss" = "Fat Loss";
+"health_goal.template.muscle_gain" = "Muscle Gain";
+"health_goal.template.balanced" = "Balanced Diet";
+"health_goal.template.blood_sugar_control" = "Blood Sugar Control";
 "user.payment.alipay" = "Alipay";
 "user.payment.wechat" = "WeChat Pay";
 "user.payment.apple_iap" = "Apple In-App Purchase";
@@ -690,6 +699,77 @@
 "result.risk_facts_label" = "Risk Factors";
 "result.ai_advice.health_tips_label" = "Health Tips";
 
+// T6: Allergen tags + Satiety index
+"result.allergen.title" = "Allergens";
+"result.allergen.contains" = "Contains";
+"result.allergen.may_contain" = "May Contain";
+"result.satiety.title" = "Satiety";
+"result.satiety.low" = "Low";
+"result.satiety.medium" = "Medium";
+"result.satiety.high" = "High";
+
+// T7: Back card 10 sections
+"result.section.macronutrients" = "Macronutrients";
+"result.section.detailed_nutrients" = "Detailed Nutrients";
+"result.section.vitamins" = "Vitamins";
+"result.section.minerals" = "Minerals";
+"result.section.daily_values" = "Daily Values";
+"result.section.glycemic" = "Glycemic Index";
+"result.section.dietary" = "Dietary Info";
+"result.section.ingredients" = "Ingredients & Preparation";
+"result.glycemic.index" = "Glycemic Index";
+"result.glycemic.load" = "Glycemic Load";
+"result.glycemic.insulin_index" = "Insulin Index";
+"result.glycemic.sugar" = "Sugar Content";
+"result.diet.vegetarian" = "Vegetarian";
+"result.diet.vegan" = "Vegan";
+"result.diet.gluten_free" = "Gluten-Free";
+"result.diet.lactose_free" = "Lactose-Free";
+"result.diet.halal" = "Halal";
+"result.diet.low_fodmap" = "Low-FODMAP";
+"result.diet.dairy_free" = "Dairy-Free";
+"result.diet.nut_free" = "Nut-Free";
+"result.preparation" = "Preparation";
+"result.per_serving" = "Per Serving";
+// T7: Detailed nutrients
+"result.nutrient.saturated_fat" = "Saturated Fat";
+"result.nutrient.trans_fat" = "Trans Fat";
+"result.nutrient.dietary_fiber" = "Dietary Fiber";
+"result.nutrient.sugar" = "Sugar";
+"result.nutrient.cholesterol" = "Cholesterol";
+"result.nutrient.sodium" = "Sodium";
+// T7: Minerals
+"result.mineral.calcium" = "Calcium";
+"result.mineral.iron" = "Iron";
+"result.mineral.magnesium" = "Magnesium";
+"result.mineral.phosphorus" = "Phosphorus";
+"result.mineral.potassium" = "Potassium";
+"result.mineral.sodium" = "Sodium";
+"result.mineral.zinc" = "Zinc";
+"result.mineral.selenium" = "Selenium";
+// T7: Vitamins
+"result.vit.a" = "Vit A";
+"result.vit.b1" = "Vit B1";
+"result.vit.b2" = "Vit B2";
+"result.vit.b3" = "Vit B3";
+"result.vit.b5" = "Vit B5";
+"result.vit.b6" = "Vit B6";
+"result.vit.b12" = "Vit B12";
+"result.vit.c" = "Vit C";
+"result.vit.d" = "Vit D";
+"result.vit.e" = "Vit E";
+"result.vit.k" = "Vit K";
+"result.vit.folate" = "Folate";
+// T7: Preparation
+"result.prep.method" = "Method";
+"result.prep.oil_type" = "Oil Type";
+"result.prep.oil_amount" = "Oil Amount";
+"result.prep.salt_level" = "Salt Level";
+"result.prep.sugar_level" = "Sugar Level";
+// T8: Paywall overlay
+"result.paywall.upgrade_hint" = "Upgrade to Unlock";
+"result.paywall.upgrade_action" = "Upgrade to view details";
+
 "feedback.title" = "Feedback";
 "feedback.replace_evidence.title" = "Replace Evidence Image";
 "feedback.replace_evidence.camera" = "Retake Photo";
@@ -713,6 +793,16 @@
 "feedback.suggestion.soba" = "Japanese soba noodles";
 "feedback.suggestion.cold_soba" = "Cold soba noodles";
 "feedback.suggestion.chilled_soba" = "Chilled soba salad";
+"feedback.type.title" = "Feedback Type (Optional)";
+"feedback.type.placeholder" = "Select feedback type";
+"feedback.type.hint" = "Selecting a type helps us process your feedback faster";
+"feedback.type.wrong_food" = "Wrong food";
+"feedback.type.wrong_name" = "Wrong name";
+"feedback.type.wrong_nutrition" = "Wrong nutrition data";
+"feedback.type.wrong_category" = "Wrong category";
+"feedback.type.add_alias" = "Add alias";
+"feedback.type.new_food" = "New food";
+"feedback.type.other" = "Other";
 
 "history.date.short_format" = "MMM d";
 "history.date.week_range_format" = "%@ - %@";

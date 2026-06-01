@@ -107,6 +107,7 @@ struct SafeEatApp: App {
                 Task {
                     await AdConfigStore.shared.forceRefresh()
                     await store.refreshDailyQuota()
+                    await AppVersionStore.shared.checkVersion()
                 }
             }
             .task {
@@ -117,6 +118,9 @@ struct SafeEatApp: App {
                 // 启动广告配置定时刷新（首次立即拉取，之后每 2 小时刷新）
                 await AdConfigStore.shared.fetchConfig()
                 AdConfigStore.shared.startPeriodicRefresh()
+
+                // 版本检查
+                await AppVersionStore.shared.checkVersion()
 
                 // 预加载插屏广告
                 if !isPaidMember && adConfig.interstitialEnabled {

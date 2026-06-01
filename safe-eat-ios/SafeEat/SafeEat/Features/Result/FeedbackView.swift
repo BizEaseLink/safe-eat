@@ -11,6 +11,7 @@ struct FeedbackView: View {
 
     @State private var proposedName = ""
     @State private var comment = ""
+    @State private var selectedFeedbackType: FeedbackType?
     @State private var replacementImage: UIImage?
     @State private var pickerSource: UIImagePickerController.SourceType = .photoLibrary
     @State private var showSourceDialog = false
@@ -78,6 +79,8 @@ struct FeedbackView: View {
                         statusTag
 
                         heroSection
+
+                        feedbackTypeSection
 
                         correctionZone
 
@@ -204,6 +207,49 @@ struct FeedbackView: View {
                 Capsule()
                     .stroke(SafeEatTheme.warning.opacity(colorScheme == .dark ? 0.26 : 0.18), lineWidth: 1)
             )
+    }
+
+    private var feedbackTypeSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(SafeEatL10n.text(L10nKey.Feedback.typeTitle))
+                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(FeedbackType.allCases) { type in
+                        let isSelected = selectedFeedbackType == type
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                selectedFeedbackType = isSelected ? nil : type
+                            }
+                        } label: {
+                            Text(type.displayName)
+                                .font(SafeEatFont.custom(14, relativeTo: .footnote, weight: .bold))
+                                .foregroundStyle(isSelected ? .white : SafeEatTheme.primaryDeep)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
+                                .background(
+                                    Capsule()
+                                        .fill(isSelected
+                                             ? AnyShapeStyle(LinearGradient(
+                                                colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                                startPoint: .leading,
+                                                endPoint: .trailing))
+                                             : AnyShapeStyle(colorScheme == .dark
+                                                ? Color.white.opacity(0.08)
+                                                : SafeEatTheme.primarySoft.opacity(0.72)))
+                                )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+
+            Text(SafeEatL10n.text(L10nKey.Feedback.typeHint))
+                .font(SafeEatFont.custom(13, relativeTo: .caption))
+                .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.7))
+        }
     }
 
     private var heroSection: some View {
@@ -634,7 +680,8 @@ struct FeedbackView: View {
                         accessToken: token,
                         recognitionId: recognition.id,
                         proposedName: trimmedProposedName,
-                        comment: comment.trimmingCharacters(in: .whitespacesAndNewlines)
+                        comment: comment.trimmingCharacters(in: .whitespacesAndNewlines),
+                        feedbackType: selectedFeedbackType
                     )
                 }
 

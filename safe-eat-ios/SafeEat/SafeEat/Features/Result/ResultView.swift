@@ -32,6 +32,7 @@ struct ResultView: View {
     private var hasFullRecognitionDetail: Bool {
         guard let recognition else { return false }
         return recognition.nutritionSnapshot != nil
+            || recognition.nutritionMetrics != nil
             || !(recognition.healthImpacts?.isEmpty ?? true)
             || !(recognition.reasons?.isEmpty ?? true)
     }
@@ -116,19 +117,20 @@ struct ResultView: View {
     }
 
     private var pairedMetrics: [(String, String, String, String)] {
-        let nutrition = recognition?.nutritionSnapshot
+        let metrics = recognition?.effectiveNutrition
+        let nutrients = metrics?.nutrients
         return [
             (
                 SafeEatL10n.text(L10nKey.Result.metricCalories),
-                formatMetric(nutrition?.calories),
+                formatMetric(nutrients?.calories.value),
                 SafeEatL10n.text(L10nKey.Result.metricProtein),
-                formatMetric(nutrition?.protein, unit: SafeEatL10n.text(L10nKey.Result.metricGramsUnit))
+                formatMetric(nutrients?.protein.value, unit: SafeEatL10n.text(L10nKey.Result.metricGramsUnit))
             ),
             (
                 SafeEatL10n.text(L10nKey.Result.metricFat),
-                formatMetric(nutrition?.fat, unit: SafeEatL10n.text(L10nKey.Result.metricGramsUnit)),
+                formatMetric(nutrients?.fat.value, unit: SafeEatL10n.text(L10nKey.Result.metricGramsUnit)),
                 SafeEatL10n.text(L10nKey.Result.metricCarbs),
-                formatMetric(nutrition?.carbs, unit: SafeEatL10n.text(L10nKey.Result.metricGramsUnit))
+                formatMetric(nutrients?.carbohydrates.value, unit: SafeEatL10n.text(L10nKey.Result.metricGramsUnit))
             ),
         ]
     }
@@ -166,6 +168,77 @@ struct ResultView: View {
     // Phase 8C: 推荐等级
     private var recommendation: RecommendationLevel {
         RecommendationLevel(rawValue: recognition?.recommendationLevel ?? "") ?? .neutral
+    }
+
+    // T6: 过敏原数据
+    private var allergensData: (contains: [String], mayContain: [String])? {
+        guard let allergens = recognition?.effectiveNutrition?.allergens else { return nil }
+        let contains = allergens.contains
+        let mayContain = allergens.mayContain
+        if contains.isEmpty && mayContain.isEmpty { return nil }
+        return (contains, mayContain)
+    }
+
+    // T8: 当前用户的 membership tier
+    private var membershipTier: MembershipTier {
+        MembershipTier(tierString: store.profile?.currentPlanTier)
+    }
+
+    // T8: 根据 tier 判断 Section 是否完全可见
+    private func isSectionVisible(_ section: PaywallSection) -> Bool {
+        membershipTier.isSectionFullyVisible(section)
+    }
+
+    // T8: 付费墙包装器 — 如果用户无权查看则显示遮罩
+    private func paywallWrapped<Content: View>(
+        _ section: PaywallSection,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        Group {
+            if isSectionVisible(section) {
+                content()
+            } else if membershipTier.isSectionPartiallyVisible(section) {
+                content()
+            } else {
+                VStack(alignment: .leading, spacing: 12) {
+                    sectionHeader(sectionTitle(for: section), icon: sectionIcon(for: section))
+                    PaywallOverlayView(section: section) {
+                        showMembership = true
+                    }
+                    .frame(height: 120)
+                }
+            }
+        }
+    }
+
+    private func sectionTitle(for section: PaywallSection) -> String {
+        switch section {
+        case .s1BasicNutrients: return SafeEatL10n.text(L10nKey.Result.sectionMacronutrients)
+        case .s2DetailedNutrients: return SafeEatL10n.text(L10nKey.Result.sectionDetailedNutrients)
+        case .s3Vitamins: return SafeEatL10n.text(L10nKey.Result.sectionVitamins)
+        case .s4Minerals: return SafeEatL10n.text(L10nKey.Result.sectionMinerals)
+        case .s5DailyValues: return SafeEatL10n.text(L10nKey.Result.sectionDailyValues)
+        case .s6Glycemic: return SafeEatL10n.text(L10nKey.Result.sectionGlycemic)
+        case .s7Allergens: return SafeEatL10n.text(L10nKey.Result.allergenTitle)
+        case .s8Dietary: return SafeEatL10n.text(L10nKey.Result.sectionDietary)
+        case .s9Preparation: return SafeEatL10n.text(L10nKey.Result.preparation)
+        case .s10Ingredients: return SafeEatL10n.text(L10nKey.Result.sectionIngredients)
+        }
+    }
+
+    private func sectionIcon(for section: PaywallSection) -> String {
+        switch section {
+        case .s1BasicNutrients: return "flame.fill"
+        case .s2DetailedNutrients: return "chart.bar.fill"
+        case .s3Vitamins: return "capsule.fill"
+        case .s4Minerals: return "hexagon.fill"
+        case .s5DailyValues: return "percent"
+        case .s6Glycemic: return "drop.fill"
+        case .s7Allergens: return "exclamationmark.shield.fill"
+        case .s8Dietary: return "leaf.fill"
+        case .s9Preparation: return "frying.pan.fill"
+        case .s10Ingredients: return "list.bullet.clipboard.fill"
+        }
     }
 
     // Phase 8C: AI 建议访问控制
@@ -360,6 +433,12 @@ struct ResultView: View {
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
 
+            // T6: 过敏原标签
+            allergenTagsSection
+
+            // T6: 饱腹感指数
+            satietyIndexSection
+
             if !isPaidMember {
                 NativeAdView()
                     .frame(height: 80)
@@ -426,6 +505,142 @@ struct ResultView: View {
             }
         }
         .frame(maxWidth: .infinity)
+    }
+
+    // T6: 过敏原标签区
+    private var allergenTagsSection: some View {
+        Group {
+            if let data = allergensData {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "exclamationmark.shield.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(SafeEatTheme.danger)
+                        Text(SafeEatL10n.text(L10nKey.Result.allergenTitle))
+                            .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                            .foregroundStyle(SafeEatTheme.textPrimary)
+                    }
+
+                    if !data.contains.isEmpty {
+                        allergenRow(
+                            label: SafeEatL10n.text(L10nKey.Result.allergenContains),
+                            items: data.contains,
+                            color: SafeEatTheme.danger
+                        )
+                    }
+
+                    if !data.mayContain.isEmpty {
+                        allergenRow(
+                            label: SafeEatL10n.text(L10nKey.Result.allergenMayContain),
+                            items: data.mayContain,
+                            color: .orange
+                        )
+                    }
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(sectionCardFill)
+                .overlay(sectionCardStroke(cornerRadius: 20))
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            }
+        }
+    }
+
+    private func allergenRow(label: String, items: [String], color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label)
+                .font(SafeEatFont.custom(12, relativeTo: .caption))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 80), spacing: 8)], spacing: 8) {
+                ForEach(items, id: \.self) { item in
+                    allergenChip(text: item, color: color, isDark: colorScheme == .dark)
+                }
+            }
+        }
+    }
+
+    private func allergenChip(text: String, color: Color, isDark: Bool) -> some View {
+        Text(text)
+            .font(SafeEatFont.custom(13, relativeTo: .footnote, weight: .semibold))
+            .foregroundStyle(color)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(color.opacity(isDark ? 0.18 : 0.12))
+            .clipShape(Capsule())
+    }
+
+    // T6: 饱腹感指数
+    private var satietyIndexSection: some View {
+        Group {
+            if let nutrients = recognition?.effectiveNutrition?.nutrients {
+                let score = computeSatietyScore(nutrients: nutrients)
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "fork.knife")
+                            .font(.system(size: 14))
+                            .foregroundStyle(SafeEatTheme.primary)
+                        Text(SafeEatL10n.text(L10nKey.Result.satietyTitle))
+                            .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                            .foregroundStyle(SafeEatTheme.textPrimary)
+                    }
+
+                    HStack(spacing: 8) {
+                        satietyBar(score: score)
+                        Text(satietyLabel(score: score))
+                            .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                            .foregroundStyle(satietyColor(score: score))
+                    }
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(sectionCardFill)
+                .overlay(sectionCardStroke(cornerRadius: 20))
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            }
+        }
+    }
+
+    private func computeSatietyScore(nutrients: Nutrients) -> Double {
+        // 基于 protein + dietaryFiber + fat 计算简易饱腹感评分 (0~1)
+        let protein = nutrients.protein.value
+        let fiber = nutrients.dietaryFiber?.value ?? 0
+        let fat = nutrients.fat.value
+        // 归一化：protein 0~30g, fiber 0~10g, fat 0~20g
+        let proteinScore = min(protein / 30.0, 1.0) * 0.45
+        let fiberScore = min(fiber / 10.0, 1.0) * 0.35
+        let fatScore = min(fat / 20.0, 1.0) * 0.20
+        return min(proteinScore + fiberScore + fatScore, 1.0)
+    }
+
+    private func satietyLabel(score: Double) -> String {
+        switch score {
+        case 0.6...: return SafeEatL10n.text(L10nKey.Result.satietyHigh)
+        case 0.3..<0.6: return SafeEatL10n.text(L10nKey.Result.satietyMedium)
+        default: return SafeEatL10n.text(L10nKey.Result.satietyLow)
+        }
+    }
+
+    private func satietyColor(score: Double) -> Color {
+        switch score {
+        case 0.6...: return SafeEatTheme.success
+        case 0.3..<0.6: return SafeEatTheme.primary
+        default: return SafeEatTheme.warning
+        }
+    }
+
+    private func satietyBar(score: Double) -> some View {
+        let isDark = colorScheme == .dark
+        return GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(isDark ? Color.white.opacity(0.08) : Color(.systemGray5))
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(satietyColor(score: score))
+                    .frame(width: geo.size.width * CGFloat(score))
+            }
+        }
+        .frame(height: 8)
+        .frame(maxWidth: 120)
     }
 
     private func backCard(recognition: RecognitionRecord) -> some View {
@@ -518,23 +733,35 @@ struct ResultView: View {
                 metricImpactsSection(impacts)
             }
 
-            VStack(alignment: .leading, spacing: 12) {
-                Text(SafeEatL10n.text(L10nKey.Result.nutritionSectionTitle))
-                    .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-                    .padding(.bottom, 4)
+            // T7/T8: S1 基础营养素（FREE 可见）
+            paywallWrapped(.s1BasicNutrients) { basicNutrientsSection }
 
-                VStack(spacing: 14) {
-                    ForEach(Array(pairedMetrics.enumerated()), id: \.offset) { _, metric in
-                        pairedMetricCard(
-                            leftTitle: metric.0,
-                            leftValue: metric.1,
-                            rightTitle: metric.2,
-                            rightValue: metric.3
-                        )
-                    }
-                }
-            }
+            // T7/T8: S2 详细营养素（LITE+ 可见）
+            paywallWrapped(.s2DetailedNutrients) { detailedNutrientsSection }
+
+            // T7/T8: S3 维生素（LITE+ 可见）
+            paywallWrapped(.s3Vitamins) { vitaminsSection }
+
+            // T7/T8: S4 矿物质（LITE+ 可见）
+            paywallWrapped(.s4Minerals) { mineralsSection }
+
+            // T7/T8: S5 每日值百分比（LITE+ 可见）
+            paywallWrapped(.s5DailyValues) { dailyValueSection }
+
+            // T7/T8: S6 血糖信息（LITE+ 可见）
+            paywallWrapped(.s6Glycemic) { glycemicSection }
+
+            // T7/T8: S7 过敏原（FREE 可见 contains，PRO+ 完整）
+            paywallWrapped(.s7Allergens) { backAllergenSection }
+
+            // T7/T8: S8 饮食信息（PRO+ 可见）
+            paywallWrapped(.s8Dietary) { dietaryInfoSection }
+
+            // T7/T8: S9 制备方式（PRO+ 可见）
+            paywallWrapped(.s9Preparation) { preparationSection }
+
+            // T7/T8: S10 成分分解（PREMIUM+ 可见）
+            paywallWrapped(.s10Ingredients) { ingredientBreakdownSection }
 
             // Phase 8C: 风险标签（规则引擎）
             if let risks = recognition.riskFacts, !risks.isEmpty {
@@ -792,6 +1019,411 @@ struct ResultView: View {
         case "free": return "Lite"
         case "lite": return "Pro"
         default: return "Premium"
+        }
+    }
+
+    // MARK: - T7: 背面 10 Section
+
+    private func sectionHeader(_ title: String, icon: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundStyle(SafeEatTheme.primary)
+            Text(title)
+                .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+        }
+    }
+
+    private func nutrientRow(_ nv: NutrientValue, label: String) -> some View {
+        HStack {
+            Text(label)
+                .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+            Spacer()
+            Text(String(format: "%.1f", nv.value))
+                .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+            + Text(" \(nv.unit)")
+                .font(SafeEatFont.custom(12, relativeTo: .caption))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+        }
+        .padding(.vertical, 4)
+    }
+
+    // S1: 基础营养素
+    private var basicNutrientsSection: some View {
+        Group {
+            if let nutrients = recognition?.effectiveNutrition?.nutrients {
+                VStack(alignment: .leading, spacing: 12) {
+                    sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionMacronutrients), icon: "flame.fill")
+                    sectionCard {
+                        VStack(alignment: .leading, spacing: 8) {
+                            nutrientRow(nutrients.calories, label: SafeEatL10n.text(L10nKey.Result.metricCalories))
+                            nutrientRow(nutrients.protein, label: SafeEatL10n.text(L10nKey.Result.metricProtein))
+                            nutrientRow(nutrients.fat, label: SafeEatL10n.text(L10nKey.Result.metricFat))
+                            nutrientRow(nutrients.carbohydrates, label: SafeEatL10n.text(L10nKey.Result.metricCarbs))
+                            if let chol = nutrients.cholesterol { nutrientRow(chol, label: SafeEatL10n.text(L10nKey.Result.cholesterol)) }
+                            if let na = recognition?.effectiveNutrition?.nutrients?.sodium { nutrientRow(na, label: SafeEatL10n.text(L10nKey.Result.sodium)) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // S2: 详细营养素
+    private var detailedNutrientsSection: some View {
+        Group {
+            if let nutrients = recognition?.effectiveNutrition?.nutrients,
+               nutrients.saturatedFat != nil || nutrients.transFat != nil || nutrients.dietaryFiber != nil || nutrients.sugar != nil || nutrients.cholesterol != nil {
+                VStack(alignment: .leading, spacing: 12) {
+                    sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionDetailedNutrients), icon: "chart.bar.fill")
+                    sectionCard {
+                        VStack(alignment: .leading, spacing: 8) {
+                            if let sf = nutrients.saturatedFat { nutrientRow(sf, label: SafeEatL10n.text(L10nKey.Result.saturatedFat)) }
+                            if let tf = nutrients.transFat { nutrientRow(tf, label: SafeEatL10n.text(L10nKey.Result.transFat)) }
+                            if let df = nutrients.dietaryFiber { nutrientRow(df, label: SafeEatL10n.text(L10nKey.Result.dietaryFiber)) }
+                            if let s = nutrients.sugar { nutrientRow(s, label: SafeEatL10n.text(L10nKey.Result.sugarNutrient)) }
+                            if let c = nutrients.cholesterol { nutrientRow(c, label: SafeEatL10n.text(L10nKey.Result.cholesterol)) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // S3: 维生素
+    private var vitaminsSection: some View {
+        Group {
+            if let vitamins = recognition?.effectiveNutrition?.vitamins {
+                let items: [(String, NutrientValue)] = vitaminItems(vitamins)
+                if !items.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionVitamins), icon: "capsule.fill")
+                        sectionCard {
+                            VStack(alignment: .leading, spacing: 8) {
+                                ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                                    nutrientRow(item.1, label: item.0)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func vitaminItems(_ v: Vitamins) -> [(String, NutrientValue)] {
+        var result: [(String, NutrientValue)] = []
+        if let a = v.a { result.append((SafeEatL10n.text(L10nKey.Result.vitA), a)) }
+        if let b1 = v.b1 { result.append((SafeEatL10n.text(L10nKey.Result.vitB1), b1)) }
+        if let b2 = v.b2 { result.append((SafeEatL10n.text(L10nKey.Result.vitB2), b2)) }
+        if let b3 = v.b3 { result.append((SafeEatL10n.text(L10nKey.Result.vitB3), b3)) }
+        if let b5 = v.b5 { result.append((SafeEatL10n.text(L10nKey.Result.vitB5), b5)) }
+        if let b6 = v.b6 { result.append((SafeEatL10n.text(L10nKey.Result.vitB6), b6)) }
+        if let b12 = v.b12 { result.append((SafeEatL10n.text(L10nKey.Result.vitB12), b12)) }
+        if let c = v.c { result.append((SafeEatL10n.text(L10nKey.Result.vitC), c)) }
+        if let d = v.d { result.append((SafeEatL10n.text(L10nKey.Result.vitD), d)) }
+        if let e = v.e { result.append((SafeEatL10n.text(L10nKey.Result.vitE), e)) }
+        if let k = v.k { result.append((SafeEatL10n.text(L10nKey.Result.vitK), k)) }
+        if let folate = v.folate { result.append((SafeEatL10n.text(L10nKey.Result.vitFolate), folate)) }
+        return result
+    }
+
+    // S4: 矿物质
+    private var mineralsSection: some View {
+        Group {
+            if let minerals = recognition?.effectiveNutrition?.minerals {
+                let items: [(String, NutrientValue)] = mineralItems(minerals)
+                if !items.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionMinerals), icon: "hexagon.fill")
+                        sectionCard {
+                            VStack(alignment: .leading, spacing: 8) {
+                                ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                                    nutrientRow(item.1, label: item.0)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func mineralItems(_ m: Minerals) -> [(String, NutrientValue)] {
+        var result: [(String, NutrientValue)] = []
+        if let ca = m.calcium { result.append((SafeEatL10n.text(L10nKey.Result.mineralCalcium), ca)) }
+        if let fe = m.iron { result.append((SafeEatL10n.text(L10nKey.Result.mineralIron), fe)) }
+        if let mg = m.magnesium { result.append((SafeEatL10n.text(L10nKey.Result.mineralMagnesium), mg)) }
+        if let p = m.phosphorus { result.append((SafeEatL10n.text(L10nKey.Result.mineralPhosphorus), p)) }
+        if let k = m.potassium { result.append((SafeEatL10n.text(L10nKey.Result.mineralPotassium), k)) }
+        if let zn = m.zinc { result.append((SafeEatL10n.text(L10nKey.Result.mineralZinc), zn)) }
+        if let se = m.selenium { result.append((SafeEatL10n.text(L10nKey.Result.mineralSelenium), se)) }
+        return result
+    }
+
+    // S5: 每日值百分比
+    private var dailyValueSection: some View {
+        Group {
+            if let dv = recognition?.effectiveNutrition?.dailyValuePercentages, !dv.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionDailyValues), icon: "percent")
+                    sectionCard {
+                        VStack(alignment: .leading, spacing: 10) {
+                            ForEach(Array(dv.sorted(by: { $0.key < $1.key }).enumerated()), id: \.offset) { _, entry in
+                                HStack {
+                                    Text(entry.key)
+                                        .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                                        .foregroundStyle(SafeEatTheme.textPrimary)
+                                    Spacer()
+                                    dailyValueBar(value: entry.value)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func dailyValueBar(value: Double) -> some View {
+        HStack(spacing: 6) {
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        .fill(colorScheme == .dark ? Color.white.opacity(0.08) : Color(.systemGray5))
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        .fill(SafeEatTheme.primary)
+                        .frame(width: geo.size.width * min(CGFloat(value) / 100.0, 1.0))
+                }
+            }
+            .frame(height: 6)
+            .frame(maxWidth: 60)
+            Text(String(format: "%.0f%%", value))
+                .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
+                .foregroundStyle(SafeEatTheme.primary)
+        }
+    }
+
+    // S6: 血糖信息
+    private var glycemicSection: some View {
+        Group {
+            if let gi = recognition?.effectiveNutrition?.glycemicInfo {
+                VStack(alignment: .leading, spacing: 12) {
+                    sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionGlycemic), icon: "drop.fill")
+                    sectionCard {
+                        VStack(alignment: .leading, spacing: 8) {
+                            if let idx = gi.glycemicIndex {
+                                HStack {
+                                    Text(SafeEatL10n.text(L10nKey.Result.glycemicIndex))
+                                        .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                                        .foregroundStyle(SafeEatTheme.textPrimary)
+                                    Spacer()
+                                    Text(String(format: "%.0f", idx))
+                                        .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                        .foregroundStyle(glycemicColor(idx))
+                                }
+                            }
+                            if let load = gi.glycemicLoad {
+                                HStack {
+                                    Text(SafeEatL10n.text(L10nKey.Result.glycemicLoad))
+                                        .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                                        .foregroundStyle(SafeEatTheme.textPrimary)
+                                    Spacer()
+                                    Text(String(format: "%.1f", load))
+                                        .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                        .foregroundStyle(SafeEatTheme.textPrimary)
+                                }
+                            }
+                            if let insulin = gi.insulinIndex {
+                                HStack {
+                                    Text(SafeEatL10n.text(L10nKey.Result.insulinIndex))
+                                        .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                                        .foregroundStyle(SafeEatTheme.textPrimary)
+                                    Spacer()
+                                    Text(String(format: "%.0f", insulin))
+                                        .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                        .foregroundStyle(SafeEatTheme.textPrimary)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func glycemicColor(_ gi: Double) -> Color {
+        if gi <= 55 { return SafeEatTheme.success }
+        if gi <= 70 { return SafeEatTheme.warning }
+        return SafeEatTheme.danger
+    }
+
+    // S7: 过敏原（背面版）— T8: FREE 只看 contains，PRO+ 看 mayContain
+    private var backAllergenSection: some View {
+        Group {
+            if let data = allergensData {
+                VStack(alignment: .leading, spacing: 12) {
+                    sectionHeader(SafeEatL10n.text(L10nKey.Result.allergenTitle), icon: "exclamationmark.shield.fill")
+                    sectionCard {
+                        VStack(alignment: .leading, spacing: 10) {
+                            if !data.contains.isEmpty {
+                                allergenRow(
+                                    label: SafeEatL10n.text(L10nKey.Result.allergenContains),
+                                    items: data.contains,
+                                    color: SafeEatTheme.danger
+                                )
+                            }
+                            if !data.mayContain.isEmpty {
+                                if membershipTier >= .pro {
+                                    allergenRow(
+                                        label: SafeEatL10n.text(L10nKey.Result.allergenMayContain),
+                                        items: data.mayContain,
+                                        color: .orange
+                                    )
+                                } else {
+                                    // T8: mayContain 遮罩（FREE/LITE 用户不可见）
+                                    HStack {
+                                        Image(systemName: "lock.fill")
+                                            .font(.system(size: 12))
+                                            .foregroundStyle(SafeEatTheme.primary)
+                                        Text(SafeEatL10n.text(L10nKey.Result.paywallUpgradeHint))
+                                            .font(SafeEatFont.custom(13, relativeTo: .footnote))
+                                            .foregroundStyle(SafeEatTheme.textSecondary)
+                                    }
+                                    .padding(.vertical, 6)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // S8: 饮食信息
+    private var dietaryInfoSection: some View {
+        Group {
+            if let diet = recognition?.effectiveNutrition?.dietaryInfo {
+                VStack(alignment: .leading, spacing: 12) {
+                    sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionDietary), icon: "leaf.fill")
+                    sectionCard {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 8)], spacing: 8) {
+                            dietaryTag(SafeEatL10n.text(L10nKey.Result.dietVegetarian), isOn: diet.isVegetarian ?? false)
+                            dietaryTag(SafeEatL10n.text(L10nKey.Result.dietVegan), isOn: diet.isVegan ?? false)
+                            dietaryTag(SafeEatL10n.text(L10nKey.Result.dietGlutenFree), isOn: diet.isGlutenFree ?? false)
+                            dietaryTag(SafeEatL10n.text(L10nKey.Result.dietLactoseFree), isOn: diet.isLactoseFree ?? false)
+                            dietaryTag(SafeEatL10n.text(L10nKey.Result.dietHalal), isOn: diet.isHalal ?? false)
+                            dietaryTag(SafeEatL10n.text(L10nKey.Result.dietLowFodmap), isOn: diet.isLowFodmap ?? false)
+                            dietaryTag(SafeEatL10n.text(L10nKey.Result.dietDairyFree), isOn: diet.isDairyFree ?? false)
+                            dietaryTag(SafeEatL10n.text(L10nKey.Result.dietNutFree), isOn: diet.isNutFree ?? false)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func dietaryTag(_ label: String, isOn: Bool) -> some View {
+        Text(label)
+            .font(SafeEatFont.custom(13, relativeTo: .footnote, weight: .semibold))
+            .foregroundStyle(isOn ? .white : SafeEatTheme.textSecondary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(isOn ? SafeEatTheme.success : (colorScheme == .dark ? Color.white.opacity(0.08) : Color(.systemGray5)))
+            .clipShape(Capsule())
+    }
+
+    // S9: 制备方式
+    private var preparationSection: some View {
+        Group {
+            if let prep = recognition?.effectiveNutrition?.preparation,
+               prep.cookingMethod != nil || prep.oilType != nil || prep.oilAmount != nil || prep.saltLevel != nil || prep.sugarLevel != nil {
+                VStack(alignment: .leading, spacing: 12) {
+                    sectionHeader(SafeEatL10n.text(L10nKey.Result.preparation), icon: "frying.pan.fill")
+                    sectionCard {
+                        VStack(alignment: .leading, spacing: 8) {
+                            if let method = prep.cookingMethod {
+                                prepRow(SafeEatL10n.text(L10nKey.Result.prepMethod), value: method)
+                            }
+                            if let oil = prep.oilType {
+                                prepRow(SafeEatL10n.text(L10nKey.Result.prepOilType), value: oil)
+                            }
+                            if let amount = prep.oilAmount {
+                                prepRow(SafeEatL10n.text(L10nKey.Result.prepOilAmount), value: amount)
+                            }
+                            if let salt = prep.saltLevel {
+                                prepRow(SafeEatL10n.text(L10nKey.Result.prepSaltLevel), value: salt)
+                            }
+                            if let sugar = prep.sugarLevel {
+                                prepRow(SafeEatL10n.text(L10nKey.Result.prepSugarLevel), value: sugar)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func prepRow(_ label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+            Spacer()
+            Text(value)
+                .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+        }
+    }
+
+    // S10: 成分分解
+    private var ingredientBreakdownSection: some View {
+        Group {
+            if let ingredients = recognition?.effectiveNutrition?.ingredientBreakdown, !ingredients.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionIngredients), icon: "list.bullet.clipboard.fill")
+                    sectionCard {
+                        VStack(alignment: .leading, spacing: 10) {
+                            ForEach(ingredients) { ing in
+                                HStack(alignment: .top, spacing: 8) {
+                                    Circle()
+                                        .fill(ing.isMainIngredient == true ? SafeEatTheme.primary : SafeEatTheme.textSecondary.opacity(0.3))
+                                        .frame(width: 8, height: 8)
+                                        .padding(.top, 6)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        HStack(spacing: 4) {
+                                            Text(ing.name)
+                                                .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                                .foregroundStyle(SafeEatTheme.textPrimary)
+                                            if let amount = ing.amount {
+                                                Text(amount)
+                                                    .font(SafeEatFont.custom(12, relativeTo: .caption))
+                                                    .foregroundStyle(SafeEatTheme.textSecondary)
+                                            }
+                                        }
+                                        if let algs = ing.allergens, !algs.isEmpty {
+                                            HStack(spacing: 4) {
+                                                ForEach(algs, id: \.self) { a in
+                                                    Text(a)
+                                                        .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                                                        .foregroundStyle(SafeEatTheme.danger)
+                                                        .padding(.horizontal, 6)
+                                                        .padding(.vertical, 2)
+                                                        .background(SafeEatTheme.danger.opacity(0.12))
+                                                        .clipShape(Capsule())
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
