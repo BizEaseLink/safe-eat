@@ -513,12 +513,14 @@ struct ScanHomeView: View {
                         await store.refreshProfile()
                             await store.refreshDailyQuota()
                             adRewardResultType = .success(rewardQuota: store.dailyQuota?.adRewardPerWatch ?? adConfig.placement(for: .rewardVideo)?.rewardQuota ?? 1)
+                        showQuotaExceeded = false
                         showAdRewardResult = true
                     } catch {
                         print("[UMeng] claimReward 失败: \(error)")
                         await store.refreshProfile()
                         await store.refreshDailyQuota()
                         adRewardResultType = .claimFailed
+                        showQuotaExceeded = false
                         showAdRewardResult = true
                     }
                 }
