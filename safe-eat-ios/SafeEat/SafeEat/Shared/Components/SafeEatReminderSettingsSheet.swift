@@ -14,7 +14,8 @@ struct SafeEatReminderSettingsSheet: View {
     var body: some View {
         SafeEatSettingsSheetContainer(
             title: SafeEatL10n.text(L10nKey.Reminder.sheetTitle),
-            subtitle: SafeEatL10n.text(L10nKey.Reminder.sheetSubtitle)
+            subtitle: SafeEatL10n.text(L10nKey.Reminder.sheetSubtitle),
+            detentHeight: 500
         ) {
             toggleCard
             scheduleCard

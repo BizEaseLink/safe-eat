@@ -7,7 +7,8 @@ struct LanguageSettingsView: View {
     var body: some View {
         SafeEatSettingsSheetContainer(
             title: SafeEatL10n.text(L10nKey.Profile.Language.title),
-            subtitle: SafeEatL10n.text(L10nKey.Profile.Language.subtitle)
+            subtitle: SafeEatL10n.text(L10nKey.Profile.Language.subtitle),
+            detentHeight: 280
         ) {
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 10) {

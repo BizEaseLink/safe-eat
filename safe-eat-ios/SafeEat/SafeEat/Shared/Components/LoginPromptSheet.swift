@@ -9,7 +9,8 @@ struct LoginPromptSheet: View {
     var body: some View {
         SafeEatSettingsSheetContainer(
             title: "需要登录",
-            subtitle: featureHint ?? "登录后即可使用完整功能"
+            subtitle: featureHint ?? "登录后即可使用完整功能",
+            detentHeight: 340
         ) {
             ProfileSurfaceCard {
                 HStack(spacing: 14) {
