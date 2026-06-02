@@ -7,7 +7,8 @@ struct NewUserWelcomeSheet: View {
     var body: some View {
         SafeEatSettingsSheetContainer(
             title: "欢迎使用 SafeEat",
-            subtitle: "让每一口都安心"
+            subtitle: "让每一口都安心",
+            detentHeight: 420
         ) {
             ProfileSurfaceCard {
                 HStack(spacing: 14) {

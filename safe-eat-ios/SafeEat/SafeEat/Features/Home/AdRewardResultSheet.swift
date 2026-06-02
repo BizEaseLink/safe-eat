@@ -14,7 +14,8 @@ struct AdRewardResultSheet: View {
     var body: some View {
         SafeEatSettingsSheetContainer(
             title: titleText,
-            subtitle: messageText
+            subtitle: messageText,
+            detentHeight: 290
         ) {
             switch resultType {
             case .success(let quota):

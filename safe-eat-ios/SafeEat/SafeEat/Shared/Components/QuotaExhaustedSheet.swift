@@ -8,7 +8,8 @@ struct QuotaExhaustedSheet: View {
     var body: some View {
         SafeEatSettingsSheetContainer(
             title: "次数不足",
-            subtitle: "今日扫描次数已用完"
+            subtitle: "今日扫描次数已用完",
+            detentHeight: store.profile?.currentPlanTier == "free" ? 420 : 330
         ) {
             ProfileSurfaceCard {
                 HStack(spacing: 14) {

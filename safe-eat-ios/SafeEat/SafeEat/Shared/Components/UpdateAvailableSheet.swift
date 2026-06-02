@@ -7,7 +7,8 @@ struct UpdateAvailableSheet: View {
     var body: some View {
         SafeEatSettingsSheetContainer(
             title: "发现新版本",
-            subtitle: store.updateInfo?.releaseNotes ?? "有新版本可用"
+            subtitle: store.updateInfo?.releaseNotes ?? "有新版本可用",
+            detentHeight: 380
         ) {
             if let notes = store.updateInfo?.releaseNotes, !notes.isEmpty {
                 ProfileSurfaceCard {

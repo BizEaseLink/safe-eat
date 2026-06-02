@@ -8,7 +8,8 @@ struct SignupBonusSheet: View {
     var body: some View {
         SafeEatSettingsSheetContainer(
             title: "注册奖励",
-            subtitle: "恭喜获得额外扫描次数"
+            subtitle: "恭喜获得额外扫描次数",
+            detentHeight: 290
         ) {
             ProfileSurfaceCard {
                 HStack(spacing: 14) {

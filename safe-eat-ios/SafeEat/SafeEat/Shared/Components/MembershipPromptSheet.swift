@@ -9,7 +9,8 @@ struct MembershipPromptSheet: View {
     var body: some View {
         SafeEatSettingsSheetContainer(
             title: "升级会员",
-            subtitle: featureHint ?? "解锁全部高级功能"
+            subtitle: featureHint ?? "解锁全部高级功能",
+            detentHeight: 420
         ) {
             ProfileSurfaceCard {
                 HStack(spacing: 14) {

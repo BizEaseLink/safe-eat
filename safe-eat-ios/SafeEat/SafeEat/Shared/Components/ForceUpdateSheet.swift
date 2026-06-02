@@ -7,7 +7,8 @@ struct ForceUpdateSheet: View {
     var body: some View {
         SafeEatSettingsSheetContainer(
             title: "发现新版本",
-            subtitle: store.updateInfo?.releaseNotes ?? "当前版本过低，需要更新才能继续使用"
+            subtitle: store.updateInfo?.releaseNotes ?? "当前版本过低，需要更新才能继续使用",
+            detentHeight: store.updateInfo?.releaseNotes != nil && !store.updateInfo!.releaseNotes!.isEmpty ? 380 : 290
         ) {
             if let notes = store.updateInfo?.releaseNotes, !notes.isEmpty {
                 ProfileSurfaceCard {

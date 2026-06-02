@@ -12,7 +12,8 @@ struct RedeemCodeSheet: View {
     var body: some View {
         SafeEatSettingsSheetContainer(
             title: "兑换码",
-            subtitle: "输入兑换码获取奖励"
+            subtitle: "输入兑换码获取奖励",
+            detentHeight: 340
         ) {
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 12) {

@@ -18,7 +18,8 @@ struct QuotaExceededSheet: View {
                 : SafeEatL10n.text(L10nKey.Home.quotaExceededMonthlyTitle),
             subtitle: isFreeUser
                 ? SafeEatL10n.format(L10nKey.Home.quotaExceededDailyHintFormat, snapshot.totalQuota)
-                : SafeEatL10n.text(L10nKey.Home.quotaExceededUpgradeHint)
+                : SafeEatL10n.text(L10nKey.Home.quotaExceededUpgradeHint),
+            detentHeight: (isFreeUser && onWatchAd != nil) ? 430 : 380
         ) {
             ProfileSurfaceCard {
                 HStack(spacing: 14) {
