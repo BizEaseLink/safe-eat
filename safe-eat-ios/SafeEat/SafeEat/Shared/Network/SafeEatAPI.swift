@@ -358,6 +358,20 @@ final class SafeEatAPI {
         return try await send(request, as: T.self)
     }
 
+    func checkAppVersion(platform: String, currentVersion: String) async throws -> AppVersionCheckResponse {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/app-version/check",
+            method: "GET"
+        )
+        var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "platform", value: platform),
+            URLQueryItem(name: "currentVersion", value: currentVersion),
+        ]
+        request.url = components?.url
+        return try await send(request, as: AppVersionCheckResponse.self)
+    }
+
     @discardableResult
     func submitFeedback(
         accessToken: String,

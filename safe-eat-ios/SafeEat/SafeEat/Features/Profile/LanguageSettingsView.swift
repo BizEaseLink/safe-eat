@@ -9,32 +9,20 @@ struct LanguageSettingsView: View {
             title: SafeEatL10n.text(L10nKey.Profile.Language.title),
             subtitle: SafeEatL10n.text(L10nKey.Profile.Language.subtitle)
         ) {
-            ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.Language.sectionTitle)) {
-                ForEach(Array(AppLanguage.allCases.enumerated()), id: \.element.id) { index, language in
-                    Button {
-                        settings.language = language
-                        dismiss()
-                    } label: {
-                        HStack {
-                            Text(language.displayName)
-                                .font(SafeEatFont.textStyle(.body))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
-                            Spacer()
-                            if settings.language == language {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(SafeEatTheme.primary)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .frame(minHeight: 44)
-                        .padding(.vertical, 6)
-                        .padding(.horizontal, 2)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
+            ProfileSurfaceCard {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(SafeEatL10n.text(L10nKey.Profile.Language.sectionTitle))
+                        .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .semibold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
 
-                    if index < AppLanguage.allCases.count - 1 {
-                        Divider().overlay(SafeEatTheme.line)
+                    ForEach(AppLanguage.allCases) { language in
+                        ProfileSelectionRow(
+                            title: language.displayName,
+                            isSelected: settings.language == language
+                        ) {
+                            settings.language = language
+                            dismiss()
+                        }
                     }
                 }
             }

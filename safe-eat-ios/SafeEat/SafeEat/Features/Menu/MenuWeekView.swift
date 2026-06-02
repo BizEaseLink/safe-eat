@@ -302,9 +302,6 @@ struct MenuWeekView: View {
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showNotificationSheet) {
             SafeEatReminderSettingsSheet()
-                .presentationDetents([.height(600)])
-                .presentationDragIndicator(.visible)
-                .presentationBackground(.clear)
         }
         .navigationDestination(item: $dayRoute) { route in
             HistoryDayView(date: route.date)

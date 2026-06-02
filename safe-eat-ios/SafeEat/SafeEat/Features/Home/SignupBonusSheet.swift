@@ -1,38 +1,42 @@
 import SwiftUI
 
+/// 注册奖励弹窗 — 新用户注册后获得额外扫描次数
 struct SignupBonusSheet: View {
     let bonusQuota: Int
     let onDismiss: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "gift.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(.orange)
+        SafeEatSettingsSheetContainer(
+            title: "注册奖励",
+            subtitle: "恭喜获得额外扫描次数"
+        ) {
+            ProfileSurfaceCard {
+                HStack(spacing: 14) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.orange.opacity(0.12))
+                            .frame(width: 46, height: 46)
 
-            Text(SafeEatL10n.text(L10nKey.Home.signupBonusWelcomeTitle))
-                .font(.title2)
-                .bold()
+                        Image(systemName: "gift.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.orange)
+                    }
 
-            Text(SafeEatL10n.format(L10nKey.Home.signupBonusQuotaFormat, bonusQuota))
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("+\(bonusQuota) 次扫描")
+                            .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
+                            .foregroundStyle(SafeEatTheme.textPrimary)
 
-            Text(SafeEatL10n.text(L10nKey.Home.signupBonusSubtitle))
-                .font(.subheadline)
-                .foregroundStyle(.tertiary)
+                        Text(SafeEatL10n.text(L10nKey.Home.signupBonusSubtitle))
+                            .font(SafeEatFont.textStyle(.footnote))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+                    }
+                }
+            }
 
-            Button(SafeEatL10n.text(L10nKey.Home.signupBonusStartAction)) {
+            ProfilePrimaryActionButton(title: "开始使用", isLoading: false) {
                 onDismiss()
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.green)
         }
-        .padding(32)
     }
-}
-
-#Preview {
-    SignupBonusSheet(bonusQuota: 10, onDismiss: {})
 }

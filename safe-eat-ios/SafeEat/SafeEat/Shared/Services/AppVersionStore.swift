@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import UIKit
 
 @MainActor
 @Observable
@@ -15,33 +16,53 @@ final class AppVersionStore {
     // UserDefaults 缓存
     private static let skippedVersionKey = "safeeat.skippedVersion"
 
+    // 通知名：版本更新检测到时发送，object 为 AppVersionCheckResponse
+    static let updateDetectedNotification = Notification.Name("AppVersionUpdateDetected")
+
     init(api: SafeEatAPI = SafeEatAPI()) {
         self.api = api
     }
 
-    /// 检查版本更新（冷启动时调用）
+    /// 检查版本更新（冷启动/前台恢复时调用）
     func checkVersion() async {
+        guard !isChecking else { return }
         isChecking = true
+        defer { isChecking = false }
+
         let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
 
         do {
-            let response: AppVersionCheckResponse = try await api.sendPublicRequest(
-                path: "/v1/apps/\(AppConfig.appCode)/app-version/check?platform=ios&currentVersion=\(currentVersion)",
-                method: "GET"
-            )
-            updateInfo = response
+            #if DEBUG
+            print("[AppVersion] checking platform=ios currentVersion=\(currentVersion)")
+            #endif
+
+            let response = try await api.checkAppVersion(platform: "ios", currentVersion: currentVersion)
+
+            #if DEBUG
+            print("[AppVersion] response needsUpdate=\(response.needsUpdate) forceUpdate=\(response.forceUpdate) latest=\(response.latestVersion ?? "-") minimum=\(response.minimumVersion ?? "-")")
+            #endif
 
             // 如果是普通更新且用户已跳过此版本，则不弹窗
             if response.needsUpdate && !response.forceUpdate {
                 if let skipped = UserDefaults.standard.string(forKey: Self.skippedVersionKey),
                    skipped == response.latestVersion {
-                    updateInfo = nil  // 不弹窗
+                    return  // 已跳过，不弹窗
                 }
+            }
+
+            updateInfo = response
+
+            // 通过 NotificationCenter 通知 ContentView 弹窗
+            // @Observable 变化可能不会自动触发视图刷新，用通知确保可靠
+            if response.needsUpdate {
+                NotificationCenter.default.post(
+                    name: Self.updateDetectedNotification,
+                    object: response
+                )
             }
         } catch {
             print("[AppVersion] 版本检查失败: \(error.localizedDescription)")
         }
-        isChecking = false
     }
 
     /// 跳过当前版本更新（普通更新时调用）
@@ -59,12 +80,22 @@ final class AppVersionStore {
 
     /// 打开 App Store
     func openAppStore() {
-        if let urlStr = updateInfo?.storeUrl, let url = URL(string: urlStr) {
+        if let url = validStoreURL(from: updateInfo?.storeUrl) {
             UIApplication.shared.open(url)
         } else {
-            // 默认使用 AppConfig 中的 appStoreID
             let url = URL(string: "https://apps.apple.com/app/id\(AppConfig.appStoreID)")!
             UIApplication.shared.open(url)
         }
+    }
+
+    private func validStoreURL(from value: String?) -> URL? {
+        guard let value,
+              let url = URL(string: value),
+              let scheme = url.scheme?.lowercased(),
+              ["http", "https", "itms-apps"].contains(scheme)
+        else {
+            return nil
+        }
+        return url
     }
 }

@@ -119,9 +119,6 @@ struct SafeEatApp: App {
                 await AdConfigStore.shared.fetchConfig()
                 AdConfigStore.shared.startPeriodicRefresh()
 
-                // 版本检查
-                await AppVersionStore.shared.checkVersion()
-
                 // 预加载插屏广告
                 if !isPaidMember && adConfig.interstitialEnabled {
                     InterstitialAdManager.shared.preloadAd()

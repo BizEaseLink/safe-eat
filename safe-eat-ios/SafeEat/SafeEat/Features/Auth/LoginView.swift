@@ -54,10 +54,9 @@ struct LoginView: View {
         }
         .sheet(isPresented: $showNewUserAlert) {
             NewUserWelcomeSheet(
-                onSetPassword: {
+                onDismiss: {
                     showNewUserAlert = false
                     store.isNewUser = false
-                    loginRoute = .register
                 }
             )
         }

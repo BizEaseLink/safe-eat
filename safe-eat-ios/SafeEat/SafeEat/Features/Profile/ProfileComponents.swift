@@ -285,6 +285,30 @@ struct ProfilePrimaryActionButton: View {
     }
 }
 
+struct ProfileSecondaryActionButton: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .frame(maxWidth: .infinity)
+                .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .semibold))
+                .foregroundStyle(SafeEatTheme.primary)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .fill(SafeEatTheme.primarySoft)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(SafeEatTheme.primary.opacity(0.3), lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 struct ProfileFieldBlock<Content: View>: View {
     let label: String
     var hint: String? = nil

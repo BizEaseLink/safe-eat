@@ -1,44 +1,5 @@
 import SwiftUI
 
-struct SafeEatSettingsSheetContainer<Content: View>: View {
-    let title: String
-    let subtitle: String
-    @ViewBuilder let content: Content
-
-    @Environment(\.colorScheme) private var colorScheme
-
-    var body: some View {
-        GeometryReader { proxy in
-            ZStack {
-                // 底色：确保深色模式下无白色漏出
-                (colorScheme == .dark ? Color(red: 0.12, green: 0.13, blue: 0.15) : Color.white)
-                    .ignoresSafeArea()
-
-                SafeEatMainGradientBackground()
-
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 20) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(title)
-                                .font(SafeEatFont.custom(28, relativeTo: .title2, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
-
-                            Text(subtitle)
-                                .font(SafeEatFont.textStyle(.subheadline))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-                        }
-
-                        content
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 28)
-                    .padding(.bottom, max(proxy.safeAreaInsets.bottom, 18) + 26)
-                }
-            }
-        }
-    }
-}
-
 struct SafeEatReminderSettingsSheet: View {
     @EnvironmentObject private var settings: AppSettingsStore
     @Environment(\.dismiss) private var dismiss
@@ -74,7 +35,6 @@ struct SafeEatReminderSettingsSheet: View {
                     await saveSettings()
                 }
             }
-            .padding(.top, 10)
         }
         .task {
             settings.notificationMessage = nil
@@ -139,7 +99,7 @@ struct SafeEatReminderSettingsSheet: View {
                     .pickerStyle(.wheel)
                     .frame(maxWidth: .infinity)
                 }
-                .frame(height: 156)
+                .frame(height: 120)
                 .disabled(!draftEnabled)
                 .opacity(draftEnabled ? 1 : 0.42)
             }

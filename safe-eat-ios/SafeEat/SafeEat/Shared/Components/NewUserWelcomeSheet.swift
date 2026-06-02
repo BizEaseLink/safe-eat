@@ -1,96 +1,68 @@
 import SwiftUI
 
+/// 新用户欢迎弹窗 — 首次使用时展示
 struct NewUserWelcomeSheet: View {
-    @Environment(\.colorScheme) private var colorScheme
-
-    let onSetPassword: () -> Void
+    let onDismiss: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            Capsule()
-                .fill(dragIndicatorColor)
-                .frame(width: 42, height: 6)
-                .padding(.top, 10)
-                .padding(.bottom, 14)
+        SafeEatSettingsSheetContainer(
+            title: "欢迎使用 SafeEat",
+            subtitle: "让每一口都安心"
+        ) {
+            ProfileSurfaceCard {
+                HStack(spacing: 14) {
+                    ZStack {
+                        Circle()
+                            .fill(SafeEatTheme.primary.opacity(0.12))
+                            .frame(width: 46, height: 46)
 
-            VStack(spacing: 16) {
-                iconView
+                        Image(systemName: "leaf.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(SafeEatTheme.primary)
+                    }
 
-                VStack(spacing: 7) {
-                    Text(SafeEatL10n.text(L10nKey.Auth.newUserWelcomeTitle))
-                        .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
-                        .multilineTextAlignment(.center)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("食品安全助手")
+                            .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
+                            .foregroundStyle(SafeEatTheme.textPrimary)
 
-                    Text(SafeEatL10n.text(L10nKey.Auth.newUserWelcomeMessage))
-                        .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
-                        .multilineTextAlignment(.center)
+                        Text("拍照即可检测食品成分安全性")
+                            .font(SafeEatFont.textStyle(.footnote))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+                    }
                 }
-
-                Button {
-                    onSetPassword()
-                } label: {
-                    Text(SafeEatL10n.text(L10nKey.Auth.newUserSetPassword))
-                        .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(buttonGradient)
-                        )
-                        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.20), radius: 18, y: 10)
-                }
-                .buttonStyle(.plain)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
+
+            ProfileSurfaceCard {
+                VStack(alignment: .leading, spacing: 10) {
+                    featureRow(icon: "camera.fill", title: "拍照扫描", detail: "识别食品成分")
+                    featureRow(icon: "chart.bar.fill", title: "安全评分", detail: "一目了然")
+                    featureRow(icon: "bell.fill", title: "定时提醒", detail: "不遗漏保质期")
+                }
+            }
+
+            ProfilePrimaryActionButton(title: "开始体验", isLoading: false) {
+                onDismiss()
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .top)
-        .background(sheetFill)
-        .background(.ultraThinMaterial)
-        .shadow(color: sheetShadow, radius: 28, y: -8)
-        .interactiveDismissDisabled()
-        .presentationDetents([.height(320)])
-        .presentationDragIndicator(.hidden)
-        .presentationBackground(.clear)
-        .presentationCornerRadius(36)
     }
 
-    private var iconView: some View {
-        ZStack {
-            Circle()
-                .fill(SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.16 : 0.14))
-                .frame(width: 58, height: 58)
-
-            Image(systemName: "hand.wave.fill")
-                .font(.system(size: 28, weight: .bold))
+    private func featureRow(icon: String, title: String, detail: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(SafeEatTheme.primary)
-                .symbolRenderingMode(.hierarchical)
+                .frame(width: 24)
+
+            Text(title)
+                .font(SafeEatFont.textStyle(.subheadline))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+
+            Spacer()
+
+            Text(detail)
+                .font(SafeEatFont.textStyle(.caption))
+                .foregroundStyle(SafeEatTheme.textSecondary)
         }
-        .shadow(color: SafeEatTheme.primary.opacity(0.14), radius: 18, y: 8)
-    }
-
-    private var buttonGradient: LinearGradient {
-        LinearGradient(
-            colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
-            startPoint: .leading,
-            endPoint: .trailing
-        )
-    }
-
-    private var sheetFill: Color {
-        colorScheme == .dark
-            ? Color(red: 0.10, green: 0.12, blue: 0.11).opacity(0.72)
-            : Color.white.opacity(0.78)
-    }
-
-    private var sheetShadow: Color {
-        colorScheme == .dark ? Color.black.opacity(0.32) : SafeEatTheme.primaryDeep.opacity(0.12)
-    }
-
-    private var dragIndicatorColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.22) : Color.black.opacity(0.24)
     }
 }

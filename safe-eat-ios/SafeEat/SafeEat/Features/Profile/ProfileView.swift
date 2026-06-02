@@ -61,28 +61,19 @@ struct ProfileView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $activeSheet) { sheet in
-            Group {
-                switch sheet {
-                case .reminder:
-                    SafeEatReminderSettingsSheet()
-                        .presentationDetents([.height(600)])
-                case .language:
-                    LanguageSettingsView()
-                        .presentationDetents([.height(430)])
-                }
+            switch sheet {
+            case .reminder:
+                SafeEatReminderSettingsSheet()
+            case .language:
+                LanguageSettingsView()
             }
-            .presentationDragIndicator(.visible)
-            .presentationBackground(.clear)
         }
         .navigationDestination(for: ProfileRoute.self, destination: destination)
         .sheet(isPresented: $showRedeemCodeSheet) {
-            RedeemCodeSheet(store: store)
-                .presentationDetents([.height(260)])
-                .presentationDragIndicator(.visible)
+            RedeemCodeSheet()
         }
         .sheet(isPresented: $showHealthGoal) {
             HealthGoalSelectionView()
-                .presentationDragIndicator(.visible)
         }
         .task {
             await warmProfileDataIfNeeded()
