@@ -5,6 +5,11 @@
 "language.option.zh_hans" = "中文";
 "language.option.en" = "English";
 
+"tab.home" = "首页";
+"tab.menu" = "菜单";
+"tab.trend" = "趋势";
+"tab.profile" = "个人";
+
 "common.ok" = "知道了";
 "common.save" = "保存";
 "common.saving" = "保存中";
@@ -353,8 +358,9 @@
 "home.brand_pill" = "食安安";
 "home.promo.tag" = "新用户专享";
 "home.promo.value" = "29 元立减至 20 元";
-"home.hero.tag.health" = "控糖友好";
-"home.hero.tag.history" = "本地历史";
+"home.hero.tag.health" = "三高预警";
+"home.hero.tag.history" = "拍照即知";
+"home.hero.tag.know" = "吃得明白";
 "home.hero.title" = "今天这道菜，适不适合你继续吃？";
 "home.hero.scan_action" = "开始扫描";
 "home.hero.member_action" = "看会员";

@@ -34,6 +34,13 @@ enum L10nKey {
         static let retry = "common.retry"
     }
 
+    enum Tab {
+        static let home = "tab.home"
+        static let menu = "tab.menu"
+        static let trend = "tab.trend"
+        static let profile = "tab.profile"
+    }
+
     enum Advice {
         static let titleRecommended = "advice.title.recommended"
         static let titleCaution = "advice.title.caution"
@@ -448,6 +455,7 @@ enum L10nKey {
         static let promoValue = "home.promo.value"
         static let heroTagHealth = "home.hero.tag.health"
         static let heroTagHistory = "home.hero.tag.history"
+        static let heroTagKnow = "home.hero.tag.know"
         static let heroTitle = "home.hero.title"
         static let scanAction = "home.hero.scan_action"
         static let memberAction = "home.hero.member_action"

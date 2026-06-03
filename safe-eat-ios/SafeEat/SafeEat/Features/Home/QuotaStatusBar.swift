@@ -2,67 +2,102 @@ import SwiftUI
 
 struct QuotaStatusBar: View {
     let snapshot: DailyQuotaSnapshot
+    var onShowMembership: (() -> Void)? = nil
+
+    @Environment(\.colorScheme) private var colorScheme
 
     private var isFreeUser: Bool {
         snapshot.planTier == "free"
     }
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: isFreeUser ? "sun.max.fill" : "calendar.badge.clock")
-                .foregroundStyle(isFreeUser ? .orange : .blue)
+        VStack(spacing: 14) {
+            // 标题行：图标 + 标签 + 次数
+            HStack(spacing: 10) {
+                Image(systemName: isFreeUser ? "sun.max.fill" : "calendar.badge.clock")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(isFreeUser ? .orange : .blue)
 
-            if isFreeUser {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(SafeEatL10n.text(L10nKey.Home.quotaStatusBarDailyLabel))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                    Text(SafeEatL10n.format(L10nKey.Home.quotaStatusBarCountFormat, snapshot.remainingQuota))
-                        .font(.subheadline)
-                        .bold()
-                }
+                Text(isFreeUser
+                    ? SafeEatL10n.text(L10nKey.Home.quotaStatusBarDailyLabel)
+                    : SafeEatL10n.text(L10nKey.Home.quotaStatusBarMonthlyLabel))
+                    .font(SafeEatFont.custom(14, relativeTo: .subheadline))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
 
-                if let remaining = snapshot.remainingAdWatchCount, remaining > 0,
-                   let reward = snapshot.adRewardPerWatch, reward > 0 {
-                    Spacer()
-                    HStack(spacing: 4) {
-                        Image(systemName: "play.rectangle.fill")
-                            .font(.caption)
-                        Text(SafeEatL10n.format(L10nKey.Home.quotaStatusBarAdRewardFormat, reward))
-                            .font(.caption2)
-                    }
-                    .foregroundStyle(.green)
-                }
-            } else {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(SafeEatL10n.text(L10nKey.Home.quotaStatusBarMonthlyLabel))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                    Text(SafeEatL10n.format(L10nKey.Home.quotaStatusBarCountFormat, snapshot.monthlyRemaining ?? snapshot.remainingQuota))
-                        .font(.subheadline)
-                        .bold()
-                }
+                Spacer()
 
-                if let periodEnd = snapshot.periodEnd {
-                    Spacer()
-                    Text(SafeEatL10n.format(L10nKey.Home.quotaStatusBarCycleEndFormat, periodEnd))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
+                Text(SafeEatL10n.format(
+                    L10nKey.Home.quotaStatusBarCountFormat,
+                    isFreeUser ? snapshot.remainingQuota : (snapshot.monthlyRemaining ?? snapshot.remainingQuota)
+                ))
+                .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
+                .foregroundStyle(SafeEatTheme.textPrimary)
             }
 
-            Spacer()
-
-            // 额度进度条
+            // 进度条（全宽）
             ProgressView(value: progressValue)
                 .progressViewStyle(.linear)
-                .frame(width: 60)
                 .tint(progressColor)
+
+            // 底部行：看会员按钮 + 周期信息
+            HStack {
+                // 看会员按钮
+                Button {
+                    onShowMembership?()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "military_tech")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text(SafeEatL10n.text(L10nKey.Home.memberAction))
+                            .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                    }
+                    .foregroundStyle(SafeEatTheme.primary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(SafeEatTheme.primarySoft)
+                    )
+                    .overlay(
+                        Capsule()
+                            .stroke(SafeEatTheme.primary.opacity(0.18), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                // 周期信息
+                if isFreeUser {
+                    if !snapshot.quotaDate.isEmpty {
+                        Text(SafeEatL10n.format(L10nKey.Home.quotaStatusBarCycleEndFormat, snapshot.quotaDate))
+                            .font(SafeEatFont.custom(12, relativeTo: .caption))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+                    }
+                } else {
+                    if let periodEnd = snapshot.periodEnd {
+                        Text(SafeEatL10n.format(L10nKey.Home.quotaStatusBarCycleEndFormat, periodEnd))
+                            .font(SafeEatFont.custom(12, relativeTo: .caption))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+                    }
+                }
+            }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, 18)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .fill(.ultraThinMaterial)
+        )
+        .background(
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.52))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : Color.white.opacity(0.76), lineWidth: 1)
+        )
+        .shadow(color: SafeEatTheme.primaryDeep.opacity(0.10), radius: 22, y: 14)
     }
 
     private var progressValue: Double {
@@ -101,7 +136,8 @@ struct QuotaStatusBar: View {
                 monthlyRemaining: nil,
                 periodStart: nil,
                 periodEnd: nil
-            )
+            ),
+            onShowMembership: { print("看会员") }
         )
         QuotaStatusBar(
             snapshot: DailyQuotaSnapshot(
@@ -119,7 +155,8 @@ struct QuotaStatusBar: View {
                 monthlyRemaining: 400,
                 periodStart: "2026-05-01",
                 periodEnd: "2026-05-31"
-            )
+            ),
+            onShowMembership: { print("看会员") }
         )
     }
     .padding()

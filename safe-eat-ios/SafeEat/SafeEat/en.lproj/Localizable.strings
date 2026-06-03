@@ -169,6 +169,11 @@
 "language.option.zh_hans" = "Chinese";
 "language.option.en" = "English";
 
+"tab.home" = "Home";
+"tab.menu" = "Menu";
+"tab.trend" = "Trends";
+"tab.profile" = "Profile";
+
 "common.ok" = "OK";
 "common.save" = "Save";
 "common.saving" = "Saving";
@@ -557,8 +562,9 @@
 "home.brand_pill" = "Safe Eat";
 "home.promo.tag" = "New User Offer";
 "home.promo.value" = "¥29 down to ¥20";
-"home.hero.tag.health" = "Sugar-control friendly";
-"home.hero.tag.history" = "Local History";
+"home.hero.tag.health" = "Health Alerts";
+"home.hero.tag.history" = "Snap & Know";
+"home.hero.tag.know" = "Eat Smart";
 "home.hero.title" = "Is today's dish still right for you?";
 "home.hero.scan_action" = "Start Scan";
 "home.hero.member_action" = "Membership";

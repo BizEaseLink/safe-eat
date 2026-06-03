@@ -8,6 +8,7 @@ import StoreKit
 enum AppRootTab: Hashable {
     case home
     case history
+    case trend
     case profile
 }
 

@@ -1,5 +1,11 @@
 import SwiftUI
 
+enum AdRewardResultType {
+    case claimFailed
+    case loadFailed
+    case success(rewardQuota: Int)
+}
+
 /// 看广告奖励结果弹窗
 struct AdRewardResultSheet: View {
     @Environment(\.dismiss) private var dismiss

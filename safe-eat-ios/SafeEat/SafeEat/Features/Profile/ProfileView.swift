@@ -45,7 +45,7 @@ struct ProfileView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
-                    .padding(.bottom, 44)
+                    .padding(.bottom, 120)
                 }
                 .coordinateSpace(name: scrollCoordinateSpace)
                 .onPreferenceChange(SafeEatScrollOffsetKey.self) { value in
