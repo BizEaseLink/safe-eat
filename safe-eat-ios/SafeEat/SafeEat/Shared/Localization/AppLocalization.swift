@@ -39,6 +39,7 @@ enum L10nKey {
         static let menu = "tab.menu"
         static let trend = "tab.trend"
         static let profile = "tab.profile"
+        static let scan = "tab.scan"
     }
 
     enum Advice {

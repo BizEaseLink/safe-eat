@@ -14,6 +14,10 @@ struct MainTabView: View {
     @State private var showSignupBonus = false
     @Environment(\.colorScheme) private var colorScheme
     @State private var scanPressed = false
+    @State private var homePath = NavigationPath()
+    @State private var historyPath = NavigationPath()
+    @State private var trendPath = NavigationPath()
+    @State private var profilePath = NavigationPath()
 
     private var adConfig: AdConfigStore { AdConfigStore.shared }
 
@@ -36,13 +40,22 @@ struct MainTabView: View {
     // 当前选中的 Tab
     @State private var selectedTab: AppRootTab = .home
 
+    private var isAtRoot: Bool {
+        switch selectedTab {
+        case .home: return homePath.isEmpty
+        case .history: return historyPath.isEmpty
+        case .trend: return trendPath.isEmpty
+        case .profile: return profilePath.isEmpty
+        }
+    }
+
     var body: some View {
         ZStack(alignment: .bottom) {
             // 内容区域
             Group {
                 switch selectedTab {
                 case .home:
-                    NavigationStack {
+                    NavigationStack(path: $homePath) {
                         ScanHomeView(
                             onShowMembership: { showMembership = true },
                             onOpenResult: { itemId in
@@ -58,17 +71,17 @@ struct MainTabView: View {
                     }
 
                 case .history:
-                    NavigationStack {
+                    NavigationStack(path: $historyPath) {
                         MenuWeekView()
                     }
 
                 case .trend:
-                    NavigationStack {
+                    NavigationStack(path: $trendPath) {
                         TrendPlaceholderView()
                     }
 
                 case .profile:
-                    NavigationStack {
+                    NavigationStack(path: $profilePath) {
                         ProfileView()
                     }
                 }
@@ -85,9 +98,13 @@ struct MainTabView: View {
                 .zIndex(30)
             }
 
-            // 底部浮动导航区域
-            floatingBottomBar
+            // 底部浮动导航区域（只在根页面显示）
+            if isAtRoot {
+                floatingBottomBar
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
         }
+        .animation(.easeInOut(duration: 0.25), value: isAtRoot)
         .toolbar(.hidden, for: .tabBar)
         .fullScreenCover(isPresented: $showCamera) {
             CameraCaptureView { payload in
@@ -157,31 +174,16 @@ struct MainTabView: View {
     // MARK: - 浮动底部导航栏
 
     private var floatingBottomBar: some View {
-        // 整体胶囊居中，拍摄按钮在胶囊内最右侧
+        // 整体胶囊居中，拍摄按钮在中间位置
         HStack(spacing: 4) {
             tabBarItem(tab: .home, icon: "house.fill", label: SafeEatL10n.text(L10nKey.Tab.home))
             tabBarItem(tab: .history, icon: "book.closed.fill", label: SafeEatL10n.text(L10nKey.Tab.menu))
+
+            // 拍摄按钮（居中位置，带文字标签）
+            scanBarItem
+
             tabBarItem(tab: .trend, icon: "chart.line.uptrend.xyaxis", label: SafeEatL10n.text(L10nKey.Tab.trend))
             tabBarItem(tab: .profile, icon: "person.fill", label: SafeEatL10n.text(L10nKey.Tab.profile))
-
-            // 拍摄按钮（圆形，与胶囊一体化）
-            Button {
-                scanPressed = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                    scanPressed = false
-                }
-                startScan()
-            } label: {
-                Image(systemName: "camera.fill")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(scanPressed ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
-                    .frame(width: 44, height: 44)
-                    .background(
-                        Circle()
-                            .fill(scanPressed ? SafeEatTheme.primary.opacity(0.12) : Color.clear)
-                    )
-            }
-            .buttonStyle(.plain)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 8)
@@ -201,6 +203,33 @@ struct MainTabView: View {
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.horizontal, 16)
         .padding(.bottom, 6)
+    }
+
+    private var scanBarItem: some View {
+        Button {
+            scanPressed = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                scanPressed = false
+            }
+            startScan()
+        } label: {
+            VStack(spacing: 6) {
+                Image(systemName: "camera.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(scanPressed ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
+                Text(SafeEatL10n.text(L10nKey.Tab.scan))
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(scanPressed ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
+            }
+            .padding(.top, 8)
+            .padding(.bottom, 8)
+            .frame(minWidth: 56)
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(scanPressed ? SafeEatTheme.primary.opacity(0.12) : Color.clear)
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     private func tabBarItem(tab: AppRootTab, icon: String, label: String) -> some View {
