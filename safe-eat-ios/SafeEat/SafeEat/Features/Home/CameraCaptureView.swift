@@ -394,40 +394,7 @@ final class CameraSessionModel: NSObject, ObservableObject {
     }
 
     private func cropImageToGuideRectIfPossible(_ image: UIImage) -> UIImage {
-        let normalizedRect = currentNormalizedGuideRect().standardized
-        guard !normalizedRect.isNull, !normalizedRect.isEmpty else {
-            return image
-        }
-
-        let baseImage = image.normalizedUprightImage()
-        guard let cgImage = baseImage.cgImage else {
-            return image
-        }
-
-        let pixelWidth = CGFloat(cgImage.width)
-        let pixelHeight = CGFloat(cgImage.height)
-        let fullBounds = CGRect(x: 0, y: 0, width: pixelWidth, height: pixelHeight)
-
-        // 直接按预览层里的白框内区域裁切，避免再次推导比例带来的偏差。
-        let pixelRect = CGRect(
-            x: normalizedRect.minX * pixelWidth,
-            y: normalizedRect.minY * pixelHeight,
-            width: normalizedRect.width * pixelWidth,
-            height: normalizedRect.height * pixelHeight
-        )
-            .integral
-            .intersection(fullBounds)
-
-        guard
-            !pixelRect.isNull,
-            pixelRect.width >= 80,
-            pixelRect.height >= 80,
-            let croppedCGImage = cgImage.cropping(to: pixelRect)
-        else {
-            return image
-        }
-
-        return UIImage(cgImage: croppedCGImage, scale: baseImage.scale, orientation: .up)
+        return image
     }
 }
 
@@ -630,44 +597,9 @@ private struct CameraGuidanceOverlay: View {
         GeometryReader { proxy in
             let layout = CameraGuideLayout.make(in: proxy)
 
-            ZStack(alignment: .topLeading) {
-                Color.clear
-                    .preference(key: CameraGuideRectPreferenceKey.self, value: layout.captureRect)
-                    .preference(key: CameraGuideSizeRatioPreferenceKey.self, value: layout.sizeRatio)
-
-                CameraCornerBrackets()
-                    .stroke(.white.opacity(0.86), style: StrokeStyle(lineWidth: 3.2, lineCap: .round, lineJoin: .round))
-                    .frame(width: layout.frameRect.width, height: layout.frameRect.height)
-                    .position(x: layout.frameRect.midX, y: layout.frameRect.midY)
-                    .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .allowsHitTesting(false)
+            Color.clear
+                .preference(key: CameraGuideRectPreferenceKey.self, value: layout.captureRect)
+                .preference(key: CameraGuideSizeRatioPreferenceKey.self, value: layout.sizeRatio)
         }
-    }
-}
-
-private struct CameraCornerBrackets: Shape {
-    func path(in rect: CGRect) -> Path {
-        let corner: CGFloat = min(rect.width, rect.height) * 0.14
-        var path = Path()
-
-        path.move(to: CGPoint(x: rect.minX, y: rect.minY + corner))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.minX + corner, y: rect.minY))
-
-        path.move(to: CGPoint(x: rect.maxX - corner, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + corner))
-
-        path.move(to: CGPoint(x: rect.minX, y: rect.maxY - corner))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.minX + corner, y: rect.maxY))
-
-        path.move(to: CGPoint(x: rect.maxX - corner, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - corner))
-
-        return path
     }
 }

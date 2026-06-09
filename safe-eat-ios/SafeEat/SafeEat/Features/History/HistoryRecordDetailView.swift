@@ -122,7 +122,7 @@ struct HistoryRecordDetailView: View {
                     Circle()
                         .fill(impactDirectionColor(impact.impactDirection))
                         .frame(width: 8, height: 8)
-                    Text(impact.metric)
+                    Text(SafeEatL10n.isZh ? (impact.label ?? impact.metric) : (impact.labelEn ?? impact.metric))
                         .font(SafeEatFont.textStyle(.subheadline))
                         .foregroundStyle(SafeEatTheme.textPrimary)
                     Spacer()
@@ -353,15 +353,18 @@ struct HistoryRecordDetailView: View {
             overallScore: 72,
             recommendationLevel: "moderate",
             metricImpacts: [
-                MetricImpact(metric: "Sugar", score: 8, weight: nil, weightedScore: nil, impactDirection: "positive"),
+                MetricImpact(metric: "Sugar", label: nil, labelEn: nil, score: 8, weight: nil, weightedScore: nil, impactDirection: "positive"),
             ],
             riskFacts: [
-                RiskFact(tag: "High Sodium", severity: "medium", description: "Contains 800mg sodium per serving", affectedMetrics: nil),
+                RiskFact(tag: "High Sodium", label: nil, labelEn: nil, severity: "medium", description: "Contains 800mg sodium per serving", descriptionEn: nil, affectedMetrics: nil),
             ],
             aiExplanation: AIExplanation(
                 summary: "A moderately healthy choice.",
+                summaryEn: nil,
                 detailedAdvice: "Consider reducing cheese portion.",
-                healthTips: ["Pair with salad", "Limit to one slice"]
+                detailedAdviceEn: nil,
+                healthTips: ["Pair with salad", "Limit to one slice"],
+                healthTipsEn: nil
             )
         ))
         .environmentObject(AppStore())

@@ -1,55 +1,66 @@
 import SwiftUI
+import Lottie
 
-/// Lottie 风格的 Loading 动画组件
-/// 使用 SwiftUI 原生动画实现，无需第三方依赖
-/// 后续替换为真正的 Lottie 动画时，只需修改此组件内部实现
-struct LottieLoadingView: View {
-    let size: CGFloat
-    let text: String
+/// 全屏加载动画视图 — 使用 Lottie 播放品牌 logo 动画
+struct LottieLoadingView: UIViewRepresentable {
+    var size: CGFloat = 160
+    var text: String? = nil
 
-    init(size: CGFloat = 120, text: String = "加载中") {
-        self.size = size
-        self.text = text
+    @Environment(\.colorScheme) private var colorScheme
+
+    func makeUIView(context: Context) -> UIView {
+        let container = UIView(frame: .zero)
+        container.backgroundColor = .clear
+
+        let animationName = colorScheme == .dark ? "logo-dark" : "logo-light"
+        let animationView = LottieAnimationView(name: animationName)
+        animationView.loopMode = .loop
+        animationView.play()
+        animationView.translatesAutoresizingMaskIntoConstraints = false
+        animationView.contentMode = .scaleAspectFit
+        container.addSubview(animationView)
+
+        NSLayoutConstraint.activate([
+            animationView.widthAnchor.constraint(equalToConstant: size),
+            animationView.heightAnchor.constraint(equalToConstant: size),
+            animationView.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            animationView.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+        ])
+
+        return container
     }
 
-    var body: some View {
-        VStack(spacing: 16) {
-            LoadingDotsAnimation(size: size)
-            Text(text)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-        }
+    func updateUIView(_ uiView: UIView, context: Context) {
+        // colorScheme 变化时重建视图
+    }
+
+    static func dismantleUIView(_ uiView: UIView, coordinator: ()) {
+        uiView.subviews.compactMap { $0 as? LottieAnimationView }.forEach { $0.stop() }
     }
 }
 
-/// 黄色圆点跳动动画 — 模拟 Loading Dots In Yellow Lottie 效果
-private struct LoadingDotsAnimation: View {
-    let size: CGFloat
-    @State private var isAnimating = false
+/// 带 Lottie 动画和文字提示的加载视图
+struct LottieLoadingContent: View {
+    var size: CGFloat = 160
+    var text: String? = nil
 
     var body: some View {
-        HStack(spacing: size * 0.1) {
-            ForEach(0..<3, id: \.self) { index in
-                Circle()
-                    .fill(Color.yellow)
-                    .frame(width: size * 0.2, height: size * 0.2)
-                    .scaleEffect(isAnimating ? 1.0 : 0.5)
-                    .offset(y: isAnimating ? -size * 0.15 : 0)
-                    .animation(
-                        .easeInOut(duration: 0.4)
-                            .repeatForever(autoreverses: true)
-                            .delay(Double(index) * 0.15),
-                        value: isAnimating
-                    )
+        VStack(spacing: 24) {
+            LottieLoadingView(size: size)
+            if let text {
+                Text(text)
+                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
             }
         }
-        .frame(width: size, height: size)
-        .onAppear { isAnimating = true }
     }
 }
 
-struct LottieLoadingView_Previews: PreviewProvider {
-    static var previews: some View {
-        LottieLoadingView()
+#Preview {
+    VStack {
+        LottieLoadingContent(size: 160, text: "正在分析营养数据...")
+            .preferredColorScheme(.light)
+        LottieLoadingContent(size: 160, text: "正在分析营养数据...")
+            .preferredColorScheme(.dark)
     }
 }

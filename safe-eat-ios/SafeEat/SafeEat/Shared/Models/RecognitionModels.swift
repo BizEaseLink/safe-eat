@@ -11,7 +11,7 @@ struct NutrientValue: Codable {
     private enum CodingKeys: String, CodingKey {
         case value = "amount"
         case unit
-        case dailyValuePercent
+        case dailyValuePercent = "nrv"
     }
 }
 
@@ -131,18 +131,10 @@ struct IngredientBreakdown: Codable, Identifiable {
 
     let name: String
     let estimatedWeight: Double?
-    let macros: IngredientMacros?
     // 以下为旧字段，保留向后兼容
     let amount: String?
     let isMainIngredient: Bool?
     let allergens: [String]?
-}
-
-struct IngredientMacros: Codable {
-    let calories: Double?
-    let protein: Double?
-    let carbohydrates: Double?
-    let fat: Double?
 }
 
 struct NutritionMetrics: Codable {
@@ -150,7 +142,6 @@ struct NutritionMetrics: Codable {
     let nutrients: Nutrients?
     let vitamins: Vitamins?
     let minerals: Minerals?
-    let dailyValuePercentages: [String: Double]?
     let glycemicInfo: GlycemicInfo?
     let allergens: Allergens?
     let dietaryInfo: DietaryInfo?
@@ -163,7 +154,6 @@ struct NutritionMetrics: Codable {
         nutrients: Nutrients? = nil,
         vitamins: Vitamins? = nil,
         minerals: Minerals? = nil,
-        dailyValuePercentages: [String: Double]? = nil,
         glycemicInfo: GlycemicInfo? = nil,
         allergens: Allergens? = nil,
         dietaryInfo: DietaryInfo? = nil,
@@ -175,7 +165,6 @@ struct NutritionMetrics: Codable {
         self.nutrients = nutrients
         self.vitamins = vitamins
         self.minerals = minerals
-        self.dailyValuePercentages = dailyValuePercentages
         self.glycemicInfo = glycemicInfo
         self.allergens = allergens
         self.dietaryInfo = dietaryInfo
@@ -190,7 +179,6 @@ struct NutritionMetrics: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         servingSize = try container.decodeIfPresent(ServingSize.self, forKey: .servingSize)
         nutrients = try container.decodeIfPresent(Nutrients.self, forKey: .nutrients)
-        dailyValuePercentages = try container.decodeIfPresent([String: Double].self, forKey: .dailyValuePercentages)
         glycemicInfo = try container.decodeIfPresent(GlycemicInfo.self, forKey: .glycemicInfo)
         allergens = try container.decodeIfPresent(Allergens.self, forKey: .allergens)
         dietaryInfo = try container.decodeIfPresent(DietaryInfo.self, forKey: .dietaryInfo)
@@ -432,7 +420,6 @@ struct RecognitionRecord: Codable, Identifiable {
             ),
             vitamins: nil,
             minerals: nil,
-            dailyValuePercentages: nil,
             glycemicInfo: nil,
             allergens: nil,
             dietaryInfo: nil,
@@ -458,6 +445,7 @@ struct HealthImpact: Codable, Identifiable {
 
     let condition: String
     let label: String
+    let labelEn: String?
     let level: String
     let reason: String
 }
@@ -466,6 +454,8 @@ struct MetricImpact: Codable, Identifiable {
     var id: String { metric }
 
     let metric: String
+    let label: String?
+    let labelEn: String?
     let score: Int
     let weight: Double?
     let weightedScore: Double?
@@ -476,15 +466,21 @@ struct RiskFact: Codable, Identifiable {
     var id: String { tag }
 
     let tag: String
+    let label: String?
+    let labelEn: String?
     let severity: String // "warning" / "danger"
     let description: String
+    let descriptionEn: String?
     let affectedMetrics: [String]?
 }
 
 struct AIExplanation: Codable {
     let summary: String?
+    let summaryEn: String?
     let detailedAdvice: String?
+    let detailedAdviceEn: String?
     let healthTips: [String]?
+    let healthTipsEn: [String]?
 }
 
 struct EnhancedInsights: Codable {

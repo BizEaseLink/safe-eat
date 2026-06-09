@@ -613,7 +613,7 @@ final class SafeEatAPI {
         }
         var request = URLRequest(url: url)
         request.httpMethod = method
-        request.setValue(Locale.current.language.languageCode?.identifier ?? "zh", forHTTPHeaderField: "Accept-Language")
+        request.setValue(SafeEatL10n.isZh ? "zh" : "en", forHTTPHeaderField: "Accept-Language")
         return request
     }
 

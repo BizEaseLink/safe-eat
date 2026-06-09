@@ -209,43 +209,30 @@ struct ScanHomeView: View {
 
     @ViewBuilder
     private var recentRecordSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 12) {
-                Text(SafeEatL10n.text(L10nKey.Home.recentTitle))
-                    .font(SafeEatFont.textStyle(.headline))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+        if let latestRecord {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 12) {
+                    Text(SafeEatL10n.text(L10nKey.Home.recentTitle))
+                        .font(SafeEatFont.textStyle(.headline))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
 
-                LinearGradient(
-                    colors: [
-                        SafeEatTheme.textPrimary.opacity(colorScheme == .dark ? 0.16 : 0.12),
-                        .clear,
-                    ],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-                .frame(height: 1)
-            }
+                    LinearGradient(
+                        colors: [
+                            SafeEatTheme.textPrimary.opacity(colorScheme == .dark ? 0.16 : 0.12),
+                            .clear,
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .frame(height: 1)
+                }
 
-            if let latestRecord {
                 HomeRecentRecordCard(
                     item: latestRecord,
                     onOpenDetail: {
                         onOpenResult?(latestRecord.id)
                     }
                 )
-            } else {
-                SafeEatSurfaceCard(
-                    padding: EdgeInsets(top: 22, leading: 22, bottom: 22, trailing: 22)
-                ) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(SafeEatL10n.text(L10nKey.Home.emptyTitle))
-                            .font(SafeEatFont.textStyle(.headline))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
-                        Text(SafeEatL10n.text(L10nKey.Home.emptyMessage))
-                            .font(SafeEatFont.textStyle(.subheadline))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
-                    }
-                }
             }
         }
     }
@@ -312,6 +299,8 @@ private struct HomeRecentRecordCard: View {
         switch item.adviceLevel {
         case "recommended":
             return [(SafeEatL10n.text(L10nKey.Home.chipFriendly), SafeEatTheme.success)]
+        case "moderate":
+            return [(SafeEatL10n.text(L10nKey.Home.chipModerate), SafeEatTheme.primary)]
         case "caution":
             return [(SafeEatL10n.text(L10nKey.Home.chipPortion), SafeEatTheme.warning)]
         case "avoid":
@@ -339,6 +328,8 @@ private struct HomeRecentRecordCard: View {
         switch item.adviceLevel {
         case "recommended":
             return SafeEatL10n.text(L10nKey.Home.summaryRecommended)
+        case "moderate":
+            return SafeEatL10n.text(L10nKey.Home.summaryModerate)
         case "caution":
             return SafeEatL10n.text(L10nKey.Home.summaryCaution)
         case "avoid":
@@ -397,17 +388,14 @@ private struct HomeRecentRecordCard: View {
                                 Text(chip.0)
                                     .font(SafeEatFont.custom(14, relativeTo: .footnote))
                                     .foregroundStyle(chip.1)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 8)
                                     .background(chip.1.opacity(0.12))
                                     .clipShape(Capsule())
                             }
                         }
-
-                        Text(summaryText)
-                            .font(SafeEatFont.custom(14, relativeTo: .body))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
-                            .lineLimit(2)
                     }
                 }
 

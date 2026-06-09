@@ -15,6 +15,8 @@ final class AppVersionStore {
 
     // UserDefaults 缓存
     private static let skippedVersionKey = "safeeat.skippedVersion"
+    private static let skippedDateKey = "safeeat.skippedDate"
+    private static let lastCheckedVersionKey = "safeeat.lastCheckedVersion"
 
     // 通知名：版本更新检测到时发送，object 为 AppVersionCheckResponse
     static let updateDetectedNotification = Notification.Name("AppVersionUpdateDetected")
@@ -26,10 +28,19 @@ final class AppVersionStore {
     /// 检查版本更新（冷启动/前台恢复时调用）
     func checkVersion() async {
         guard !isChecking else { return }
+        // 弹窗正在显示时不重复检查
+        guard updateInfo == nil else { return }
         isChecking = true
         defer { isChecking = false }
 
         let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+
+        // 如果用户已升级 App，清除旧的跳过记录
+        let lastChecked = UserDefaults.standard.string(forKey: Self.lastCheckedVersionKey)
+        if lastChecked != nil && lastChecked != currentVersion {
+            UserDefaults.standard.removeObject(forKey: Self.skippedVersionKey)
+        }
+        UserDefaults.standard.set(currentVersion, forKey: Self.lastCheckedVersionKey)
 
         do {
             #if DEBUG
@@ -42,11 +53,13 @@ final class AppVersionStore {
             print("[AppVersion] response needsUpdate=\(response.needsUpdate) forceUpdate=\(response.forceUpdate) latest=\(response.latestVersion ?? "-") minimum=\(response.minimumVersion ?? "-")")
             #endif
 
-            // 如果是普通更新且用户已跳过此版本，则不弹窗
+            // 如果是普通更新且用户已跳过此版本（且跳过当天有效），则不弹窗
             if response.needsUpdate && !response.forceUpdate {
                 if let skipped = UserDefaults.standard.string(forKey: Self.skippedVersionKey),
-                   skipped == response.latestVersion {
-                    return  // 已跳过，不弹窗
+                   skipped == response.latestVersion,
+                   let skippedDateStr = UserDefaults.standard.string(forKey: Self.skippedDateKey),
+                   isSameDay(skippedDateStr) {
+                    return  // 跳过当日不再弹窗
                 }
             }
 
@@ -65,10 +78,13 @@ final class AppVersionStore {
         }
     }
 
-    /// 跳过当前版本更新（普通更新时调用）
+    /// 跳过当前版本更新（普通更新时调用，仅当日有效）
     func skipCurrentVersion() {
         if let version = updateInfo?.latestVersion {
             UserDefaults.standard.set(version, forKey: Self.skippedVersionKey)
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            UserDefaults.standard.set(formatter.string(from: Date()), forKey: Self.skippedDateKey)
         }
         updateInfo = nil
     }
@@ -97,5 +113,12 @@ final class AppVersionStore {
             return nil
         }
         return url
+    }
+
+    private func isSameDay(_ dateString: String) -> Bool {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        guard let date = formatter.date(from: dateString) else { return false }
+        return Calendar.current.isDate(date, inSameDayAs: Date())
     }
 }

@@ -24,14 +24,17 @@
 "common.advice_score_format" = "%@ · %d 分";
 
 "advice.title.recommended" = "推荐食用";
+"advice.title.moderate" = "适量食用";
 "advice.title.caution" = "谨慎食用";
 "advice.title.avoid" = "不建议食用";
 "advice.title.evaluate" = "建议评估";
 "advice.compact.recommended" = "推荐";
+"advice.compact.moderate" = "适量";
 "advice.compact.caution" = "谨慎";
 "advice.compact.avoid" = "避免";
 "advice.compact.evaluate" = "评估";
 "advice.summary.recommended" = "整体更适合当前饮食方向，可以作为这次的优先选择。";
+"advice.summary.moderate" = "可以食用，建议适量。";
 "advice.summary.caution" = "可以继续吃，但建议控制份量，并留意搭配与频率。";
 "advice.summary.avoid" = "当前更不建议继续食用，优先换成更稳妥的选择。";
 "advice.summary.evaluate" = "建议结合身体状态和本次搭配，再做进一步判断。";
@@ -375,7 +378,7 @@
 "home.camera.open_settings" = "打开设置";
 "home.camera.guide" = "请将主体放置于框线内";
 "home.camera.title" = "食安安 AI 相机";
-"home.camera.bottom_hint" = "对准食品包装或配料表拍照识别";
+"home.camera.bottom_hint" = "对准食物拍照识别";
 "home.camera.flash_on" = "闪光灯已开启";
 "home.camera.flash_off" = "闪光灯已关闭";
 "home.camera.starting" = "正在启动相机…";
@@ -423,10 +426,12 @@
 "home.record.carbs_format" = "碳水 %.1fg";
 "home.record.detail_action" = "查看详情";
 "home.record.chip_friendly" = "整体更友好";
+"home.record.chip_moderate" = "适量即可";
 "home.record.chip_portion" = "注意份量";
 "home.record.chip_switch" = "建议换一种";
 "home.record.chip_check" = "建议再确认";
 "home.record.summary.recommended" = "当前信息更偏正向，可以打开卡片继续看更细的营养与建议。";
+"home.record.summary.moderate" = "当前整体适中，可以打开卡片查看更细的营养与建议。";
 "home.record.summary.caution" = "当前仍有不确定因素，建议打开卡片继续确认营养与影响细节。";
 "home.record.summary.avoid" = "当前风险提示偏高，建议打开卡片查看详细原因后再决定。";
 "home.record.summary.unknown" = "当前仍缺少明确营养基线，建议继续补拍角度或打开卡片查看详情。";
@@ -522,7 +527,7 @@
 "result.score.status_insufficient" = "信息不足";
 "result.summary.incomplete" = "当前无法识别完整营养信息，建议继续补拍主体或翻到背面查看营养与风险分析。";
 "result.header_note" = "具体营养需求：饮食建议仅供参考";
-"result.score.logic_body" = "当前分数会结合识别完整度、营养指标、风险标签和建议等级综合计算。这里先预留给后续评分解释逻辑。";
+"result.score.logic_body" = "综合评分由营养指标评分、风险权重、食物画像调节和推荐等级共同决定。各项权重和阈值可在「规则管理」中查看和调整。";
 "result.score.logic_title" = "分数逻辑";
 "result.score.logic_format" = "健康评分 %d";
 "result.score.logic_hint" = "点击查看评分说明与计算逻辑";
@@ -704,6 +709,14 @@
 "result.ai_advice.summary_label" = "摘要";
 "result.ai_advice.detailed_label" = "详细建议";
 "result.ai_advice.upgrade_tier_hint_format" = "升级至 %@ 查看更多建议";
+// C1: 快捷指标卡
+"result.quick_metric.glycemic_index" = "升糖指数";
+"result.quick_metric.glycemic.low" = "低";
+"result.quick_metric.glycemic.medium" = "中";
+"result.quick_metric.glycemic.high" = "高";
+"result.quick_metric.calories_unit" = "kcal";
+"result.quick_metric.protein_unit" = "g";
+"result.quick_metric.fat_unit" = "g";
 "result.recognition_info_label" = "识别信息";
 "result.metric_impacts_label" = "指标影响";
 "result.risk_facts_label" = "风险因子";
@@ -723,6 +736,7 @@
 "result.section.detailed_nutrients" = "详细营养素";
 "result.section.vitamins" = "维生素";
 "result.section.minerals" = "矿物质";
+"result.section.other_trace_minerals" = "其他微量元素";
 "result.section.daily_values" = "每日参考值";
 "result.section.glycemic" = "血糖指数";
 "result.section.dietary" = "饮食适配";
@@ -731,6 +745,8 @@
 "result.glycemic.load" = "血糖负荷";
 "result.glycemic.insulin_index" = "胰岛素指数";
 "result.glycemic.sugar" = "含糖量";
+"result.glycemic.not_collected" = "暂时未收集";
+"result.data.not_available" = "暂无数据";
 "result.diet.vegetarian" = "素食友好";
 "result.diet.vegan" = "纯素友好";
 "result.diet.gluten_free" = "无麸质";
@@ -757,6 +773,13 @@
 "result.mineral.sodium" = "钠";
 "result.mineral.zinc" = "锌";
 "result.mineral.selenium" = "硒";
+// C3: 新增矿物质
+"result.mineral.copper" = "铜";
+"result.mineral.manganese" = "锰";
+"result.mineral.chromium" = "铬";
+"result.mineral.molybdenum" = "钼";
+"result.mineral.fluoride" = "氟";
+"result.mineral.iodine" = "碘";
 // T7: 维生素
 "result.vit.a" = "维生素 A";
 "result.vit.b1" = "维生素 B1";
@@ -770,6 +793,10 @@
 "result.vit.e" = "维生素 E";
 "result.vit.k" = "维生素 K";
 "result.vit.folate" = "叶酸";
+// C3: 新增维生素
+"result.vit.b9" = "维生素B9(叶酸)";
+"result.vit.biotin" = "生物素";
+"result.vit.choline" = "胆碱";
 // T7: 制备方式
 "result.prep.method" = "烹饪方式";
 "result.prep.oil_type" = "油类";
@@ -779,6 +806,26 @@
 // T8: 付费墙遮罩
 "result.paywall.upgrade_hint" = "升级解锁";
 "result.paywall.upgrade_action" = "升级查看详情";
+"result.scanned_now" = "刚刚扫描";
+"result.scanned_relative_format" = "扫描于 %@";
+
+// 会员引导横幅
+"result.membership_banner.title_free" = "升级 Pro 解锁详细报告";
+"result.membership_banner.title_lite" = "升级 Pro 解锁饮食信息";
+"result.membership_banner.title_pro" = "升级 Premium 解锁成分分解";
+"result.membership_banner.subtitle_free" = "升级 Lite 查看维生素和矿物质";
+"result.membership_banner.subtitle_lite" = "升级 Pro 解锁饮食信息和制备方式";
+"result.membership_banner.subtitle_pro" = "升级 Premium 解锁完整成分分解";
+"result.membership_banner.desc_free" = "免费用户仅可见基础营养素和过敏原";
+"result.membership_banner.desc_lite" = "Lite 用户可见维生素和矿物质详情";
+"result.membership_banner.desc_pro" = "Pro 用户可见饮食信息和制备方式";
+"result.membership_banner.action" = "立即升级";
+
+// Per 100g serving 标注
+"result.per_100g_serving" = "每 100g";
+"result.nutrition.per_serving" = "每100g";
+"result.action.analysis_detail" = "分析详情";
+"result.empty_data_hint" = "暂未收集到这部分数据";
 
 // MOB-2: 服务器历史记录
 "history.server.nav_title" = "识别历史";
@@ -789,3 +836,4 @@
 "history.server.upgrade_prompt_message_format" = "当前套餐仅可查看最近 %d 条记录，升级后可查看更多。";
 "history.server.upgrade_prompt_action" = "升级查看更多";
 "history.server.loading_title" = "加载中";
+"result.feedback_pending" = "反馈审核中";

@@ -1,69 +1,63 @@
 import SwiftUI
 
-/// 强制更新弹窗 — 当前版本低于最低支持版本
+/// 强制更新弹窗 — 当前版本低于最低支持版本，不可关闭
 struct ForceUpdateSheet: View {
     private let store = AppVersionStore.shared
 
     var body: some View {
-        SafeEatSettingsSheetContainer(
-            title: "发现新版本",
-            subtitle: store.updateInfo?.releaseNotes ?? "当前版本过低，需要更新才能继续使用",
-            detentHeight: store.updateInfo?.releaseNotes != nil && !store.updateInfo!.releaseNotes!.isEmpty ? 380 : 290
-        ) {
+        VStack(spacing: 0) {
+            // 主标题
+            Text("更新提醒")
+                .font(SafeEatFont.custom(24, relativeTo: .largeTitle, weight: .bold))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+                .padding(.top, 28)
+
+            // 次要标题
+            Text("发现新版本：\(store.updateInfo?.latestVersion ?? "最新")")
+                .font(SafeEatFont.custom(16, relativeTo: .subheadline))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+                .padding(.top, 8)
+
+            // 固定高度可滚动更新信息
             if let notes = store.updateInfo?.releaseNotes, !notes.isEmpty {
-                ProfileSurfaceCard {
-                    HStack(spacing: 14) {
-                        ZStack {
-                            Circle()
-                                .fill(SafeEatTheme.primary.opacity(0.12))
-                                .frame(width: 46, height: 46)
-
-                            Image(systemName: "arrow.down.circle.fill")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(SafeEatTheme.primary)
-                        }
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("版本 \(store.updateInfo?.latestVersion ?? "最新")")
-                                .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
-
-                            Text("新功能与优化")
-                                .font(SafeEatFont.textStyle(.footnote))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-                        }
-                    }
+                ScrollView {
+                    Text(notes)
+                        .font(SafeEatFont.textStyle(.subheadline))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .lineSpacing(4)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .frame(height: 180)
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
             }
 
-            ProfileSurfaceCard {
-                HStack(spacing: 14) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.red.opacity(0.12))
-                            .frame(width: 46, height: 46)
+            Spacer(minLength: 16)
 
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(.red)
-                    }
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("必须更新")
-                            .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
-
-                        Text("当前版本已无法使用，请更新到最新版本")
-                            .font(SafeEatFont.textStyle(.footnote))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
-                    }
-                }
-            }
-
-            ProfilePrimaryActionButton(title: "立即更新", isLoading: false) {
+            // 更新按钮
+            Button {
                 store.openAppStore()
+            } label: {
+                Text("立即更新")
+                    .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(
+                        LinearGradient(
+                            colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 32)
         }
+        .frame(maxWidth: .infinity)
+        .background(Color(.systemBackground))
         .interactiveDismissDisabled()
     }
 }

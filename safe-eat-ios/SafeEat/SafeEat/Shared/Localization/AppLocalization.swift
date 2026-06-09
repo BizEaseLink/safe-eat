@@ -44,14 +44,17 @@ enum L10nKey {
 
     enum Advice {
         static let titleRecommended = "advice.title.recommended"
+        static let titleModerate = "advice.title.moderate"
         static let titleCaution = "advice.title.caution"
         static let titleAvoid = "advice.title.avoid"
         static let titleEvaluate = "advice.title.evaluate"
         static let compactRecommended = "advice.compact.recommended"
+        static let compactModerate = "advice.compact.moderate"
         static let compactCaution = "advice.compact.caution"
         static let compactAvoid = "advice.compact.avoid"
         static let compactEvaluate = "advice.compact.evaluate"
         static let summaryRecommended = "advice.summary.recommended"
+        static let summaryModerate = "advice.summary.moderate"
         static let summaryCaution = "advice.summary.caution"
         static let summaryAvoid = "advice.summary.avoid"
         static let summaryEvaluate = "advice.summary.evaluate"
@@ -518,10 +521,12 @@ enum L10nKey {
         static let carbsFormat = "home.record.carbs_format"
         static let detailAction = "home.record.detail_action"
         static let chipFriendly = "home.record.chip_friendly"
+        static let chipModerate = "home.record.chip_moderate"
         static let chipPortion = "home.record.chip_portion"
         static let chipSwitch = "home.record.chip_switch"
         static let chipCheck = "home.record.chip_check"
         static let summaryRecommended = "home.record.summary.recommended"
+        static let summaryModerate = "home.record.summary.moderate"
         static let summaryCaution = "home.record.summary.caution"
         static let summaryAvoid = "home.record.summary.avoid"
         static let summaryUnknown = "home.record.summary.unknown"
@@ -638,6 +643,44 @@ enum L10nKey {
         static let healthTipsTitle = "result.ai_advice.health_tips_title"
         static let upgradeForMoreAdvice = "result.ai_advice.upgrade_hint"
         static let upgradeTierHintFormat = "result.ai_advice.upgrade_tier_hint_format"
+        // C1: 快捷指标卡
+        static let quickMetricGlycemicIndex = "result.quick_metric.glycemic_index"
+        // C3: 维生素名称
+        static let vitA = "result.vit.a"
+        static let vitC = "result.vit.c"
+        static let vitD = "result.vit.d"
+        static let vitE = "result.vit.e"
+        static let vitK = "result.vit.k"
+        static let vitB1 = "result.vit.b1"
+        static let vitB2 = "result.vit.b2"
+        static let vitB3 = "result.vit.b3"
+        static let vitB5 = "result.vit.b5"
+        static let vitB6 = "result.vit.b6"
+        static let vitB9 = "result.vit.b9"
+        static let vitB12 = "result.vit.b12"
+        static let vitBiotin = "result.vit.biotin"
+        static let vitCholine = "result.vit.choline"
+        static let vitFolate = "result.vit.folate"
+        // C3: 矿物质名称
+        static let mineralCalcium = "result.mineral.calcium"
+        static let mineralIron = "result.mineral.iron"
+        static let mineralMagnesium = "result.mineral.magnesium"
+        static let mineralPhosphorus = "result.mineral.phosphorus"
+        static let mineralPotassium = "result.mineral.potassium"
+        static let mineralZinc = "result.mineral.zinc"
+        static let mineralCopper = "result.mineral.copper"
+        static let mineralManganese = "result.mineral.manganese"
+        static let mineralSelenium = "result.mineral.selenium"
+        static let mineralChromium = "result.mineral.chromium"
+        static let mineralMolybdenum = "result.mineral.molybdenum"
+        static let mineralFluoride = "result.mineral.fluoride"
+        static let mineralIodine = "result.mineral.iodine"
+        static let quickMetricGlycemicLow = "result.quick_metric.glycemic.low"
+        static let quickMetricGlycemicMedium = "result.quick_metric.glycemic.medium"
+        static let quickMetricGlycemicHigh = "result.quick_metric.glycemic.high"
+        static let quickMetricCaloriesUnit = "result.quick_metric.calories_unit"
+        static let quickMetricProteinUnit = "result.quick_metric.protein_unit"
+        static let quickMetricFatUnit = "result.quick_metric.fat_unit"
         // MOB-2: 历史记录详情
         static let recognitionInfoLabel = "result.recognition_info_label"
         static let metricImpactsLabel = "result.metric_impacts_label"
@@ -656,6 +699,7 @@ enum L10nKey {
         static let sectionDetailedNutrients = "result.section.detailed_nutrients"
         static let sectionVitamins = "result.section.vitamins"
         static let sectionMinerals = "result.section.minerals"
+        static let sectionOtherTraceMinerals = "result.section.other_trace_minerals"
         static let sectionDailyValues = "result.section.daily_values"
         static let sectionGlycemic = "result.section.glycemic"
         static let sectionDietary = "result.section.dietary"
@@ -673,7 +717,7 @@ enum L10nKey {
         static let dietDairyFree = "result.diet.dairy_free"
         static let dietNutFree = "result.diet.nut_free"
         static let preparation = "result.preparation"
-        static let perServing = "result.per_serving"
+        static let per100gServing = "result.per_100g_serving"
         // T7: 详细营养素本地化
         static let saturatedFat = "result.nutrient.saturated_fat"
         static let transFat = "result.nutrient.trans_fat"
@@ -681,28 +725,6 @@ enum L10nKey {
         static let sugarNutrient = "result.nutrient.sugar"
         static let cholesterol = "result.nutrient.cholesterol"
         static let sodium = "result.nutrient.sodium"
-        // T7: 矿物质本地化
-        static let mineralCalcium = "result.mineral.calcium"
-        static let mineralIron = "result.mineral.iron"
-        static let mineralMagnesium = "result.mineral.magnesium"
-        static let mineralPhosphorus = "result.mineral.phosphorus"
-        static let mineralPotassium = "result.mineral.potassium"
-        static let mineralSodium = "result.mineral.sodium"
-        static let mineralZinc = "result.mineral.zinc"
-        static let mineralSelenium = "result.mineral.selenium"
-        // T7: 维生素本地化
-        static let vitA = "result.vit.a"
-        static let vitB1 = "result.vit.b1"
-        static let vitB2 = "result.vit.b2"
-        static let vitB3 = "result.vit.b3"
-        static let vitB5 = "result.vit.b5"
-        static let vitB6 = "result.vit.b6"
-        static let vitB12 = "result.vit.b12"
-        static let vitC = "result.vit.c"
-        static let vitD = "result.vit.d"
-        static let vitE = "result.vit.e"
-        static let vitK = "result.vit.k"
-        static let vitFolate = "result.vit.folate"
         // T7: 制备方式本地化
         static let prepMethod = "result.prep.method"
         static let prepOilType = "result.prep.oil_type"
@@ -712,6 +734,27 @@ enum L10nKey {
         // T8: 付费墙遮罩
         static let paywallUpgradeHint = "result.paywall.upgrade_hint"
         static let paywallUpgradeAction = "result.paywall.upgrade_action"
+        // C2: 背面头部扫描时间
+        static let scannedNow = "result.scanned_now"
+        static let scannedRelativeFormat = "result.scanned_relative_format"
+        static let glycemicNotCollected = "result.glycemic.not_collected"
+        static let dataNotAvailable = "result.data.not_available"
+        static let feedbackPending = "result.feedback_pending"
+        // 会员引导横幅
+        static let membershipBannerTitleFree = "result.membership_banner.title_free"
+        static let membershipBannerTitleLite = "result.membership_banner.title_lite"
+        static let membershipBannerTitlePro = "result.membership_banner.title_pro"
+        static let membershipBannerSubtitleFree = "result.membership_banner.subtitle_free"
+        static let membershipBannerSubtitleLite = "result.membership_banner.subtitle_lite"
+        static let membershipBannerSubtitlePro = "result.membership_banner.subtitle_pro"
+        static let membershipBannerDescFree = "result.membership_banner.desc_free"
+        static let membershipBannerDescLite = "result.membership_banner.desc_lite"
+        static let membershipBannerDescPro = "result.membership_banner.desc_pro"
+        static let membershipBannerAction = "result.membership_banner.action"
+        // 其他微量元素 — 使用 sectionOtherTraceMinerals
+        static let perServing = "result.nutrition.per_serving"
+        static let actionAnalysisDetail = "result.action.analysis_detail"
+        static let emptyDataHint = "result.empty_data_hint"
     }
 
     enum Feedback {
@@ -903,6 +946,8 @@ enum ReminderStartDay: Int, CaseIterable, Identifiable {
 
 enum SafeEatL10n {
     private static let languageKey = "safeeat.settings.language"
+
+    static var isZh: Bool { currentLanguage == .zhHans }
 
     static func text(_ key: String) -> String {
         bundle(for: currentLanguage)

@@ -41,10 +41,6 @@ struct ContentView: View {
                 activeVersionSheet = .normal
             }
         }
-        .task {
-            // 在视图挂载后检查版本，确保 .onReceive 已注册
-            await AppVersionStore.shared.checkVersion()
-        }
     }
 }
 

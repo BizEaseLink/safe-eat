@@ -188,14 +188,17 @@
 "common.advice_score_format" = "%@ · %d pts";
 
 "advice.title.recommended" = "Recommended";
+"advice.title.moderate" = "Moderate";
 "advice.title.caution" = "Use with caution";
 "advice.title.avoid" = "Not recommended";
 "advice.title.evaluate" = "Needs evaluation";
 "advice.compact.recommended" = "Recommended";
+"advice.compact.moderate" = "Moderate";
 "advice.compact.caution" = "Caution";
 "advice.compact.avoid" = "Avoid";
 "advice.compact.evaluate" = "Review";
 "advice.summary.recommended" = "This generally fits your current dietary direction and can be your first choice this time.";
+"advice.summary.moderate" = "Fine to eat, but best in moderation.";
 "advice.summary.caution" = "You can still eat it, but watch the portion size, pairings, and frequency.";
 "advice.summary.avoid" = "It is less suitable right now. Consider switching to a safer option.";
 "advice.summary.evaluate" = "Please judge further based on your current condition and this meal combination.";
@@ -579,7 +582,7 @@
 "home.camera.open_settings" = "Open Settings";
 "home.camera.guide" = "Place the subject inside the guide frame";
 "home.camera.title" = "Safe Eat AI Camera";
-"home.camera.bottom_hint" = "Align the package front or ingredient list before capturing";
+"home.camera.bottom_hint" = "Point at the food to scan";
 "home.camera.flash_on" = "Flash on";
 "home.camera.flash_off" = "Flash off";
 "home.camera.starting" = "Starting camera…";
@@ -599,10 +602,12 @@
 "home.record.carbs_format" = "Carbs %.1fg";
 "home.record.detail_action" = "View Details";
 "home.record.chip_friendly" = "More suitable";
+"home.record.chip_moderate" = "In Moderation";
 "home.record.chip_portion" = "Watch portions";
 "home.record.chip_switch" = "Try another option";
 "home.record.chip_check" = "Check again";
 "home.record.summary.recommended" = "The current result looks positive. Open the card for more detailed nutrition and suggestions.";
+"home.record.summary.moderate" = "Overall balanced. Open the card for more nutrition details and advice.";
 "home.record.summary.caution" = "There are still uncertainties. Open the card to confirm nutrition and health impacts.";
 "home.record.summary.avoid" = "The current risk looks high. Open the card to understand the details before deciding.";
 "home.record.summary.unknown" = "The current nutrition baseline is still unclear. Try another angle or open the card for more detail.";
@@ -701,6 +706,14 @@
 "result.ai_advice.summary_label" = "Summary";
 "result.ai_advice.detailed_label" = "Detailed Advice";
 "result.ai_advice.upgrade_tier_hint_format" = "Upgrade to %@ for more advice";
+// C1: Quick metric cards
+"result.quick_metric.glycemic_index" = "Glycemic";
+"result.quick_metric.glycemic.low" = "LOW";
+"result.quick_metric.glycemic.medium" = "MED";
+"result.quick_metric.glycemic.high" = "HIGH";
+"result.quick_metric.calories_unit" = "kcal";
+"result.quick_metric.protein_unit" = "g";
+"result.quick_metric.fat_unit" = "g";
 "result.recognition_info_label" = "Recognition Info";
 "result.metric_impacts_label" = "Metric Impacts";
 "result.risk_facts_label" = "Risk Factors";
@@ -720,6 +733,7 @@
 "result.section.detailed_nutrients" = "Detailed Nutrients";
 "result.section.vitamins" = "Vitamins";
 "result.section.minerals" = "Minerals";
+"result.section.other_trace_minerals" = "Other Trace Minerals";
 "result.section.daily_values" = "Daily Values";
 "result.section.glycemic" = "Glycemic Index";
 "result.section.dietary" = "Dietary Info";
@@ -728,6 +742,8 @@
 "result.glycemic.load" = "Glycemic Load";
 "result.glycemic.insulin_index" = "Insulin Index";
 "result.glycemic.sugar" = "Sugar Content";
+"result.glycemic.not_collected" = "Not yet collected";
+"result.data.not_available" = "Data not available";
 "result.diet.vegetarian" = "Vegetarian";
 "result.diet.vegan" = "Vegan";
 "result.diet.gluten_free" = "Gluten-Free";
@@ -754,6 +770,13 @@
 "result.mineral.sodium" = "Sodium";
 "result.mineral.zinc" = "Zinc";
 "result.mineral.selenium" = "Selenium";
+// C3: New minerals
+"result.mineral.copper" = "Copper";
+"result.mineral.manganese" = "Manganese";
+"result.mineral.chromium" = "Chromium";
+"result.mineral.molybdenum" = "Molybdenum";
+"result.mineral.fluoride" = "Fluoride";
+"result.mineral.iodine" = "Iodine";
 // T7: Vitamins
 "result.vit.a" = "Vit A";
 "result.vit.b1" = "Vit B1";
@@ -767,6 +790,10 @@
 "result.vit.e" = "Vit E";
 "result.vit.k" = "Vit K";
 "result.vit.folate" = "Folate";
+// C3: New vitamins
+"result.vit.b9" = "Vitamin B9 (Folate)";
+"result.vit.biotin" = "Biotin";
+"result.vit.choline" = "Choline";
 // T7: Preparation
 "result.prep.method" = "Method";
 "result.prep.oil_type" = "Oil Type";
@@ -776,6 +803,26 @@
 // T8: Paywall overlay
 "result.paywall.upgrade_hint" = "Upgrade to Unlock";
 "result.paywall.upgrade_action" = "Upgrade to view details";
+"result.scanned_now" = "Just scanned";
+"result.scanned_relative_format" = "Scanned %@";
+
+// Membership banner
+"result.membership_banner.title_free" = "Upgrade to Pro for detailed reports";
+"result.membership_banner.title_lite" = "Upgrade to Pro for dietary info";
+"result.membership_banner.title_pro" = "Upgrade to Premium for ingredient breakdown";
+"result.membership_banner.subtitle_free" = "Upgrade to Lite to view vitamins and minerals";
+"result.membership_banner.subtitle_lite" = "Upgrade to Pro to unlock dietary info and preparation";
+"result.membership_banner.subtitle_pro" = "Upgrade to Premium to unlock full ingredient breakdown";
+"result.membership_banner.desc_free" = "Free users can only see basic nutrients and allergens";
+"result.membership_banner.desc_lite" = "Lite users can see vitamin and mineral details";
+"result.membership_banner.desc_pro" = "Pro users can see dietary info and preparation";
+"result.membership_banner.action" = "Upgrade Now";
+
+// Per 100g serving label
+"result.per_100g_serving" = "Per 100g serving";
+"result.nutrition.per_serving" = "Per 100g";
+"result.action.analysis_detail" = "Analysis Detail";
+"result.empty_data_hint" = "No data collected for this section yet";
 
 "feedback.title" = "Feedback";
 "feedback.replace_evidence.title" = "Replace Evidence Image";
@@ -916,3 +963,4 @@
 "home.quota_status_bar.count_format" = "%d scans";
 "home.quota_status_bar.ad_reward_format" = "Watch ad +%d";
 "home.quota_status_bar.cycle_end_format" = "Cycle ends %@";
+"result.feedback_pending" = "Feedback pending";

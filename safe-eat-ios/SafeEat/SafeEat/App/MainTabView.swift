@@ -1,5 +1,22 @@
 import SwiftUI
 
+// 共享导航状态：子页面通过 Environment 通知 MainTabView 自己是否在根页面
+@Observable
+class TabNavigationState {
+    var isHistoryAtRoot: Bool = true
+}
+
+private struct TabNavigationStateKey: EnvironmentKey {
+    static let defaultValue = TabNavigationState()
+}
+
+extension EnvironmentValues {
+    var tabNavigationState: TabNavigationState {
+        get { self[TabNavigationStateKey.self] }
+        set { self[TabNavigationStateKey.self] = newValue }
+    }
+}
+
 struct MainTabView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var settings: AppSettingsStore
@@ -40,12 +57,24 @@ struct MainTabView: View {
     // 当前选中的 Tab
     @State private var selectedTab: AppRootTab = .home
 
+    @State private var tabNavState = TabNavigationState()
+
     private var isAtRoot: Bool {
         switch selectedTab {
-        case .home: return homePath.isEmpty
-        case .history: return historyPath.isEmpty
-        case .trend: return trendPath.isEmpty
-        case .profile: return profilePath.isEmpty
+        case .home:
+            // home tab 使用 navigationDestination(item:/isPresented:)，
+            // 这些 API 不会推入 NavigationPath，需要检查对应的 @State 变量
+            return homePath.isEmpty && resultRoute == nil && !showMembership
+        case .history:
+            // history tab 使用 navigationDestination(item:)，不会推入 NavigationPath，
+            // 通过 TabNavigationState 追踪
+            return historyPath.isEmpty && tabNavState.isHistoryAtRoot
+        case .trend:
+            return trendPath.isEmpty
+        case .profile:
+            // profile tab 使用 NavigationLink(value:) + navigationDestination(for:)，
+            // 会推入 NavigationPath，profilePath.isEmpty 是可靠的
+            return profilePath.isEmpty
         }
     }
 
@@ -106,6 +135,7 @@ struct MainTabView: View {
         }
         .animation(.easeInOut(duration: 0.25), value: isAtRoot)
         .toolbar(.hidden, for: .tabBar)
+        .environment(tabNavState)
         .fullScreenCover(isPresented: $showCamera) {
             CameraCaptureView { payload in
                 guard !isFreeQuotaExceeded else {
@@ -295,28 +325,28 @@ struct MainTabView: View {
         }
 
         do {
-            let created = try await store.authorizedRequest { token in
+            // 并行：API 调用 + 本地预览图处理同时进行
+            async let apiTask = store.authorizedRequest { token in
                 try await store.api.createRecognition(
                     accessToken: token,
                     imageData: uploadData,
                     fileName: "capture.jpg"
                 )
             }
-            let detailed = try await store.authorizedRequest { token in
-                try await store.api.getRecognition(accessToken: token, recognitionId: created.id)
-            }
-            let previewImage = await BackgroundRemovalService.makePreviewImage(
+            async let previewTask = BackgroundRemovalService.makePreviewImage(
                 from: croppedImage,
-                adviceLevel: detailed.adviceLevel
+                adviceLevel: nil
             )
+
+            let created = try await apiTask
+            let previewImage = await previewTask
             let item = try store.recordRecognition(
-                detailed,
+                created,
                 originalImage: croppedImage,
                 previewImage: previewImage,
                 rawImage: rawImage
             )
 
-            // 识别成功后切换到首页 Tab 并导航到结果页
             selectedTab = .home
             store.selectedRootTab = .home
             resultRoute = ResultRoute(id: item.id, itemId: item.id)
