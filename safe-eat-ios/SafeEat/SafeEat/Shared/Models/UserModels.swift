@@ -46,7 +46,7 @@ struct MembershipPlan: Decodable, Identifiable {
     // v3 新增：套餐差异化权益
     let aiAdviceLevel: String?
     let maxHealthProfiles: Int?
-    let historyLimit: Int?
+    let maxHistoryRecords: Int?
     // 每个套餐适用的活动（已过滤叠加）
     let applicableCampaigns: [CampaignBenefit]?
 }
@@ -382,8 +382,6 @@ enum HealthTagMapper {
         "high_blood_pressure",
         "high_blood_sugar",
         "high_blood_lipids",
-        "weight_loss",
-        "muscle_gain",
         "general_wellness",
     ]
 
@@ -395,12 +393,10 @@ enum HealthTagMapper {
             return SafeEatL10n.text(L10nKey.User.healthSugar)
         case "high_blood_lipids":
             return SafeEatL10n.text(L10nKey.User.healthLipids)
-        case "weight_loss":
-            return SafeEatL10n.text(L10nKey.User.healthWeightLoss)
-        case "muscle_gain":
-            return SafeEatL10n.text(L10nKey.User.healthMuscle)
-        default:
+        case "general_wellness":
             return SafeEatL10n.text(L10nKey.User.healthWellness)
+        default:
+            return tag
         }
     }
 }
@@ -411,7 +407,6 @@ enum FitnessGoalMapper {
         "fat_loss",
         "muscle_gain",
         "blood_sugar_control",
-        "cardiovascular_health",
     ]
 
     static func title(_ goal: String?) -> String {
@@ -422,8 +417,6 @@ enum FitnessGoalMapper {
             return SafeEatL10n.text(L10nKey.User.goalMuscle)
         case "blood_sugar_control":
             return SafeEatL10n.text(L10nKey.User.goalSugar)
-        case "cardiovascular_health":
-            return SafeEatL10n.text(L10nKey.User.goalCardio)
         case "balanced":
             return SafeEatL10n.text(L10nKey.User.goalBalanced)
         default:

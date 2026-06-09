@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// 扫描额度耗尽弹窗 — Home 扫描结果页触发
 struct QuotaExceededSheet: View {
     let snapshot: DailyQuotaSnapshot
     let onWatchAd: (() -> Void)?
@@ -11,83 +12,64 @@ struct QuotaExceededSheet: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(.orange)
-
-            Text(isFreeUser
+        SafeEatSettingsSheetContainer(
+            title: isFreeUser
                 ? SafeEatL10n.text(L10nKey.Home.quotaExceededDailyTitle)
-                : SafeEatL10n.text(L10nKey.Home.quotaExceededMonthlyTitle))
-                .font(.headline)
+                : SafeEatL10n.text(L10nKey.Home.quotaExceededMonthlyTitle),
+            subtitle: isFreeUser
+                ? SafeEatL10n.format(L10nKey.Home.quotaExceededDailyHintFormat, snapshot.totalQuota)
+                : SafeEatL10n.text(L10nKey.Home.quotaExceededUpgradeHint),
+            detentHeight: (isFreeUser && onWatchAd != nil) ? 430 : 380
+        ) {
+            ProfileSurfaceCard {
+                HStack(spacing: 14) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.orange.opacity(0.12))
+                            .frame(width: 46, height: 46)
 
-            if isFreeUser {
-                Text(SafeEatL10n.format(L10nKey.Home.quotaExceededDailyHintFormat, snapshot.totalQuota))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            } else {
-                if let periodEnd = snapshot.periodEnd {
-                    Text(SafeEatL10n.format(L10nKey.Home.quotaExceededMonthlyHintFormat, periodEnd))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                } else {
-                    Text(SafeEatL10n.text(L10nKey.Home.quotaExceededUpgradeHint))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.orange)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(isFreeUser ? "今日次数已用完" : "本月次数已用完")
+                            .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
+                            .foregroundStyle(SafeEatTheme.textPrimary)
+
+                        Text(quotaHint)
+                            .font(SafeEatFont.textStyle(.footnote))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+                    }
                 }
             }
 
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 if isFreeUser, let onWatchAd {
-                    Button(action: onWatchAd) {
-                        Label(SafeEatL10n.text(L10nKey.Home.quotaExceededWatchAdAction), systemImage: "play.rectangle.fill")
-                            .frame(maxWidth: .infinity)
+                    ProfilePrimaryActionButton(title: "看广告获取次数", isLoading: false) {
+                        onWatchAd()
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.green)
                 }
 
-                Button(action: { onUpgrade?() }) {
-                    Label(isFreeUser
-                        ? SafeEatL10n.text(L10nKey.Home.quotaExceededUpgradeMembership)
-                        : SafeEatL10n.text(L10nKey.Home.quotaExceededUpgradePlan), systemImage: "crown.fill")
-                        .frame(maxWidth: .infinity)
+                ProfilePrimaryActionButton(title: "升级会员", isLoading: false) {
+                    onUpgrade?()
                 }
-                .buttonStyle(.borderedProminent)
 
-                Button(SafeEatL10n.text(L10nKey.Home.quotaExceededLater)) {
+                ProfileSecondaryActionButton(title: SafeEatL10n.text(L10nKey.Home.quotaExceededLater)) {
                     onDismiss()
                 }
-                .buttonStyle(.bordered)
             }
         }
-        .padding(24)
     }
-}
 
-#Preview {
-    QuotaExceededSheet(
-        snapshot: DailyQuotaSnapshot(
-            planTier: "free",
-            totalQuota: 1,
-            usedCount: 1,
-            remainingQuota: 0,
-            adClaimsCount: 0,
-            adRewardPerWatch: 1,
-            adWatchLimit: 2,
-            remainingAdWatchCount: 2,
-            quotaDate: "2026-05-14",
-            monthlyTotalQuota: nil,
-            monthlyUsedCount: nil,
-            monthlyRemaining: nil,
-            periodStart: nil,
-            periodEnd: nil
-        ),
-        onWatchAd: {},
-        onUpgrade: {},
-        onDismiss: {}
-    )
+    private var quotaHint: String {
+        if isFreeUser {
+            return SafeEatL10n.format(L10nKey.Home.quotaExceededDailyHintFormat, snapshot.totalQuota)
+        }
+        if let periodEnd = snapshot.periodEnd {
+            return SafeEatL10n.format(L10nKey.Home.quotaExceededMonthlyHintFormat, periodEnd)
+        }
+        return SafeEatL10n.text(L10nKey.Home.quotaExceededUpgradeHint)
+    }
 }

@@ -107,6 +107,7 @@ struct SafeEatApp: App {
                 Task {
                     await AdConfigStore.shared.forceRefresh()
                     await store.refreshDailyQuota()
+                    await AppVersionStore.shared.checkVersion()
                 }
             }
             .task {

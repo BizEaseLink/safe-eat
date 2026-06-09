@@ -198,6 +198,7 @@ struct MenuWeekView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var settings: AppSettingsStore
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.tabNavigationState) private var tabNavState
 
     @State private var selectedDate = Date()
     @State private var showNotificationSheet = false
@@ -302,15 +303,18 @@ struct MenuWeekView: View {
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showNotificationSheet) {
             SafeEatReminderSettingsSheet()
-                .presentationDetents([.height(600)])
-                .presentationDragIndicator(.visible)
-                .presentationBackground(.clear)
         }
         .navigationDestination(item: $dayRoute) { route in
             HistoryDayView(date: route.date)
         }
         .navigationDestination(item: $weekRoute) { route in
             HistoryWeekView(referenceDate: route.referenceDate)
+        }
+        .onChange(of: dayRoute) { _, newValue in
+            updateNavRootState()
+        }
+        .onChange(of: weekRoute) { _, _ in
+            updateNavRootState()
         }
         .task {
             await settings.refreshNotificationStatus()
@@ -365,6 +369,12 @@ struct MenuWeekView: View {
                 .stroke(heroCardStroke, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+    }
+
+    // MARK: - Navigation State
+
+    private func updateNavRootState() {
+        tabNavState.isHistoryAtRoot = dayRoute == nil && weekRoute == nil
     }
 
     // MARK: - Top Bar

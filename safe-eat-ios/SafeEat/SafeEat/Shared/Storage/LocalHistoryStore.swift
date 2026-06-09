@@ -5,8 +5,17 @@ final class LocalHistoryStore {
     private let decoder = SafeEatAPI.makeLocalDecoder()
     private let encoder = SafeEatAPI.makeLocalEncoder()
 
+    private var currentUserId: String?
+
+    private var historyFileName: String {
+        if let userId = currentUserId {
+            return "safe-eat-history-\(userId).json"
+        }
+        return AppConfig.historyFileName
+    }
+
     private var historyURL: URL {
-        appSupportDirectory.appendingPathComponent(AppConfig.historyFileName)
+        appSupportDirectory.appendingPathComponent(historyFileName)
     }
 
     private var imageDirectoryURL: URL {
@@ -28,11 +37,20 @@ final class LocalHistoryStore {
         }
     }
 
+    func switchUser(userId: String?) {
+        currentUserId = userId
+    }
+
     func loadItems() -> [LocalHistoryItem] {
         guard let data = try? Data(contentsOf: historyURL) else {
             return []
         }
-        return (try? decoder.decode([LocalHistoryItem].self, from: data)) ?? []
+        let allItems = (try? decoder.decode([LocalHistoryItem].self, from: data)) ?? []
+        // 如果当前有 userId，只返回该用户的条目；否则返回所有条目（向后兼容）
+        if let userId = currentUserId {
+            return allItems.filter { $0.userId == nil || $0.userId == userId }
+        }
+        return allItems
     }
 
     func append(_ item: LocalHistoryItem) {

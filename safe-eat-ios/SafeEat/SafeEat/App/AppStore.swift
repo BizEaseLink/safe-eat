@@ -8,6 +8,7 @@ import StoreKit
 enum AppRootTab: Hashable {
     case home
     case history
+    case trend
     case profile
 }
 
@@ -29,6 +30,13 @@ final class AppStore: ObservableObject {
     @Published private(set) var localCacheUsageBytes: Int64 = 0
     @Published var pendingNotificationDate: Date?
     @Published var dailyQuota: DailyQuotaSnapshot?
+
+    // MARK: - 服务器历史记录（MOB-2）
+    @Published var serverHistory: [RecognitionRecord] = []
+    @Published var serverHistoryTotal: Int = 0
+    @Published var serverHistoryPage: Int = 1
+    @Published var isLoadingServerHistory = false
+    @Published var serverHistoryLimitReached = false
 
     // MARK: - 会员购买新增状态
     @Published var membershipProducts: [Product] = []
@@ -130,6 +138,9 @@ final class AppStore: ObservableObject {
 
         if session != nil, !requiresPhoneBinding {
             await refreshProfile()
+            // profile 加载后切换到该用户的历史文件
+            historyStore.switchUser(userId: profile?.id)
+            reloadLocalHistory()
             // 启动时检查待审核反馈是否已审批
             await checkPendingFeedbacks()
         }
@@ -201,6 +212,9 @@ final class AppStore: ObservableObject {
                 dailyQuota = try await api.getPublicDailyQuota()
             }
         } catch {
+            // 请求被取消（如 Tab 切换）是正常行为，不处理
+            if let urlError = error as? URLError, urlError.code == .cancelled { return }
+            if (error as NSError).code == NSURLErrorCancelled { return }
             #if DEBUG
             print("[AppStore] refreshDailyQuota failed: \(error)")
             #endif
@@ -213,6 +227,8 @@ final class AppStore: ObservableObject {
         profile = nil
         selectedRootTab = .home
         sessionStore.clear()
+        historyStore.switchUser(userId: nil)
+        localHistory = []
         if let message {
             errorMessage = message
         }
@@ -298,6 +314,47 @@ final class AppStore: ObservableObject {
         }
     }
 
+    // MARK: - 服务器历史记录（MOB-2）
+
+    /// 当前套餐的历史记录限制数（nil = 无限）
+    var maxHistoryRecords: Int? {
+        let tier = profile?.currentPlanTier ?? "free"
+        let plan = membershipPlans.first(where: { $0.tier == tier && $0.billingCycle == "monthly" })
+        return plan?.maxHistoryRecords
+    }
+
+    /// 是否达到历史记录条数限制
+    var isHistoryLimitReached: Bool {
+        guard let limit = maxHistoryRecords, limit > 0 else { return false }
+        return serverHistoryTotal >= limit
+    }
+
+    func loadServerHistory(refresh: Bool = true) async {
+        guard session != nil else { return }
+        isLoadingServerHistory = true
+        defer { isLoadingServerHistory = false }
+
+        let page = refresh ? 1 : serverHistoryPage + 1
+
+        do {
+            let result = try await authorizedRequest { token in
+                try await api.listMyHistory(accessToken: token, page: page, pageSize: 20)
+            }
+            if refresh {
+                serverHistory = result.items
+            } else {
+                serverHistory.append(contentsOf: result.items)
+            }
+            serverHistoryTotal = result.total
+            serverHistoryPage = page
+            serverHistoryLimitReached = isHistoryLimitReached
+        } catch {
+            #if DEBUG
+            print("[AppStore] loadServerHistory failed: \(error)")
+            #endif
+        }
+    }
+
     func redeemCode(_ code: String) async throws -> RedeemCodeResult {
         try await authorizedRequest { token in
             try await api.redeemCode(accessToken: token, code: code)
@@ -334,14 +391,19 @@ final class AppStore: ObservableObject {
         previewImage: UIImage?,
         rawImage: UIImage? = nil
     ) throws -> LocalHistoryItem {
-        guard let originalImageData = originalImage.jpegDataForUpload() else {
+        // 原图缩小到 720 再编码，减少磁盘写入量
+        let uploadSource = originalImage.scaledDown(maxDimension: 720)
+        guard let originalImageData = uploadSource.jpegData(compressionQuality: 0.78) else {
             throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveOriginalFailed))
         }
-        guard let rawImageData = (rawImage ?? originalImage).jpegDataForUpload() else {
+        // raw 图进一步缩小和质量降低，仅用于旋转等降级场景
+        let rawSource = (rawImage ?? originalImage).scaledDown(maxDimension: 540)
+        guard let rawImageData = rawSource.jpegData(compressionQuality: 0.72) else {
             throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveHiddenOriginalFailed))
         }
 
-        let previewImageData = previewImage?.pngDataForPreview()
+        // 预览图有透明背景（背景去除），必须用 PNG 保留 alpha 通道
+        let previewImageData = previewImage?.pngData()
         let saved = try historyStore.saveRecognitionImages(
             recognitionId: recognition.id,
             originalImageData: originalImageData,
@@ -359,7 +421,8 @@ final class AppStore: ObservableObject {
             foodScore: recognition.foodScore ?? 0,
             createdAt: recognition.createdAt ?? Date(),
             cachedRecognition: recognition,
-            imageRotationQuarterTurns: 0
+            imageRotationQuarterTurns: 0,
+            userId: profile?.id
         )
         appendHistoryItem(item)
         return item
@@ -381,10 +444,13 @@ final class AppStore: ObservableObject {
 
     func fetchRecognitionDetailIfNeeded(for itemID: LocalHistoryItem.ID) async -> RecognitionRecord? {
         guard let item = historyItem(id: itemID) else { return nil }
-        if let cached = item.cachedRecognition {
+        // 如果已有完整缓存数据则直接返回
+        if let cached = item.cachedRecognition,
+           cached.nutritionSnapshot != nil || cached.nutritionMetrics != nil {
             return cached
         }
 
+        // 缓存不存在或不完整，尝试请求一次
         do {
             let detail = try await authorizedRequest { token in
                 try await api.getRecognition(accessToken: token, recognitionId: item.recognitionId)
@@ -439,6 +505,9 @@ final class AppStore: ObservableObject {
 
     func handleAPIError(_ error: Error) {
         guard !isUnauthorizedError(error) else { return }
+        // 请求被取消（如 Tab 切换导致前一个请求 cancel）不应弹窗
+        if let urlError = error as? URLError, urlError.code == .cancelled { return }
+        if (error as NSError).code == NSURLErrorCancelled { return }
         errorMessage = error.localizedDescription
     }
 
@@ -690,9 +759,14 @@ final class AppStore: ObservableObject {
         #endif
         if session.requiresPhoneBinding == true {
             profile = nil
+            historyStore.switchUser(userId: nil)
+            reloadLocalHistory()
         } else {
             Task {
                 await refreshProfile()
+                // profile 加载后切换到该用户的历史文件
+                historyStore.switchUser(userId: profile?.id)
+                reloadLocalHistory()
             }
         }
     }

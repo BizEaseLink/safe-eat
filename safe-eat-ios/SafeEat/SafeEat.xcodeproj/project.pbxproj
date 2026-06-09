@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4397D61D2FD7DA1D00396543 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 4397D40D2FD7D6F800396543 /* Lottie */; };
 		43B562FB2FA4AC8A00B62CD8 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B562FA2FA4AC8A00B62CD8 /* CoreTelephony.framework */; };
 		43B562FD2FA4AC9400B62CD8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B562FC2FA4AC9400B62CD8 /* SystemConfiguration.framework */; };
 		43B562FF2FA4AC9D00B62CD8 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B562FE2FA4AC9D00B62CD8 /* AdSupport.framework */; };
@@ -100,6 +101,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4397D61D2FD7DA1D00396543 /* Lottie in Frameworks */,
 				43B562FD2FA4AC9400B62CD8 /* SystemConfiguration.framework in Frameworks */,
 				43B562FB2FA4AC8A00B62CD8 /* CoreTelephony.framework in Frameworks */,
 				43B563062FA4ACCD00B62CD8 /* libsqlite3.tbd in Frameworks */,
@@ -172,6 +174,7 @@
 			);
 			name = SafeEat;
 			packageProductDependencies = (
+				4397D40D2FD7D6F800396543 /* Lottie */,
 			);
 			productName = SafeEat;
 			productReference = 43604B562F87D83A009131CE /* SafeEat.app */;
@@ -226,6 +229,9 @@
 			);
 			mainGroup = 43604B4D2F87D83A009131CE;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4397D40C2FD7D6F800396543 /* XCRemoteSwiftPackageReference "lottie-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 43604B572F87D83A009131CE /* Products */;
 			projectDirPath = "";
@@ -312,7 +318,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = bizeasylink.SafeEat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -363,7 +369,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = bizeasylink.SafeEat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -506,7 +512,7 @@
 				DEVELOPMENT_TEAM = M99NCSX352;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = bizeasylink.SafeEatUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -528,7 +534,7 @@
 				DEVELOPMENT_TEAM = M99NCSX352;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = bizeasylink.SafeEatUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -574,6 +580,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4397D40C2FD7D6F800396543 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4397D40D2FD7D6F800396543 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4397D40C2FD7D6F800396543 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 43604B4E2F87D83A009131CE /* Project object */;
 }

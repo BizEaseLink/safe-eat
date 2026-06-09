@@ -66,27 +66,30 @@ enum BackgroundRemovalService {
     }
 
     static func makePreviewImage(from image: UIImage, adviceLevel: String?) async -> UIImage {
-        let displaySource = image.scaledDown(maxDimension: 1080)
+        // 在小尺寸上做所有处理（540 足够预览显示）
+        let displaySource = image.scaledDown(maxDimension: 540)
         let foreground = await removeForegroundIfPossible(from: displaySource)
-        guard let foregroundData = foreground.pngDataForPreview() else {
+
+        // foreground 有透明背景，必须用 PNG 传递给后续渲染（JPEG 会丢失 alpha）
+        guard let foregroundData = foreground.pngData() else {
             return foreground
         }
 
         return await Task.detached(priority: .userInitiated) {
             guard let detachedForeground = UIImage(data: foregroundData) else {
-                return UIImage(data: foregroundData)?.normalizedUprightImage() ?? UIImage()
+                return foreground
             }
 
+            // halo + sticker outline 在小尺寸上完成
             let accented = detachedForeground.haloPreviewImage(
                 haloColor: AdviceLevelMapper.haloUIColor(adviceLevel),
-                padding: 10,
-                haloWidth: 6,
-                softness: 2
+                padding: 6,
+                haloWidth: 4,
+                softness: 1
             )
 
             return accented
-                .stickerOutlineImage(borderColor: .white, padding: 10, borderWidth: 30, softness: 4.5)
-                .scaledDown(maxDimension: 1080)
+                .stickerOutlineImage(borderColor: .white, padding: 6, borderWidth: 16, softness: 2)
         }.value
     }
 }

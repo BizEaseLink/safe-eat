@@ -12,6 +12,7 @@ struct ProfileView: View {
     @State private var activeSheet: ProfileSheet?
     @State private var didWarmProfileData = false
     @State private var showRedeemCodeSheet = false
+    @State private var showHealthGoal = false
 
     private let scrollCoordinateSpace = "safeeat.profile.scroll"
 
@@ -44,7 +45,7 @@ struct ProfileView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
-                    .padding(.bottom, 44)
+                    .padding(.bottom, 120)
                 }
                 .coordinateSpace(name: scrollCoordinateSpace)
                 .onPreferenceChange(SafeEatScrollOffsetKey.self) { value in
@@ -60,24 +61,19 @@ struct ProfileView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $activeSheet) { sheet in
-            Group {
-                switch sheet {
-                case .reminder:
-                    SafeEatReminderSettingsSheet()
-                        .presentationDetents([.height(600)])
-                case .language:
-                    LanguageSettingsView()
-                        .presentationDetents([.height(430)])
-                }
+            switch sheet {
+            case .reminder:
+                SafeEatReminderSettingsSheet()
+            case .language:
+                LanguageSettingsView()
             }
-            .presentationDragIndicator(.visible)
-            .presentationBackground(.clear)
         }
         .navigationDestination(for: ProfileRoute.self, destination: destination)
         .sheet(isPresented: $showRedeemCodeSheet) {
-            RedeemCodeSheet(store: store)
-                .presentationDetents([.height(260)])
-                .presentationDragIndicator(.visible)
+            RedeemCodeSheet()
+        }
+        .sheet(isPresented: $showHealthGoal) {
+            HealthGoalSelectionView()
         }
         .task {
             await warmProfileDataIfNeeded()
@@ -216,7 +212,9 @@ struct ProfileView: View {
                     .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .semibold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
                 Spacer()
-                NavigationLink(value: ProfileRoute.preferences) {
+                Button {
+                    showHealthGoal = true
+                } label: {
                     Text(SafeEatL10n.text(L10nKey.Profile.healthProfileEdit))
                         .font(SafeEatFont.custom(13, relativeTo: .caption))
                         .foregroundStyle(SafeEatTheme.primary)

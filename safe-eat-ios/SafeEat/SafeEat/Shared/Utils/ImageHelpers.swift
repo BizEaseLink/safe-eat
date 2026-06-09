@@ -156,9 +156,11 @@ extension UIImage {
         var maxX = -1
         var maxY = -1
 
-        for y in 0 ..< height {
+        // 每 2 像素采样一次，减少 4 倍扫描量
+        let step = 2
+        for y in stride(from: 0, to: height, by: step) {
             let rowOffset = y * bytesPerRow
-            for x in 0 ..< width {
+            for x in stride(from: 0, to: width, by: step) {
                 let alpha = rawData[rowOffset + (x * bytesPerPixel) + alphaOffset]
                 guard alpha > alphaThreshold else { continue }
 
@@ -173,11 +175,12 @@ extension UIImage {
             return baseImage
         }
 
+        // 扩展 1 像素补偿采样步长
         let cropRect = CGRect(
-            x: minX,
-            y: minY,
-            width: maxX - minX + 1,
-            height: maxY - minY + 1
+            x: max(minX - 1, 0),
+            y: max(minY - 1, 0),
+            width: min(maxX - minX + 2, width - minX + 1),
+            height: min(maxY - minY + 2, height - minY + 1)
         ).integral
 
         guard let croppedImage = cgImage.cropping(to: cropRect) else {
@@ -248,7 +251,8 @@ extension UIImage {
             height: baseImage.size.height
         )
         let tinted = baseImage.withTintColor(haloColor, renderingMode: .alwaysOriginal)
-        let step = max(0.75, 1 / max(baseImage.scale, 1))
+        // 用更大的 step 减少绘制迭代次数（2.0 vs 0.75，减少约 7 倍迭代）
+        let step = max(2.0, 1 / max(baseImage.scale, 1))
 
         return UIGraphicsImageRenderer(size: canvasSize, format: format).image { _ in
             var dx = -outerRadius
@@ -359,6 +363,8 @@ enum AdviceLevelMapper {
         switch level {
         case "recommended":
             return SafeEatL10n.text(L10nKey.Advice.titleRecommended)
+        case "moderate":
+            return SafeEatL10n.text(L10nKey.Advice.titleModerate)
         case "caution":
             return SafeEatL10n.text(L10nKey.Advice.titleCaution)
         case "avoid":
@@ -372,6 +378,8 @@ enum AdviceLevelMapper {
         switch level {
         case "recommended":
             return SafeEatTheme.success
+        case "moderate":
+            return SafeEatTheme.primary
         case "caution":
             return SafeEatTheme.warning
         case "avoid":
@@ -385,6 +393,8 @@ enum AdviceLevelMapper {
         switch level {
         case "recommended":
             return SafeEatTheme.successUIColor
+        case "moderate":
+            return SafeEatTheme.primaryUIColor
         case "caution":
             return SafeEatTheme.warningUIColor
         case "avoid":
@@ -398,6 +408,8 @@ enum AdviceLevelMapper {
         switch level {
         case "recommended":
             return SafeEatL10n.text(L10nKey.Advice.compactRecommended)
+        case "moderate":
+            return SafeEatL10n.text(L10nKey.Advice.compactModerate)
         case "caution":
             return SafeEatL10n.text(L10nKey.Advice.compactCaution)
         case "avoid":
@@ -415,6 +427,8 @@ enum AdviceLevelMapper {
         switch level {
         case "recommended":
             return SafeEatL10n.text(L10nKey.Advice.summaryRecommended)
+        case "moderate":
+            return SafeEatL10n.text(L10nKey.Advice.summaryModerate)
         case "caution":
             return SafeEatL10n.text(L10nKey.Advice.summaryCaution)
         case "avoid":
@@ -566,19 +580,6 @@ struct SafeEatLoadingOverlay: View {
     var subtitle: String? = nil
     var previewImage: UIImage? = nil
 
-    @State private var activeStep = 0
-    @State private var isPulsing = false
-
-    private let loadingTimer = Timer.publish(every: 0.9, on: .main, in: .common).autoconnect()
-
-    private var loadingSteps: [String] {
-        [
-            SafeEatL10n.text(L10nKey.Home.loadingStepCrop),
-            SafeEatL10n.text(L10nKey.Home.loadingStepRemoveBackground),
-            SafeEatL10n.text(L10nKey.Home.loadingStepSync),
-        ]
-    }
-
     private var brandLabelColor: Color {
         colorScheme == .dark ? Color(red: 0.67, green: 0.86, blue: 0.73) : SafeEatTheme.primaryDeep
     }
@@ -621,16 +622,6 @@ struct SafeEatLoadingOverlay: View {
         colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.line
     }
 
-    private var previewStageFill: LinearGradient {
-        LinearGradient(
-            colors: colorScheme == .dark
-                ? [Color(red: 0.10, green: 0.15, blue: 0.13), Color(red: 0.08, green: 0.11, blue: 0.10)]
-                : [Color.white.opacity(0.96), Color(red: 0.95, green: 0.97, blue: 0.95)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
     var body: some View {
         ZStack {
             loadingBackground
@@ -657,14 +648,6 @@ struct SafeEatLoadingOverlay: View {
             .padding(.vertical, 18)
         }
         .ignoresSafeArea()
-        .onAppear {
-            withAnimation(.easeInOut(duration: 1.45).repeatForever(autoreverses: true)) {
-                isPulsing = true
-            }
-        }
-        .onReceive(loadingTimer) { _ in
-            activeStep = (activeStep + 1) % max(loadingSteps.count, 1)
-        }
     }
 
     private var loadingBackground: some View {
@@ -741,11 +724,8 @@ struct SafeEatLoadingOverlay: View {
                 }
             }
 
-            VStack(spacing: 12) {
-                ForEach(Array(loadingSteps.enumerated()), id: \.offset) { index, text in
-                    loadingStepRow(text: text, index: index)
-                }
-            }
+            // Lottie 动画替代多步骤进度
+            LottieLoadingView(size: 80)
         }
         .padding(24)
         .background(
@@ -761,49 +741,6 @@ struct SafeEatLoadingOverlay: View {
 
     private var previewStage: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(previewStageFill)
-
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(colorScheme == .dark ? 0.10 : 0.75),
-                            SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.24 : 0.18),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.28 : 0.18), lineWidth: 1.5)
-                .padding(14)
-                .scaleEffect(isPulsing ? 1.0 : 0.965)
-                .opacity(isPulsing ? 1 : 0.5)
-
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.30 : 0.16),
-                            SafeEatTheme.primary.opacity(0.02),
-                            SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.30 : 0.16),
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .frame(height: 74)
-                .padding(.horizontal, 20)
-                .offset(y: isPulsing ? 98 : -98)
-                .blur(radius: 12)
-                .mask(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .padding(12)
-                )
-
             if let previewImage {
                 Image(uiImage: previewImage)
                     .resizable()
@@ -822,66 +759,6 @@ struct SafeEatLoadingOverlay: View {
         .frame(height: 318)
     }
 
-    private func loadingStepRow(text: String, index: Int) -> some View {
-        let isActive = index == activeStep
-        let isCompleted = index < activeStep
-
-        return HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(stepFill(isActive: isActive, isCompleted: isCompleted))
-                    .frame(width: 26, height: 26)
-
-                if isCompleted {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(.white)
-                } else {
-                    Circle()
-                        .fill(isActive ? SafeEatTheme.primary : SafeEatTheme.textSecondary.opacity(0.45))
-                        .frame(width: isActive ? 10 : 8, height: isActive ? 10 : 8)
-                        .scaleEffect(isActive && isPulsing ? 1.12 : 1)
-                }
-            }
-
-            Text(text)
-                .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                .foregroundStyle(SafeEatTheme.textPrimary)
-
-            Spacer(minLength: 12)
-
-            Capsule()
-                .fill(stepFill(isActive: isActive, isCompleted: isCompleted))
-                .frame(width: isActive ? 46 : 28, height: 8)
-                .overlay(
-                    Capsule()
-                        .fill(Color.white.opacity(isActive ? 0.42 : 0.22))
-                        .frame(width: isActive ? 24 : 0, height: 8)
-                        .opacity(isActive ? 1 : 0)
-                )
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(colorScheme == .dark ? Color.white.opacity(0.04) : Color.white.opacity(0.46))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.54), lineWidth: 1)
-        )
-    }
-
-    private func stepFill(isActive: Bool, isCompleted: Bool) -> Color {
-        if isCompleted {
-            return SafeEatTheme.success
-        }
-        if isActive {
-            return SafeEatTheme.primary.opacity(0.86)
-        }
-        return colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.primary.opacity(0.12)
-    }
-
     private func footerPill(_ text: String) -> some View {
         Text(text)
             .font(SafeEatFont.custom(15, relativeTo: .subheadline))
@@ -898,7 +775,6 @@ struct SafeEatLoadingOverlay: View {
             )
     }
 }
-
 struct StickerTextBubble: View {
     let text: String
     let font: Font

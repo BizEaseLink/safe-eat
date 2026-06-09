@@ -1,81 +1,95 @@
 import SwiftUI
 
+/// 兑换码弹窗 — 输入兑换码获取奖励
 struct RedeemCodeSheet: View {
-    @ObservedObject var store: AppStore
+    @EnvironmentObject private var store: AppStore
+    @Environment(\.dismiss) private var dismiss
+
     @State private var code = ""
     @State private var isRedeeming = false
     @State private var errorMessage: String?
-    @State private var successMessage: String?
-    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 20) {
-                Image(systemName: "ticket")
-                    .font(.system(size: 36))
-                    .foregroundStyle(SafeEatTheme.primary)
+        SafeEatSettingsSheetContainer(
+            title: "兑换码",
+            subtitle: "输入兑换码获取奖励",
+            detentHeight: 340
+        ) {
+            ProfileSurfaceCard {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 14) {
+                        ZStack {
+                            Circle()
+                                .fill(SafeEatTheme.primary.opacity(0.12))
+                                .frame(width: 46, height: 46)
 
-                Text(SafeEatL10n.text(L10nKey.Membership.redeemCodeSheetTitle))
-                    .font(SafeEatFont.custom(18, relativeTo: .title3, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                            Image(systemName: "ticket.fill")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(SafeEatTheme.primary)
+                        }
 
-                TextField(SafeEatL10n.text(L10nKey.Membership.redeemCodePlaceholder), text: $code)
-                    .textFieldStyle(.roundedBorder)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.characters)
-                    .font(SafeEatFont.textStyle(.body))
-                    .padding(.horizontal, 20)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("输入兑换码")
+                                .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
+                                .foregroundStyle(SafeEatTheme.textPrimary)
 
-                if let error = errorMessage {
-                    Text(error)
-                        .font(SafeEatFont.custom(13, relativeTo: .caption))
-                        .foregroundStyle(.red)
-                }
+                            Text("兑换码由数字和字母组成")
+                                .font(SafeEatFont.textStyle(.footnote))
+                                .foregroundStyle(SafeEatTheme.textSecondary)
+                        }
+                    }
 
-                if let success = successMessage {
-                    Text(success)
-                        .font(SafeEatFont.custom(13, relativeTo: .caption))
-                        .foregroundStyle(.green)
-                }
+                    TextField("请输入兑换码", text: $code)
+                        .font(SafeEatFont.textStyle(.body))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(Color(UIColor.secondarySystemBackground))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(SafeEatTheme.primary.opacity(0.2), lineWidth: 1)
+                        )
+                        .textInputAutocapitalization(.characters)
+                        .autocorrectionDisabled()
 
-                ProfilePrimaryActionButton(
-                    title: SafeEatL10n.text(L10nKey.Membership.redeemCodeAction),
-                    isLoading: isRedeeming,
-                    isDisabled: code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                ) {
-                    Task {
-                        await redeem()
+                    if let error = errorMessage {
+                        Text(error)
+                            .font(SafeEatFont.textStyle(.caption))
+                            .foregroundStyle(.red)
                     }
                 }
             }
-            .padding(20)
-            .navigationTitle(SafeEatL10n.text(L10nKey.Membership.redeemCodeTitle))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(SafeEatL10n.text(L10nKey.Common.cancel)) {
-                        dismiss()
-                    }
+
+            ProfilePrimaryActionButton(
+                title: "兑换",
+                isLoading: isRedeeming
+            ) {
+                Task {
+                    await redeemCode()
                 }
             }
+            .disabled(code.trimmingCharacters(in: .whitespaces).isEmpty)
         }
     }
 
-    private func redeem() async {
-        let trimmed = code.trimmingCharacters(in: .whitespacesAndNewlines)
+    private func redeemCode() async {
+        let trimmed = code.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
 
         isRedeeming = true
         errorMessage = nil
-        successMessage = nil
 
         do {
-            _ = try await store.redeemCode(trimmed)
-            successMessage = SafeEatL10n.text(L10nKey.Membership.redeemCodeSuccess)
-            code = ""
-            await store.loadMembershipStatus()
+            let result = try await store.redeemCode(trimmed)
+            if result.success {
+                dismiss()
+            } else {
+                errorMessage = "兑换失败，请检查兑换码"
+            }
         } catch {
-            errorMessage = SafeEatL10n.text(L10nKey.Membership.redeemCodeInvalid)
+            errorMessage = error.localizedDescription
         }
 
         isRedeeming = false

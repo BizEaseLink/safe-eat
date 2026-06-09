@@ -169,6 +169,12 @@
 "language.option.zh_hans" = "Chinese";
 "language.option.en" = "English";
 
+"tab.home" = "Home";
+"tab.menu" = "Menu";
+"tab.scan" = "Scan";
+"tab.trend" = "Trends";
+"tab.profile" = "Profile";
+
 "common.ok" = "OK";
 "common.save" = "Save";
 "common.saving" = "Saving";
@@ -182,14 +188,17 @@
 "common.advice_score_format" = "%@ · %d pts";
 
 "advice.title.recommended" = "Recommended";
+"advice.title.moderate" = "Moderate";
 "advice.title.caution" = "Use with caution";
 "advice.title.avoid" = "Not recommended";
 "advice.title.evaluate" = "Needs evaluation";
 "advice.compact.recommended" = "Recommended";
+"advice.compact.moderate" = "Moderate";
 "advice.compact.caution" = "Caution";
 "advice.compact.avoid" = "Avoid";
 "advice.compact.evaluate" = "Review";
 "advice.summary.recommended" = "This generally fits your current dietary direction and can be your first choice this time.";
+"advice.summary.moderate" = "Fine to eat, but best in moderation.";
 "advice.summary.caution" = "You can still eat it, but watch the portion size, pairings, and frequency.";
 "advice.summary.avoid" = "It is less suitable right now. Consider switching to a safer option.";
 "advice.summary.evaluate" = "Please judge further based on your current condition and this meal combination.";
@@ -540,6 +549,15 @@
 "user.goal.muscle_gain" = "Muscle Gain";
 "user.goal.blood_sugar_control" = "Blood Sugar Control";
 "user.goal.cardiovascular_health" = "Cardiovascular Friendly";
+
+"health_goal.template.hypertension" = "High Blood Pressure";
+"health_goal.template.hyperglycemia" = "High Blood Sugar";
+"health_goal.template.hyperlipidemia" = "High Blood Lipids";
+"health_goal.template.general_wellness" = "General Wellness";
+"health_goal.template.weight_loss" = "Fat Loss";
+"health_goal.template.muscle_gain" = "Muscle Gain";
+"health_goal.template.balanced" = "Balanced Diet";
+"health_goal.template.blood_sugar_control" = "Blood Sugar Control";
 "user.payment.alipay" = "Alipay";
 "user.payment.wechat" = "WeChat Pay";
 "user.payment.apple_iap" = "Apple In-App Purchase";
@@ -548,8 +566,9 @@
 "home.brand_pill" = "Safe Eat";
 "home.promo.tag" = "New User Offer";
 "home.promo.value" = "¥29 down to ¥20";
-"home.hero.tag.health" = "Sugar-control friendly";
-"home.hero.tag.history" = "Local History";
+"home.hero.tag.health" = "Health Alerts";
+"home.hero.tag.history" = "Snap & Know";
+"home.hero.tag.know" = "Eat Smart";
 "home.hero.title" = "Is today's dish still right for you?";
 "home.hero.scan_action" = "Start Scan";
 "home.hero.member_action" = "Membership";
@@ -563,7 +582,7 @@
 "home.camera.open_settings" = "Open Settings";
 "home.camera.guide" = "Place the subject inside the guide frame";
 "home.camera.title" = "Safe Eat AI Camera";
-"home.camera.bottom_hint" = "Align the package front or ingredient list before capturing";
+"home.camera.bottom_hint" = "Point at the food to scan";
 "home.camera.flash_on" = "Flash on";
 "home.camera.flash_off" = "Flash off";
 "home.camera.starting" = "Starting camera…";
@@ -583,10 +602,12 @@
 "home.record.carbs_format" = "Carbs %.1fg";
 "home.record.detail_action" = "View Details";
 "home.record.chip_friendly" = "More suitable";
+"home.record.chip_moderate" = "In Moderation";
 "home.record.chip_portion" = "Watch portions";
 "home.record.chip_switch" = "Try another option";
 "home.record.chip_check" = "Check again";
 "home.record.summary.recommended" = "The current result looks positive. Open the card for more detailed nutrition and suggestions.";
+"home.record.summary.moderate" = "Overall balanced. Open the card for more nutrition details and advice.";
 "home.record.summary.caution" = "There are still uncertainties. Open the card to confirm nutrition and health impacts.";
 "home.record.summary.avoid" = "The current risk looks high. Open the card to understand the details before deciding.";
 "home.record.summary.unknown" = "The current nutrition baseline is still unclear. Try another angle or open the card for more detail.";
@@ -682,6 +703,126 @@
 "result.ai_advice.title" = "AI Advice";
 "result.ai_advice.health_tips_title" = "Health Tips";
 "result.ai_advice.upgrade_hint" = "Upgrade for more advice";
+"result.ai_advice.summary_label" = "Summary";
+"result.ai_advice.detailed_label" = "Detailed Advice";
+"result.ai_advice.upgrade_tier_hint_format" = "Upgrade to %@ for more advice";
+// C1: Quick metric cards
+"result.quick_metric.glycemic_index" = "Glycemic";
+"result.quick_metric.glycemic.low" = "LOW";
+"result.quick_metric.glycemic.medium" = "MED";
+"result.quick_metric.glycemic.high" = "HIGH";
+"result.quick_metric.calories_unit" = "kcal";
+"result.quick_metric.protein_unit" = "g";
+"result.quick_metric.fat_unit" = "g";
+"result.recognition_info_label" = "Recognition Info";
+"result.metric_impacts_label" = "Metric Impacts";
+"result.risk_facts_label" = "Risk Factors";
+"result.ai_advice.health_tips_label" = "Health Tips";
+
+// T6: Allergen tags + Satiety index
+"result.allergen.title" = "Allergens";
+"result.allergen.contains" = "Contains";
+"result.allergen.may_contain" = "May Contain";
+"result.satiety.title" = "Satiety";
+"result.satiety.low" = "Low";
+"result.satiety.medium" = "Medium";
+"result.satiety.high" = "High";
+
+// T7: Back card 10 sections
+"result.section.macronutrients" = "Macronutrients";
+"result.section.detailed_nutrients" = "Detailed Nutrients";
+"result.section.vitamins" = "Vitamins";
+"result.section.minerals" = "Minerals";
+"result.section.other_trace_minerals" = "Other Trace Minerals";
+"result.section.daily_values" = "Daily Values";
+"result.section.glycemic" = "Glycemic Index";
+"result.section.dietary" = "Dietary Info";
+"result.section.ingredients" = "Ingredients & Preparation";
+"result.glycemic.index" = "Glycemic Index";
+"result.glycemic.load" = "Glycemic Load";
+"result.glycemic.insulin_index" = "Insulin Index";
+"result.glycemic.sugar" = "Sugar Content";
+"result.glycemic.not_collected" = "Not yet collected";
+"result.data.not_available" = "Data not available";
+"result.diet.vegetarian" = "Vegetarian";
+"result.diet.vegan" = "Vegan";
+"result.diet.gluten_free" = "Gluten-Free";
+"result.diet.lactose_free" = "Lactose-Free";
+"result.diet.halal" = "Halal";
+"result.diet.low_fodmap" = "Low-FODMAP";
+"result.diet.dairy_free" = "Dairy-Free";
+"result.diet.nut_free" = "Nut-Free";
+"result.preparation" = "Preparation";
+"result.per_serving" = "Per Serving";
+// T7: Detailed nutrients
+"result.nutrient.saturated_fat" = "Saturated Fat";
+"result.nutrient.trans_fat" = "Trans Fat";
+"result.nutrient.dietary_fiber" = "Dietary Fiber";
+"result.nutrient.sugar" = "Sugar";
+"result.nutrient.cholesterol" = "Cholesterol";
+"result.nutrient.sodium" = "Sodium";
+// T7: Minerals
+"result.mineral.calcium" = "Calcium";
+"result.mineral.iron" = "Iron";
+"result.mineral.magnesium" = "Magnesium";
+"result.mineral.phosphorus" = "Phosphorus";
+"result.mineral.potassium" = "Potassium";
+"result.mineral.sodium" = "Sodium";
+"result.mineral.zinc" = "Zinc";
+"result.mineral.selenium" = "Selenium";
+// C3: New minerals
+"result.mineral.copper" = "Copper";
+"result.mineral.manganese" = "Manganese";
+"result.mineral.chromium" = "Chromium";
+"result.mineral.molybdenum" = "Molybdenum";
+"result.mineral.fluoride" = "Fluoride";
+"result.mineral.iodine" = "Iodine";
+// T7: Vitamins
+"result.vit.a" = "Vit A";
+"result.vit.b1" = "Vit B1";
+"result.vit.b2" = "Vit B2";
+"result.vit.b3" = "Vit B3";
+"result.vit.b5" = "Vit B5";
+"result.vit.b6" = "Vit B6";
+"result.vit.b12" = "Vit B12";
+"result.vit.c" = "Vit C";
+"result.vit.d" = "Vit D";
+"result.vit.e" = "Vit E";
+"result.vit.k" = "Vit K";
+"result.vit.folate" = "Folate";
+// C3: New vitamins
+"result.vit.b9" = "Vitamin B9 (Folate)";
+"result.vit.biotin" = "Biotin";
+"result.vit.choline" = "Choline";
+// T7: Preparation
+"result.prep.method" = "Method";
+"result.prep.oil_type" = "Oil Type";
+"result.prep.oil_amount" = "Oil Amount";
+"result.prep.salt_level" = "Salt Level";
+"result.prep.sugar_level" = "Sugar Level";
+// T8: Paywall overlay
+"result.paywall.upgrade_hint" = "Upgrade to Unlock";
+"result.paywall.upgrade_action" = "Upgrade to view details";
+"result.scanned_now" = "Just scanned";
+"result.scanned_relative_format" = "Scanned %@";
+
+// Membership banner
+"result.membership_banner.title_free" = "Upgrade to Pro for detailed reports";
+"result.membership_banner.title_lite" = "Upgrade to Pro for dietary info";
+"result.membership_banner.title_pro" = "Upgrade to Premium for ingredient breakdown";
+"result.membership_banner.subtitle_free" = "Upgrade to Lite to view vitamins and minerals";
+"result.membership_banner.subtitle_lite" = "Upgrade to Pro to unlock dietary info and preparation";
+"result.membership_banner.subtitle_pro" = "Upgrade to Premium to unlock full ingredient breakdown";
+"result.membership_banner.desc_free" = "Free users can only see basic nutrients and allergens";
+"result.membership_banner.desc_lite" = "Lite users can see vitamin and mineral details";
+"result.membership_banner.desc_pro" = "Pro users can see dietary info and preparation";
+"result.membership_banner.action" = "Upgrade Now";
+
+// Per 100g serving label
+"result.per_100g_serving" = "Per 100g serving";
+"result.nutrition.per_serving" = "Per 100g";
+"result.action.analysis_detail" = "Analysis Detail";
+"result.empty_data_hint" = "No data collected for this section yet";
 
 "feedback.title" = "Feedback";
 "feedback.replace_evidence.title" = "Replace Evidence Image";
@@ -706,6 +847,16 @@
 "feedback.suggestion.soba" = "Japanese soba noodles";
 "feedback.suggestion.cold_soba" = "Cold soba noodles";
 "feedback.suggestion.chilled_soba" = "Chilled soba salad";
+"feedback.type.title" = "Feedback Type (Optional)";
+"feedback.type.placeholder" = "Select feedback type";
+"feedback.type.hint" = "Selecting a type helps us process your feedback faster";
+"feedback.type.wrong_food" = "Wrong food";
+"feedback.type.wrong_name" = "Wrong name";
+"feedback.type.wrong_nutrition" = "Wrong nutrition data";
+"feedback.type.wrong_category" = "Wrong category";
+"feedback.type.add_alias" = "Add alias";
+"feedback.type.new_food" = "New food";
+"feedback.type.other" = "Other";
 
 "history.date.short_format" = "MMM d";
 "history.date.week_range_format" = "%@ - %@";
@@ -812,3 +963,4 @@
 "home.quota_status_bar.count_format" = "%d scans";
 "home.quota_status_bar.ad_reward_format" = "Watch ad +%d";
 "home.quota_status_bar.cycle_end_format" = "Cycle ends %@";
+"result.feedback_pending" = "Feedback pending";
