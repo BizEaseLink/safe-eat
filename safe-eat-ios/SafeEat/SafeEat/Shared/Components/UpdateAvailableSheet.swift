@@ -14,6 +14,7 @@ struct UpdateAvailableSheet: View {
                 store.openAppStore()
             },
             secondaryButton: SheetButton(title: "稍后提醒") {
+                store.skipCurrentVersion()
                 dismiss()
             }
         ) {

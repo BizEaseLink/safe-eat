@@ -904,6 +904,25 @@ enum L10nKey {
         static let templateGeneralWellness = "health_goal.template.general_wellness"
     }
 
+    enum RecognitionPhase {
+        static let identifying = "recognition_phase.identifying"
+        static let selectTitle = "recognition_phase.select_title"
+        static let selectSubtitle = "recognition_phase.select_subtitle"
+        static let evaluating = "recognition_phase.evaluating"
+        static let evaluatingSubtitle = "recognition_phase.evaluating_subtitle"
+        static let tagIdentify = "recognition_phase.tag_identify"
+        static let tagIdentifyDetail = "recognition_phase.tag_identify_detail"
+        static let tagNutrition = "recognition_phase.tag_nutrition"
+        static let tagNutritionDetail = "recognition_phase.tag_nutrition_detail"
+        static let tagSafety = "recognition_phase.tag_safety"
+        static let tagSafetyDetail = "recognition_phase.tag_safety_detail"
+        static let tip = "recognition_phase.tip"
+        static let tipContent1 = "recognition_phase.tip_content_1"
+        static let tipContent2 = "recognition_phase.tip_content_2"
+        static let tipContent3 = "recognition_phase.tip_content_3"
+        static let tipContent4 = "recognition_phase.tip_content_4"
+    }
+
     enum Candidate {
         static let title = "candidate.title"
         static let aiResult = "candidate.ai_result"

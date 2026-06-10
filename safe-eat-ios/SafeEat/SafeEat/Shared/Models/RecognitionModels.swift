@@ -213,6 +213,36 @@ struct IdentifyCandidate: Codable, Identifiable {
     let confidence: Double
     let type: String?
     let source: String?
+
+    // 后端可能返回字符串类型的 confidence，兼容处理
+    private enum CodingKeys: String, CodingKey {
+        case name, confidence, type, source
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        type = try container.decodeIfPresent(String.self, forKey: .type)
+        source = try container.decodeIfPresent(String.self, forKey: .source)
+
+        // confidence: 兼容 number 和 string 两种类型
+        if let doubleVal = try? container.decode(Double.self, forKey: .confidence) {
+            confidence = doubleVal
+        } else if let strVal = try? container.decode(String.self, forKey: .confidence),
+                  let parsed = Double(strVal) {
+            confidence = parsed
+        } else {
+            confidence = 0
+        }
+    }
+
+    // 用于 Preview 等手动构造的场景
+    init(name: String, confidence: Double, type: String? = nil, source: String? = nil) {
+        self.name = name
+        self.confidence = confidence
+        self.type = type
+        self.source = source
+    }
 }
 
 struct IdentifyResponse: Codable {

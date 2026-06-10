@@ -846,3 +846,21 @@
 "candidate.no_result" = "未找到匹配的食物";
 "candidate.empty_hint" = "未识别到候选结果，请搜索食物库";
 "home.quota_exceeded.watch_ad_hint" = "观看短视频即可获得额外扫描次数";
+
+// 识别阶段
+"recognition_phase.identifying" = "正在识别";
+"recognition_phase.select_title" = "请选择";
+"recognition_phase.select_subtitle" = "请选择最匹配的识别结果";
+"recognition_phase.evaluating" = "正在智评";
+"recognition_phase.evaluating_subtitle" = "食安安正在综合评估营养与安全风险";
+"recognition_phase.tag_identify" = "智能识别";
+"recognition_phase.tag_identify_detail" = "精准检测食物主体";
+"recognition_phase.tag_nutrition" = "营养分析";
+"recognition_phase.tag_nutrition_detail" = "多维营养数据解析";
+"recognition_phase.tag_safety" = "安全评估";
+"recognition_phase.tag_safety_detail" = "综合评估健康风险";
+"recognition_phase.tip" = "识别小贴士";
+"recognition_phase.tip_content_1" = "保持光线充足，食物居中拍摄效果更佳";
+"recognition_phase.tip_content_2" = "尽量拍摄单个食物，避免多个菜品堆叠";
+"recognition_phase.tip_content_3" = "拍摄角度正对食物，避免侧拍或俯拍过度";
+"recognition_phase.tip_content_4" = "靠近拍摄可以获取更多细节，识别更精准";

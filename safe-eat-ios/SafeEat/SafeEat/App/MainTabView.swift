@@ -23,15 +23,14 @@ struct MainTabView: View {
     @State private var showCamera = false
     @State private var showMembership = false
     @State private var showQuotaExceeded = false
-    @State private var isRecognizing = false
+    @State private var recognitionPhase: RecognitionPhase?
     @State private var recognizingPreviewImage: UIImage?
     @State private var resultRoute: ResultRoute?
     @State private var showAdRewardResult = false
     @State private var adRewardResultType: AdRewardResultType = .claimFailed
     @State private var showSignupBonus = false
-    // 5候选识别流程状态
+    // 识别流程中间数据
     @State private var identifySession: IdentifySessionData?
-    @State private var showCandidateSelect = false
     @Environment(\.colorScheme) private var colorScheme
     @State private var scanPressed = false
     @State private var homePath = NavigationPath()
@@ -67,7 +66,7 @@ struct MainTabView: View {
         case .home:
             // home tab 使用 navigationDestination(item:/isPresented:)，
             // 这些 API 不会推入 NavigationPath，需要检查对应的 @State 变量
-            return homePath.isEmpty && resultRoute == nil && !showMembership && !showCandidateSelect
+            return homePath.isEmpty && resultRoute == nil && !showMembership && recognitionPhase == nil
         case .history:
             // history tab 使用 navigationDestination(item:)，不会推入 NavigationPath，
             // 通过 TabNavigationState 追踪
@@ -100,17 +99,6 @@ struct MainTabView: View {
                         .navigationDestination(isPresented: $showMembership) {
                             MembershipPurchaseView()
                         }
-                        .navigationDestination(isPresented: $showCandidateSelect) {
-                            if let session = identifySession {
-                                CandidateSelectView(
-                                    candidates: session.candidates,
-                                    sessionId: session.sessionId,
-                                    onSelect: { selectedName, sessionId in
-                                        performConfirm(selectedName: selectedName, sessionId: sessionId)
-                                    }
-                                )
-                            }
-                        }
                     }
 
                 case .history:
@@ -131,11 +119,13 @@ struct MainTabView: View {
             }
 
             // 识别中加载遮罩
-            if isRecognizing {
+            if let phase = recognitionPhase {
                 SafeEatLoadingOverlay(
-                    title: SafeEatL10n.text(L10nKey.Home.loadingTitle),
-                    subtitle: SafeEatL10n.text(L10nKey.Home.loadingSubtitle),
-                    previewImage: recognizingPreviewImage
+                    phase: phase,
+                    previewImage: recognizingPreviewImage,
+                    onCandidateSelected: { selectedName, sessionId in
+                        performConfirm(selectedName: selectedName, sessionId: sessionId)
+                    }
                 )
                 .transition(.opacity)
                 .zIndex(30)
@@ -305,7 +295,7 @@ struct MainTabView: View {
     // MARK: - 扫描逻辑
 
     private func startScan() {
-        guard !isRecognizing else { return }
+        guard recognitionPhase == nil else { return }
 
         guard store.session != nil else {
             store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.scanAction))
@@ -327,14 +317,12 @@ struct MainTabView: View {
             return
         }
 
-        isRecognizing = true
-        defer {
-            isRecognizing = false
-            recognizingPreviewImage = nil
-        }
+        recognitionPhase = .identifying
 
         guard let uploadData = croppedImage.jpegDataForUpload() else {
             store.errorMessage = SafeEatL10n.text(L10nKey.Errors.imageCaptureFailed)
+            recognitionPhase = nil
+            recognizingPreviewImage = nil
             return
         }
 
@@ -351,26 +339,41 @@ struct MainTabView: View {
             let identifyResult = try await identifyTask
             let previewImage = await previewTask
 
-            // 高置信（≥ 0.9）且只有1个候选 → 直接 confirm
+            // 高置信（≥ 0.9）且只有1个候选 → 直接进入智评阶段
             if identifyResult.candidates.count == 1 && identifyResult.candidates[0].confidence >= 0.9 {
-                let record = try await store.authorizedRequest { token in
-                    try await store.api.confirm(
-                        accessToken: token,
-                        selectedName: identifyResult.candidates[0].name,
-                        sessionId: identifyResult.sessionId
+                recognitionPhase = .evaluating
+                recognizingPreviewImage = previewImage
+
+                do {
+                    let record = try await store.authorizedRequest { token in
+                        try await store.api.confirm(
+                            accessToken: token,
+                            selectedName: identifyResult.candidates[0].name,
+                            sessionId: identifyResult.sessionId
+                        )
+                    }
+                    let item = try store.recordRecognition(
+                        record,
+                        originalImage: croppedImage,
+                        previewImage: previewImage,
+                        rawImage: rawImage
                     )
+                    recognitionPhase = nil
+                    recognizingPreviewImage = nil
+                    selectedTab = .home
+                    store.selectedRootTab = .home
+                    resultRoute = ResultRoute(id: item.id, itemId: item.id)
+                } catch {
+                    recognitionPhase = nil
+                    recognizingPreviewImage = nil
+                    if isQuotaExceededError(error) {
+                        showQuotaExceeded = true
+                    } else {
+                        store.handleAPIError(error)
+                    }
                 }
-                let item = try store.recordRecognition(
-                    record,
-                    originalImage: croppedImage,
-                    previewImage: previewImage,
-                    rawImage: rawImage
-                )
-                selectedTab = .home
-                store.selectedRootTab = .home
-                resultRoute = ResultRoute(id: item.id, itemId: item.id)
             } else {
-                // 多候选或低置信 → 进入候选选择页
+                // 多候选或低置信 → 进入选择阶段
                 identifySession = IdentifySessionData(
                     candidates: identifyResult.candidates,
                     sessionId: identifyResult.sessionId,
@@ -378,9 +381,8 @@ struct MainTabView: View {
                     rawImage: rawImage,
                     previewImage: previewImage
                 )
-                isRecognizing = false
-                recognizingPreviewImage = nil
-                showCandidateSelect = true
+                recognizingPreviewImage = previewImage
+                recognitionPhase = .selecting(candidates: identifyResult.candidates, sessionId: identifyResult.sessionId)
             }
         } catch {
             #if DEBUG
@@ -389,6 +391,8 @@ struct MainTabView: View {
                 print("[MainTabView] APIError: \(apiError)")
             }
             #endif
+            recognitionPhase = nil
+            recognizingPreviewImage = nil
             if isQuotaExceededError(error) {
                 showQuotaExceeded = true
             } else {
@@ -397,12 +401,12 @@ struct MainTabView: View {
         }
     }
 
-    // confirm 流程：从候选选择页选中后调用
+    // confirm 流程：从候选选择后调用
     @MainActor
     private func performConfirm(selectedName: String, sessionId: String) {
         guard let session = identifySession else { return }
 
-        isRecognizing = true
+        recognitionPhase = .evaluating
         recognizingPreviewImage = session.previewImage
 
         Task {
@@ -421,21 +425,21 @@ struct MainTabView: View {
                     rawImage: session.rawImage
                 )
                 identifySession = nil
-                showCandidateSelect = false
+                recognitionPhase = nil
+                recognizingPreviewImage = nil
                 selectedTab = .home
                 store.selectedRootTab = .home
                 resultRoute = ResultRoute(id: item.id, itemId: item.id)
             } catch {
                 identifySession = nil
-                showCandidateSelect = false
+                recognitionPhase = nil
+                recognizingPreviewImage = nil
                 if isQuotaExceededError(error) {
                     showQuotaExceeded = true
                 } else {
                     store.handleAPIError(error)
                 }
             }
-            isRecognizing = false
-            recognizingPreviewImage = nil
         }
     }
 
