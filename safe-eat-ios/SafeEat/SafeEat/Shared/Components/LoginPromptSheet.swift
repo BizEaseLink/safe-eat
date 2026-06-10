@@ -10,7 +10,16 @@ struct LoginPromptSheet: View {
         SafeEatSettingsSheetContainer(
             title: "需要登录",
             subtitle: featureHint ?? "登录后即可使用完整功能",
-            detentHeight: 340
+            contentHeight: 100,
+            primaryButton: SheetButton(title: "去登录") {
+                dismiss()
+                store.dismissLoginPrompt()
+                store.goToLogin()
+            },
+            secondaryButton: SheetButton(title: "稍后") {
+                dismiss()
+                store.dismissLoginPrompt()
+            }
         ) {
             ProfileSurfaceCard {
                 HStack(spacing: 14) {
@@ -34,17 +43,6 @@ struct LoginPromptSheet: View {
                             .foregroundStyle(SafeEatTheme.textSecondary)
                     }
                 }
-            }
-
-            ProfilePrimaryActionButton(title: "去登录", isLoading: false) {
-                dismiss()
-                store.dismissLoginPrompt()
-                store.goToLogin()
-            }
-
-            ProfileSecondaryActionButton(title: "稍后") {
-                dismiss()
-                store.dismissLoginPrompt()
             }
         }
     }

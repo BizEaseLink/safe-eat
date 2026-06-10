@@ -15,7 +15,10 @@ struct SafeEatReminderSettingsSheet: View {
         SafeEatSettingsSheetContainer(
             title: SafeEatL10n.text(L10nKey.Reminder.sheetTitle),
             subtitle: SafeEatL10n.text(L10nKey.Reminder.sheetSubtitle),
-            detentHeight: 500
+            contentHeight: 320,
+            primaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Reminder.saveAction), isLoading: isSaving) {
+                Task { await saveSettings() }
+            }
         ) {
             toggleCard
             scheduleCard
@@ -25,15 +28,6 @@ struct SafeEatReminderSettingsSheet: View {
                     Text(message)
                         .font(SafeEatFont.textStyle(.footnote))
                         .foregroundStyle(SafeEatTheme.textSecondary)
-                }
-            }
-
-            ProfilePrimaryActionButton(
-                title: SafeEatL10n.text(L10nKey.Reminder.saveAction),
-                isLoading: isSaving
-            ) {
-                Task {
-                    await saveSettings()
                 }
             }
         }

@@ -21,7 +21,10 @@ struct AdRewardResultSheet: View {
         SafeEatSettingsSheetContainer(
             title: titleText,
             subtitle: messageText,
-            detentHeight: 290
+            contentHeight: 110,
+            primaryButton: SheetButton(title: isSuccess ? "好的" : "重试") {
+                dismiss()
+            }
         ) {
             switch resultType {
             case .success(let quota):
@@ -73,13 +76,6 @@ struct AdRewardResultSheet: View {
                         }
                     }
                 }
-            }
-
-            ProfilePrimaryActionButton(
-                title: isSuccess ? "好的" : "重试",
-                isLoading: false
-            ) {
-                dismiss()
             }
         }
     }

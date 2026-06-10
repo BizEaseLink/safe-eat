@@ -837,3 +837,12 @@
 "history.server.upgrade_prompt_action" = "升级查看更多";
 "history.server.loading_title" = "加载中";
 "result.feedback_pending" = "反馈审核中";
+
+// 候选选择
+"candidate.title" = "选择识别结果";
+"candidate.ai_result" = "AI 识别结果";
+"candidate.search_hint" = "没有找到？搜索食物库";
+"candidate.search_placeholder" = "搜索食物名称";
+"candidate.no_result" = "未找到匹配的食物";
+"candidate.empty_hint" = "未识别到候选结果，请搜索食物库";
+"home.quota_exceeded.watch_ad_hint" = "观看短视频即可获得额外扫描次数";

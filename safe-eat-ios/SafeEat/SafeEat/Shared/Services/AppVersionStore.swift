@@ -53,15 +53,16 @@ final class AppVersionStore {
             print("[AppVersion] response needsUpdate=\(response.needsUpdate) forceUpdate=\(response.forceUpdate) latest=\(response.latestVersion ?? "-") minimum=\(response.minimumVersion ?? "-")")
             #endif
 
-            // 如果是普通更新且用户已跳过此版本（且跳过当天有效），则不弹窗
-            if response.needsUpdate && !response.forceUpdate {
-                if let skipped = UserDefaults.standard.string(forKey: Self.skippedVersionKey),
-                   skipped == response.latestVersion,
-                   let skippedDateStr = UserDefaults.standard.string(forKey: Self.skippedDateKey),
-                   isSameDay(skippedDateStr) {
-                    return  // 跳过当日不再弹窗
-                }
-            }
+            // TODO: 测试完成后恢复跳过逻辑（当日不再弹窗）
+            // 临时：每次都弹窗，方便测试
+            // if response.needsUpdate && !response.forceUpdate {
+            //     if let skipped = UserDefaults.standard.string(forKey: Self.skippedVersionKey),
+            //        skipped == response.latestVersion,
+            //        let skippedDateStr = UserDefaults.standard.string(forKey: Self.skippedDateKey),
+            //        isSameDay(skippedDateStr) {
+            //         return  // 跳过当日不再弹窗
+            //     }
+            // }
 
             updateInfo = response
 

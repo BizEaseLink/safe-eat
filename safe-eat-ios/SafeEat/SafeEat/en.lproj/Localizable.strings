@@ -964,3 +964,12 @@
 "home.quota_status_bar.ad_reward_format" = "Watch ad +%d";
 "home.quota_status_bar.cycle_end_format" = "Cycle ends %@";
 "result.feedback_pending" = "Feedback pending";
+
+// Candidate selection
+"candidate.title" = "Select Result";
+"candidate.ai_result" = "AI Recognition Results";
+"candidate.search_hint" = "Not found? Search food database";
+"candidate.search_placeholder" = "Search food name";
+"candidate.no_result" = "No matching foods found";
+"candidate.empty_hint" = "No candidates recognized, please search the food database";
+"home.quota_exceeded.watch_ad_hint" = "Watch a short video to earn extra scans";

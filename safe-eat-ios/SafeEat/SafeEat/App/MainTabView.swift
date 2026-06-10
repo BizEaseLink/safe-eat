@@ -29,6 +29,9 @@ struct MainTabView: View {
     @State private var showAdRewardResult = false
     @State private var adRewardResultType: AdRewardResultType = .claimFailed
     @State private var showSignupBonus = false
+    // 5候选识别流程状态
+    @State private var identifySession: IdentifySessionData?
+    @State private var showCandidateSelect = false
     @Environment(\.colorScheme) private var colorScheme
     @State private var scanPressed = false
     @State private var homePath = NavigationPath()
@@ -64,7 +67,7 @@ struct MainTabView: View {
         case .home:
             // home tab 使用 navigationDestination(item:/isPresented:)，
             // 这些 API 不会推入 NavigationPath，需要检查对应的 @State 变量
-            return homePath.isEmpty && resultRoute == nil && !showMembership
+            return homePath.isEmpty && resultRoute == nil && !showMembership && !showCandidateSelect
         case .history:
             // history tab 使用 navigationDestination(item:)，不会推入 NavigationPath，
             // 通过 TabNavigationState 追踪
@@ -96,6 +99,17 @@ struct MainTabView: View {
                         }
                         .navigationDestination(isPresented: $showMembership) {
                             MembershipPurchaseView()
+                        }
+                        .navigationDestination(isPresented: $showCandidateSelect) {
+                            if let session = identifySession {
+                                CandidateSelectView(
+                                    candidates: session.candidates,
+                                    sessionId: session.sessionId,
+                                    onSelect: { selectedName, sessionId in
+                                        performConfirm(selectedName: selectedName, sessionId: sessionId)
+                                    }
+                                )
+                            }
                         }
                     }
 
@@ -325,37 +339,97 @@ struct MainTabView: View {
         }
 
         do {
-            // 并行：API 调用 + 本地预览图处理同时进行
-            async let apiTask = store.authorizedRequest { token in
-                try await store.api.createRecognition(
-                    accessToken: token,
-                    imageData: uploadData,
-                    fileName: "capture.jpg"
-                )
+            // 并行：identify API + 本地预览图处理同时进行
+            async let identifyTask = store.authorizedRequest { token in
+                try await store.api.identify(accessToken: token, imageData: uploadData, fileName: "capture.jpg")
             }
             async let previewTask = BackgroundRemovalService.makePreviewImage(
                 from: croppedImage,
                 adviceLevel: nil
             )
 
-            let created = try await apiTask
+            let identifyResult = try await identifyTask
             let previewImage = await previewTask
-            let item = try store.recordRecognition(
-                created,
-                originalImage: croppedImage,
-                previewImage: previewImage,
-                rawImage: rawImage
-            )
 
-            selectedTab = .home
-            store.selectedRootTab = .home
-            resultRoute = ResultRoute(id: item.id, itemId: item.id)
+            // 高置信（≥ 0.9）且只有1个候选 → 直接 confirm
+            if identifyResult.candidates.count == 1 && identifyResult.candidates[0].confidence >= 0.9 {
+                let record = try await store.authorizedRequest { token in
+                    try await store.api.confirm(
+                        accessToken: token,
+                        selectedName: identifyResult.candidates[0].name,
+                        sessionId: identifyResult.sessionId
+                    )
+                }
+                let item = try store.recordRecognition(
+                    record,
+                    originalImage: croppedImage,
+                    previewImage: previewImage,
+                    rawImage: rawImage
+                )
+                selectedTab = .home
+                store.selectedRootTab = .home
+                resultRoute = ResultRoute(id: item.id, itemId: item.id)
+            } else {
+                // 多候选或低置信 → 进入候选选择页
+                identifySession = IdentifySessionData(
+                    candidates: identifyResult.candidates,
+                    sessionId: identifyResult.sessionId,
+                    croppedImage: croppedImage,
+                    rawImage: rawImage,
+                    previewImage: previewImage
+                )
+                isRecognizing = false
+                recognizingPreviewImage = nil
+                showCandidateSelect = true
+            }
         } catch {
             if isQuotaExceededError(error) {
                 showQuotaExceeded = true
             } else {
                 store.handleAPIError(error)
             }
+        }
+    }
+
+    // confirm 流程：从候选选择页选中后调用
+    @MainActor
+    private func performConfirm(selectedName: String, sessionId: String) {
+        guard let session = identifySession else { return }
+
+        isRecognizing = true
+        recognizingPreviewImage = session.previewImage
+
+        Task {
+            do {
+                let record = try await store.authorizedRequest { token in
+                    try await store.api.confirm(
+                        accessToken: token,
+                        selectedName: selectedName,
+                        sessionId: sessionId
+                    )
+                }
+                let item = try store.recordRecognition(
+                    record,
+                    originalImage: session.croppedImage,
+                    previewImage: session.previewImage,
+                    rawImage: session.rawImage
+                )
+                identifySession = nil
+                showCandidateSelect = false
+                selectedTab = .home
+                store.selectedRootTab = .home
+                resultRoute = ResultRoute(id: item.id, itemId: item.id)
+            } catch {
+                identifySession = nil
+                showCandidateSelect = false
+                if isQuotaExceededError(error) {
+                    showQuotaExceeded = true
+                } else {
+                    store.handleAPIError(error)
+                }
+            }
+            isRecognizing = false
+            recognizingPreviewImage = nil
         }
     }
 
@@ -419,6 +493,15 @@ private struct ResultRoute: Identifiable, Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
+}
+
+// identify 会话数据：候选列表 + sessionId + 原图/预览图
+struct IdentifySessionData {
+    let candidates: [IdentifyCandidate]
+    let sessionId: String
+    let croppedImage: UIImage
+    let rawImage: UIImage?
+    let previewImage: UIImage?
 }
 
 #Preview {

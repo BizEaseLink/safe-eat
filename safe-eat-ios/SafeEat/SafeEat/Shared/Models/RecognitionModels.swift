@@ -205,6 +205,29 @@ struct ServingSize: Codable {
     let unit: String
 }
 
+// MARK: - 5候选识别
+
+struct IdentifyCandidate: Codable, Identifiable {
+    var id: String { name }
+    let name: String
+    let confidence: Double
+}
+
+struct IdentifyResponse: Codable {
+    let candidates: [IdentifyCandidate]
+    let sessionId: String
+}
+
+struct FoodSearchItem: Codable, Identifiable {
+    let id: String
+    let name: String
+    let categoryKey: String?
+}
+
+struct FoodSearchResponse: Codable {
+    let items: [FoodSearchItem]
+}
+
 // MARK: - 血糖影响
 
 struct BloodSugarImpact: Codable {

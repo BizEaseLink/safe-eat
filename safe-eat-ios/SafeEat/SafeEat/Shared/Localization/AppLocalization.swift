@@ -544,6 +544,7 @@ enum L10nKey {
         static let quotaExceededUpgradeMembership = "home.quota_exceeded.upgrade_membership"
         static let quotaExceededUpgradePlan = "home.quota_exceeded.upgrade_plan"
         static let quotaExceededLater = "home.quota_exceeded.later"
+        static let quotaExceededWatchAdHint = "home.quota_exceeded.watch_ad_hint"
         static let quotaStatusBarDailyLabel = "home.quota_status_bar.daily_label"
         static let quotaStatusBarMonthlyLabel = "home.quota_status_bar.monthly_label"
         static let quotaStatusBarCountFormat = "home.quota_status_bar.count_format"
@@ -901,6 +902,15 @@ enum L10nKey {
         static let templateCardiovascular = "health_goal.template.cardiovascular"
         static let templateBloodSugarControl = "health_goal.template.blood_sugar_control"
         static let templateGeneralWellness = "health_goal.template.general_wellness"
+    }
+
+    enum Candidate {
+        static let title = "candidate.title"
+        static let aiResult = "candidate.ai_result"
+        static let searchHint = "candidate.search_hint"
+        static let searchPlaceholder = "candidate.search_placeholder"
+        static let noResult = "candidate.no_result"
+        static let emptyHint = "candidate.empty_hint"
     }
 }
 
