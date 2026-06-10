@@ -383,6 +383,12 @@ struct MainTabView: View {
                 showCandidateSelect = true
             }
         } catch {
+            #if DEBUG
+            print("[MainTabView] recognize error: \(error)")
+            if let apiError = error as? APIError {
+                print("[MainTabView] APIError: \(apiError)")
+            }
+            #endif
             if isQuotaExceededError(error) {
                 showQuotaExceeded = true
             } else {

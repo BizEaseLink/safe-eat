@@ -296,9 +296,9 @@ struct CandidateSelectView: View {
     NavigationStack {
         CandidateSelectView(
             candidates: [
-                IdentifyCandidate(name: "红烧肉", confidence: 0.92),
-                IdentifyCandidate(name: "东坡肉", confidence: 0.78),
-                IdentifyCandidate(name: "扣肉", confidence: 0.45)
+                IdentifyCandidate(name: "红烧肉", confidence: 0.92, type: nil, source: nil),
+                IdentifyCandidate(name: "东坡肉", confidence: 0.78, type: nil, source: nil),
+                IdentifyCandidate(name: "扣肉", confidence: 0.45, type: nil, source: nil)
             ],
             sessionId: "test-session",
             onSelect: { _, _ in }

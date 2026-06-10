@@ -6,7 +6,7 @@ struct SignupBonusSheet: View {
     let onDismiss: () -> Void
 
     var body: some View {
-        S(
+        SafeEatSettingsSheetContainer(
             title: "注册奖励",
             subtitle: "恭喜获得额外扫描次数",
             contentHeight: 110,

@@ -211,6 +211,8 @@ struct IdentifyCandidate: Codable, Identifiable {
     var id: String { name }
     let name: String
     let confidence: Double
+    let type: String?
+    let source: String?
 }
 
 struct IdentifyResponse: Codable {
