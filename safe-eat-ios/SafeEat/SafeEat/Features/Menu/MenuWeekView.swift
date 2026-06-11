@@ -23,7 +23,7 @@ struct WeekDatePicker: View {
         return calendar
     }
     private var minDate: Date {
-        var comps = DateComponents(year: 2020, month: 1, day: 1)
+        var comps = DateComponents(year: 2025, month: 1, day: 1)
         return calendar.date(from: comps) ?? Date()
     }
 
@@ -142,10 +142,16 @@ struct WeekDatePicker: View {
     private func navigateWeek(_ direction: Int) {
         withAnimation(.easeInOut(duration: 0.22)) {
             if let newDate = calendar.date(byAdding: .weekOfYear, value: direction, to: selectedDate) {
+                // 不允许切到包含未来日期的周
+                if direction > 0 {
+                    let currentWeekStart = calendar.dateInterval(of: .weekOfYear, for: Date())?.start ?? Date()
+                    let newWeekStart = calendar.dateInterval(of: .weekOfYear, for: newDate)?.start ?? newDate
+                    if calendar.compare(newWeekStart, to: currentWeekStart, toGranularity: .day) == .orderedDescending {
+                        return
+                    }
+                }
                 if calendar.compare(newDate, to: minDate, toGranularity: .day) == .orderedAscending {
                     selectedDate = minDate
-                } else if calendar.compare(newDate, to: maxDate, toGranularity: .day) == .orderedDescending {
-                    selectedDate = maxDate
                 } else {
                     selectedDate = newDate
                 }

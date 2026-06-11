@@ -6,15 +6,15 @@
 	<dict>
 		<key>Headers/UMZid.h</key>
 		<data>
-		m1SsLWTubC70rWJQ4jwPCAJKLM8=
+		FwWq4aYkqNXbI+Mq715ieHDOX3o=
 		</data>
 		<key>Info.plist</key>
 		<data>
-		QLmLIzalF6r4eifjfUklIJwFciI=
+		rt7xKsw01TT2dUwj75KUdRi+lhU=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
-		l9xqvBHj/2ghjs8Tt4gP7T1HNd4=
+		FquB7QMrpejwC82tPevWkOezrq0=
 		</data>
 		<key>PrivacyInfo.xcprivacy</key>
 		<data>
@@ -27,22 +27,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			m1SsLWTubC70rWJQ4jwPCAJKLM8=
+			FwWq4aYkqNXbI+Mq715ieHDOX3o=
 			</data>
 			<key>hash2</key>
 			<data>
-			Ly788t8IpY75f9sfbnaC47t4r6anl+ZFdHDy4YBQ3Y8=
+			y/xSTyN8Ne6pCfJOEOCiWX/XHKo3k1dsqwmXTWZoeY4=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			l9xqvBHj/2ghjs8Tt4gP7T1HNd4=
+			FquB7QMrpejwC82tPevWkOezrq0=
 			</data>
 			<key>hash2</key>
 			<data>
-			n4w4d6rfu4hvGQoo542Y7cj9CFqcdGnTCzy+GJVVn+Q=
+			WqA1nN381uNeMomWECLF9SzIRSa1D93YKNiiG5tNO9M=
 			</data>
 		</dict>
 		<key>PrivacyInfo.xcprivacy</key>

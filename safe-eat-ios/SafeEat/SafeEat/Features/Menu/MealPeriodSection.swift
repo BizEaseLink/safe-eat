@@ -6,6 +6,7 @@ enum MealPeriod: String, CaseIterable, Identifiable {
     case breakfast
     case lunch
     case dinner
+    case lateNight
 
     var id: String { rawValue }
 
@@ -17,14 +18,17 @@ enum MealPeriod: String, CaseIterable, Identifiable {
             return SafeEatL10n.text(L10nKey.Menu.mealLunch)
         case .dinner:
             return SafeEatL10n.text(L10nKey.Menu.mealDinner)
+        case .lateNight:
+            return SafeEatL10n.text(L10nKey.Menu.mealLateNight)
         }
     }
 
-    var hourRange: ClosedRange<Int> {
+    func containsHour(_ hour: Int) -> Bool {
         switch self {
-        case .breakfast: 5...11
-        case .lunch: 12...17
-        case .dinner: 18...23
+        case .breakfast:  return hour >= 5 && hour <= 11
+        case .lunch:      return hour >= 12 && hour <= 17
+        case .dinner:     return hour >= 18 && hour <= 21
+        case .lateNight:  return hour >= 22 || hour <= 4
         }
     }
 }
@@ -37,11 +41,14 @@ struct MealPeriodSection: View {
     let onDayTapped: (Date) -> Void
 
     @State private var selectedPeriod: MealPeriod = .breakfast
+    @State private var scrollOffset: CGFloat = 0
+    @State private var contentWidth: CGFloat = 0
+    @State private var containerWidth: CGFloat = 0
 
     private var filteredItems: [LocalHistoryItem] {
         items.filter { item in
             let hour = Calendar.current.component(.hour, from: item.createdAt)
-            return selectedPeriod.hourRange.contains(hour)
+            return selectedPeriod.containsHour(hour)
         }
     }
 
@@ -84,14 +91,19 @@ struct MealPeriodSection: View {
         colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
     }
 
-    // MARK: Period Picker
+    // MARK: Period Picker (Pill Style)
 
     private var mealPeriodPicker: some View {
-        HStack(spacing: 20) {
+        HStack(spacing: 0) {
             ForEach(MealPeriod.allCases) { period in
                 periodTab(for: period)
             }
         }
+        .padding(3)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(colorScheme == .dark ? Color.white.opacity(0.08) : Color(red: 0.94, green: 0.94, blue: 0.94))
+        )
     }
 
     private func periodTab(for period: MealPeriod) -> some View {
@@ -103,32 +115,150 @@ struct MealPeriodSection: View {
             }
         }) {
             Text(period.displayName)
-                .font(SafeEatFont.custom(14, relativeTo: .body, weight: .bold))
+                .font(SafeEatFont.custom(13, relativeTo: .subheadline, weight: isSelected ? .bold : .regular))
                 .foregroundStyle(isSelected ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
-                .padding(.bottom, 6)
-                .overlay(alignment: .bottom) {
-                    if isSelected {
-                        Rectangle()
-                            .fill(SafeEatTheme.primary)
-                            .frame(height: 2.5)
-                            .cornerRadius(1.5)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .background(
+                    Group {
+                        if isSelected {
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(colorScheme == .dark ? Color.white.opacity(0.12) : Color.white)
+                                .shadow(color: Color.black.opacity(0.06), radius: 2, y: 1)
+                        }
                     }
-                }
+                )
         }
         .buttonStyle(.plain)
     }
 
-    // MARK: Food Grid
+    // MARK: Food Grid (Two-row + Horizontal Scroll + Direction Arrows)
+
+    private let stickerWidth: CGFloat = 132
+    private let stickerHeight: CGFloat = 140
+    private let stickerSpacing: CGFloat = 18
+    private let scrollThreshold: CGFloat = 5
 
     private func foodGrid(items: [LocalHistoryItem]) -> some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(alignment: .top, spacing: 18) {
-                ForEach(items.prefix(4)) { item in
-                    foodCard(item: item)
+        let rows: [GridItem] = [
+            GridItem(.fixed(stickerHeight), spacing: stickerSpacing),
+            GridItem(.fixed(stickerHeight), spacing: stickerSpacing)
+        ]
+
+        return ZStack {
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHGrid(rows: rows, spacing: stickerSpacing) {
+                    ForEach(items) { item in
+                        foodCard(item: item)
+                    }
+                }
+                .padding(.vertical, 6)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear
+                            .preference(
+                                key: ScrollOffsetPreferenceKey.self,
+                                value: geo.frame(in: .named("foodGridScroll")).minX
+                            )
+                            .onAppear {
+                                contentWidth = geo.size.width
+                            }
+                            .onChange(of: geo.size.width) { _, newWidth in
+                                contentWidth = newWidth
+                            }
+                    }
+                )
+            }
+            .scrollDisabled(contentWidth <= containerWidth)
+            .coordinateSpace(name: "foodGridScroll")
+            .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+                scrollOffset = value
+            }
+            .background(
+                GeometryReader { geo in
+                    Color.clear.onAppear { containerWidth = geo.size.width }
+                        .onChange(of: geo.size.width) { _, newWidth in
+                            containerWidth = newWidth
+                        }
+                }
+            )
+
+            // 渐变遮罩 + 方向箭头（仅内容超出容器时显示）
+            if contentWidth > containerWidth && containerWidth > 0 {
+                // 左侧遮罩 + 箭头（滚过左边后显示）
+                if scrollOffset < -scrollThreshold {
+                    HStack {
+                        VStack {
+                            LinearGradient(
+                                colors: [.clear, cardBackgroundColor],
+                                startPoint: .trailing,
+                                endPoint: .leading
+                            )
+                            .frame(width: 44)
+
+                            Spacer()
+                        }
+                        .frame(maxHeight: .infinity)
+
+                        Spacer()
+                    }
+                    .overlay(alignment: .center) {
+                        Circle()
+                            .fill(SafeEatTheme.primarySoft.opacity(0.9))
+                            .frame(width: 28, height: 28)
+                            .overlay {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(SafeEatTheme.primary)
+                            }
+                            .padding(.leading, 4)
+                    }
+                }
+
+                // 右侧遮罩 + 箭头（未到右边缘时显示）
+                if !isAtRightEdge {
+                    HStack {
+                        Spacer()
+
+                        VStack {
+                            LinearGradient(
+                                colors: [.clear, cardBackgroundColor],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                            .frame(width: 44)
+
+                            Spacer()
+                        }
+                        .frame(maxHeight: .infinity)
+                    }
+                    .overlay(alignment: .center) {
+                        Circle()
+                            .fill(SafeEatTheme.primarySoft.opacity(0.9))
+                            .frame(width: 28, height: 28)
+                            .overlay {
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(SafeEatTheme.primary)
+                            }
+                            .padding(.trailing, 4)
+                    }
                 }
             }
-            .padding(.vertical, 6)
         }
+    }
+
+    private var isAtRightEdge: Bool {
+        // 内容宽度 ≤ 容器宽度时不需要滚动，视为已在右边缘
+        guard contentWidth > containerWidth else { return true }
+        // 最大可滚动距离 = contentWidth - containerWidth
+        // scrollOffset 为负值，绝对值接近 maxScroll 时表示滚到了右端
+        let maxScroll = contentWidth - containerWidth
+        return abs(scrollOffset) >= maxScroll - scrollThreshold
+    }
+
+    private var cardBackgroundColor: Color {
+        colorScheme == .dark ? Color(red: 0.12, green: 0.12, blue: 0.12) : cardFill
     }
 
     private func foodCard(item: LocalHistoryItem) -> some View {
@@ -138,7 +268,7 @@ struct MealPeriodSection: View {
             labelMaxWidth: 124,
             style: .floating
         )
-        .frame(width: 132, alignment: .top)
+        .frame(width: stickerWidth, alignment: .top)
         .contentShape(Rectangle())
         .onTapGesture {
             onDayTapped(selectedDate)
@@ -276,5 +406,14 @@ struct RecordShortcutButton: View {
 
     private var cardStroke: Color {
         colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
+    }
+}
+
+// MARK: - Scroll Offset Preference Key
+
+private struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }

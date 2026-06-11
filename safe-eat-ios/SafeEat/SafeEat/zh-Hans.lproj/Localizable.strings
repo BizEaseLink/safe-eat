@@ -32,7 +32,7 @@
 "advice.compact.moderate" = "适量";
 "advice.compact.caution" = "谨慎";
 "advice.compact.avoid" = "避免";
-"advice.compact.evaluate" = "评估";
+"advice.compact.evaluate" = "  估";
 "advice.summary.recommended" = "整体更适合当前饮食方向，可以作为这次的优先选择。";
 "advice.summary.moderate" = "可以食用，建议适量。";
 "advice.summary.caution" = "可以继续吃，但建议控制份量，并留意搭配与频率。";
@@ -471,6 +471,7 @@
 "menu.meal.breakfast" = "早餐";
 "menu.meal.lunch" = "午餐";
 "menu.meal.dinner" = "晚餐";
+"menu.meal.late_night" = "夜宵";
 "menu.not_logged_in.title" = "暂无菜单数据";
 "menu.not_logged_in.message" = "登录后即可查看菜单和识别记录";
 

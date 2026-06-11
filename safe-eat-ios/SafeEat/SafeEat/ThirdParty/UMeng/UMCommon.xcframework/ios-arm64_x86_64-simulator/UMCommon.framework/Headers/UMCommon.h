@@ -18,3 +18,4 @@ FOUNDATION_EXPORT const unsigned char UMCommonVersionString[];
 
 #import <UMCommon/UMConfigure.h>
 #import <UMCommon/MobClick.h>
+#import <UMCommon/UMCommonDeepLink.h>

@@ -10,7 +10,11 @@
 		</data>
 		<key>Headers/UMCommon.h</key>
 		<data>
-		HbXM/hE7m+qAfUHo5JRJOMVnG80=
+		nHLScuxIxZa65DnZD75JOHp/hsw=
+		</data>
+		<key>Headers/UMCommonDeepLink.h</key>
+		<data>
+		NAY4MWl2d8HjknoLHdXMG7yynBs=
 		</data>
 		<key>Headers/UMConfigure.h</key>
 		<data>
@@ -18,7 +22,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		N1Go7q38wdIuGKiMKxRCkGbjD+w=
+		rtcp+WsJC2YwM9hbVy51dyG9h0o=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -46,11 +50,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			HbXM/hE7m+qAfUHo5JRJOMVnG80=
+			nHLScuxIxZa65DnZD75JOHp/hsw=
 			</data>
 			<key>hash2</key>
 			<data>
-			2Kd0+7/cG3zWHc8rKylSMlHGOcPlvbchSwLqfmJ9JsE=
+			e9yuYwvC1/Q9IMqUAARaZcS2ep4C5A59KsuChvJIgVc=
+			</data>
+		</dict>
+		<key>Headers/UMCommonDeepLink.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			NAY4MWl2d8HjknoLHdXMG7yynBs=
+			</data>
+			<key>hash2</key>
+			<data>
+			uRGqdGi52JpicoX+GN1et3kc5C9tc3LxT8o8DBzs/rY=
 			</data>
 		</dict>
 		<key>Headers/UMConfigure.h</key>

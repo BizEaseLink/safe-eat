@@ -54,9 +54,12 @@
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		43604B632F87D83D009131CE /* Exceptions for "SafeEat" folder in "SafeEat" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			attributesByRelativePath = {
+				ThirdParty/UMeng/UMCommon.xcframework = (Required, );
+			};
 			membershipExceptions = (
 				Info.plist,
-				ThirdParty/UMeng/UTDID.framework,
+				ThirdParty/UMeng/UTDID.xcframework,
 				ThirdParty/UMeng/UYuMao.xcframework,
 			);
 			target = 43604B552F87D83A009131CE /* SafeEat */;
@@ -68,17 +71,17 @@
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			attributesByRelativePath = {
 				ThirdParty/UMeng/UMCommon.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-				ThirdParty/UMeng/UMCommonLog.framework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+				ThirdParty/UMeng/UMCommonLog.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
 				ThirdParty/UMeng/UMDevice.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-				ThirdParty/UMeng/UMRemoteConfig.framework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+				ThirdParty/UMeng/UMRemoteConfig.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
 				ThirdParty/UMeng/UMUnionSDK.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
 			};
 			buildPhase = 43B562F82FA4AC7100B62CD8 /* Embed Frameworks */;
 			membershipExceptions = (
 				ThirdParty/UMeng/UMCommon.xcframework,
-				ThirdParty/UMeng/UMCommonLog.framework,
+				ThirdParty/UMeng/UMCommonLog.xcframework,
 				ThirdParty/UMeng/UMDevice.xcframework,
-				ThirdParty/UMeng/UMRemoteConfig.framework,
+				ThirdParty/UMeng/UMRemoteConfig.xcframework,
 				ThirdParty/UMeng/UMUnionSDK.xcframework,
 			);
 		};

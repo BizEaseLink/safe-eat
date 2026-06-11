@@ -587,6 +587,7 @@ enum L10nKey {
         static let mealBreakfast = "menu.meal.breakfast"
         static let mealLunch = "menu.meal.lunch"
         static let mealDinner = "menu.meal.dinner"
+        static let mealLateNight = "menu.meal.late_night"
         static let notLoggedInTitle = "menu.not_logged_in.title"
         static let notLoggedInMessage = "menu.not_logged_in.message"
     }

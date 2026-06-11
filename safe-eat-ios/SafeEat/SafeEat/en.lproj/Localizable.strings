@@ -647,6 +647,7 @@
 "menu.meal.breakfast" = "Breakfast";
 "menu.meal.lunch" = "Lunch";
 "menu.meal.dinner" = "Dinner";
+"menu.meal.late_night" = "Late Night";
 "menu.not_logged_in.title" = "No Menu Data";
 "menu.not_logged_in.message" = "Sign in to view menus and scan history";
 
