@@ -1,9 +1,0 @@
-Target dependency graph (4 targets)
-Target 'SafeEat' in project 'SafeEat'
-➜ Explicit dependency on target 'Lottie' in project 'Lottie'
-Target 'Lottie' in project 'Lottie'
-➜ Explicit dependency on target 'Lottie' in project 'Lottie'
-➜ Explicit dependency on target 'Lottie_Lottie' in project 'Lottie'
-Target 'Lottie' in project 'Lottie'
-➜ Explicit dependency on target 'Lottie_Lottie' in project 'Lottie'
-Target 'Lottie_Lottie' in project 'Lottie' (no dependencies)
