@@ -19,7 +19,13 @@ struct QuotaExceededSheet: View {
             subtitle: isFreeUser
                 ? SafeEatL10n.format(L10nKey.Home.quotaExceededDailyHintFormat, snapshot.totalQuota)
                 : SafeEatL10n.text(L10nKey.Home.quotaExceededUpgradeHint),
-            detentHeight: (isFreeUser && onWatchAd != nil) ? 430 : 380
+            contentHeight: (isFreeUser && onWatchAd != nil) ? 200 : 150,
+            primaryButton: SheetButton(title: "升级会员") {
+                onUpgrade?()
+            },
+            secondaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Home.quotaExceededLater)) {
+                onDismiss()
+            }
         ) {
             ProfileSurfaceCard {
                 HStack(spacing: 14) {
@@ -45,20 +51,40 @@ struct QuotaExceededSheet: View {
                 }
             }
 
-            VStack(spacing: 10) {
-                if isFreeUser, let onWatchAd {
-                    ProfilePrimaryActionButton(title: "看广告获取次数", isLoading: false) {
-                        onWatchAd()
+            // 看广告入口放在内容区而非按钮区
+            if isFreeUser, let onWatchAd {
+                Button(action: onWatchAd) {
+                    ProfileSurfaceCard {
+                        HStack(spacing: 14) {
+                            ZStack {
+                                Circle()
+                                    .fill(SafeEatTheme.primary.opacity(0.12))
+                                    .frame(width: 46, height: 46)
+
+                                Image(systemName: "play.circle.fill")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundStyle(SafeEatTheme.primary)
+                            }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("看广告获取次数")
+                                    .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
+                                    .foregroundStyle(SafeEatTheme.textPrimary)
+
+                                Text(SafeEatL10n.text(L10nKey.Home.quotaExceededWatchAdHint))
+                                    .font(SafeEatFont.textStyle(.footnote))
+                                    .foregroundStyle(SafeEatTheme.textSecondary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(SafeEatTheme.textSecondary)
+                        }
                     }
                 }
-
-                ProfilePrimaryActionButton(title: "升级会员", isLoading: false) {
-                    onUpgrade?()
-                }
-
-                ProfileSecondaryActionButton(title: SafeEatL10n.text(L10nKey.Home.quotaExceededLater)) {
-                    onDismiss()
-                }
+                .buttonStyle(.plain)
             }
         }
     }

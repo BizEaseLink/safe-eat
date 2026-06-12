@@ -202,6 +202,18 @@ enum L10nKey {
         static let healthTagHighBloodPressure = "profile.health_profile.tag.high_blood_pressure"
         static let healthTagFatLoss = "profile.health_profile.tag.fat_loss"
         static let healthTagAvoid = "profile.health_profile.tag.avoid"
+        static let healthProfileEmptyHint = "profile.health_profile.empty_hint"
+
+        enum Member {
+            static let freeTitle = "profile.member.free.title"
+            static let freeSubtitle = "profile.member.free.subtitle"
+            static let liteTitle = "profile.member.lite.title"
+            static let liteSubtitle = "profile.member.lite.subtitle"
+            static let proTitle = "profile.member.pro.title"
+            static let proSubtitle = "profile.member.pro.subtitle"
+            static let premiumTitle = "profile.member.premium.title"
+            static let premiumSubtitle = "profile.member.premium.subtitle"
+        }
 
         enum Edit {
             static let subtitle = "profile.edit.subtitle.long"
@@ -416,6 +428,7 @@ enum L10nKey {
         static let planBonusAi = "membership.purchase.plan_bonus_ai"
         static let newUserGiftBanner = "membership.purchase.new_user_gift_banner"
         static let badgeLite = "membership.purchase.badge.lite"
+        static let currentPlanBadge = "membership.purchase.badge.current"
         static let benefitRecognitionMonthly = "membership.purchase.benefit.recognition_monthly"
         static let benefitAiMonthly = "membership.purchase.benefit.ai_monthly"
         static let benefitDailyQuota = "membership.purchase.benefit.daily_quota"
@@ -544,6 +557,7 @@ enum L10nKey {
         static let quotaExceededUpgradeMembership = "home.quota_exceeded.upgrade_membership"
         static let quotaExceededUpgradePlan = "home.quota_exceeded.upgrade_plan"
         static let quotaExceededLater = "home.quota_exceeded.later"
+        static let quotaExceededWatchAdHint = "home.quota_exceeded.watch_ad_hint"
         static let quotaStatusBarDailyLabel = "home.quota_status_bar.daily_label"
         static let quotaStatusBarMonthlyLabel = "home.quota_status_bar.monthly_label"
         static let quotaStatusBarCountFormat = "home.quota_status_bar.count_format"
@@ -586,8 +600,25 @@ enum L10nKey {
         static let mealBreakfast = "menu.meal.breakfast"
         static let mealLunch = "menu.meal.lunch"
         static let mealDinner = "menu.meal.dinner"
+        static let mealLateNight = "menu.meal.late_night"
         static let notLoggedInTitle = "menu.not_logged_in.title"
         static let notLoggedInMessage = "menu.not_logged_in.message"
+        static let dailyHealthOverview = "menu.daily.health_overview"
+        static let dailyAvgScore = "menu.daily.avg_score"
+        static let dailyTotalCalories = "menu.daily.total_calories"
+        static let dailyScanCountFormat = "menu.daily.scan_count_format"
+        static let dailyScanCount = "menu.daily.scan_count"
+        static let dailyScanLog = "menu.daily.scan_log"
+        static let weeklyTrendGood = "menu.weekly.trend_good"
+        static let weeklyTrendModerate = "menu.weekly.trend_moderate"
+        static let weeklyTrendPoor = "menu.weekly.trend_poor"
+        static let weeklyConsecutiveDaysFormat = "menu.weekly.consecutive_days_format"
+        static let weeklyScanCount = "menu.weekly.scan_count"
+        static let weeklyAvgScore = "menu.weekly.avg_score"
+        static let weeklyViewDetail = "menu.weekly.view_detail"
+        static let weeklyUsageStats = "menu.weekly.usage_stats"
+        static let weeklyScanCountFormat = "menu.weekly.scan_count_format"
+        static let mealSectionTitle = "menu.meal.section_title"
     }
 
     enum Result {
@@ -901,6 +932,34 @@ enum L10nKey {
         static let templateCardiovascular = "health_goal.template.cardiovascular"
         static let templateBloodSugarControl = "health_goal.template.blood_sugar_control"
         static let templateGeneralWellness = "health_goal.template.general_wellness"
+    }
+
+    enum RecognitionPhase {
+        static let identifying = "recognition_phase.identifying"
+        static let selectTitle = "recognition_phase.select_title"
+        static let selectSubtitle = "recognition_phase.select_subtitle"
+        static let evaluating = "recognition_phase.evaluating"
+        static let evaluatingSubtitle = "recognition_phase.evaluating_subtitle"
+        static let tagIdentify = "recognition_phase.tag_identify"
+        static let tagIdentifyDetail = "recognition_phase.tag_identify_detail"
+        static let tagNutrition = "recognition_phase.tag_nutrition"
+        static let tagNutritionDetail = "recognition_phase.tag_nutrition_detail"
+        static let tagSafety = "recognition_phase.tag_safety"
+        static let tagSafetyDetail = "recognition_phase.tag_safety_detail"
+        static let tip = "recognition_phase.tip"
+        static let tipContent1 = "recognition_phase.tip_content_1"
+        static let tipContent2 = "recognition_phase.tip_content_2"
+        static let tipContent3 = "recognition_phase.tip_content_3"
+        static let tipContent4 = "recognition_phase.tip_content_4"
+    }
+
+    enum Candidate {
+        static let title = "candidate.title"
+        static let aiResult = "candidate.ai_result"
+        static let searchHint = "candidate.search_hint"
+        static let searchPlaceholder = "candidate.search_placeholder"
+        static let noResult = "candidate.no_result"
+        static let emptyHint = "candidate.empty_hint"
     }
 }
 

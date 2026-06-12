@@ -170,7 +170,7 @@ struct HistoryWeekView: View {
                     }
                 )
 
-            LazyVGrid(columns: columns, spacing: 22) {
+            LazyVGrid(columns: columns, spacing: 32) {
                 ForEach(Array(group.items.enumerated()), id: \.element.id) { index, item in
                     stickerCard(for: item, index: index)
                 }

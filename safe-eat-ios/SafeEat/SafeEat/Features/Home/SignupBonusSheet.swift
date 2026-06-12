@@ -9,7 +9,8 @@ struct SignupBonusSheet: View {
         SafeEatSettingsSheetContainer(
             title: "注册奖励",
             subtitle: "恭喜获得额外扫描次数",
-            detentHeight: 290
+            contentHeight: 110,
+            primaryButton: SheetButton(title: "开始使用") { onDismiss() }
         ) {
             ProfileSurfaceCard {
                 HStack(spacing: 14) {
@@ -33,10 +34,6 @@ struct SignupBonusSheet: View {
                             .foregroundStyle(SafeEatTheme.textSecondary)
                     }
                 }
-            }
-
-            ProfilePrimaryActionButton(title: "开始使用", isLoading: false) {
-                onDismiss()
             }
         }
     }

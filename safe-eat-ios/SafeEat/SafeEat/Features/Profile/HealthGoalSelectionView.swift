@@ -5,10 +5,14 @@ import SwiftUI
 struct HealthProfileTemplate: Identifiable, Hashable {
     let id: String
     let code: String
-    let displayName: String
+    let displayNameKey: String
     let icon: String
     let group: HealthProfileGroup
     var isHighlighted: Bool
+
+    var displayName: String {
+        SafeEatL10n.text(displayNameKey)
+    }
 
     enum HealthProfileGroup: String, CaseIterable {
         case healthRisk = "health_risk"
@@ -37,15 +41,15 @@ struct HealthProfileTemplate: Identifiable, Hashable {
 enum HealthProfileTemplateMock {
     static let templates: [HealthProfileTemplate] = [
         // 健康风险组（HealthTag）
-        HealthProfileTemplate(id: "1", code: "high_blood_pressure", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateHypertension), icon: "heart.fill", group: .healthRisk, isHighlighted: true),
-        HealthProfileTemplate(id: "2", code: "high_blood_sugar", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateHyperglycemia), icon: "drop.fill", group: .healthRisk, isHighlighted: true),
-        HealthProfileTemplate(id: "3", code: "high_blood_lipids", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateHyperlipidemia), icon: "waveform.path.ecg.fill", group: .healthRisk, isHighlighted: false),
-        HealthProfileTemplate(id: "4", code: "general_wellness", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateGeneralWellness), icon: "heart.circle.fill", group: .healthRisk, isHighlighted: false),
+        HealthProfileTemplate(id: "1", code: "high_blood_pressure", displayNameKey: L10nKey.HealthGoal.templateHypertension, icon: "heart.fill", group: .healthRisk, isHighlighted: true),
+        HealthProfileTemplate(id: "2", code: "high_blood_sugar", displayNameKey: L10nKey.HealthGoal.templateHyperglycemia, icon: "drop.fill", group: .healthRisk, isHighlighted: true),
+        HealthProfileTemplate(id: "3", code: "high_blood_lipids", displayNameKey: L10nKey.HealthGoal.templateHyperlipidemia, icon: "flame.fill", group: .healthRisk, isHighlighted: false),
+        HealthProfileTemplate(id: "4", code: "general_wellness", displayNameKey: L10nKey.HealthGoal.templateGeneralWellness, icon: "heart.circle.fill", group: .healthRisk, isHighlighted: false),
         // 生活目标组（FitnessGoal）
-        HealthProfileTemplate(id: "5", code: "fat_loss", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateWeightLoss), icon: "arrow.down.circle.fill", group: .lifeGoal, isHighlighted: true),
-        HealthProfileTemplate(id: "6", code: "muscle_gain", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateMuscleGain), icon: "dumbbell.fill", group: .lifeGoal, isHighlighted: false),
-        HealthProfileTemplate(id: "7", code: "blood_sugar_control", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateBloodSugarControl), icon: "chart.line.downtrend.xyaxis", group: .lifeGoal, isHighlighted: false),
-        HealthProfileTemplate(id: "8", code: "balanced", displayName: SafeEatL10n.text(L10nKey.HealthGoal.templateBalanced), icon: "leaf.fill", group: .lifeGoal, isHighlighted: true),
+        HealthProfileTemplate(id: "5", code: "fat_loss", displayNameKey: L10nKey.HealthGoal.templateWeightLoss, icon: "arrow.down.circle.fill", group: .lifeGoal, isHighlighted: true),
+        HealthProfileTemplate(id: "6", code: "muscle_gain", displayNameKey: L10nKey.HealthGoal.templateMuscleGain, icon: "dumbbell.fill", group: .lifeGoal, isHighlighted: false),
+        HealthProfileTemplate(id: "7", code: "blood_sugar_control", displayNameKey: L10nKey.HealthGoal.templateBloodSugarControl, icon: "chart.line.downtrend.xyaxis", group: .lifeGoal, isHighlighted: false),
+        HealthProfileTemplate(id: "8", code: "balanced", displayNameKey: L10nKey.HealthGoal.templateBalanced, icon: "leaf.fill", group: .lifeGoal, isHighlighted: true),
     ]
 }
 
@@ -74,57 +78,27 @@ struct HealthGoalSelectionView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 24) {
-                    limitHintBanner
-
-                    ForEach(HealthProfileTemplate.HealthProfileGroup.allCases, id: \.self) { group in
-                        templateGroupSection(group: group)
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 16)
+        ProfileSecondaryPage(
+            title: SafeEatL10n.text(L10nKey.HealthGoal.navTitle),
+            subtitle: SafeEatL10n.format(L10nKey.HealthGoal.limitHintFormat, maxSelection)
+        ) {
+            ForEach(HealthProfileTemplate.HealthProfileGroup.allCases, id: \.self) { group in
+                templateGroupSection(group: group)
             }
-            .navigationTitle(SafeEatL10n.text(L10nKey.HealthGoal.navTitle))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(SafeEatL10n.text(L10nKey.HealthGoal.saveAction)) {
-                        saveSelection()
-                    }
-                    .disabled(selectedIds.isEmpty)
-                    .bold()
-                }
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(SafeEatL10n.text(L10nKey.HealthGoal.cancelAction)) {
-                        dismiss()
-                    }
-                }
-            }
-            .sheet(isPresented: $showMembership) {
-                MembershipPurchaseView()
-            }
-            .onAppear {
-                loadCurrentSelection()
+        } footer: {
+            ProfilePrimaryActionButton(
+                title: SafeEatL10n.text(L10nKey.HealthGoal.saveAction),
+                isDisabled: selectedIds.isEmpty
+            ) {
+                saveSelection()
             }
         }
-    }
-
-    // MARK: - 限制提示
-
-    private var limitHintBanner: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "info.circle.fill")
-                .font(.system(size: 16))
-            Text(SafeEatL10n.format(L10nKey.HealthGoal.limitHintFormat, maxSelection))
-                .font(SafeEatFont.custom(13, relativeTo: .caption))
+        .sheet(isPresented: $showMembership) {
+            MembershipPurchaseView()
         }
-        .foregroundStyle(SafeEatTheme.primary)
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.18 : 0.62))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .onAppear {
+            loadCurrentSelection()
+        }
     }
 
     // MARK: - 分组 Section
@@ -158,29 +132,36 @@ struct HealthGoalSelectionView: View {
         let isSelected = selectedIds.contains(template.id)
         let isPrimary = primaryId == template.id
         let canSelect = isSelected || !isAtLimit
+        let config = HealthTagConfig.forCode(template.code)
+        let tagColor = config?.color ?? SafeEatTheme.primary
 
         return Button {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                 if isSelected {
                     selectedIds.remove(template.id)
-                    if isPrimary { primaryId = nil }
+                    if isPrimary {
+                        // 取消 primary 时，自动从剩余选中标签中晋升第一个
+                        primaryId = selectedIds.first
+                    }
                 } else if canSelect {
                     selectedIds.insert(template.id)
-                    if primaryId == nil { primaryId = template.id }
+                    if primaryId == nil || !selectedIds.contains(primaryId!) {
+                        primaryId = template.id
+                    }
                 } else {
                     showMembership = true
                 }
             }
         } label: {
-            VStack(spacing: 8) {
+            VStack(spacing: 10) {
                 ZStack {
                     Circle()
-                        .fill(isSelected ? SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.22 : 0.12) : (colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.92)))
+                        .fill(isSelected ? tagColor.opacity(colorScheme == .dark ? 0.22 : 0.12) : (colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.92)))
                         .frame(width: 48, height: 48)
 
                     Image(systemName: template.icon)
-                        .font(.system(size: 22))
-                        .foregroundStyle(isSelected ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(isSelected ? tagColor : SafeEatTheme.textSecondary)
                 }
 
                 Text(template.displayName)
@@ -196,29 +177,29 @@ struct HealthGoalSelectionView: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(SafeEatTheme.primary)
+                        .background(tagColor)
                         .clipShape(Capsule())
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .padding(.vertical, 14)
             .padding(.horizontal, 8)
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(isSelected ? SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.14 : 0.62) : (colorScheme == .dark ? Color.white.opacity(0.04) : Color.white.opacity(0.72)))
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(isSelected ? tagColor.opacity(colorScheme == .dark ? 0.08 : 0.06) : (colorScheme == .dark ? Color.white.opacity(0.04) : Color.white.opacity(0.72)))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isSelected ? SafeEatTheme.primary : (colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line), lineWidth: isSelected ? 2 : 1)
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(isSelected ? tagColor.opacity(0.35) : (colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line), lineWidth: isSelected ? 1.5 : 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
         .buttonStyle(.plain)
         .contextMenu {
             if isSelected {
                 if isPrimary {
                     Button {
-                        primaryId = nil
+                        primaryId = selectedIds.first(where: { $0 != template.id })
                     } label: {
                         Label(SafeEatL10n.text(L10nKey.HealthGoal.unsetPrimaryAction), systemImage: "star")
                     }
@@ -235,7 +216,9 @@ struct HealthGoalSelectionView: View {
                 Button(role: .destructive) {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                         selectedIds.remove(template.id)
-                        if isPrimary { primaryId = nil }
+                        if isPrimary {
+                            primaryId = selectedIds.first
+                        }
                     }
                 } label: {
                     Label(SafeEatL10n.text(L10nKey.HealthGoal.removeAction), systemImage: "minus.circle")
@@ -247,16 +230,16 @@ struct HealthGoalSelectionView: View {
     // MARK: - 操作
 
     private func loadCurrentSelection() {
-        // 从 store.profile.healthTags 恢复当前选择
         guard let healthTags = store.profile?.healthTags else { return }
         for tag in healthTags {
             if let match = templates.first(where: { $0.code == tag }) {
                 selectedIds.insert(match.id)
             }
         }
-        // 默认第一个选中的为重点
-        if let first = selectedIds.first {
-            primaryId = first
+        // 使用 healthTags 数组顺序的第一个作为重点
+        if let firstCode = healthTags.first,
+           let match = templates.first(where: { $0.code == firstCode }) {
+            primaryId = match.id
         }
     }
 
@@ -271,8 +254,12 @@ struct HealthGoalSelectionView: View {
                 avoidIngredients: store.profile?.avoidIngredients,
                 dietaryPreferences: store.profile?.dietaryPreferences
             )
-            _ = try? await store.updateUserHealthProfile(payload)
-            dismiss()
+            do {
+                _ = try await store.updateUserHealthProfile(payload)
+                dismiss()
+            } catch {
+                store.errorMessage = error.localizedDescription
+            }
         }
     }
 }

@@ -8,7 +8,8 @@ struct NewUserWelcomeSheet: View {
         SafeEatSettingsSheetContainer(
             title: "欢迎使用 SafeEat",
             subtitle: "让每一口都安心",
-            detentHeight: 420
+            contentHeight: 230,
+            primaryButton: SheetButton(title: "开始体验") { onDismiss() }
         ) {
             ProfileSurfaceCard {
                 HStack(spacing: 14) {
@@ -40,10 +41,6 @@ struct NewUserWelcomeSheet: View {
                     featureRow(icon: "chart.bar.fill", title: "安全评分", detail: "一目了然")
                     featureRow(icon: "bell.fill", title: "定时提醒", detail: "不遗漏保质期")
                 }
-            }
-
-            ProfilePrimaryActionButton(title: "开始体验", isLoading: false) {
-                onDismiss()
             }
         }
     }

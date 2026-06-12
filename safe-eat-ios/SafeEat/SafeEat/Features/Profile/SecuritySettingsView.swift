@@ -45,24 +45,6 @@ struct SecuritySettingsView: View {
                 }
                 .buttonStyle(.plain)
             }
-
-            ProfileSurfaceCard {
-                Text(SafeEatL10n.text(L10nKey.Profile.Security.session))
-                    .font(SafeEatFont.textStyle(.body))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-
-                Divider().overlay(SafeEatTheme.line)
-
-                Text(SafeEatL10n.text(L10nKey.Profile.Security.sync))
-                    .font(SafeEatFont.textStyle(.body))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-
-                Divider().overlay(SafeEatTheme.line)
-
-                Text(SafeEatL10n.text(L10nKey.Profile.Security.cache))
-                    .font(SafeEatFont.textStyle(.body))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-            }
         }
     }
 }

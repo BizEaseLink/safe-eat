@@ -91,13 +91,27 @@ struct QuotaStatusBar: View {
         )
         .background(
             RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.52))
+                .fill(cardGradient)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : Color.white.opacity(0.76), lineWidth: 1)
+                .stroke(cardStroke, lineWidth: 1)
         )
         .shadow(color: SafeEatTheme.primaryDeep.opacity(0.10), radius: 22, y: 14)
+    }
+
+    private var cardGradient: some ShapeStyle {
+        LinearGradient(
+            colors: colorScheme == .dark
+                ? [Color.white.opacity(0.08), Color.white.opacity(0.03)]
+                : [Color.white.opacity(0.92), Color(red: 0.95, green: 0.98, blue: 0.95).opacity(0.92)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private var cardStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
     }
 
     private var progressValue: Double {

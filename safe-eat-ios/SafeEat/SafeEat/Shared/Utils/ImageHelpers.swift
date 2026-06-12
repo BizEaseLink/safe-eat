@@ -576,9 +576,25 @@ struct SafeEatDottedRecordBackground: View {
 struct SafeEatLoadingOverlay: View {
     @Environment(\.colorScheme) private var colorScheme
 
-    var title: String
-    var subtitle: String? = nil
+    let phase: RecognitionPhase
     var previewImage: UIImage? = nil
+    var onCandidateSelected: ((String, String) -> Void)? = nil
+
+    // 小贴士循环切换
+    @State private var tipIndex: Int = 0
+
+    private let tips: [(title: String, content: String)] = [
+        (SafeEatL10n.text(L10nKey.RecognitionPhase.tip), SafeEatL10n.text(L10nKey.RecognitionPhase.tipContent1)),
+        (SafeEatL10n.text(L10nKey.RecognitionPhase.tip), SafeEatL10n.text(L10nKey.RecognitionPhase.tipContent2)),
+        (SafeEatL10n.text(L10nKey.RecognitionPhase.tip), SafeEatL10n.text(L10nKey.RecognitionPhase.tipContent3)),
+        (SafeEatL10n.text(L10nKey.RecognitionPhase.tip), SafeEatL10n.text(L10nKey.RecognitionPhase.tipContent4)),
+    ]
+
+    // 标题跑马灯
+    @State private var dotPhase: Int = 0
+    @State private var dotTimer: Timer?
+
+    // 小贴士随机起始，点击顺序切换
 
     private var brandLabelColor: Color {
         colorScheme == .dark ? Color(red: 0.67, green: 0.86, blue: 0.73) : SafeEatTheme.primaryDeep
@@ -626,29 +642,291 @@ struct SafeEatLoadingOverlay: View {
         ZStack {
             loadingBackground
 
-            VStack(spacing: 22) {
+            VStack(spacing: 0) {
+                // 品牌 pill
                 HStack {
                     brandPill
                     Spacer()
                 }
-                .padding(.top, 14)
+                .padding(.top, 60)
+                .padding(.horizontal, 20)
 
                 Spacer(minLength: 12)
 
-                loadingPanel
+                // 主面板
+                mainPanel
 
+                // 底部标签
                 HStack(spacing: 10) {
                     footerPill(SafeEatL10n.text(L10nKey.Home.heroTagHealth))
                     footerPill(SafeEatL10n.text(L10nKey.Home.heroTagHistory))
                 }
-
-                Spacer(minLength: 8)
+                .padding(.top, 24)
+                .padding(.bottom, 60)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 18)
         }
         .ignoresSafeArea()
+        .onAppear {
+            tipIndex = Int.random(in: 0..<tips.count)
+            startDotAnimation()
+        }
+        .onDisappear {
+            dotTimer?.invalidate()
+        }
     }
+
+    // MARK: - 主面板
+
+    @ViewBuilder
+    private var mainPanel: some View {
+        switch phase {
+        case .identifying:
+            panelContainer {
+                phaseTitle(SafeEatL10n.text(L10nKey.RecognitionPhase.identifying))
+                previewStage
+            }
+
+        case .selecting(let candidates, let sessionId):
+            panelContainer {
+                phaseTitle(SafeEatL10n.text(L10nKey.RecognitionPhase.selectTitle))
+                phaseSubtitle(SafeEatL10n.text(L10nKey.RecognitionPhase.selectSubtitle))
+                previewStageCompact
+                candidateList(candidates: candidates, sessionId: sessionId)
+            }
+
+        case .evaluating:
+            panelContainer {
+                phaseTitle(SafeEatL10n.text(L10nKey.RecognitionPhase.evaluating))
+                phaseSubtitle(SafeEatL10n.text(L10nKey.RecognitionPhase.evaluatingSubtitle))
+                RecognitionRingAnimation()
+            }
+        }
+    }
+
+    private func panelContainer<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: 18) {
+                    content()
+                }
+                .padding(24)
+            }
+            .scrollDisabled({
+                if case .selecting = phase { return false }
+                return true
+            }())
+            .scrollIndicators(.hidden)
+            .frame(maxHeight: .infinity)
+
+            // 小贴士固定在面板底部
+            tipCard
+                .padding(.horizontal, 24)
+                .padding(.bottom, 20)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                .fill(panelFill)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                .stroke(panelStroke, lineWidth: 1)
+        )
+        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.22 : 0.12), radius: 24, y: 16)
+        .padding(.horizontal, 20)
+    }
+
+    // MARK: - 阶段标题 / 副标题
+
+    private func phaseTitle(_ text: String) -> some View {
+        HStack(spacing: 4) {
+            // 左侧加载指示点
+            loadingDot(index: 2)
+            loadingDot(index: 1)
+
+            Text(text)
+                .font(SafeEatFont.custom(26, relativeTo: .title2, weight: .bold))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+
+            // 右侧加载指示点
+            loadingDot(index: 0)
+            loadingDot(index: 1)
+        }
+    }
+
+    private func loadingDot(index: Int) -> some View {
+        Circle()
+            .fill(SafeEatTheme.primary)
+            .frame(width: 4, height: 4)
+            .opacity(dotPhase == index ? 1.0 : 0.25)
+            .animation(.easeInOut(duration: 0.3), value: dotPhase)
+    }
+
+    private func phaseSubtitle(_ text: String) -> some View {
+        Text(text)
+            .font(SafeEatFont.textStyle(.subheadline))
+            .foregroundStyle(SafeEatTheme.textSecondary)
+            .multilineTextAlignment(.center)
+            .lineSpacing(2)
+    }
+
+    // MARK: - 预览图
+
+    private var previewStage: some View {
+        ZStack {
+            if let previewImage {
+                Image(uiImage: previewImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 220, maxHeight: 260)
+                    .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.24 : 0.12), radius: 18, y: 10)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 12)
+            } else {
+                Image(systemName: "camera.viewfinder")
+                    .font(.system(size: 54, weight: .medium))
+                    .foregroundStyle(SafeEatTheme.primary.opacity(0.68))
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 280)
+    }
+
+    /// 候选选择阶段的紧凑预览图
+    private var previewStageCompact: some View {
+        ZStack {
+            if let previewImage {
+                Image(uiImage: previewImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 120, maxHeight: 120)
+                    .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.24 : 0.12), radius: 10, y: 6)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+            } else {
+                Image(systemName: "camera.viewfinder")
+                    .font(.system(size: 32, weight: .medium))
+                    .foregroundStyle(SafeEatTheme.primary.opacity(0.68))
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 130)
+    }
+
+    // MARK: - 候选列表
+
+    private func candidateList(candidates: [IdentifyCandidate], sessionId: String) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(SafeEatL10n.text(L10nKey.Candidate.aiResult))
+                .font(SafeEatFont.textStyle(.subheadline))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+
+            ForEach(candidates) { candidate in
+                candidateRow(candidate, sessionId: sessionId)
+            }
+        }
+    }
+
+    private func candidateRow(_ candidate: IdentifyCandidate, sessionId: String) -> some View {
+        let percent = Int((candidate.confidence * 100).rounded())
+
+        return Button {
+            onCandidateSelected?(candidate.name, sessionId)
+        } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle()
+                        .stroke(SafeEatTheme.line, lineWidth: 3)
+                        .frame(width: 40, height: 40)
+                    Circle()
+                        .trim(from: 0, to: candidate.confidence)
+                        .stroke(
+                            confidenceColor(candidate.confidence),
+                            style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                        )
+                        .frame(width: 40, height: 40)
+                        .rotationEffect(.degrees(-90))
+                    Text("\(percent)%")
+                        .font(SafeEatFont.custom(11, relativeTo: .caption2, weight: .semibold))
+                        .foregroundColor(SafeEatTheme.textPrimary)
+                }
+
+                Text(candidate.name)
+                    .font(SafeEatFont.textStyle(.body))
+                    .foregroundColor(SafeEatTheme.textPrimary)
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(SafeEatTheme.textSecondary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.72))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(SafeEatTheme.line, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func confidenceColor(_ confidence: Double) -> Color {
+        if confidence >= 0.8 { return SafeEatTheme.success }
+        if confidence >= 0.5 { return SafeEatTheme.warning }
+        return SafeEatTheme.danger
+    }
+
+    // MARK: - 识别小贴士
+
+    private var tipCard: some View {
+        let current = tips[tipIndex % tips.count]
+
+        return Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                tipIndex = (tipIndex + 1) % tips.count
+            }
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "lightbulb.fill")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(SafeEatTheme.warning)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(current.title)
+                        .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    Text(current.content)
+                        .font(SafeEatFont.custom(13, relativeTo: .caption))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .id(tipIndex)
+                        .transition(.opacity)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.5))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(SafeEatTheme.warning.opacity(colorScheme == .dark ? 0.08 : 0.06))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(SafeEatTheme.warning.opacity(0.2), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - 背景 & 品牌元素
 
     private var loadingBackground: some View {
         ZStack {
@@ -676,6 +954,7 @@ struct SafeEatLoadingOverlay: View {
                 endPoint: .bottom
             )
         }
+        .ignoresSafeArea()
     }
 
     private var brandPill: some View {
@@ -705,60 +984,6 @@ struct SafeEatLoadingOverlay: View {
         )
     }
 
-    private var loadingPanel: some View {
-        VStack(spacing: 22) {
-            previewStage
-
-            VStack(spacing: 10) {
-                Text(title)
-                    .font(SafeEatFont.custom(28, relativeTo: .title2))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-                    .multilineTextAlignment(.center)
-
-                if let subtitle {
-                    Text(subtitle)
-                        .font(SafeEatFont.textStyle(.subheadline))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(2)
-                }
-            }
-
-            // Lottie 动画替代多步骤进度
-            LottieLoadingView(size: 80)
-        }
-        .padding(24)
-        .background(
-            RoundedRectangle(cornerRadius: 32, style: .continuous)
-                .fill(panelFill)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 32, style: .continuous)
-                .stroke(panelStroke, lineWidth: 1)
-        )
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.22 : 0.12), radius: 24, y: 16)
-    }
-
-    private var previewStage: some View {
-        ZStack {
-            if let previewImage {
-                Image(uiImage: previewImage)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: 220, maxHeight: 260)
-                    .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.24 : 0.12), radius: 18, y: 10)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 12)
-            } else {
-                Image(systemName: "camera.viewfinder")
-                    .font(.system(size: 54, weight: .medium))
-                    .foregroundStyle(SafeEatTheme.primary.opacity(0.68))
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 318)
-    }
-
     private func footerPill(_ text: String) -> some View {
         Text(text)
             .font(SafeEatFont.custom(15, relativeTo: .subheadline))
@@ -774,7 +999,17 @@ struct SafeEatLoadingOverlay: View {
                     .stroke(heroPillStroke, lineWidth: 1)
             )
     }
+
+    // MARK: - 跑马灯动画
+
+    private func startDotAnimation() {
+        dotTimer?.invalidate()
+        dotTimer = Timer.scheduledTimer(withTimeInterval: 0.6, repeats: true) { _ in
+            dotPhase = (dotPhase + 1) % 3
+        }
+    }
 }
+
 struct StickerTextBubble: View {
     let text: String
     let font: Font

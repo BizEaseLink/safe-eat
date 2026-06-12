@@ -1,15 +1,15 @@
 import SwiftUI
 import UIKit
 
-private func profileSurfaceFill(for colorScheme: ColorScheme) -> Color {
+func profileSurfaceFill(for colorScheme: ColorScheme) -> Color {
     colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.52)
 }
 
-private func profileControlFill(for colorScheme: ColorScheme) -> Color {
+func profileControlFill(for colorScheme: ColorScheme) -> Color {
     colorScheme == .dark ? Color.white.opacity(0.05) : Color.white.opacity(0.72)
 }
 
-private func profileStrokeColor(for colorScheme: ColorScheme) -> Color {
+func profileStrokeColor(for colorScheme: ColorScheme) -> Color {
     colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
 }
 

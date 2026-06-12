@@ -319,6 +319,43 @@ final class SafeEatAPI {
         return first
     }
 
+    // MARK: - 5候选识别流程
+
+    func identify(accessToken: String, imageData: Data, fileName: String) async throws -> IdentifyResponse {
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/recognitions/identify", method: "POST")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.httpBody = MultipartFormDataBuilder.build(
+            boundary: boundary,
+            textFields: [:],
+            fileFieldName: "image",
+            fileName: fileName,
+            mimeType: "image/jpeg",
+            fileData: imageData
+        )
+        return try await send(request, as: IdentifyResponse.self)
+    }
+
+    func confirm(accessToken: String, selectedName: String, sessionId: String) async throws -> RecognitionRecord {
+        var request = try buildJSONRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/recognitions/confirm",
+            method: "POST",
+            body: ConfirmRequestBody(selectedName: selectedName, sessionId: sessionId)
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: RecognitionRecord.self)
+    }
+
+    func searchFoods(accessToken: String, query: String) async throws -> FoodSearchResponse {
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/foods/search", method: "GET")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+        components?.queryItems = [URLQueryItem(name: "q", value: query)]
+        request.url = components?.url
+        return try await send(request, as: FoodSearchResponse.self)
+    }
+
     func getRecognition(accessToken: String, recognitionId: String) async throws -> RecognitionRecord {
         var request = try buildRequest(
             path: "/v1/apps/\(AppConfig.appCode)/recognitions/\(recognitionId)",
@@ -356,6 +393,24 @@ final class SafeEatAPI {
     func sendPublicRequest<T: Decodable>(path: String, method: String) async throws -> T {
         let request = try buildRequest(path: path, method: method)
         return try await send(request, as: T.self)
+    }
+
+    // MARK: - 参数化配置
+
+    /// 拉取参数化配置（支持 scope 筛选，如 "ios"/"global"）
+    func getConfigParams(accessToken: String, scope: String? = nil) async throws -> [ConfigParamItem] {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/config/params",
+            method: "GET"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        if let scope {
+            var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+            components?.queryItems = [URLQueryItem(name: "scope", value: scope)]
+            request.url = components?.url
+        }
+        let response = try await send(request, as: ConfigParamListResponse.self)
+        return response.items
     }
 
     func checkAppVersion(platform: String, currentVersion: String) async throws -> AppVersionCheckResponse {
@@ -697,6 +752,11 @@ private struct FeedbackRequestBody: Encodable {
     let recognitionId: String
     let proposedName: String
     let comment: String
+}
+
+private struct ConfirmRequestBody: Encodable {
+    let selectedName: String
+    let sessionId: String
 }
 
 private enum ISO8601DateFormatter {

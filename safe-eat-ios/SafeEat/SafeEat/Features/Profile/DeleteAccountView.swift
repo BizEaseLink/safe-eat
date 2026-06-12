@@ -3,10 +3,12 @@ import SwiftUI
 struct DeleteAccountView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var isLoading = false
     @State private var showConfirmDialog = false
     @State private var errorMessage: String?
+    @State private var agreedToDelete = false
 
     var body: some View {
         ProfileSecondaryPage(
@@ -28,14 +30,69 @@ struct DeleteAccountView: View {
                         .foregroundStyle(SafeEatTheme.textSecondary)
                 }
             }
+
+            NavigationLink(value: ProfileRoute.cancellationGuide) {
+                HStack(spacing: 6) {
+                    Image(systemName: "doc.text.magnifyingglass")
+                        .font(.system(size: 14, weight: .medium))
+                    Text("查看《账号注销指引》了解注销流程与数据清理规则")
+                        .font(SafeEatFont.custom(13, relativeTo: .caption))
+                }
+                .foregroundStyle(SafeEatTheme.primary)
+                .padding(.top, 4)
+            }
+            .buttonStyle(.plain)
+
+            // 注销确认勾选
+            HStack(alignment: .top, spacing: 8) {
+                Button {
+                    agreedToDelete.toggle()
+                } label: {
+                    Image(systemName: agreedToDelete ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 18))
+                        .foregroundStyle(agreedToDelete ? SafeEatTheme.danger : SafeEatTheme.textSecondary)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 1)
+
+                Text("我已了解注销后果，确认注销账号")
+                    .font(SafeEatFont.custom(13, relativeTo: .caption))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .onTapGesture {
+                        agreedToDelete.toggle()
+                    }
+            }
+            .padding(.top, 8)
         } footer: {
             Button(role: .destructive, action: { showConfirmDialog = true }) {
-                Text(SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmButton))
-                    .frame(maxWidth: .infinity)
+                Group {
+                    if isLoading {
+                        ProgressView()
+                            .tint(.white)
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        Text(SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmButton))
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(.white)
+                .padding(.vertical, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [SafeEatTheme.danger.opacity(0.85), SafeEatTheme.danger],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                )
             }
-            .buttonStyle(.borderedProminent)
-            .tint(SafeEatTheme.danger)
-            .disabled(isLoading)
+            .buttonStyle(.plain)
+            .disabled(!agreedToDelete || isLoading)
+            .opacity(agreedToDelete ? 1.0 : 0.45)
         }
         .alert(
             SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmDialogTitle),

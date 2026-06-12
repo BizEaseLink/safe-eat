@@ -7,3 +7,9 @@ struct DisclosureItem: Decodable, Identifiable {
     let sortOrder: Int
     let updatedAt: String?
 }
+
+struct DisclosureLink: Identifiable, Hashable {
+    let id = UUID()
+    let category: String
+    let title: String
+}

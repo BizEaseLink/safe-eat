@@ -36,7 +36,7 @@ struct SafeEatSurfaceCard<Content: View>: View {
                 shape.fill(.ultraThinMaterial)
             }
             .background {
-                shape.fill(surfaceFill)
+                shape.fill(surfaceGradient)
             }
             .overlay {
                 shape.stroke(surfaceStroke, lineWidth: 1)
@@ -48,12 +48,18 @@ struct SafeEatSurfaceCard<Content: View>: View {
             }
     }
 
-    private var surfaceFill: Color {
-        colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.52)
+    private var surfaceGradient: some ShapeStyle {
+        LinearGradient(
+            colors: colorScheme == .dark
+                ? [Color.white.opacity(0.08), Color.white.opacity(0.03)]
+                : [Color.white.opacity(0.92), Color(red: 0.95, green: 0.98, blue: 0.95).opacity(0.92)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
 
     private var surfaceStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color.white.opacity(0.76)
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
     }
 
     private var surfaceShadow: Color {

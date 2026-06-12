@@ -13,7 +13,14 @@ struct RedeemCodeSheet: View {
         SafeEatSettingsSheetContainer(
             title: "兑换码",
             subtitle: "输入兑换码获取奖励",
-            detentHeight: 340
+            contentHeight: 150,
+            primaryButton: SheetButton(
+                title: "兑换",
+                isLoading: isRedeeming,
+                isDisabled: code.trimmingCharacters(in: .whitespaces).isEmpty
+            ) {
+                Task { await redeemCode() }
+            }
         ) {
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 12) {
@@ -61,16 +68,6 @@ struct RedeemCodeSheet: View {
                     }
                 }
             }
-
-            ProfilePrimaryActionButton(
-                title: "兑换",
-                isLoading: isRedeeming
-            ) {
-                Task {
-                    await redeemCode()
-                }
-            }
-            .disabled(code.trimmingCharacters(in: .whitespaces).isEmpty)
         }
     }
 
