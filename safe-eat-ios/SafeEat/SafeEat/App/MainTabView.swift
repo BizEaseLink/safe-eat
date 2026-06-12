@@ -35,7 +35,7 @@ struct MainTabView: View {
     @State private var scanPressed = false
     @State private var homePath = NavigationPath()
     @State private var historyPath = NavigationPath()
-    @State private var trendPath = NavigationPath()
+    // @State private var trendPath = NavigationPath()  // v1.3.0 启用
     @State private var profilePath = NavigationPath()
 
     private var adConfig: AdConfigStore { AdConfigStore.shared }
@@ -64,18 +64,12 @@ struct MainTabView: View {
     private var isAtRoot: Bool {
         switch selectedTab {
         case .home:
-            // home tab 使用 navigationDestination(item:/isPresented:)，
-            // 这些 API 不会推入 NavigationPath，需要检查对应的 @State 变量
             return homePath.isEmpty && resultRoute == nil && !showMembership && recognitionPhase == nil
         case .history:
-            // history tab 使用 navigationDestination(item:)，不会推入 NavigationPath，
-            // 通过 TabNavigationState 追踪
             return historyPath.isEmpty && tabNavState.isHistoryAtRoot
-        case .trend:
-            return trendPath.isEmpty
+        // case .trend:  // v1.3.0 启用
+        //     return trendPath.isEmpty
         case .profile:
-            // profile tab 使用 NavigationLink(value:) + navigationDestination(for:)，
-            // 会推入 NavigationPath，profilePath.isEmpty 是可靠的
             return profilePath.isEmpty
         }
     }
@@ -106,10 +100,10 @@ struct MainTabView: View {
                         MenuWeekView()
                     }
 
-                case .trend:
-                    NavigationStack(path: $trendPath) {
-                        TrendPlaceholderView()
-                    }
+                // case .trend:  // v1.3.0 启用
+                //     NavigationStack(path: $trendPath) {
+                //         TrendPlaceholderView()
+                //     }
 
                 case .profile:
                     NavigationStack(path: $profilePath) {
@@ -208,15 +202,16 @@ struct MainTabView: View {
     // MARK: - 浮动底部导航栏
 
     private var floatingBottomBar: some View {
-        // 整体胶囊居中，拍摄按钮在中间位置
         HStack(spacing: 4) {
-            tabBarItem(tab: .home, icon: "house.fill", label: SafeEatL10n.text(L10nKey.Tab.home))
-            tabBarItem(tab: .history, icon: "book.closed.fill", label: SafeEatL10n.text(L10nKey.Tab.menu))
-
-            // 拍摄按钮（居中位置，带文字标签）
+            // 拍摄按钮（第一位）
             scanBarItem
 
-            tabBarItem(tab: .trend, icon: "chart.line.uptrend.xyaxis", label: SafeEatL10n.text(L10nKey.Tab.trend))
+            tabBarItem(tab: .home, icon: "house.fill", label: SafeEatL10n.text(L10nKey.Tab.home))
+
+            tabBarItem(tab: .history, icon: "book.closed.fill", label: SafeEatL10n.text(L10nKey.Tab.menu))
+
+            // tabBarItem(tab: .trend, icon: "chart.line.uptrend.xyaxis", label: SafeEatL10n.text(L10nKey.Tab.trend))  // v1.3.0 启用
+
             tabBarItem(tab: .profile, icon: "person.fill", label: SafeEatL10n.text(L10nKey.Tab.profile))
         }
         .padding(.horizontal, 8)
@@ -469,7 +464,7 @@ struct MainTabView: View {
                         }
                         await store.refreshProfile()
                         await store.refreshDailyQuota()
-                        adRewardResultType = .success(rewardQuota: store.dailyQuota?.adRewardPerWatch ?? adConfig.placement(for: .rewardVideo)?.rewardQuota ?? 1)
+                        adRewardResultType = .success(rewardQuota: store.dailyQuota?.adRewardPerWatch ?? Int(ConfigParamStore.shared.getNumber("ad_reward_quota", fallback: 3)))
                         showQuotaExceeded = false
                         showAdRewardResult = true
                     } catch {

@@ -1666,11 +1666,20 @@ struct ResultView: View {
     }
 
     private var medicalDisclaimerView: some View {
-        Text(medicalDisclaimerText)
-            .font(SafeEatFont.custom(11, relativeTo: .caption))
-            .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.86))
-            .lineSpacing(2)
-            .fixedSize(horizontal: false, vertical: true)
+        HStack(spacing: 4) {
+            Text(medicalDisclaimerText)
+                .font(SafeEatFont.custom(11, relativeTo: .caption))
+                .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.86))
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+
+            NavigationLink(value: ProfileRoute.aiDisclaimer) {
+                Text("详见《AI免责声明》")
+                    .font(SafeEatFont.custom(11, relativeTo: .caption, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.primary.opacity(0.86))
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     private func statusChip(text: String, color: Color) -> some View {

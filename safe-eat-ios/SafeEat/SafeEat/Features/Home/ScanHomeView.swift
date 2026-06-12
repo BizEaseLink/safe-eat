@@ -135,34 +135,8 @@ struct ScanHomeView: View {
 
             Spacer()
 
-            // 促销标签
-            Button {
-                guard isLoggedIn else {
-                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.memberAction))
-                    return
-                }
-                showMembership()
-            } label: {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(SafeEatL10n.text(L10nKey.Home.promoTag))
-                        .font(SafeEatFont.custom(11, relativeTo: .caption))
-                    Text(SafeEatL10n.text(L10nKey.Home.promoValue))
-                        .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                }
-                .foregroundStyle(privilegeBarForeground)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(privilegeBarFill)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(privilegeBarStroke, lineWidth: 1)
-                )
-                .shadow(color: privilegeBarShadow, radius: 8, y: 4)
-            }
-            .buttonStyle(.plain)
+            // 促销标签（v1.1.0 启用）
+            // promoTagButton
 
             // 消息按钮
             Button {

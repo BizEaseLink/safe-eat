@@ -354,12 +354,12 @@
 "profile.restore_purchases.failed" = "Restore failed. Please try again later.";
 
 "profile.feedback.title" = "Report an Issue";
-"profile.feedback.subtitle" = "Check your version and device information before sending feedback.";
+"profile.feedback.subtitle" = "Encountered a bug, crash, or have a suggestion? Let us know via email.";
 "profile.feedback.device_label" = "Device";
 "profile.feedback.version_label" = "App Version";
 "profile.feedback.version" = "App Version: %@";
 "profile.feedback.device" = "%@";
-"profile.feedback.hint" = "If a recognition result is wrong, you can submit feedback directly from the result page.";
+"profile.feedback.hint" = "If you experience any issues, crashes, or have suggestions, please describe the details via email. Device and version info will be included automatically to help us investigate.";
 "profile.feedback.email_action" = "Send feedback email";
 
 "profile.update.title" = "Check for Updates";
@@ -370,7 +370,7 @@
 "profile.update.check_action" = "Open App Store to check for updates";
 
 "profile.about.page_title" = "About Safe Eat";
-"profile.about.page_subtitle" = "See what Safe Eat is building right now.";
+"profile.about.page_subtitle" = "Safe Eat provides lightweight food recognition, dietary suggestions, and local history for Chinese-speaking users.";
 "profile.about.app_name" = "Safe Eat";
 "profile.about.intro" = "Safe Eat provides lightweight food recognition, dietary suggestions, and local history for Chinese-speaking users.";
 "profile.about.section_title" = "What we're building";
@@ -460,6 +460,7 @@
 "membership.purchase.free_plan_description" = "3 free recognitions per day. Great for trying out basic features.";
 "membership.purchase.new_user_gift_banner" = "New users get 10 free scans on sign-up";
 "membership.purchase.badge.lite" = "Lite";
+"membership.purchase.badge.current" = "Current Plan";
 "membership.purchase.benefit.recognition_monthly" = "%d scans per month";
 "membership.purchase.benefit.ai_monthly" = "%d AI analyses per month";
 "membership.purchase.benefit.daily_quota" = "%d scans per day";
@@ -550,6 +551,16 @@
 "user.goal.blood_sugar_control" = "Blood Sugar Control";
 "user.goal.cardiovascular_health" = "Cardiovascular Friendly";
 
+"health_goal.nav_title" = "Health Profile";
+"health_goal.group.health_risk" = "Health Risks";
+"health_goal.group.life_goal" = "Lifestyle Goals";
+"health_goal.limit_hint_format" = "Select up to %d items";
+"health_goal.primary_tag" = "Primary";
+"health_goal.action.save" = "Save";
+"health_goal.action.cancel" = "Cancel";
+"health_goal.action.set_primary" = "Set as Primary";
+"health_goal.action.unset_primary" = "Unset Primary";
+"health_goal.action.remove" = "Remove";
 "health_goal.template.hypertension" = "High Blood Pressure";
 "health_goal.template.hyperglycemia" = "High Blood Sugar";
 "health_goal.template.hyperlipidemia" = "High Blood Lipids";
@@ -1008,3 +1019,21 @@
 "recognition_phase.tip_content_2" = "Focus on a single dish, avoid stacking multiple items";
 "recognition_phase.tip_content_3" = "Shoot from the front, avoid extreme side or overhead angles";
 "recognition_phase.tip_content_4" = "Get closer for more detail — closer shots are more accurate";
+
+// Profile health & membership entry
+"profile.health_profile.title" = "Health Profile";
+"profile.health_profile.edit" = "Edit";
+"profile.health_profile.empty" = "No health preferences set";
+"profile.health_profile.empty_hint" = "Add your health conditions";
+"profile.health_profile.tag.high_blood_sugar" = "Sugar Control";
+"profile.health_profile.tag.high_blood_pressure" = "BP Control";
+"profile.health_profile.tag.fat_loss" = "Fat Loss";
+"profile.health_profile.tag.avoid" = "Avoided Ingredients";
+"profile.member.free.title" = "Get Membership";
+"profile.member.free.subtitle" = "Unlock more health features";
+"profile.member.lite.title" = "Lite Membership";
+"profile.member.lite.subtitle" = "Basic nutrition analysis";
+"profile.member.pro.title" = "Pro Membership";
+"profile.member.pro.subtitle" = "Unlock more recognitions";
+"profile.member.premium.title" = "Premium Membership";
+"profile.member.premium.subtitle" = "Full AI analysis";

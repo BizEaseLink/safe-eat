@@ -5,7 +5,7 @@
 "language.option.zh_hans" = "中文";
 "language.option.en" = "English";
 
-"tab.home" = "首页";
+"tab.home" = "主页";
 "tab.menu" = "历史";
 "tab.scan" = "拍摄";
 "tab.trend" = "趋势";
@@ -83,10 +83,19 @@
 "profile.health_profile.title" = "健康画像";
 "profile.health_profile.edit" = "编辑";
 "profile.health_profile.empty" = "暂未设置健康偏好";
+"profile.health_profile.empty_hint" = "添加您的健康状况";
 "profile.health_profile.tag.high_blood_sugar" = "控糖";
 "profile.health_profile.tag.high_blood_pressure" = "控压";
 "profile.health_profile.tag.fat_loss" = "减脂";
 "profile.health_profile.tag.avoid" = "忌口食材";
+"profile.member.free.title" = "开通会员";
+"profile.member.free.subtitle" = "解锁更多健康功能";
+"profile.member.lite.title" = "Lite 会员";
+"profile.member.lite.subtitle" = "基础营养分析";
+"profile.member.pro.title" = "Pro 会员";
+"profile.member.pro.subtitle" = "解锁更多识别次数";
+"profile.member.premium.title" = "Premium 会员";
+"profile.member.premium.subtitle" = "全量 AI 分析";
 "profile.member_entry.title" = "会员入口";
 "profile.member_entry.subtitle" = "查看当前可购买套餐与新用户优惠。";
 "profile.member_entry.format" = "从 %@ 起，解锁 %@ 的更多识别次数。";
@@ -195,12 +204,12 @@
 "profile.restore_purchases.failed" = "恢复失败，请稍后重试";
 
 "profile.feedback.title" = "反馈问题";
-"profile.feedback.subtitle" = "如果识别结果有误，可以从这里确认版本和设备信息。";
+"profile.feedback.subtitle" = "遇到使用问题、功能建议或 Bug，欢迎通过邮件反馈。";
 "profile.feedback.device_label" = "设备";
 "profile.feedback.version_label" = "应用版本";
 "profile.feedback.version" = "应用版本：%@";
 "profile.feedback.device" = "%@";
-"profile.feedback.hint" = "如果识别结果有误，可以在识别结果页直接提交反馈。";
+"profile.feedback.hint" = "如遇功能异常、崩溃或体验问题，可通过邮件描述具体情况，我们会尽快处理。邮件将自动附带设备与版本信息，便于定位问题。";
 "profile.feedback.email_action" = "发送邮件反馈";
 
 "profile.update.title" = "检查更新";
@@ -211,7 +220,7 @@
 "profile.update.check_action" = "前往 App Store 检查更新";
 
 "profile.about.page_title" = "关于食安安";
-"profile.about.page_subtitle" = "看看食安安现在正在做什么。";
+"profile.about.page_subtitle" = "食安安面向中文用户提供更轻量的食物识别、饮食建议与本地记录能力。";
 "profile.about.app_name" = "食安安";
 "profile.about.intro" = "食安安面向中文用户提供更轻量的食物识别、饮食建议与本地记录能力。";
 "profile.about.section_title" = "我们在做什么";
@@ -323,6 +332,7 @@
 "membership.purchase.plan_bonus_ai" = "赠送 %d 次 AI";
 "membership.purchase.new_user_gift_banner" = "新用户注册赠送 10 次免费识别额度";
 "membership.purchase.badge.lite" = "轻享";
+"membership.purchase.badge.current" = "当前套餐";
 "membership.purchase.benefit.recognition_monthly" = "每月识别 %d 次";
 "membership.purchase.benefit.ai_monthly" = "每月 AI 分析 %d 次";
 "membership.purchase.benefit.daily_quota" = "每日可识别 %d 次";
@@ -358,7 +368,7 @@
 "membership.purchase.bonus.ai_format" = "+%d次AI";
 "membership.purchase.bonus.separator" = "，";
 
-"home.title" = "首页";
+"home.title" = "主页";
 "home.brand_pill" = "食安安";
 "home.promo.tag" = "新用户专享";
 "home.promo.value" = "29 元立减至 20 元";
@@ -518,6 +528,16 @@
 "user.goal.blood_sugar_control" = "控糖";
 "user.goal.cardiovascular_health" = "心血管友好";
 
+"health_goal.nav_title" = "健康画像";
+"health_goal.group.health_risk" = "健康风险";
+"health_goal.group.life_goal" = "生活目标";
+"health_goal.limit_hint_format" = "最多可选择 %d 项";
+"health_goal.primary_tag" = "重点";
+"health_goal.action.save" = "保存";
+"health_goal.action.cancel" = "取消";
+"health_goal.action.set_primary" = "设为重点";
+"health_goal.action.unset_primary" = "取消重点";
+"health_goal.action.remove" = "移除";
 "health_goal.template.hypertension" = "高血压";
 "health_goal.template.hyperglycemia" = "高血糖";
 "health_goal.template.hyperlipidemia" = "高血脂";

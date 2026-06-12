@@ -11,11 +11,11 @@ struct MembershipPurchaseView: View {
     @State private var creatingOrder = false
     @State private var successMessage: String?
     @State private var plansLoadError: String?
-    @State private var now = Date()
     @State private var showPriceBreakdownSheet = false
     @State private var showTrialPrompt = false
     @State private var showPurchaseConfirmSheet = false
     @State private var showBenefitsSheet = false
+    @State private var agreedToPurchaseTerms = false
 
     private var isNewUser: Bool {
         guard let tier = store.profile?.currentPlanTier else { return true }
@@ -63,11 +63,14 @@ struct MembershipPurchaseView: View {
                     .buttonStyle(.plain)
                 }
 
+                // 自动续费协议勾选
+                purchaseTermsRow
+
                 // 购买/订阅按钮
                 ProfilePrimaryActionButton(
                     title: purchaseButtonText,
                     isLoading: creatingOrder || store.isPurchasingMembership,
-                    isDisabled: selectedPlanID == nil
+                    isDisabled: selectedPlanID == nil || !agreedToPurchaseTerms
                 ) {
                     showPurchaseConfirmSheet = true
                 }
@@ -87,9 +90,6 @@ struct MembershipPurchaseView: View {
         }
         .task {
             await loadPlans()
-        }
-        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { time in
-            now = time
         }
         .alert(SafeEatL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
             get: { successMessage != nil },
@@ -197,7 +197,7 @@ struct MembershipPurchaseView: View {
                         .font(.footnote)
                         .foregroundColor(.secondary)
                     Spacer()
-                    Button("Retry") {
+                    Button(SafeEatL10n.text(L10nKey.Common.retry)) {
                         plansLoadError = nil
                         Task { await loadPlans() }
                     }
@@ -220,7 +220,11 @@ struct MembershipPurchaseView: View {
     // MARK: - Paid Plan Card（动态权益展示）
 
     private func paidPlanCard(_ plan: MembershipPlan) -> some View {
-        Button {
+        let isDowngrade = isCurrentOrLowerTier(plan)
+        let isSelected = selectedPlanID == plan.id && !isDowngrade
+
+        return Button {
+            if isDowngrade { return }
             selectedPlanID = plan.id
             showBenefitsSheet = true
         } label: {
@@ -232,8 +236,19 @@ struct MembershipPurchaseView: View {
                                 .font(SafeEatFont.textStyle(.headline))
                                 .foregroundStyle(SafeEatTheme.textPrimary)
 
-                            // 推荐标签：Pro 标"推荐"
-                            if plan.tier == "pro" {
+                            // 当前等级标签
+                            if isDowngrade {
+                                Text(SafeEatL10n.text(L10nKey.Membership.currentPlanBadge))
+                                    .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                                    .foregroundStyle(SafeEatTheme.textSecondary)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Capsule()
+                                            .fill(SafeEatTheme.textSecondary.opacity(0.12))
+                                    )
+                            } else if plan.tier == "pro" {
+                                // 推荐标签：Pro 标"推荐"
                                 Text(SafeEatL10n.text(L10nKey.Membership.badgeRecommended))
                                     .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
                                     .foregroundStyle(SafeEatTheme.primary)
@@ -304,9 +319,9 @@ struct MembershipPurchaseView: View {
                             .font(SafeEatFont.custom(26, relativeTo: .title2, weight: .bold))
                             .foregroundStyle(SafeEatTheme.textPrimary)
 
-                        Image(systemName: selectedPlanID == plan.id ? "checkmark.circle.fill" : "circle")
+                        Image(systemName: isSelected ? "checkmark.circle.fill" : (isDowngrade ? "minus.circle" : "circle"))
                             .font(.system(size: 22, weight: .semibold))
-                            .foregroundStyle(selectedPlanID == plan.id ? SafeEatTheme.primary : SafeEatTheme.textSecondary.opacity(0.6))
+                            .foregroundStyle(isSelected ? SafeEatTheme.primary : SafeEatTheme.textSecondary.opacity(0.6))
 
                         // 年费对比
                         if selectedBillingCycle == "monthly", let yearlyPlan = store.membershipPlans.first(where: { $0.tier == plan.tier && $0.billingCycle == "yearly" }), yearlyPlan.priceFen > 0 {
@@ -321,6 +336,7 @@ struct MembershipPurchaseView: View {
                     }
                 }
             }
+            .opacity(isDowngrade ? 0.5 : 1.0)
             .buttonStyle(.plain)
         }
     }
@@ -724,7 +740,7 @@ struct MembershipPurchaseView: View {
                 Button {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                         selectedBillingCycle = cycle
-                        selectedPlanID = sortedPaidPlans.first?.id
+                        selectedPlanID = firstUpgradePlan?.id
                     }
                 } label: {
                     Text(cycle == "yearly"
@@ -746,11 +762,31 @@ struct MembershipPurchaseView: View {
 
     // MARK: - Computed Properties
 
-    /// 按 sortOrder 排序的付费套餐列表（Lite -> Pro -> Premium）
+    /// 按 sortOrder 排序的付费套餐列表，显示所有付费方案，当前等级及以下标记为不可选
     private var sortedPaidPlans: [MembershipPlan] {
-        filteredPlans
-            .filter { $0.tier != "free" }
+        return filteredPlans
+            .filter { plan in
+                plan.tier != "free"
+            }
             .sorted { ($0.sortOrder ?? 0) < ($1.sortOrder ?? 0) }
+    }
+
+    /// 判断某方案是否为当前等级或更低等级（不可选）
+    private func isCurrentOrLowerTier(_ plan: MembershipPlan) -> Bool {
+        let currentTier = store.profile?.currentPlanTier ?? "free"
+        let currentOrder = tierOrder(currentTier)
+        return tierOrder(plan.tier) <= currentOrder
+    }
+
+    /// tier 排序：free=0, lite=1, pro=2, premium=3
+    private func tierOrder(_ tier: String) -> Int {
+        switch tier {
+        case "free", nil: return 0
+        case "lite": return 1
+        case "pro": return 2
+        case "premium": return 3
+        default: return 0
+        }
     }
 
     private var filteredPlans: [MembershipPlan] {
@@ -896,27 +932,16 @@ struct MembershipPurchaseView: View {
         }
     }
 
-    // MARK: - Countdown
-
-    private var earliestCampaignCountdown: TimeInterval? {
-        let deadlines = store.campaignBenefits.compactMap { $0.endsAt }
-        guard let earliest = deadlines.min(), earliest > now else { return nil }
-        return earliest.timeIntervalSince(now)
-    }
-
-    private func countdownText(from interval: TimeInterval) -> String {
-        let totalSeconds = Int(interval)
-        let hours = totalSeconds / 3600
-        let minutes = (totalSeconds % 3600) / 60
-        let seconds = totalSeconds % 60
-        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    /// 第一个可选的（非当前等级及以下）方案
+    private var firstUpgradePlan: MembershipPlan? {
+        sortedPaidPlans.first { !isCurrentOrLowerTier($0) }
     }
 
     // MARK: - Data Loading
 
     private func loadPlans() async {
         guard store.membershipPlans.isEmpty else {
-            selectedPlanID = sortedPaidPlans.first?.id
+            selectedPlanID = firstUpgradePlan?.id
             return
         }
 
@@ -928,7 +953,7 @@ struct MembershipPurchaseView: View {
         if store.membershipPlans.isEmpty {
             plansLoadError = SafeEatL10n.text(L10nKey.Membership.plansLoadError)
         } else {
-            selectedPlanID = sortedPaidPlans.first?.id
+            selectedPlanID = firstUpgradePlan?.id
         }
 
         await store.loadMembershipProducts()
@@ -954,6 +979,46 @@ struct MembershipPurchaseView: View {
 
         if store.purchaseError == nil && !store.isPurchasingMembership {
             successMessage = SafeEatL10n.text(L10nKey.Membership.purchaseSuccess)
+        }
+    }
+
+    // 自动续费协议勾选
+    @State private var showPurchaseDisclosure: DisclosureLink?
+
+    private var purchaseTermsRow: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Button {
+                agreedToPurchaseTerms.toggle()
+            } label: {
+                Image(systemName: agreedToPurchaseTerms ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 18))
+                    .foregroundStyle(agreedToPurchaseTerms ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 1)
+
+            purchaseTermsFlowText
+                .font(SafeEatFont.custom(12, relativeTo: .caption))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .sheet(item: $showPurchaseDisclosure) { link in
+            NavigationStack {
+                DisclosureDetailView(title: link.title, category: link.category)
+            }
+        }
+    }
+
+    private var purchaseTermsFlowText: some View {
+        HStack(spacing: 0) {
+            Text("我已阅读").foregroundStyle(SafeEatTheme.textSecondary)
+            Button { showPurchaseDisclosure = DisclosureLink(category: "value_added_service_agreement", title: "增值服务协议") } label: {
+                Text("《增值服务协议》").foregroundStyle(SafeEatTheme.primary).underline()
+            }.buttonStyle(.plain)
+            Text("和").foregroundStyle(SafeEatTheme.textSecondary)
+            Button { showPurchaseDisclosure = DisclosureLink(category: "auto_renewal_notice", title: "自动续费说明") } label: {
+                Text("《自动续费说明》").foregroundStyle(SafeEatTheme.primary).underline()
+            }.buttonStyle(.plain)
+            Text("，了解自动续费规则").foregroundStyle(SafeEatTheme.textSecondary)
         }
     }
 }

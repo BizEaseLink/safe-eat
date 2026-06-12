@@ -19,21 +19,23 @@ struct EditProfileView: View {
             title: SafeEatL10n.text(L10nKey.Profile.editTitle),
             subtitle: SafeEatL10n.text(L10nKey.Profile.Edit.subtitle)
         ) {
+            // 头像区
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(SafeEatL10n.text(L10nKey.Profile.Edit.avatarTitle))
-                        .font(SafeEatFont.textStyle(.headline))
+                        .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
                         .foregroundStyle(SafeEatTheme.textPrimary)
 
                     Text(SafeEatL10n.text(L10nKey.Profile.Edit.avatarHint))
-                        .font(SafeEatFont.textStyle(.footnote))
+                        .font(SafeEatFont.custom(13, relativeTo: .caption))
                         .foregroundStyle(SafeEatTheme.textSecondary)
                 }
             }
 
+            // 基本信息
             ProfileSurfaceCard {
                 Text(SafeEatL10n.text(L10nKey.Profile.Edit.basicSection))
-                    .font(SafeEatFont.textStyle(.headline))
+                    .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
 
                 ProfileFieldBlock(label: SafeEatL10n.text(L10nKey.Profile.Edit.displayName)) {
@@ -42,6 +44,8 @@ struct EditProfileView: View {
                         text: $displayName
                     )
                 }
+
+                Divider().overlay(SafeEatTheme.line)
 
                 ProfileFieldBlock(label: SafeEatL10n.text(L10nKey.Profile.Edit.gender)) {
                     ProfileMenuField(
@@ -56,24 +60,29 @@ struct EditProfileView: View {
                     )
                 }
 
-                HStack(alignment: .top, spacing: 12) {
-                    ProfileFieldBlock(label: SafeEatL10n.text(L10nKey.Profile.Edit.height)) {
-                        ProfileTextField(
-                            title: SafeEatL10n.text(L10nKey.Profile.Edit.height),
-                            text: $heightText,
-                            keyboardType: .numberPad
-                        )
-                    }
+                Divider().overlay(SafeEatTheme.line)
 
-                    ProfileFieldBlock(label: SafeEatL10n.text(L10nKey.Profile.Edit.weight)) {
-                        ProfileTextField(
-                            title: SafeEatL10n.text(L10nKey.Profile.Edit.weight),
-                            text: $weightText,
-                            keyboardType: .decimalPad
-                        )
-                    }
+                ProfileFieldBlock(label: SafeEatL10n.text(L10nKey.Profile.Edit.height)) {
+                    ProfileTextField(
+                        title: SafeEatL10n.text(L10nKey.Profile.Edit.height),
+                        text: $heightText,
+                        keyboardType: .numberPad
+                    )
                 }
 
+                Divider().overlay(SafeEatTheme.line)
+
+                ProfileFieldBlock(label: SafeEatL10n.text(L10nKey.Profile.Edit.weight)) {
+                    ProfileTextField(
+                        title: SafeEatL10n.text(L10nKey.Profile.Edit.weight),
+                        text: $weightText,
+                        keyboardType: .decimalPad
+                    )
+                }
+            }
+
+            // BMI 结果
+            ProfileSurfaceCard {
                 ProfileFieldBlock(
                     label: SafeEatL10n.text(L10nKey.Profile.bmiLabel),
                     hint: SafeEatL10n.text(L10nKey.Profile.Edit.bmiHint)
@@ -89,15 +98,15 @@ struct EditProfileView: View {
                             .font(.system(size: 24))
                             .foregroundStyle(SafeEatTheme.primary.opacity(0.7))
                     }
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 16)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
                     .background(
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .fill(colorScheme == .dark ? Color.white.opacity(0.05) : Color.white.opacity(0.72))
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(profileControlFill(for: colorScheme))
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(profileStrokeColor(for: colorScheme), lineWidth: 1)
                     )
                 }
             }

@@ -4,7 +4,6 @@ import UIKit
 
 struct FeedbackProblemView: View {
     @State private var showMailComposer = false
-    @State private var mailResult: Result<MFMailComposeResult, Error>?
 
     private var version: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
@@ -69,7 +68,7 @@ struct FeedbackProblemView: View {
         }
         .sheet(isPresented: $showMailComposer) {
             MailComposeView(
-                toRecipients: ["1440531680@qq.com"],
+                toRecipients: ["bel_safeeat@163.com"],
                 subject: "食安安用户反馈",
                 messageBody: "\n\n---\n\(deviceInfo)"
             )

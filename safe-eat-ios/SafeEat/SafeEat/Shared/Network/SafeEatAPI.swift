@@ -395,6 +395,24 @@ final class SafeEatAPI {
         return try await send(request, as: T.self)
     }
 
+    // MARK: - 参数化配置
+
+    /// 拉取参数化配置（支持 scope 筛选，如 "ios"/"global"）
+    func getConfigParams(accessToken: String, scope: String? = nil) async throws -> [ConfigParamItem] {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/config/params",
+            method: "GET"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        if let scope {
+            var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+            components?.queryItems = [URLQueryItem(name: "scope", value: scope)]
+            request.url = components?.url
+        }
+        let response = try await send(request, as: ConfigParamListResponse.self)
+        return response.items
+    }
+
     func checkAppVersion(platform: String, currentVersion: String) async throws -> AppVersionCheckResponse {
         var request = try buildRequest(
             path: "/v1/apps/\(AppConfig.appCode)/app-version/check",

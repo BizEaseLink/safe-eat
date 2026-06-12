@@ -6,13 +6,11 @@ struct ProfileView: View {
     @EnvironmentObject private var settings: AppSettingsStore
     @Environment(\.colorScheme) private var colorScheme
 
-    @State private var plans: [MembershipPlan] = []
     @State private var scrollOffset: CGFloat = 0
     @State private var isLoggingOut = false
     @State private var activeSheet: ProfileSheet?
     @State private var didWarmProfileData = false
     @State private var showRedeemCodeSheet = false
-    @State private var showHealthGoal = false
 
     private let scrollCoordinateSpace = "safeeat.profile.scroll"
 
@@ -35,7 +33,7 @@ struct ProfileView: View {
                             serviceSection
                         } else {
                             heroSection
-                            healthProfileSection
+//                            healthProfileSection
                             membershipEntry
                             accountSection
                             systemSettingsSection
@@ -72,9 +70,6 @@ struct ProfileView: View {
         .sheet(isPresented: $showRedeemCodeSheet) {
             RedeemCodeSheet()
         }
-        .sheet(isPresented: $showHealthGoal) {
-            HealthGoalSelectionView()
-        }
         .task {
             await warmProfileDataIfNeeded()
         }
@@ -89,6 +84,8 @@ struct ProfileView: View {
             OrderHistoryView()
         case .editProfile:
             EditProfileView()
+        case .healthGoal:
+            HealthGoalSelectionView()
         case .preferences:
             PreferenceSettingsView()
         case .security:
@@ -112,98 +109,137 @@ struct ProfileView: View {
         case .userAgreement:
             DisclosureDetailView(
                 title: SafeEatL10n.text(L10nKey.Profile.About.userAgreement),
-                category: "用户协议"
+                category: "user_agreement"
             )
         case .privacyPolicy:
             DisclosureDetailView(
                 title: SafeEatL10n.text(L10nKey.Profile.About.privacyPolicy),
-                category: "隐私政策"
+                category: "privacy_policy"
             )
         case .valueAdded:
             DisclosureDetailView(
                 title: SafeEatL10n.text(L10nKey.Profile.About.valueAdded),
-                category: "增值服务协议"
+                category: "value_added_service_agreement"
+            )
+        case .minorProtection:
+            DisclosureDetailView(
+                title: "未成年人保护指引",
+                category: "minor_protection_guide"
+            )
+        case .autoRenewalNotice:
+            DisclosureDetailView(
+                title: "自动续费说明",
+                category: "auto_renewal_notice"
+            )
+        case .permissionUsage:
+            DisclosureDetailView(
+                title: "权限使用说明",
+                category: "permission_usage"
+            )
+        case .aiDisclaimer:
+            DisclosureDetailView(
+                title: "AI 免责声明",
+                category: "ai_disclaimer"
+            )
+        case .adServiceNotice:
+            DisclosureDetailView(
+                title: "广告服务说明",
+                category: "ad_service_notice"
+            )
+        case .cancellationGuide:
+            DisclosureDetailView(
+                title: "账号注销指引",
+                category: "account_cancellation_guide"
             )
         case .certificate:
             CertificateGalleryView()
+        case .helpCenter:
+            HelpCenterView()
         }
     }
 
     private var heroSection: some View {
-        ProfileSurfaceCard {
-            HStack(alignment: .center, spacing: 16) {
-                ProfileAvatarView(profile: store.profile, size: 86)
+        NavigationLink(value: ProfileRoute.editProfile) {
+            ProfileSurfaceCard {
+                HStack(alignment: .center, spacing: 16) {
+                    ProfileAvatarView(profile: store.profile, size: 86)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) {
-                        Text(store.profile?.displayNameOrFallback ?? SafeEatL10n.text(L10nKey.Profile.heroDefaultName))
-                            .font(SafeEatFont.custom(26, relativeTo: .title2, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 8) {
+                            Text(store.profile?.displayNameOrFallback ?? SafeEatL10n.text(L10nKey.Profile.heroDefaultName))
+                                .font(SafeEatFont.custom(26, relativeTo: .title2, weight: .bold))
+                                .foregroundStyle(SafeEatTheme.textPrimary)
+
+                            HStack(spacing: 8) {
+                            Text(PlanTierMapper.shortTitle(store.profile?.currentPlanTier))
+                                .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                                .foregroundStyle(SafeEatTheme.primary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(SafeEatTheme.primarySoft)
+                                )
+
+                            // 试用状态标签
+                            if let status = store.membershipStatus, status.isTrial == true {
+                                Text(SafeEatL10n.text(L10nKey.Membership.trialActive))
+                                    .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                                    .foregroundStyle(.orange)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Capsule()
+                                            .fill(.orange.opacity(0.14))
+                                    )
+                            }
+
+                            // 首购奖励已领取标签
+                            if store.hasFirstPurchaseBonusClaimed {
+                                Text(SafeEatL10n.text(L10nKey.Membership.firstPurchaseClaimed))
+                                    .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                                    .foregroundStyle(.green)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Capsule()
+                                            .fill(.green.opacity(0.14))
+                                    )
+                            }
+                        }
+                        }
+
+                        Text(store.profile?.phone ?? "--")
+                            .font(SafeEatFont.textStyle(.subheadline))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
 
                         HStack(spacing: 8) {
-                        Text(PlanTierMapper.shortTitle(store.profile?.currentPlanTier))
-                            .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.primary)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(
-                                Capsule()
-                                    .fill(SafeEatTheme.primarySoft)
-                            )
-
-                        // 试用状态标签
-                        if let status = store.membershipStatus, status.isTrial == true {
-                            Text(SafeEatL10n.text(L10nKey.Membership.trialActive))
-                                .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                                .foregroundStyle(.orange)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Capsule()
-                                        .fill(.orange.opacity(0.14))
-                                )
+                            Image(systemName: "globe")
+                                .font(.system(size: 13, weight: .semibold))
+                            Text(settings.languageSummary)
+                                .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
                         }
-
-                        // 首购奖励已领取标签
-                        if store.hasFirstPurchaseBonusClaimed {
-                            Text(SafeEatL10n.text(L10nKey.Membership.firstPurchaseClaimed))
-                                .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                                .foregroundStyle(.green)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Capsule()
-                                        .fill(.green.opacity(0.14))
-                                )
-                        }
-                    }
+                        .foregroundStyle(SafeEatTheme.primary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 8)
+                        .background(
+                            Capsule()
+                                .fill(SafeEatTheme.primary.opacity(0.12))
+                        )
                     }
 
-                    Text(store.profile?.phone ?? "--")
-                        .font(SafeEatFont.textStyle(.subheadline))
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(SafeEatTheme.textSecondary)
-
-                    HStack(spacing: 8) {
-                        Image(systemName: "globe")
-                            .font(.system(size: 13, weight: .semibold))
-                        Text(settings.languageSummary)
-                            .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
-                    }
-                    .foregroundStyle(SafeEatTheme.primary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 8)
-                    .background(
-                        Capsule()
-                            .fill(SafeEatTheme.primary.opacity(0.12))
-                    )
                 }
-
-                Spacer()
             }
         }
+        .buttonStyle(.plain)
     }
 
-    // MARK: - 健康画像摘要区（参照 html-prototype impact-chip）
+    // MARK: - 健康画像摘要区（扁平极简图标+文字标签）
 
     private var healthProfileSection: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -212,118 +248,79 @@ struct ProfileView: View {
                     .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .semibold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
                 Spacer()
-                Button {
-                    showHealthGoal = true
-                } label: {
+                NavigationLink(value: ProfileRoute.healthGoal) {
                     Text(SafeEatL10n.text(L10nKey.Profile.healthProfileEdit))
                         .font(SafeEatFont.custom(13, relativeTo: .caption))
                         .foregroundStyle(SafeEatTheme.primary)
                 }
             }
 
-            let tags = healthImpactTags
-            if tags.isEmpty {
-                Text(SafeEatL10n.text(L10nKey.Profile.healthProfileEmpty))
+            let selectedTags = healthSelectedTags
+            if selectedTags.isEmpty {
+                Text(SafeEatL10n.text(L10nKey.Profile.healthProfileEmptyHint))
                     .font(SafeEatFont.custom(13, relativeTo: .caption))
-                    .foregroundStyle(SafeEatTheme.textPrimary.opacity(0.5))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
             } else {
-                WrappingHStack(tags: tags, foregroundColor: healthChipForeground, backgroundColor: healthChipBackground, borderColor: healthChipBorder)
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
+                    ForEach(selectedTags, id: \.code) { tag in
+                        healthTagChip(tag)
+                    }
+                }
             }
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(SafeEatTheme.primarySoft)
+                .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.92))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(SafeEatTheme.line.opacity(0.12), lineWidth: 1)
+                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line.opacity(0.12), lineWidth: 1)
         )
     }
 
-    private var healthImpactTags: [String] {
-        var tags: [String] = []
-        if let profile = store.profile {
-            if profile.healthTags?.contains("high_blood_sugar") == true {
-                tags.append(SafeEatL10n.text(L10nKey.Profile.healthTagHighBloodSugar))
-            }
-            if profile.healthTags?.contains("high_blood_pressure") == true {
-                tags.append(SafeEatL10n.text(L10nKey.Profile.healthTagHighBloodPressure))
-            }
-            if profile.healthTags?.contains("fat_loss") == true {
-                tags.append(SafeEatL10n.text(L10nKey.Profile.healthTagFatLoss))
-            }
-            if let avoid = profile.avoidIngredients, !avoid.isEmpty {
-                tags.append(SafeEatL10n.text(L10nKey.Profile.healthTagAvoid))
-            }
+    private func healthTagChip(_ tag: HealthTagDisplay) -> some View {
+        let bgColor = tag.color.opacity(0.10)
+        return HStack(spacing: 6) {
+            Image(systemName: tag.icon)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(tag.color)
+            Text(tag.displayName)
+                .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .semibold))
+                .foregroundStyle(tag.color)
         }
-        return tags
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .background(
+            Capsule()
+                .fill(bgColor)
+        )
     }
 
-    private var healthChipForeground: Color {
-        colorScheme == .dark ? Color(red: 0.85, green: 0.72, blue: 0.55) : Color(red: 0.55, green: 0.40, blue: 0.15)
+    /// 根据用户已选 healthTags 从模板匹配出显示用的标签，最多3个
+    private var healthSelectedTags: [HealthTagDisplay] {
+        guard let codes = store.profile?.healthTags, !codes.isEmpty else { return [] }
+        return codes.prefix(3).compactMap { code in
+            guard let template = HealthProfileTemplateMock.templates.first(where: { $0.code == code }) else { return nil }
+            guard let config = HealthTagConfig.forCode(code) else { return nil }
+            return HealthTagDisplay(code: code, displayName: template.displayName, icon: config.icon, color: config.color)
+        }
     }
 
-    private var healthChipBackground: Color {
-        colorScheme == .dark ? Color(red: 0.22, green: 0.18, blue: 0.14) : Color(red: 1.0, green: 0.96, blue: 0.90)
-    }
-
-    private var healthChipBorder: Color {
-        colorScheme == .dark ? Color(red: 0.42, green: 0.35, blue: 0.25) : Color(red: 0.92, green: 0.84, blue: 0.72)
-    }
+    // MARK: - 会员入口（扁平极简等级卡片，4 种背景色）
 
     private var membershipEntry: some View {
-        ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.memberEntryTitle)) {
-            NavigationLink(value: ProfileRoute.membership) {
-                if let highlightedPlan = highlightedPlan {
-                    ProfileNavigationRow(
-                        icon: "crown.fill",
-                        title: highlightedPlan.localizedDisplayName,
-                        subtitle: SafeEatL10n.format(
-                            L10nKey.Profile.memberEntryFormat,
-                            SafeEatTheme.priceText(highlightedPlan.priceFen),
-                            highlightedPlan.localizedDisplayName
-                        )
-                    )
-                } else {
-                    ProfileNavigationRow(
-                        icon: "crown.fill",
-                        title: SafeEatL10n.text(L10nKey.Profile.memberEntryTitle),
-                        subtitle: SafeEatL10n.text(L10nKey.Profile.memberEntrySubtitle)
-                    )
-                }
-            }
-            .buttonStyle(.plain)
+        NavigationLink(value: ProfileRoute.membership) {
+            let tier = PlanTierMapper.map(store.profile?.currentPlanTier)
+            MembershipTierCard(tier: tier)
         }
+        .buttonStyle(.plain)
     }
 
-    // MARK: - 账号与偏好（含兑换码、订单历史）
+    // MARK: - 账号与安全（含兑换码、订单历史）
 
     private var accountSection: some View {
         ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.editGroupTitle)) {
-            NavigationLink(value: ProfileRoute.editProfile) {
-                ProfileNavigationRow(
-                    icon: "person.crop.circle.badge.plus",
-                    title: SafeEatL10n.text(L10nKey.Profile.editTitle),
-                    subtitle: SafeEatL10n.text(L10nKey.Profile.editSubtitle),
-                    trailingText: store.profile == nil ? nil : "\(SafeEatL10n.text(L10nKey.Profile.bmiLabel)) \(bmiText)"
-                )
-            }
-            .buttonStyle(.plain)
-
-            Divider().overlay(SafeEatTheme.line)
-
-            NavigationLink(value: ProfileRoute.preferences) {
-                ProfileNavigationRow(
-                    icon: "slider.horizontal.3",
-                    title: SafeEatL10n.text(L10nKey.Profile.preferenceTitle),
-                    subtitle: preferenceSummary
-                )
-            }
-            .buttonStyle(.plain)
-
-            Divider().overlay(SafeEatTheme.line)
-
             if store.session != nil {
                 NavigationLink(value: ProfileRoute.security) {
                     ProfileNavigationRow(
@@ -333,6 +330,8 @@ struct ProfileView: View {
                     )
                 }
                 .buttonStyle(.plain)
+
+                Divider().overlay(SafeEatTheme.line)
             } else {
                 Button {
                     store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Profile.securityTitle))
@@ -345,8 +344,6 @@ struct ProfileView: View {
                 }
                 .buttonStyle(.plain)
             }
-
-            Divider().overlay(SafeEatTheme.line)
 
             NavigationLink(value: ProfileRoute.orderHistory) {
                 ProfileNavigationRow(
@@ -408,6 +405,17 @@ struct ProfileView: View {
                     title: SafeEatL10n.text(L10nKey.Profile.cacheTitle),
                     subtitle: SafeEatL10n.text(L10nKey.Profile.cacheSubtitle),
                     trailingText: store.localCacheSizeText
+                )
+            }
+            .buttonStyle(.plain)
+
+            Divider().overlay(SafeEatTheme.line)
+
+            NavigationLink(value: ProfileRoute.helpCenter) {
+                ProfileNavigationRow(
+                    icon: "questionmark.circle",
+                    title: "帮助中心",
+                    subtitle: "常见问题与使用指南"
                 )
             }
             .buttonStyle(.plain)
@@ -617,31 +625,6 @@ struct ProfileView: View {
         .disabled(isLoggingOut)
     }
 
-    private var highlightedPlan: MembershipPlan? {
-        plans
-            .filter { $0.tier != "free" }
-            .min(by: { $0.priceFen < $1.priceFen })
-    }
-
-    private var bmiText: String {
-        if let bmi = store.profile?.bmi {
-            return String(format: "%.1f", bmi)
-        }
-        return "--"
-    }
-
-    private var preferenceSummary: String {
-        var pieces: [String] = []
-        if let healthTags = store.profile?.healthTags, !healthTags.isEmpty {
-            let separator = settings.language == .en ? ", " : "、"
-            pieces.append(healthTags.prefix(2).map { HealthTagMapper.title($0) }.joined(separator: separator))
-        }
-        if let fitnessGoal = store.profile?.fitnessGoal {
-            pieces.append(FitnessGoalMapper.title(fitnessGoal))
-        }
-        return pieces.isEmpty ? SafeEatL10n.text(L10nKey.Profile.preferenceSubtitleDefault) : pieces.joined(separator: " · ")
-    }
-
     private func warmProfileDataIfNeeded() async {
         guard !didWarmProfileData else { return }
         didWarmProfileData = true
@@ -650,18 +633,6 @@ struct ProfileView: View {
 
         guard store.session != nil else { return }
         await store.refreshProfile()
-        await loadPlansIfNeeded()
-    }
-
-    private func loadPlansIfNeeded() async {
-        guard plans.isEmpty else { return }
-
-        do {
-            let result = try await store.api.getPlans()
-            plans = result.items
-        } catch {
-            store.handleAPIError(error)
-        }
     }
 
     private func requestAppReview() {
@@ -676,6 +647,7 @@ enum ProfileRoute: Hashable {
     case membership
     case orderHistory
     case editProfile
+    case healthGoal
     case preferences
     case security
     case cache
@@ -689,7 +661,14 @@ enum ProfileRoute: Hashable {
     case userAgreement
     case privacyPolicy
     case valueAdded
+    case minorProtection
+    case autoRenewalNotice
+    case permissionUsage
+    case aiDisclaimer
+    case adServiceNotice
+    case cancellationGuide
     case certificate
+    case helpCenter
 }
 
 private enum ProfileSheet: String, Identifiable {
@@ -699,29 +678,216 @@ private enum ProfileSheet: String, Identifiable {
     var id: String { rawValue }
 }
 
-private struct WrappingHStack: View {
-    let tags: [String]
-    let foregroundColor: Color
-    let backgroundColor: Color
-    let borderColor: Color
+// MARK: - 健康标签显示模型
+
+private struct HealthTagDisplay {
+    let code: String
+    let displayName: String
+    let icon: String
+    let color: Color
+}
+
+// MARK: - 健康标签图标与颜色映射
+
+enum HealthTagConfig {
+    case high_blood_pressure
+    case high_blood_sugar
+    case high_blood_lipids
+    case general_wellness
+    case fat_loss
+    case muscle_gain
+    case blood_sugar_control
+    case balanced
+
+    var icon: String {
+        switch self {
+        case .high_blood_pressure: return "heart.fill"
+        case .high_blood_sugar: return "drop.fill"
+        case .high_blood_lipids: return "flame.fill"
+        case .general_wellness: return "heart.circle.fill"
+        case .fat_loss: return "arrow.down.circle.fill"
+        case .muscle_gain: return "dumbbell.fill"
+        case .blood_sugar_control: return "chart.line.downtrend.xyaxis"
+        case .balanced: return "leaf.fill"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .high_blood_pressure: return SafeEatTheme.danger
+        case .high_blood_sugar: return SafeEatTheme.warning
+        case .high_blood_lipids: return Color(red: 0.545, green: 0.412, blue: 0.078)
+        case .general_wellness: return SafeEatTheme.success
+        case .fat_loss: return SafeEatTheme.danger
+        case .muscle_gain: return SafeEatTheme.primary
+        case .blood_sugar_control: return SafeEatTheme.warning
+        case .balanced: return SafeEatTheme.primary
+        }
+    }
+
+    static func forCode(_ code: String) -> HealthTagConfig? {
+        switch code {
+        case "high_blood_pressure": return .high_blood_pressure
+        case "high_blood_sugar": return .high_blood_sugar
+        case "high_blood_lipids": return .high_blood_lipids
+        case "general_wellness": return .general_wellness
+        case "fat_loss": return .fat_loss
+        case "muscle_gain": return .muscle_gain
+        case "blood_sugar_control": return .blood_sugar_control
+        case "balanced": return .balanced
+        default: return nil
+        }
+    }
+}
+
+// MARK: - 会员等级卡片
+
+private struct MembershipTierCard: View {
+    let tier: PlanTierMapper.Tier
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 80), spacing: 8)], spacing: 8) {
-            ForEach(tags, id: \.self) { tag in
-                Text(tag)
-                    .font(SafeEatFont.custom(12, relativeTo: .caption))
-                    .foregroundStyle(foregroundColor)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule()
-                            .fill(backgroundColor)
-                    )
-                    .overlay(
-                        Capsule()
-                            .stroke(borderColor, lineWidth: 1)
-                    )
+        HStack(spacing: 14) {
+            // 图标
+            ZStack {
+                Circle()
+                    .fill(iconBgColor)
+                    .frame(width: 44, height: 44)
+                Image(systemName: iconName)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(iconFgColor)
             }
+
+            // 文字
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(SafeEatFont.custom(16, relativeTo: .subheadline, weight: .bold))
+                    .foregroundStyle(titleColor)
+                Text(subtitle)
+                    .font(SafeEatFont.custom(13, relativeTo: .caption))
+                    .foregroundStyle(subtitleColor)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(chevronColor)
+        }
+        .padding(16)
+        .background(cardBackground)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(strokeColor, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    // MARK: - 样式属性
+
+    private var iconName: String {
+        switch tier {
+        case .free: return "person.crop.circle"
+        case .lite: return "star.fill"
+        case .pro, .premium: return "crown.fill"
+        }
+    }
+
+    private var iconBgColor: Color {
+        switch tier {
+        case .free: return SafeEatTheme.primarySoft
+        case .lite: return SafeEatTheme.warning.opacity(0.15)
+        case .pro: return Color(red: 0.83, green: 0.65, blue: 0.27).opacity(0.20)
+        case .premium: return Color(red: 0.83, green: 0.65, blue: 0.27).opacity(0.20)
+        }
+    }
+
+    private var iconFgColor: Color {
+        switch tier {
+        case .free: return SafeEatTheme.textSecondary
+        case .lite: return SafeEatTheme.warning
+        case .pro, .premium: return Color(red: 0.83, green: 0.65, blue: 0.27)
+        }
+    }
+
+    private var title: String {
+        switch tier {
+        case .free: return SafeEatL10n.text(L10nKey.Profile.Member.freeTitle)
+        case .lite: return SafeEatL10n.text(L10nKey.Profile.Member.liteTitle)
+        case .pro: return SafeEatL10n.text(L10nKey.Profile.Member.proTitle)
+        case .premium: return SafeEatL10n.text(L10nKey.Profile.Member.premiumTitle)
+        }
+    }
+
+    private var subtitle: String {
+        switch tier {
+        case .free: return SafeEatL10n.text(L10nKey.Profile.Member.freeSubtitle)
+        case .lite: return SafeEatL10n.text(L10nKey.Profile.Member.liteSubtitle)
+        case .pro: return SafeEatL10n.text(L10nKey.Profile.Member.proSubtitle)
+        case .premium: return SafeEatL10n.text(L10nKey.Profile.Member.premiumSubtitle)
+        }
+    }
+
+    private var titleColor: Color {
+        switch tier {
+        case .free: return SafeEatTheme.textPrimary
+        case .lite: return SafeEatTheme.textPrimary
+        case .pro, .premium: return .white
+        }
+    }
+
+    private var subtitleColor: Color {
+        switch tier {
+        case .free: return SafeEatTheme.textSecondary
+        case .lite: return SafeEatTheme.textSecondary
+        case .pro: return .white.opacity(0.80)
+        case .premium: return .white.opacity(0.80)
+        }
+    }
+
+    private var chevronColor: Color {
+        switch tier {
+        case .free: return SafeEatTheme.textSecondary
+        case .lite: return SafeEatTheme.textSecondary
+        case .pro, .premium: return .white.opacity(0.60)
+        }
+    }
+
+    private var strokeColor: Color {
+        switch tier {
+        case .free: return colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
+        case .lite: return SafeEatTheme.warning.opacity(0.25)
+        case .pro, .premium: return Color.clear
+        }
+    }
+
+    @ViewBuilder
+    private var cardBackground: some View {
+        switch tier {
+        case .free:
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.92))
+        case .lite:
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(SafeEatTheme.warning.opacity(colorScheme == .dark ? 0.10 : 0.08))
+        case .pro:
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [SafeEatTheme.primary, SafeEatTheme.primaryDeep],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+        case .premium:
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [SafeEatTheme.primaryDeep, Color(red: 0.06, green: 0.24, blue: 0.17)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
         }
     }
 }

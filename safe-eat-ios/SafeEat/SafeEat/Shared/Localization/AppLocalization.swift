@@ -202,6 +202,18 @@ enum L10nKey {
         static let healthTagHighBloodPressure = "profile.health_profile.tag.high_blood_pressure"
         static let healthTagFatLoss = "profile.health_profile.tag.fat_loss"
         static let healthTagAvoid = "profile.health_profile.tag.avoid"
+        static let healthProfileEmptyHint = "profile.health_profile.empty_hint"
+
+        enum Member {
+            static let freeTitle = "profile.member.free.title"
+            static let freeSubtitle = "profile.member.free.subtitle"
+            static let liteTitle = "profile.member.lite.title"
+            static let liteSubtitle = "profile.member.lite.subtitle"
+            static let proTitle = "profile.member.pro.title"
+            static let proSubtitle = "profile.member.pro.subtitle"
+            static let premiumTitle = "profile.member.premium.title"
+            static let premiumSubtitle = "profile.member.premium.subtitle"
+        }
 
         enum Edit {
             static let subtitle = "profile.edit.subtitle.long"
@@ -416,6 +428,7 @@ enum L10nKey {
         static let planBonusAi = "membership.purchase.plan_bonus_ai"
         static let newUserGiftBanner = "membership.purchase.new_user_gift_banner"
         static let badgeLite = "membership.purchase.badge.lite"
+        static let currentPlanBadge = "membership.purchase.badge.current"
         static let benefitRecognitionMonthly = "membership.purchase.benefit.recognition_monthly"
         static let benefitAiMonthly = "membership.purchase.benefit.ai_monthly"
         static let benefitDailyQuota = "membership.purchase.benefit.daily_quota"

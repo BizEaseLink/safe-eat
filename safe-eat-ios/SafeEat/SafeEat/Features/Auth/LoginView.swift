@@ -24,6 +24,7 @@ struct LoginView: View {
     @State private var showNewUserAlert = false
     @State private var showPasswordLoginError = false
     @State private var loginRoute: LoginRoute? = nil
+    @State private var agreedToTerms = false
 
     var body: some View {
         NavigationStack {
@@ -334,12 +335,14 @@ struct LoginView: View {
             authSecureField(title: SafeEatL10n.text(L10nKey.Auth.confirmPasswordLabel), text: $confirmPassword)
             smsHintView
 
+            termsAgreementRow
+
             authPrimaryButton(title: SafeEatL10n.text(L10nKey.Auth.actionRegister), isLoading: store.isLoading) {
                 Task {
                     await register()
                 }
             }
-            .disabled(!canSubmitRegistration || store.isLoading)
+            .disabled(!canSubmitRegistration || !agreedToTerms || store.isLoading)
 
             HStack {
                 miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToPassword)) {
@@ -435,6 +438,46 @@ struct LoginView: View {
             Text(SafeEatL10n.format(L10nKey.Auth.smsHintFormat, devCodeHint))
                 .font(SafeEatFont.textStyle(.footnote))
                 .foregroundStyle(Color(red: 0.82, green: 0.47, blue: 0.18))
+        }
+    }
+
+    // 注册页协议勾选
+    @State private var showDisclosureCategory: DisclosureLink?
+
+    private var termsAgreementRow: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Button {
+                agreedToTerms.toggle()
+            } label: {
+                Image(systemName: agreedToTerms ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 18))
+                    .foregroundStyle(agreedToTerms ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 1)
+
+            // 用 FlowLayout 风格：可点击的协议链接 + 普通文字混合
+            termsFlowText
+                .font(SafeEatFont.custom(12, relativeTo: .caption))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .sheet(item: $showDisclosureCategory) { link in
+            NavigationStack {
+                DisclosureDetailView(title: link.title, category: link.category)
+            }
+        }
+    }
+
+    private var termsFlowText: some View {
+        HStack(spacing: 0) {
+            Text("我已阅读并同意").foregroundStyle(SafeEatTheme.textSecondary)
+            Button { showDisclosureCategory = DisclosureLink(category: "user_agreement", title: "用户协议") } label: {
+                Text("《用户协议》").foregroundStyle(SafeEatTheme.primary).underline()
+            }.buttonStyle(.plain)
+            Text("和").foregroundStyle(SafeEatTheme.textSecondary)
+            Button { showDisclosureCategory = DisclosureLink(category: "privacy_policy", title: "隐私政策") } label: {
+                Text("《隐私政策》").foregroundStyle(SafeEatTheme.primary).underline()
+            }.buttonStyle(.plain)
         }
     }
 

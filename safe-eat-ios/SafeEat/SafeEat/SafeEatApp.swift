@@ -7,6 +7,7 @@ struct SafeEatApp: App {
     @StateObject private var store = AppStore()
     @StateObject private var settings = AppSettingsStore.shared
     private var adConfig: AdConfigStore { AdConfigStore.shared }
+    private var configParams: ConfigParamStore { ConfigParamStore.shared }
     private let notificationDelegate = NotificationDelegate()
 
     /// 入口流程阶段
@@ -106,6 +107,9 @@ struct SafeEatApp: App {
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
                 Task {
                     await AdConfigStore.shared.forceRefresh()
+                    if let token = store.session?.accessToken {
+                        await ConfigParamStore.shared.forceRefresh(accessToken: token)
+                    }
                     await store.refreshDailyQuota()
                     await AppVersionStore.shared.checkVersion()
                 }
@@ -118,6 +122,14 @@ struct SafeEatApp: App {
                 // 启动广告配置定时刷新（首次立即拉取，之后每 2 小时刷新）
                 await AdConfigStore.shared.fetchConfig()
                 AdConfigStore.shared.startPeriodicRefresh()
+
+                // 启动参数化配置拉取（需要登录后才有效）
+                if let token = store.session?.accessToken {
+                    await configParams.fetchConfig(accessToken: token)
+                    configParams.startPeriodicRefresh { [store] in
+                        store.session?.accessToken
+                    }
+                }
 
                 // 预加载插屏广告
                 if !isPaidMember && adConfig.interstitialEnabled {

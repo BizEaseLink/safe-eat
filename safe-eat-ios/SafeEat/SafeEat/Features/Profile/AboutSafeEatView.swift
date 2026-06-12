@@ -6,26 +6,6 @@ struct AboutSafeEatView: View {
             title: SafeEatL10n.text(L10nKey.Profile.About.title),
             subtitle: SafeEatL10n.text(L10nKey.Profile.About.subtitle)
         ) {
-            ProfileSurfaceCard {
-                Text(SafeEatL10n.text(L10nKey.Profile.About.appName))
-                    .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-
-                Text(SafeEatL10n.text(L10nKey.Profile.About.intro))
-                    .font(SafeEatFont.textStyle(.body))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
-            }
-
-            ProfileSurfaceCard {
-                Text(SafeEatL10n.text(L10nKey.Profile.About.sectionTitle))
-                    .font(SafeEatFont.textStyle(.headline))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-
-                Text(SafeEatL10n.text(L10nKey.Profile.About.sectionBody))
-                    .font(SafeEatFont.textStyle(.body))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
-            }
-
             ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.About.disclosureSection)) {
                 NavigationLink(value: ProfileRoute.userAgreement) {
                     ProfileNavigationRow(
@@ -51,6 +31,66 @@ struct AboutSafeEatView: View {
                     ProfileNavigationRow(
                         icon: "star.circle",
                         title: SafeEatL10n.text(L10nKey.Profile.About.valueAdded)
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().overlay(SafeEatTheme.line)
+
+                NavigationLink(value: ProfileRoute.minorProtection) {
+                    ProfileNavigationRow(
+                        icon: "figure.child.circle",
+                        title: "未成年人保护指引"
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().overlay(SafeEatTheme.line)
+
+                NavigationLink(value: ProfileRoute.autoRenewalNotice) {
+                    ProfileNavigationRow(
+                        icon: "arrow.triangle.2.circlepath",
+                        title: "自动续费说明"
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().overlay(SafeEatTheme.line)
+
+                NavigationLink(value: ProfileRoute.permissionUsage) {
+                    ProfileNavigationRow(
+                        icon: "lock.shield",
+                        title: "权限使用说明"
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().overlay(SafeEatTheme.line)
+
+                NavigationLink(value: ProfileRoute.aiDisclaimer) {
+                    ProfileNavigationRow(
+                        icon: "lightbulb",
+                        title: "AI 免责声明"
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().overlay(SafeEatTheme.line)
+
+                NavigationLink(value: ProfileRoute.adServiceNotice) {
+                    ProfileNavigationRow(
+                        icon: "megaphone",
+                        title: "广告服务说明"
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().overlay(SafeEatTheme.line)
+
+                NavigationLink(value: ProfileRoute.cancellationGuide) {
+                    ProfileNavigationRow(
+                        icon: "person.crop.circle.badge.minus",
+                        title: "账号注销指引"
                     )
                 }
                 .buttonStyle(.plain)

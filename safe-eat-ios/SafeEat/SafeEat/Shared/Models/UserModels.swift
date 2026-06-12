@@ -335,6 +335,19 @@ extension UserProfile {
 }
 
 enum PlanTierMapper {
+    enum Tier {
+        case free, lite, pro, premium
+    }
+
+    static func map(_ tier: String?) -> Tier {
+        switch tier {
+        case "lite": return .lite
+        case "pro": return .pro
+        case "premium": return .premium
+        default: return .free
+        }
+    }
+
     static func title(_ tier: String?) -> String {
         switch tier {
         case "lite":

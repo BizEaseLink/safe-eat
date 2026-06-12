@@ -273,6 +273,7 @@ struct MenuWeekView: View {
                             store.requireLogin()
                             return
                         }
+                        tabNavState.isHistoryAtRoot = false
                         dayRoute = HistoryDayRoute(date: selectedDate)
                     }
 
@@ -284,6 +285,7 @@ struct MenuWeekView: View {
                                 store.requireLogin()
                                 return
                             }
+                            tabNavState.isHistoryAtRoot = false
                             dayRoute = HistoryDayRoute(date: date)
                         }
                     )
@@ -296,6 +298,7 @@ struct MenuWeekView: View {
                                 store.requireLogin()
                                 return
                             }
+                            tabNavState.isHistoryAtRoot = false
                             weekRoute = HistoryWeekRoute(referenceDate: monday)
                         }
                     )
