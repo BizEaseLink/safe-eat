@@ -39,36 +39,25 @@ struct AdviceRatioBar: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            // 5 段进度条（无背景 track）
+            // 单条连续进度条（clipShape 统一圆角，避免多段拼接漏背景色）
             GeometryReader { geo in
-                HStack(spacing: 2) {
-                    if stats.recommended > 0 {
-                        RoundedBarSegment()
-                            .fill(SafeEatTheme.success)
-                            .frame(width: segmentWidth(for: stats.recommended, totalWidth: geo.size.width))
+                let totalW = geo.size.width
+
+                ZStack(alignment: .leading) {
+                    // 背景 track（无数据时可见）
+                    RoundedRectangle(cornerRadius: barHeight / 2, style: .continuous)
+                        .fill(trackColor)
+
+                    // 各段从左到右
+                    HStack(spacing: 0) {
+                        barSegment(stats.recommended, totalW, SafeEatTheme.success)
+                        barSegment(stats.moderate, totalW, SafeEatTheme.primary)
+                        barSegment(stats.caution, totalW, SafeEatTheme.warning)
+                        barSegment(stats.avoid, totalW, SafeEatTheme.danger)
+                        barSegment(stats.evaluate, totalW, SafeEatTheme.textSecondary)
                     }
-                    if stats.moderate > 0 {
-                        RoundedBarSegment()
-                            .fill(SafeEatTheme.primary)
-                            .frame(width: segmentWidth(for: stats.moderate, totalWidth: geo.size.width))
-                    }
-                    if stats.caution > 0 {
-                        RoundedBarSegment()
-                            .fill(SafeEatTheme.warning)
-                            .frame(width: segmentWidth(for: stats.caution, totalWidth: geo.size.width))
-                    }
-                    if stats.avoid > 0 {
-                        RoundedBarSegment()
-                            .fill(SafeEatTheme.danger)
-                            .frame(width: segmentWidth(for: stats.avoid, totalWidth: geo.size.width))
-                    }
-                    if stats.evaluate > 0 {
-                        RoundedBarSegment()
-                            .fill(SafeEatTheme.textSecondary)
-                            .frame(width: segmentWidth(for: stats.evaluate, totalWidth: geo.size.width))
-                    }
+                    .clipShape(RoundedRectangle(cornerRadius: barHeight / 2, style: .continuous))
                 }
-                .frame(maxWidth: .infinity)
             }
             .frame(height: barHeight)
 
@@ -76,6 +65,18 @@ struct AdviceRatioBar: View {
             if showLabels {
                 legendRow
             }
+        }
+    }
+
+    // track 背景色（无数据时可见）
+    private var trackColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.06)
+    }
+
+    @ViewBuilder
+    private func barSegment(_ count: Int, _ totalW: CGFloat, _ color: Color) -> some View {
+        if count > 0 {
+            Rectangle().fill(color).frame(width: segmentWidth(for: count, totalWidth: totalW))
         }
     }
 
@@ -137,14 +138,6 @@ struct AdviceRatioBar: View {
     }
 }
 
-/// 圆角条形段，用于五段进度条的单段
-private struct RoundedBarSegment: Shape {
-    func path(in rect: CGRect) -> SwiftUI.Path {
-        RoundedRectangle(cornerRadius: min(rect.height / 2, 5), style: .continuous)
-            .path(in: rect)
-    }
-}
-
 // MARK: - Daily Performance Card
 
 struct DailyPerformanceCard: View {
@@ -153,6 +146,22 @@ struct DailyPerformanceCard: View {
     var onTapped: (() -> Void)? = nil
 
     private var stats: AdviceStats { .from(items: items) }
+
+    /// 平均评分
+    private var avgScore: String {
+        guard !items.isEmpty else { return "--" }
+        let total = items.reduce(0) { $0 + $1.foodScore }
+        return String(format: "%.0f", Double(total) / Double(items.count))
+    }
+
+    /// 总热量（从 effectiveNutrition 读取）
+    private var totalCalories: String {
+        let calories = items.compactMap { item -> Double? in
+            item.cachedRecognition?.effectiveNutrition?.nutrients?.calories.value
+        }.reduce(0, +)
+        guard calories > 0 else { return "--" }
+        return "\(Int(calories))"
+    }
 
     private var performanceLevel: String {
         guard stats.total > 0 else { return SafeEatL10n.text(L10nKey.Menu.performanceNoRecord) }
@@ -175,8 +184,9 @@ struct DailyPerformanceCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
+            // 1. 标题行
             HStack(spacing: 10) {
-                Text(SafeEatL10n.format(L10nKey.Menu.dailyTitleFormat, performanceLevel))
+                Text(SafeEatL10n.text(L10nKey.Menu.dailyHealthOverview))
                     .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
 
@@ -189,7 +199,7 @@ struct DailyPerformanceCard: View {
                 if let onTapped {
                     Button(action: onTapped) {
                         HStack(spacing: 4) {
-                            Text(SafeEatL10n.text(L10nKey.Menu.dayRecordAction))
+                            Text(SafeEatL10n.text(L10nKey.Menu.dailyScanLog))
                                 .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 11, weight: .bold))
@@ -206,32 +216,90 @@ struct DailyPerformanceCard: View {
                 }
             }
 
-            // 五段进度条 + 图例
+            // 2. 核心指标行（扫描次数 + 平均评分 + 总热量）
+            HStack(spacing: 8) {
+                metricChip(
+                    title: SafeEatL10n.text(L10nKey.Menu.dailyScanCount),
+                    value: "\(items.count)",
+                    icon: "barcode.viewfinder",
+                    iconColor: SafeEatTheme.primary
+                )
+                .frame(maxWidth: .infinity)
+                metricChip(
+                    title: SafeEatL10n.text(L10nKey.Menu.dailyAvgScore),
+                    value: avgScore,
+                    icon: "star.fill",
+                    iconColor: SafeEatTheme.warning
+                )
+                .frame(maxWidth: .infinity)
+                metricChip(
+                    title: SafeEatL10n.text(L10nKey.Menu.dailyTotalCalories),
+                    value: totalCalories,
+                    icon: "flame.fill",
+                    iconColor: SafeEatTheme.danger
+                )
+                .frame(maxWidth: .infinity)
+            }
+
+            // 3. 五段进度条 + 图例
             AdviceRatioBar(stats: stats)
         }
-        .padding(18)
+        .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(.ultraThinMaterial)
-        )
-        .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(cardFill)
-        )
+        .background(heroCardBackground)
         .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(cardStroke, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(heroCardStroke, lineWidth: 1)
         )
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(0.10), radius: 22, y: 14)
-        .clipShape(RoundedRectangle(cornerRadius: 22))
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 
-    private var cardFill: Color {
-        colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.52)
+    // MARK: - Metric Chip
+
+    private func metricChip(title: String, value: String, icon: String, iconColor: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(iconColor)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
+
+                Text(value)
+                    .font(SafeEatFont.custom(16, relativeTo: .subheadline, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.textPrimary)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.03))
+        )
     }
 
-    private var cardStroke: Color {
+    private var heroCardBackground: some View {
+        RoundedRectangle(cornerRadius: 28, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: colorScheme == .dark
+                        ? [
+                            Color.white.opacity(0.08),
+                            Color.white.opacity(0.03),
+                        ]
+                        : [
+                            Color.white.opacity(0.92),
+                            Color(red: 0.95, green: 0.98, blue: 0.95).opacity(0.92),
+                        ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+    }
+
+    private var heroCardStroke: Color {
         colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
     }
 }
@@ -243,25 +311,80 @@ struct WeeklySummaryCard: View {
     let weekStartDate: Date
     let onTapped: (Date) -> Void
 
+    /// 静态 DateFormatter 实例，避免每次计算属性调用都创建新实例
+    private static let dayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEE"
+        return f
+    }()
+
     private var stats: AdviceStats { .from(items: items) }
+
+    /// 本周 items（只取本周范围内的）
+    private var weekItems: [LocalHistoryItem] {
+        let cal = Calendar.current
+        guard let weekEnd = cal.date(byAdding: .day, value: 7, to: weekStartDate) else { return items }
+        return items.filter { $0.createdAt >= weekStartDate && $0.createdAt < weekEnd }
+    }
+
+    /// 趋势描述
+    private var trendDescription: String {
+        guard stats.total > 0 else { return SafeEatL10n.text(L10nKey.Menu.weeklyTrendGood) }
+        let ratio = Double(stats.recommended + stats.moderate) / Double(stats.total)
+        if ratio >= 0.7 { return SafeEatL10n.text(L10nKey.Menu.weeklyTrendGood) }
+        if ratio >= 0.4 { return SafeEatL10n.text(L10nKey.Menu.weeklyTrendModerate) }
+        return SafeEatL10n.text(L10nKey.Menu.weeklyTrendPoor)
+    }
+
+    /// 连续达标天数
+    private var consecutiveDays: Int {
+        let cal = Calendar.current
+        // 按天分组
+        let grouped = Dictionary(grouping: weekItems) { item in
+            cal.startOfDay(for: item.createdAt)
+        }
+        var streak = 0
+        for offset in (0..<7).reversed() {
+            guard let date = cal.date(byAdding: .day, value: offset, to: weekStartDate) else { continue }
+            let dayStart = cal.startOfDay(for: date)
+            if let dayItems = grouped[dayStart], !dayItems.isEmpty {
+                // 达标条件：推荐+适量 > 谨慎+避免
+                let dayStats = AdviceStats.from(items: dayItems)
+                if dayStats.recommended + dayStats.moderate >= dayStats.caution + dayStats.avoid {
+                    streak += 1
+                } else {
+                    break
+                }
+            } else {
+                break
+            }
+        }
+        return streak
+    }
+
+    /// 周平均分
+    private var weekAvgScore: String {
+        guard !weekItems.isEmpty else { return "--" }
+        let total = weekItems.reduce(0) { $0 + $1.foodScore }
+        return String(format: "%.0f", Double(total) / Double(weekItems.count))
+    }
 
     /// 按天分组的识别数量
     private var dailyCounts: [(day: String, count: Int)] {
         let cal = Calendar.current
         guard let weekEnd = cal.date(byAdding: .day, value: 7, to: weekStartDate) else { return [] }
-        let weekItems = items.filter { $0.createdAt >= weekStartDate && $0.createdAt < weekEnd }
+        let weekRangeItems = items.filter { $0.createdAt >= weekStartDate && $0.createdAt < weekEnd }
 
-        let grouped = Dictionary(grouping: weekItems) { item in
+        let grouped = Dictionary(grouping: weekRangeItems) { item in
             cal.component(.day, from: item.createdAt)
         }
 
         return (0..<7).compactMap { offset -> (String, Int)? in
             guard let date = cal.date(byAdding: .day, value: offset, to: weekStartDate) else { return nil }
             let day = cal.component(.day, from: date)
-            let formatter = DateFormatter()
-            formatter.locale = AppSettingsStore.shared.displayLocale
-            formatter.dateFormat = AppSettingsStore.shared.language == .en ? "E" : "EEE"
-            let symbol = formatter.string(from: date)
+            Self.dayFormatter.locale = AppSettingsStore.shared.displayLocale
+            Self.dayFormatter.dateFormat = AppSettingsStore.shared.language == .en ? "E" : "EEE"
+            let symbol = Self.dayFormatter.string(from: date)
             let count = grouped[day]?.count ?? 0
             return (symbol, count)
         }
@@ -271,51 +394,108 @@ struct WeeklySummaryCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 10) {
+            // 1. 标题行 + 连续达标标签
+            HStack {
                 Text(SafeEatL10n.text(L10nKey.Menu.weeklyOverview))
                     .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
 
                 Spacer()
 
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                if consecutiveDays > 0 {
+                    HStack(spacing: 4) {
+                        Image(systemName: "flame.fill")
+                        Text(SafeEatL10n.format(L10nKey.Menu.weeklyConsecutiveDaysFormat, consecutiveDays))
+                    }
+                    .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.primary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(SafeEatTheme.primarySoft))
+                }
+            }
+
+            // 2. 趋势描述
+            Text(trendDescription)
+                .font(SafeEatFont.custom(14, relativeTo: .subheadline))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+
+            // 3. 本周使用统计行
+            HStack {
+                Text(SafeEatL10n.text(L10nKey.Menu.weeklyUsageStats))
+                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.textPrimary)
+                Spacer()
+                Text(SafeEatL10n.format(L10nKey.Menu.weeklyScanCountFormat, weekItems.count))
+                    .font(SafeEatFont.custom(14, relativeTo: .subheadline))
                     .foregroundStyle(SafeEatTheme.textSecondary)
             }
 
-            // 每日柱状图
-            WeeklyBarChart(dailyCounts: dailyCounts)
-
-            // 五段进度条 + 图例
+            // 4. 进度条 + 图例
             AdviceRatioBar(stats: stats)
+
+            // 5. 柱状图（无数据时隐藏）
+            if maxCount > 0 {
+                WeeklyBarChart(dailyCounts: dailyCounts)
+            }
+
+            // 6. 周平均分 + 查看详情
+            HStack(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(SafeEatL10n.text(L10nKey.Menu.weeklyAvgScore))
+                        .font(SafeEatFont.custom(12, relativeTo: .caption2))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+                    Text(weekAvgScore)
+                        .font(SafeEatFont.custom(34, relativeTo: .title, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+                }
+                Spacer()
+                Button { onTapped(weekStartDate) } label: {
+                    HStack(spacing: 4) {
+                        Text(SafeEatL10n.text(L10nKey.Menu.weeklyViewDetail))
+                        Image(systemName: "arrow.forward")
+                    }
+                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                    .foregroundStyle(SafeEatTheme.primary)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Capsule().fill(SafeEatTheme.primarySoft.opacity(0.82)))
+                }
+                .buttonStyle(.plain)
+            }
         }
-        .padding(18)
+        .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(.ultraThinMaterial)
-        )
-        .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(cardFill)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(cardStroke, lineWidth: 1)
-        )
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(0.10), radius: 22, y: 14)
-        .clipShape(RoundedRectangle(cornerRadius: 22))
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onTapped(weekStartDate)
-        }
+        .background(heroCardBackground)
+        .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).stroke(heroCardStroke, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 
-    private var cardFill: Color {
-        colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.52)
+    /// 柱状图最大数量（用于条件渲染）
+    private var maxCount: Int {
+        dailyCounts.map(\.count).max() ?? 0
     }
 
-    private var cardStroke: Color {
+    private var heroCardBackground: some View {
+        RoundedRectangle(cornerRadius: 28, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: colorScheme == .dark
+                        ? [
+                            Color.white.opacity(0.08),
+                            Color.white.opacity(0.03),
+                        ]
+                        : [
+                            Color.white.opacity(0.92),
+                            Color(red: 0.95, green: 0.98, blue: 0.95).opacity(0.92),
+                        ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+    }
+
+    private var heroCardStroke: Color {
         colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
     }
 }
@@ -331,14 +511,10 @@ struct WeeklyBarChart: View {
         dailyCounts.map(\.count).max() ?? 0
     }
 
-    private var barMaxHeight: CGFloat {
-        guard maxCount > 0 else { return 20 }
-        // 保持柱子饱满：少量时也不会太矮，大量时也不会太高
-        return min(CGFloat(maxCount) * 14, 80)
-    }
+    private var barMaxHeight: CGFloat { 80 }
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: 0) {
+        HStack(alignment: .bottom, spacing: 8) {
             ForEach(Array(dailyCounts.enumerated()), id: \.offset) { index, entry in
                 VStack(spacing: 4) {
                     // 柱子
@@ -360,8 +536,9 @@ struct WeeklyBarChart: View {
     }
 
     private func barHeight(for count: Int) -> CGFloat {
-        guard maxCount > 0 else { return 4 }
-        return max(CGFloat(count) / CGFloat(maxCount) * barMaxHeight, count > 0 ? 8 : 4)
+        guard maxCount > 0 else { return 0 }  // 全0时所有柱子0高度
+        guard count > 0 else { return 0 }       // 0数据就是0高度
+        return max(CGFloat(count) / CGFloat(maxCount) * barMaxHeight, 4)  // 有数据最低4pt
     }
 
     private func barColor(for count: Int) -> Color {

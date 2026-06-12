@@ -252,7 +252,7 @@ struct MenuWeekView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                topBar
+                // topBar  // 注释：移除顶部标题栏，页面直接从 WeekDatePicker 开始
 
                 if store.session == nil {
                     // 未登录时显示空内容模板
@@ -264,7 +264,7 @@ struct MenuWeekView: View {
                         action: { store.goToLogin() }
                     )
                 } else {
-                    overviewCard
+                    // overviewCard  // 注销：后续可能恢复，暂不删除
 
                     WeekDatePicker(selectedDate: $selectedDate)
 

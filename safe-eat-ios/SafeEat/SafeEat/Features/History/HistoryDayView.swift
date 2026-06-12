@@ -44,7 +44,7 @@ struct HistoryDayView: View {
                         if dayItems.isEmpty {
                             emptyState
                         } else {
-                            LazyVGrid(columns: columns, spacing: 22) {
+                            LazyVGrid(columns: columns, spacing: 32) {
                                 ForEach(Array(dayItems.enumerated()), id: \.element.id) { index, item in
                                     stickerCard(for: item, index: index)
                                 }

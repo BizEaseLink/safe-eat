@@ -6,7 +6,7 @@
 "language.option.en" = "English";
 
 "tab.home" = "首页";
-"tab.menu" = "菜单";
+"tab.menu" = "历史";
 "tab.scan" = "拍摄";
 "tab.trend" = "趋势";
 "tab.profile" = "个人";
@@ -32,7 +32,7 @@
 "advice.compact.moderate" = "适量";
 "advice.compact.caution" = "谨慎";
 "advice.compact.avoid" = "避免";
-"advice.compact.evaluate" = "  估";
+"advice.compact.evaluate" = "待评估";
 "advice.summary.recommended" = "整体更适合当前饮食方向，可以作为这次的优先选择。";
 "advice.summary.moderate" = "可以食用，建议适量。";
 "advice.summary.caution" = "可以继续吃，但建议控制份量，并留意搭配与频率。";
@@ -437,7 +437,7 @@
 "home.record.summary.unknown" = "当前仍缺少明确营养基线，建议继续补拍角度或打开卡片查看详情。";
 "home.record.unknown_food" = "未识别食物";
 
-"menu.title" = "菜单";
+"menu.title" = "历史";
 "menu.header.subtitle_format" = "今日 %d 条记录 · 本周 %d 条识别";
 "menu.week.back_to_today" = "[ 回到今天 ]";
 "menu.hero.empty_summary" = "今天还没有识别记录，拍一张食物照片就会生成新的记忆卡。";
@@ -474,6 +474,22 @@
 "menu.meal.late_night" = "夜宵";
 "menu.not_logged_in.title" = "暂无菜单数据";
 "menu.not_logged_in.message" = "登录后即可查看菜单和识别记录";
+"menu.daily.health_overview" = "今日健康概览";
+"menu.daily.avg_score" = "平均评分";
+"menu.daily.total_calories" = "总热量";
+"menu.daily.scan_count_format" = "%d 次扫描";
+"menu.daily.scan_count" = "扫描次数";
+"menu.daily.scan_log" = "日记录";
+"menu.weekly.trend_good" = "您的饮食趋势保持良好";
+"menu.weekly.trend_moderate" = "饮食趋势需要关注";
+"menu.weekly.trend_poor" = "饮食趋势需要改善";
+"menu.weekly.consecutive_days_format" = "连续 %d 天达标";
+"menu.weekly.scan_count" = "扫描次数";
+"menu.weekly.avg_score" = "周平均分";
+"menu.weekly.view_detail" = "查看详情";
+"menu.weekly.usage_stats" = "本周使用统计";
+"menu.weekly.scan_count_format" = "%d 次扫描";
+"menu.meal.section_title" = "饮食报告";
 
 "sticker.swipe_hint" = "左右滑动查看结果";
 "sticker.result_title" = "识别结果";

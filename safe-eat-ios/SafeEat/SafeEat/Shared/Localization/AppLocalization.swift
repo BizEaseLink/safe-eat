@@ -590,6 +590,22 @@ enum L10nKey {
         static let mealLateNight = "menu.meal.late_night"
         static let notLoggedInTitle = "menu.not_logged_in.title"
         static let notLoggedInMessage = "menu.not_logged_in.message"
+        static let dailyHealthOverview = "menu.daily.health_overview"
+        static let dailyAvgScore = "menu.daily.avg_score"
+        static let dailyTotalCalories = "menu.daily.total_calories"
+        static let dailyScanCountFormat = "menu.daily.scan_count_format"
+        static let dailyScanCount = "menu.daily.scan_count"
+        static let dailyScanLog = "menu.daily.scan_log"
+        static let weeklyTrendGood = "menu.weekly.trend_good"
+        static let weeklyTrendModerate = "menu.weekly.trend_moderate"
+        static let weeklyTrendPoor = "menu.weekly.trend_poor"
+        static let weeklyConsecutiveDaysFormat = "menu.weekly.consecutive_days_format"
+        static let weeklyScanCount = "menu.weekly.scan_count"
+        static let weeklyAvgScore = "menu.weekly.avg_score"
+        static let weeklyViewDetail = "menu.weekly.view_detail"
+        static let weeklyUsageStats = "menu.weekly.usage_stats"
+        static let weeklyScanCountFormat = "menu.weekly.scan_count_format"
+        static let mealSectionTitle = "menu.meal.section_title"
     }
 
     enum Result {
