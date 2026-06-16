@@ -7,7 +7,6 @@ struct SafeEatApp: App {
     @StateObject private var store = AppStore()
     @StateObject private var settings = AppSettingsStore.shared
     private var adConfig: AdConfigStore { AdConfigStore.shared }
-    private var configParams: ConfigParamStore { ConfigParamStore.shared }
     private let notificationDelegate = NotificationDelegate()
 
     /// 入口流程阶段
@@ -19,7 +18,6 @@ struct SafeEatApp: App {
 
     @State private var launchPhase: LaunchPhase = .logoAnimation
     @State private var showSplashAd = false
-    @State private var hasCompletedLaunch = false
 
     /// Logo 动画时长（秒）
     private static let logoAnimationDuration: TimeInterval = 1.67
@@ -106,41 +104,24 @@ struct SafeEatApp: App {
             // App 从后台回到前台时，刷新配置
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
                 Task {
-                    await AdConfigStore.shared.forceRefresh()
+                    // 回到前台时先刷新 profile，确保会员状态最新（避免付费会员看到插屏广告）
+                    await store.refreshProfile()
+                    // 回前台时用 fetchConfig（检查缓存 TTL），未过期则跳过
+                    await AdConfigStore.shared.fetchConfig()
                     if let token = store.session?.accessToken {
-                        await ConfigParamStore.shared.forceRefresh(accessToken: token)
+                        await ConfigParamStore.shared.fetchConfig(accessToken: token)
                     }
                     await store.refreshDailyQuota()
                     await AppVersionStore.shared.checkVersion()
-                }
-            }
-            .task {
-                // 标记冷启动完成（延迟到首屏就绪后）
-                try? await Task.sleep(for: .seconds(2))
-                hasCompletedLaunch = true
-
-                // 启动广告配置定时刷新（首次立即拉取，之后每 2 小时刷新）
-                await AdConfigStore.shared.fetchConfig()
-                AdConfigStore.shared.startPeriodicRefresh()
-
-                // 启动参数化配置拉取（需要登录后才有效）
-                if let token = store.session?.accessToken {
-                    await configParams.fetchConfig(accessToken: token)
-                    configParams.startPeriodicRefresh { [store] in
-                        store.session?.accessToken
+                    // profile 刷新完成后，由这里统一触发插屏广告判断
+                    InterstitialAdManager.shared.onAppBecameActive()
+                    // 浮窗广告：回到前台时检查是否可以再次弹出（受每日次数和间隔时间限制）
+                    if !isPaidMember && adConfig.floatWindowEnabled {
+                        let scenes = UIApplication.shared.connectedScenes
+                        let windowScene = scenes.first as? UIWindowScene
+                        let window = windowScene?.windows.first(where: { $0.isKeyWindow })
+                        FloatingIconAdManager.shared.loadAndShow(from: window?.rootViewController)
                     }
-                }
-
-                // 预加载插屏广告
-                if !isPaidMember && adConfig.interstitialEnabled {
-                    InterstitialAdManager.shared.preloadAd()
-                }
-                // 浮窗广告：首次进入主页面时展示（非付费会员 + 配置启用）
-                if !isPaidMember && adConfig.floatWindowEnabled {
-                    let scenes = UIApplication.shared.connectedScenes
-                    let windowScene = scenes.first as? UIWindowScene
-                    let window = windowScene?.windows.first(where: { $0.isKeyWindow })
-                    FloatingIconAdManager.shared.loadAndShow(from: window?.rootViewController)
                 }
             }
         }

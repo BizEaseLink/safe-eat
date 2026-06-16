@@ -11,6 +11,14 @@ struct QuotaExceededSheet: View {
         snapshot.planTier == "free"
     }
 
+    /// 是否还有剩余的看广告次数
+    private var canWatchAd: Bool {
+        guard isFreeUser, let onWatchAd else { return false }
+        // remainingAdWatchCount 为 nil 时（旧版兼容），保守显示
+        guard let remaining = snapshot.remainingAdWatchCount else { return true }
+        return remaining > 0
+    }
+
     var body: some View {
         SafeEatSettingsSheetContainer(
             title: isFreeUser
@@ -19,7 +27,7 @@ struct QuotaExceededSheet: View {
             subtitle: isFreeUser
                 ? SafeEatL10n.format(L10nKey.Home.quotaExceededDailyHintFormat, snapshot.totalQuota)
                 : SafeEatL10n.text(L10nKey.Home.quotaExceededUpgradeHint),
-            contentHeight: (isFreeUser && onWatchAd != nil) ? 200 : 150,
+            contentHeight: canWatchAd ? 200 : 150,
             primaryButton: SheetButton(title: "升级会员") {
                 onUpgrade?()
             },
@@ -51,9 +59,9 @@ struct QuotaExceededSheet: View {
                 }
             }
 
-            // 看广告入口放在内容区而非按钮区
-            if isFreeUser, let onWatchAd {
-                Button(action: onWatchAd) {
+            // 看广告入口：仅当 Free 用户 + 激励视频启用 + 还有剩余观看次数
+            if canWatchAd {
+                Button(action: onWatchAd!) {
                     ProfileSurfaceCard {
                         HStack(spacing: 14) {
                             ZStack {

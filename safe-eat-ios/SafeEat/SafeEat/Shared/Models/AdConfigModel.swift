@@ -2,6 +2,14 @@ import Foundation
 
 struct AdConfigResponse: Decodable {
     let placements: [AdPlacementConfig]
+    let configParams: AdsConfigParams?
+}
+
+struct AdsConfigParams: Codable {
+    let rewardQuota: Int
+    let dailyLimit: Int
+    let floatWindowDailyLimit: Int
+    let floatWindowInterval: Int
 }
 
 struct AdPlacementConfig: Codable, Identifiable {
@@ -10,8 +18,6 @@ struct AdPlacementConfig: Codable, Identifiable {
     let code: String
     let slotId: String?
     let enabled: Bool
-    let rewardQuota: Int
-    let dailyLimit: Int
 }
 
 enum AdPlacementCode: String, CaseIterable {

@@ -9,12 +9,209 @@ struct DeleteAccountView: View {
     @State private var showConfirmDialog = false
     @State private var errorMessage: String?
     @State private var agreedToDelete = false
+    @State private var verificationCode = ""
+    @State private var isSendingCode = false
+
+    // 注销冷静期相关
+    @State private var deletionStatus: String = "none"  // none / pending_cooldown / checking
+    @State private var cooldownEndsAt: Date?
+    @State private var remainingSeconds: Int = 0
+    @State private var countdownTimer: Timer?
+    @State private var isCancelling = false
+
+    private var smsCountdown: SMSCountdownManager { SMSCountdownManager.shared }
+
+    /// 当前用户手机号
+    private var userPhone: String {
+        store.profile?.phone ?? ""
+    }
+
+    /// 脱敏手机号
+    private var maskedPhone: String {
+        let p = userPhone
+        guard p.count == 11 else { return p }
+        let start = p.index(p.startIndex, offsetBy: 3)
+        let end = p.index(p.startIndex, offsetBy: 7)
+        return String(p[..<start]) + "****" + String(p[end...])
+    }
+
+    /// 按钮是否可点击
+    private var canSubmit: Bool {
+        agreedToDelete && verificationCode.count >= 4 && !isLoading
+    }
+
+    /// 冷静期剩余时间文字
+    private var cooldownText: String {
+        guard remainingSeconds > 0 else { return "" }
+        let days = remainingSeconds / 86400
+        let hours = (remainingSeconds % 86400) / 3600
+        let minutes = (remainingSeconds % 3600) / 60
+        if days > 0 {
+            return "\(days)天 \(hours)小时 \(minutes)分钟"
+        } else if hours > 0 {
+            return "\(hours)小时 \(minutes)分钟"
+        } else {
+            return "\(minutes)分钟"
+        }
+    }
 
     var body: some View {
         ProfileSecondaryPage(
             title: SafeEatL10n.text(L10nKey.Profile.DeleteAccount.title),
             subtitle: SafeEatL10n.text(L10nKey.Profile.DeleteAccount.subtitle)
         ) {
+            if deletionStatus == "pending_cooldown" {
+                cooldownContent
+            } else {
+                requestDeletionContent
+            }
+        } footer: {
+            if deletionStatus == "pending_cooldown" {
+                ProfilePrimaryActionButton(
+                    title: "撤回注销申请",
+                    isLoading: isCancelling
+                ) {
+                    cancelDeletion()
+                }
+            } else {
+                Button(role: .destructive, action: { showConfirmDialog = true }) {
+                    Group {
+                        if isLoading {
+                            ProgressView()
+                                .tint(.white)
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            Text(SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmButton))
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.vertical, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [SafeEatTheme.danger.opacity(0.85), SafeEatTheme.danger],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(!canSubmit)
+                .opacity(canSubmit ? 1.0 : 0.45)
+            }
+        }
+        .task {
+            await checkDeletionStatus()
+        }
+        .onDisappear {
+            countdownTimer?.invalidate()
+        }
+        .alert(
+            SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmDialogTitle),
+            isPresented: $showConfirmDialog
+        ) {
+            Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+            Button(SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmButton), role: .destructive) {
+                deleteAccount()
+            }
+        } message: {
+            Text(SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmDialogMessage))
+        }
+        .alert(SafeEatL10n.text(L10nKey.Common.notice), isPresented: showError) {
+            Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) { errorMessage = nil }
+        } message: {
+            Text(errorMessage ?? "")
+        }
+    }
+
+    private var showError: Binding<Bool> {
+        Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )
+    }
+
+    // MARK: - 冷静期内容
+
+    private var cooldownContent: some View {
+        VStack(spacing: 20) {
+            // 冷静期提示卡片
+            ProfileSurfaceCard {
+                VStack(alignment: .leading, spacing: 12) {
+                    Label {
+                        Text("账号注销中")
+                            .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
+                    } icon: {
+                        Image(systemName: "hourglass.circle.fill")
+                            .foregroundStyle(SafeEatTheme.warning)
+                    }
+
+                    Text("您的账号已进入7天注销冷静期，冷静期结束后账号将被永久注销。冷静期内您可以随时撤回注销申请。")
+                        .font(SafeEatFont.custom(15, relativeTo: .body))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+
+                    if remainingSeconds > 0 {
+                        HStack {
+                            Text("剩余时间")
+                                .font(SafeEatFont.custom(13, relativeTo: .caption))
+                                .foregroundStyle(SafeEatTheme.textSecondary)
+
+                            Spacer()
+
+                            Text(cooldownText)
+                                .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
+                                .foregroundStyle(SafeEatTheme.warning)
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(SafeEatTheme.warning.opacity(0.08))
+                        )
+                    }
+                }
+            }
+
+            // 注销影响说明
+            ProfileSurfaceCard {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("注销后影响")
+                        .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        deletionImpactRow(icon: "person.crop.circle.badge.xmark", text: "个人资料将被永久删除")
+                        deletionImpactRow(icon: "creditcard", text: "会员权益将立即失效")
+                        deletionImpactRow(icon: "clock.arrow.circlepath", text: "手机号30天内不可重新注册")
+                        deletionImpactRow(icon: "doc.text", text: "交易记录将匿名化保留3年")
+                    }
+                }
+            }
+        }
+    }
+
+    private func deletionImpactRow(icon: String, text: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundStyle(SafeEatTheme.danger)
+                .frame(width: 20)
+
+            Text(text)
+                .font(SafeEatFont.custom(13, relativeTo: .caption))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+        }
+    }
+
+    // MARK: - 申请注销内容
+
+    private var requestDeletionContent: some View {
+        VStack(spacing: 16) {
+            // 注销警告
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 12) {
                     Label {
@@ -31,17 +228,66 @@ struct DeleteAccountView: View {
                 }
             }
 
-            NavigationLink(value: ProfileRoute.cancellationGuide) {
-                HStack(spacing: 6) {
-                    Image(systemName: "doc.text.magnifyingglass")
-                        .font(.system(size: 14, weight: .medium))
-                    Text("查看《账号注销指引》了解注销流程与数据清理规则")
+            // 验证码输入区
+            ProfileSurfaceCard {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("验证身份")
+                        .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+
+                    Text("我们将向 \(maskedPhone) 发送验证码")
                         .font(SafeEatFont.custom(13, relativeTo: .caption))
+                        .foregroundStyle(SafeEatTheme.textSecondary)
+
+                    HStack(spacing: 12) {
+                        TextField("验证码", text: $verificationCode)
+                            .font(SafeEatFont.textStyle(.body))
+                            .keyboardType(.numberPad)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.04))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(SafeEatTheme.line, lineWidth: 1)
+                            )
+
+                        // 发送验证码按钮
+                        Button(action: { Task { await requestSMS() } }) {
+                            Group {
+                                if isSendingCode {
+                                    ProgressView()
+                                        .frame(maxWidth: .infinity)
+                                } else if smsCountdown.countdown > 0 {
+                                    Text("\(smsCountdown.countdown)s")
+                                        .frame(maxWidth: .infinity)
+                                } else {
+                                    Text(SafeEatL10n.text(L10nKey.Common.sendCode))
+                                        .frame(maxWidth: .infinity)
+                                }
+                            }
+                            .font(SafeEatFont.custom(14, relativeTo: .callout, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [SafeEatTheme.danger.opacity(0.85), SafeEatTheme.danger],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(isSendingCode || smsCountdown.countdown > 0)
+                        .opacity(isSendingCode || smsCountdown.countdown > 0 ? 0.6 : 1.0)
+                    }
                 }
-                .foregroundStyle(SafeEatTheme.primary)
-                .padding(.top, 4)
             }
-            .buttonStyle(.plain)
 
             // 注销确认勾选
             HStack(alignment: .top, spacing: 8) {
@@ -53,9 +299,8 @@ struct DeleteAccountView: View {
                         .foregroundStyle(agreedToDelete ? SafeEatTheme.danger : SafeEatTheme.textSecondary)
                 }
                 .buttonStyle(.plain)
-                .padding(.top, 1)
 
-                Text("我已了解注销后果，确认注销账号")
+                agreementText
                     .font(SafeEatFont.custom(13, relativeTo: .caption))
                     .foregroundStyle(SafeEatTheme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -64,51 +309,71 @@ struct DeleteAccountView: View {
                     }
             }
             .padding(.top, 8)
-        } footer: {
-            Button(role: .destructive, action: { showConfirmDialog = true }) {
-                Group {
-                    if isLoading {
-                        ProgressView()
-                            .tint(.white)
-                            .frame(maxWidth: .infinity)
-                    } else {
-                        Text(SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmButton))
-                            .frame(maxWidth: .infinity)
-                    }
-                }
-                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
-                .foregroundStyle(.white)
-                .padding(.vertical, 16)
-                .background(
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [SafeEatTheme.danger.opacity(0.85), SafeEatTheme.danger],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                )
+        }
+    }
+
+    /// 勾选文字："我已阅读《账号注销引导》，了解注销后果，确认注销。"
+    private var agreementText: some View {
+        HStack(spacing: 0) {
+            Text("我已阅读")
+            NavigationLink(value: ProfileRoute.cancellationGuide) {
+                Text("《账号注销引导》")
+                    .foregroundStyle(SafeEatTheme.danger)
             }
             .buttonStyle(.plain)
-            .disabled(!agreedToDelete || isLoading)
-            .opacity(agreedToDelete ? 1.0 : 0.45)
+            Text("，了解注销后果，确认注销。")
         }
-        .alert(
-            SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmDialogTitle),
-            isPresented: $showConfirmDialog
-        ) {
-            Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
-            Button(SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmButton), role: .destructive) {
-                deleteAccount()
+    }
+
+    // MARK: - Actions
+
+    private func checkDeletionStatus() async {
+        deletionStatus = "checking"
+        do {
+            let response = try await store.authorizedRequest { token in
+                try await store.api.getDeletionStatus(accessToken: token)
             }
-        } message: {
-            Text(SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmDialogMessage))
+            deletionStatus = response.status
+            cooldownEndsAt = response.cooldownEndsAt
+
+            if response.status == "pending_cooldown", let endsAt = response.cooldownEndsAt {
+                startCooldownCountdown(endsAt: endsAt)
+            }
+        } catch {
+            // 如果查询失败，默认为 none 状态让用户可以操作
+            deletionStatus = "none"
         }
-        .alert(SafeEatL10n.text(L10nKey.Common.notice), isPresented: .constant(errorMessage != nil)) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) { errorMessage = nil }
-        } message: {
-            Text(errorMessage ?? "")
+    }
+
+    private func startCooldownCountdown(endsAt: Date) {
+        countdownTimer?.invalidate()
+
+        func updateRemaining() {
+            let remaining = Int(endsAt.timeIntervalSinceNow)
+            if remaining <= 0 {
+                remainingSeconds = 0
+                countdownTimer?.invalidate()
+                // 刷新状态
+                Task { await checkDeletionStatus() }
+                return
+            }
+            remainingSeconds = remaining
+        }
+
+        updateRemaining()
+        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            updateRemaining()
+        }
+    }
+
+    private func requestSMS() async {
+        isSendingCode = true
+        defer { isSendingCode = false }
+        do {
+            _ = try await store.sendSMS(phone: userPhone)
+            smsCountdown.markSent()
+        } catch {
+            store.errorMessage = error.localizedDescription
         }
     }
 
@@ -116,14 +381,44 @@ struct DeleteAccountView: View {
         isLoading = true
         Task {
             do {
-                try await store.authorizedRequest { token in
-                    try await store.api.deleteAccount(accessToken: token)
+                let response = try await store.authorizedRequest { token in
+                    try await store.api.deleteAccount(
+                        accessToken: token,
+                        phone: userPhone,
+                        code: verificationCode
+                    )
                 }
-                store.logout(message: SafeEatL10n.text(L10nKey.Profile.DeleteAccount.success))
+                // 进入冷静期
+                deletionStatus = response.status
+                cooldownEndsAt = response.cooldownEndsAt
+                if let endsAt = response.cooldownEndsAt {
+                    startCooldownCountdown(endsAt: endsAt)
+                }
             } catch {
                 errorMessage = error.localizedDescription
             }
             isLoading = false
+        }
+    }
+
+    private func cancelDeletion() {
+        isCancelling = true
+        Task {
+            do {
+                let response = try await store.authorizedRequest { token in
+                    try await store.api.cancelDeletion(accessToken: token)
+                }
+                if response.status == "cancelled" {
+                    deletionStatus = "none"
+                    countdownTimer?.invalidate()
+                    remainingSeconds = 0
+                    // 刷新用户信息
+                    await store.refreshProfile()
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isCancelling = false
         }
     }
 }

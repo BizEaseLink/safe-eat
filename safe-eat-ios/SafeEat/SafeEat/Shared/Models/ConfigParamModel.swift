@@ -1,7 +1,7 @@
 import Foundation
 
 /// 参数化配置项（对应后端 app_config_params 表）
-/// 客户端只读 API 返回的字段：key/value/paramType/scope/description
+/// 客户端只读 API 返回的字段：key/value/paramType/scope/group/description
 struct ConfigParamItem: Codable, Identifiable {
     var id: String { key }
 
@@ -9,6 +9,7 @@ struct ConfigParamItem: Codable, Identifiable {
     let value: String
     let paramType: String
     let scope: String
+    let group: String?
     let description: String?
 }
 

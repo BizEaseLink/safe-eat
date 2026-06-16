@@ -18,19 +18,15 @@ final class InterstitialAdManager: NSObject {
             name: UIApplication.didEnterBackgroundNotification,
             object: nil
         )
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(appWillEnterForeground),
-            name: UIApplication.willEnterForegroundNotification,
-            object: nil
-        )
     }
 
     @objc private func appDidEnterBackground() {
         enteredBackgroundAt = Date()
     }
 
-    @objc private func appWillEnterForeground() {
+    /// 由 SafeEatApp 在 didBecomeActive 时调用（profile 刷新之后），
+    /// 避免会员因 profile 未更新而误看插屏广告
+    func onAppBecameActive() {
         guard let enteredAt = enteredBackgroundAt else { return }
         let interval = Date().timeIntervalSince(enteredAt)
         let isPremium = isPremiumProvider?() ?? false

@@ -95,7 +95,21 @@ struct ChangePhoneView: View {
                              ? "\(currentCountdown)s"
                              : SafeEatL10n.text(L10nKey.Common.sendCode))
                             .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
-                            .foregroundStyle(currentCountdown > 0 ? SafeEatTheme.textSecondary : SafeEatTheme.primary)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: currentCountdown > 0
+                                                ? [SafeEatTheme.textSecondary.opacity(0.3), SafeEatTheme.textSecondary.opacity(0.3)]
+                                                : [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                            )
                     }
                     .buttonStyle(.plain)
                     .disabled(currentCountdown > 0)
@@ -131,7 +145,21 @@ struct ChangePhoneView: View {
                              ? "\(newCountdown)s"
                              : SafeEatL10n.text(L10nKey.Profile.ChangePhone.sendNewCode))
                             .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
-                            .foregroundStyle(newCountdown > 0 ? SafeEatTheme.textSecondary : SafeEatTheme.primary)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: newCountdown > 0
+                                                ? [SafeEatTheme.textSecondary.opacity(0.3), SafeEatTheme.textSecondary.opacity(0.3)]
+                                                : [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                            )
                     }
                     .buttonStyle(.plain)
                     .disabled(newCountdown > 0 || newPhone.count < 11)

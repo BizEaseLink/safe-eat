@@ -201,17 +201,44 @@ struct ProfileAvatarView: View {
     private var placeholder: some View {
         ZStack {
             Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [SafeEatTheme.primary, SafeEatTheme.primaryDeep],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(gradientForGender)
 
-            Text(initials)
-                .font(SafeEatFont.custom(size * 0.34, relativeTo: .title2, weight: .bold))
+            Image(systemName: iconForGender)
+                .font(.system(size: size * 0.38, weight: .medium))
                 .foregroundStyle(.white)
+        }
+    }
+
+    /// 根据性别返回不同的 SF Symbol
+    private var iconForGender: String {
+        switch profile?.gender {
+        case "male": return "person.fill"
+        case "female": return "person.fill"
+        default: return "person.fill"
+        }
+    }
+
+    /// 根据性别返回不同的渐变色
+    private var gradientForGender: LinearGradient {
+        switch profile?.gender {
+        case "male":
+            LinearGradient(
+                colors: [Color(red: 0.18, green: 0.49, blue: 0.56), Color(red: 0.11, green: 0.36, blue: 0.42)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case "female":
+            LinearGradient(
+                colors: [Color(red: 0.72, green: 0.36, blue: 0.46), Color(red: 0.58, green: 0.24, blue: 0.34)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        default:
+            LinearGradient(
+                colors: [SafeEatTheme.primary, SafeEatTheme.primaryDeep],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
         }
     }
 

@@ -19,19 +19,6 @@ struct EditProfileView: View {
             title: SafeEatL10n.text(L10nKey.Profile.editTitle),
             subtitle: SafeEatL10n.text(L10nKey.Profile.Edit.subtitle)
         ) {
-            // 头像区
-            ProfileSurfaceCard {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(SafeEatL10n.text(L10nKey.Profile.Edit.avatarTitle))
-                        .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
-
-                    Text(SafeEatL10n.text(L10nKey.Profile.Edit.avatarHint))
-                        .font(SafeEatFont.custom(13, relativeTo: .caption))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
-                }
-            }
-
             // 基本信息
             ProfileSurfaceCard {
                 Text(SafeEatL10n.text(L10nKey.Profile.Edit.basicSection))

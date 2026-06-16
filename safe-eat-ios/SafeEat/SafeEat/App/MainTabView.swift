@@ -165,7 +165,7 @@ struct MainTabView: View {
                     periodEnd: nil
                 ),
                 onWatchAd: adConfig.rewardVideoEnabled ? { watchRewardAd() } : nil,
-                onUpgrade: { showMembership = true },
+                onUpgrade: { showQuotaExceeded = false; showMembership = true },
                 onDismiss: { showQuotaExceeded = false }
             )
         }
@@ -195,6 +195,28 @@ struct MainTabView: View {
             await store.refreshDailyQuota()
             if store.pendingSignupBonus {
                 showSignupBonus = true
+            }
+        }
+        // 初始化配置：进入首页 2 秒后后台拉取广告配置和参数配置
+        // 仅在初始化时检查缓存过期，使用时直接读内存不检查过期
+        .task {
+            try? await Task.sleep(for: .seconds(2))
+            async let adConfigTask: Void = AdConfigStore.shared.fetchConfig()
+            if let token = store.session?.accessToken {
+                async let paramConfigTask: Void = ConfigParamStore.shared.fetchConfig(accessToken: token)
+                _ = await (adConfigTask, paramConfigTask)
+            } else {
+                await adConfigTask
+            }
+            // 配置拉取完成后，执行依赖配置的动作
+            if !isPaidMember && adConfig.interstitialEnabled {
+                InterstitialAdManager.shared.preloadAd()
+            }
+            if !isPaidMember && adConfig.floatWindowEnabled {
+                let scenes = UIApplication.shared.connectedScenes
+                let windowScene = scenes.first as? UIWindowScene
+                let window = windowScene?.windows.first(where: { $0.isKeyWindow })
+                FloatingIconAdManager.shared.loadAndShow(from: window?.rootViewController)
             }
         }
     }
@@ -464,7 +486,7 @@ struct MainTabView: View {
                         }
                         await store.refreshProfile()
                         await store.refreshDailyQuota()
-                        adRewardResultType = .success(rewardQuota: store.dailyQuota?.adRewardPerWatch ?? Int(ConfigParamStore.shared.getNumber("ad_reward_quota", fallback: 3)))
+                        adRewardResultType = .success(rewardQuota: store.dailyQuota?.adRewardPerWatch ?? Int(ConfigParamStore.shared.getNumber("ads_reward_video_quota", fallback: 3)))
                         showQuotaExceeded = false
                         showAdRewardResult = true
                     } catch {

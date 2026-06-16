@@ -995,10 +995,10 @@ struct MembershipPurchaseView: View {
                     .foregroundStyle(agreedToPurchaseTerms ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
             }
             .buttonStyle(.plain)
-            .padding(.top, 1)
 
             purchaseTermsFlowText
-                .font(SafeEatFont.custom(12, relativeTo: .caption))
+                .font(SafeEatFont.custom(13, relativeTo: .caption))
+                .foregroundStyle(SafeEatTheme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .sheet(item: $showPurchaseDisclosure) { link in

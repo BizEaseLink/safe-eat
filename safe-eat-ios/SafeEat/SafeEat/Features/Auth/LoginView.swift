@@ -25,6 +25,7 @@ struct LoginView: View {
     @State private var showPasswordLoginError = false
     @State private var loginRoute: LoginRoute? = nil
     @State private var agreedToTerms = false
+    @State private var showCaptchaSheet = false
 
     var body: some View {
         NavigationStack {
@@ -60,6 +61,11 @@ struct LoginView: View {
                     store.isNewUser = false
                 }
             )
+        }
+        .sheet(isPresented: $showCaptchaSheet) {
+            CaptchaSheet(phone: phone) {
+                // 验证码成功后的回调，已由 CaptchaSheet 内部调用 sendSMS
+            }
         }
     }
 
@@ -454,11 +460,10 @@ struct LoginView: View {
                     .foregroundStyle(agreedToTerms ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
             }
             .buttonStyle(.plain)
-            .padding(.top, 1)
 
-            // 用 FlowLayout 风格：可点击的协议链接 + 普通文字混合
             termsFlowText
-                .font(SafeEatFont.custom(12, relativeTo: .caption))
+                .font(SafeEatFont.custom(13, relativeTo: .caption))
+                .foregroundStyle(SafeEatTheme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .sheet(item: $showDisclosureCategory) { link in
@@ -602,16 +607,8 @@ struct LoginView: View {
     // MARK: - 操作方法
 
     private func requestSMS() async {
-        smsCountdownManager.isSending = true
-        defer { smsCountdownManager.isSending = false }
-
-        do {
-            let response = try await store.sendSMS(phone: phone)
-            devCodeHint = response.devCode
-            smsCountdownManager.markSent()
-        } catch {
-            store.errorMessage = error.localizedDescription
-        }
+        // 先弹图形验证码
+        showCaptchaSheet = true
     }
 
     private func register() async {

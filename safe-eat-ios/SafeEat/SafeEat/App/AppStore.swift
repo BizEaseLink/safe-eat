@@ -153,6 +153,14 @@ final class AppStore: ObservableObject {
         try await api.sendSMS(phone: phone)
     }
 
+    func sendSMS(phone: String, captchaId: String, captchaCode: String) async throws -> SendSmsResponse {
+        try await api.sendSMS(phone: phone, captchaId: captchaId, captchaCode: captchaCode)
+    }
+
+    func getCaptcha() async throws -> CaptchaResponse {
+        try await api.getCaptcha()
+    }
+
     func login(phone: String, code: String) async {
         await handleLoginTask {
             try await api.login(phone: phone, code: code)

@@ -48,6 +48,24 @@ final class SafeEatAPI {
         return try await send(request, as: SendSmsResponse.self)
     }
 
+    func sendSMS(phone: String, captchaId: String, captchaCode: String) async throws -> SendSmsResponse {
+        let request = try buildJSONRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/auth/sms/send",
+            method: "POST",
+            body: ["phone": phone, "captchaId": captchaId, "captchaCode": captchaCode]
+        )
+
+        return try await send(request, as: SendSmsResponse.self)
+    }
+
+    func getCaptcha() async throws -> CaptchaResponse {
+        let request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/auth/captcha",
+            method: "GET"
+        )
+        return try await send(request, as: CaptchaResponse.self)
+    }
+
     func login(phone: String, code: String) async throws -> AuthSession {
         let request = try buildJSONRequest(
             path: "/v1/apps/\(AppConfig.appCode)/auth/login",
@@ -190,10 +208,32 @@ final class SafeEatAPI {
         return try await send(request, as: UserProfile.self)
     }
 
-    func deleteAccount(accessToken: String) async throws {
-        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/me", method: "DELETE")
+    func deleteAccount(accessToken: String, phone: String, code: String) async throws -> DeletionRequestResponse {
+        var request = try buildJSONRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/me",
+            method: "DELETE",
+            body: ["phone": phone, "code": code]
+        )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        try await sendVoid(request)
+        return try await send(request, as: DeletionRequestResponse.self)
+    }
+
+    func getDeletionStatus(accessToken: String) async throws -> DeletionStatusResponse {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/me/deletion-status",
+            method: "GET"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: DeletionStatusResponse.self)
+    }
+
+    func cancelDeletion(accessToken: String) async throws -> CancelDeletionResponse {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/me/cancel-deletion",
+            method: "POST"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: CancelDeletionResponse.self)
     }
 
     func fetchDisclosure(category: String, page: Int = 1, pageSize: Int = 20) async throws -> PaginatedResult<DisclosureItem> {
