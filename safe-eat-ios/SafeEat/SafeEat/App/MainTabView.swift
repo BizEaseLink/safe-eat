@@ -356,8 +356,8 @@ struct MainTabView: View {
             let identifyResult = try await identifyTask
             let previewImage = await previewTask
 
-            // 高置信（≥ 0.9）且只有1个候选 → 直接进入智评阶段
-            if identifyResult.candidates.count == 1 && identifyResult.candidates[0].confidence >= 0.9 {
+            // 高置信（≥ 0.95）且只有1个候选 → 直接进入智评阶段
+            if identifyResult.candidates.count == 1 && identifyResult.candidates[0].confidence >= 0.95 {
                 recognitionPhase = .evaluating
                 recognizingPreviewImage = previewImage
 
@@ -373,7 +373,8 @@ struct MainTabView: View {
                         record,
                         originalImage: croppedImage,
                         previewImage: previewImage,
-                        rawImage: rawImage
+                        rawImage: rawImage,
+                        alternateNames: identifyResult.candidates.map { $0.name }
                     )
                     recognitionPhase = nil
                     recognizingPreviewImage = nil
@@ -439,7 +440,8 @@ struct MainTabView: View {
                     record,
                     originalImage: session.croppedImage,
                     previewImage: session.previewImage,
-                    rawImage: session.rawImage
+                    rawImage: session.rawImage,
+                    alternateNames: session.candidates.map { $0.name }
                 )
                 identifySession = nil
                 recognitionPhase = nil

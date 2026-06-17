@@ -79,7 +79,7 @@
 "error.image_capture_failed" = "图片处理失败，请重新拍照";
 
 "profile.root.title" = "个人";
-"profile.hero.default_name" = "食安安用户";
+"profile.hero.default_name" = "未命名";
 "profile.health_profile.title" = "健康画像";
 "profile.health_profile.edit" = "编辑";
 "profile.health_profile.empty" = "暂未设置健康偏好";
@@ -332,7 +332,7 @@
 "membership.purchase.plan_bonus_ai" = "赠送 %d 次 AI";
 "membership.purchase.new_user_gift_banner" = "新用户注册赠送 10 次免费识别额度";
 "membership.purchase.badge.lite" = "轻享";
-"membership.purchase.badge.current" = "当前套餐";
+"membership.purchase.badge.current" = "当前";
 "membership.purchase.benefit.recognition_monthly" = "每月识别 %d 次";
 "membership.purchase.benefit.ai_monthly" = "每月 AI 分析 %d 次";
 "membership.purchase.benefit.daily_quota" = "每日可识别 %d 次";
@@ -363,6 +363,7 @@
 "membership.purchase.detail.history_count_format" = "%d 条";
 "membership.purchase.detail.benefits_title" = "权益详情";
 "membership.purchase.detail.nav_title" = "套餐权益";
+"membership.purchase.select_plan" = "选中";
 "membership.purchase.bonus.days_format" = "+%d天";
 "membership.purchase.bonus.recognition_format" = "+%d次识别";
 "membership.purchase.bonus.ai_format" = "+%d次AI";
@@ -901,3 +902,41 @@
 "recognition_phase.tip_content_2" = "尽量拍摄单个食物，避免多个菜品堆叠";
 "recognition_phase.tip_content_3" = "拍摄角度正对食物，避免侧拍或俯拍过度";
 "recognition_phase.tip_content_4" = "靠近拍摄可以获取更多细节，识别更精准";
+
+// Auth - Terms
+"auth.terms.prefix" = "我已阅读并同意";
+"auth.terms.and" = "和";
+"auth.terms.user_agreement" = "《用户协议》";
+"auth.terms.privacy_policy" = "《隐私政策》";
+
+// Terms - Purchase & Delete
+"terms.purchase.prefix" = "我已阅读";
+"terms.purchase.value_added" = "《增值服务协议》";
+"terms.purchase.and" = "和";
+"terms.purchase.auto_renewal" = "《自动续费说明》";
+"terms.purchase.suffix" = "，了解自动续费规则";
+"terms.delete.prefix" = "我已阅读";
+"terms.delete.guide" = "《账号注销指引》";
+"terms.delete.suffix" = "，了解注销后果，确认注销。";
+
+// Profile - About (补充)
+"profile.about.minor_protection" = "未成年人保护指引";
+"profile.about.auto_renewal_notice" = "自动续费说明";
+"profile.about.permission_usage" = "权限使用说明";
+"profile.about.ai_disclaimer" = "AI 免责声明";
+"profile.about.ad_service_notice" = "广告服务说明";
+"profile.about.cancellation_guide" = "账号注销指引";
+
+// Profile - Redeem
+"profile.redeem.title" = "兑换码";
+"profile.redeem.subtitle" = "输入兑换码获取奖励";
+"profile.redeem.action" = "兑换";
+"profile.redeem.input_label" = "输入兑换码";
+"profile.redeem.input_hint" = "兑换码由数字和字母组成";
+"profile.redeem.input_placeholder" = "请输入兑换码";
+"profile.redeem.failed" = "兑换失败，请检查兑换码";
+
+// Profile - Help
+"profile.help.title" = "帮助中心";
+"profile.help.subtitle" = "常见问题与使用指南";
+"profile.help.contact_section" = "联系我们";

@@ -397,7 +397,8 @@ final class AppStore: ObservableObject {
         _ recognition: RecognitionRecord,
         originalImage: UIImage,
         previewImage: UIImage?,
-        rawImage: UIImage? = nil
+        rawImage: UIImage? = nil,
+        alternateNames: [String]? = nil
     ) throws -> LocalHistoryItem {
         // 原图缩小到 720 再编码，减少磁盘写入量
         let uploadSource = originalImage.scaledDown(maxDimension: 720)
@@ -430,7 +431,8 @@ final class AppStore: ObservableObject {
             createdAt: recognition.createdAt ?? Date(),
             cachedRecognition: recognition,
             imageRotationQuarterTurns: 0,
-            userId: profile?.id
+            userId: profile?.id,
+            alternateNames: alternateNames
         )
         appendHistoryItem(item)
         return item

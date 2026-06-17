@@ -40,7 +40,7 @@ struct AboutSafeEatView: View {
                 NavigationLink(value: ProfileRoute.minorProtection) {
                     ProfileNavigationRow(
                         icon: "figure.child.circle",
-                        title: "未成年人保护指引"
+                        title: SafeEatL10n.text(L10nKey.Profile.About.minorProtection)
                     )
                 }
                 .buttonStyle(.plain)
@@ -50,7 +50,7 @@ struct AboutSafeEatView: View {
                 NavigationLink(value: ProfileRoute.autoRenewalNotice) {
                     ProfileNavigationRow(
                         icon: "arrow.triangle.2.circlepath",
-                        title: "自动续费说明"
+                        title: SafeEatL10n.text(L10nKey.Profile.About.autoRenewalNotice)
                     )
                 }
                 .buttonStyle(.plain)
@@ -60,7 +60,7 @@ struct AboutSafeEatView: View {
                 NavigationLink(value: ProfileRoute.permissionUsage) {
                     ProfileNavigationRow(
                         icon: "lock.shield",
-                        title: "权限使用说明"
+                        title: SafeEatL10n.text(L10nKey.Profile.About.permissionUsage)
                     )
                 }
                 .buttonStyle(.plain)
@@ -70,7 +70,7 @@ struct AboutSafeEatView: View {
                 NavigationLink(value: ProfileRoute.aiDisclaimer) {
                     ProfileNavigationRow(
                         icon: "lightbulb",
-                        title: "AI 免责声明"
+                        title: SafeEatL10n.text(L10nKey.Profile.About.aiDisclaimer)
                     )
                 }
                 .buttonStyle(.plain)
@@ -80,7 +80,7 @@ struct AboutSafeEatView: View {
                 NavigationLink(value: ProfileRoute.adServiceNotice) {
                     ProfileNavigationRow(
                         icon: "megaphone",
-                        title: "广告服务说明"
+                        title: SafeEatL10n.text(L10nKey.Profile.About.adServiceNotice)
                     )
                 }
                 .buttonStyle(.plain)
@@ -90,7 +90,7 @@ struct AboutSafeEatView: View {
                 NavigationLink(value: ProfileRoute.cancellationGuide) {
                     ProfileNavigationRow(
                         icon: "person.crop.circle.badge.minus",
-                        title: "账号注销指引"
+                        title: SafeEatL10n.text(L10nKey.Profile.About.cancellationGuide)
                     )
                 }
                 .buttonStyle(.plain)
@@ -106,7 +106,7 @@ struct AboutSafeEatView: View {
                 .buttonStyle(.plain)
             }
 
-            Text("© 2026 郑凯杰. All Rights Reserved.")
+            Text(SafeEatL10n.text(L10nKey.Profile.About.copyright))
                 .font(SafeEatFont.custom(11, relativeTo: .caption2))
                 .foregroundStyle(Color.gray.opacity(0.6))
                 .frame(maxWidth: .infinity, alignment: .center)

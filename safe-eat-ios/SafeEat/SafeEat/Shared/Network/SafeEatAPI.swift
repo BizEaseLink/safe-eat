@@ -728,6 +728,8 @@ final class SafeEatAPI {
         switch serverMessage {
         case "Daily recognition quota has been used up.":
             return SafeEatL10n.text(L10nKey.Errors.requestQuotaExceeded)
+        case "Bad Request":
+            return SafeEatL10n.text(L10nKey.Errors.invalidResponse)
         default:
             return serverMessage ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, statusCode)
         }

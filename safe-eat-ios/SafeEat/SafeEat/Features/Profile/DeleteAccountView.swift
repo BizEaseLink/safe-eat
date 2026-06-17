@@ -18,6 +18,7 @@ struct DeleteAccountView: View {
     @State private var remainingSeconds: Int = 0
     @State private var countdownTimer: Timer?
     @State private var isCancelling = false
+    @State private var showDeleteGuide = false
 
     private var smsCountdown: SMSCountdownManager { SMSCountdownManager.shared }
 
@@ -102,6 +103,14 @@ struct DeleteAccountView: View {
                 .buttonStyle(.plain)
                 .disabled(!canSubmit)
                 .opacity(canSubmit ? 1.0 : 0.45)
+            }
+        }
+        .sheet(isPresented: $showDeleteGuide) {
+            NavigationStack {
+                DisclosureDetailView(
+                    title: SafeEatL10n.text(L10nKey.Terms.deleteGuide),
+                    category: "account_cancellation_guide"
+                )
             }
         }
         .task {
@@ -302,27 +311,34 @@ struct DeleteAccountView: View {
 
                 agreementText
                     .font(SafeEatFont.custom(13, relativeTo: .caption))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
-                    .onTapGesture {
-                        agreedToDelete.toggle()
-                    }
             }
             .padding(.top, 8)
         }
     }
 
-    /// 勾选文字："我已阅读《账号注销引导》，了解注销后果，确认注销。"
+    private func deleteLinkText(_ display: String, url: String) -> AttributedString {
+        var attr = AttributedString(display)
+        attr.foregroundColor = SafeEatTheme.danger
+        attr.underlineStyle = .single
+        attr.link = URL(string: url)
+        return attr
+    }
+
     private var agreementText: some View {
-        HStack(spacing: 0) {
-            Text("我已阅读")
-            NavigationLink(value: ProfileRoute.cancellationGuide) {
-                Text("《账号注销引导》")
-                    .foregroundStyle(SafeEatTheme.danger)
-            }
-            .buttonStyle(.plain)
-            Text("，了解注销后果，确认注销。")
-        }
+        let guide = SafeEatL10n.text(L10nKey.Terms.deleteGuide)
+
+        return (
+            Text(SafeEatL10n.text(L10nKey.Terms.deletePrefix))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+            + Text(deleteLinkText(guide, url: "safeeat://account_cancellation_guide"))
+            + Text(SafeEatL10n.text(L10nKey.Terms.deleteSuffix))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+        )
+        .environment(\.openURL, OpenURLAction { _ in
+            showDeleteGuide = true
+            return .handled
+        })
     }
 
     // MARK: - Actions

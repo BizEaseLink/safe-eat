@@ -19,6 +19,8 @@ struct FeedbackView: View {
     @State private var submitting = false
     @State private var keyboardHeight: CGFloat = 0
     @State private var scrollOffset: CGFloat = 0
+    @State private var searchResults: [FoodSearchItem] = []
+    @State private var isSearching = false
 
     private var displayName: String {
         let rawName = recognition.recognizedName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -43,22 +45,15 @@ struct FeedbackView: View {
     }
 
     private var suggestionCandidates: [String] {
-        let base = [
-            trimmedProposedName,
-            displayName,
-            SafeEatL10n.text(L10nKey.Feedback.suggestionSoba),
-            SafeEatL10n.text(L10nKey.Feedback.suggestionColdSoba),
-            SafeEatL10n.text(L10nKey.Feedback.suggestionChilledSoba),
-        ]
-
-        var seen = Set<String>()
-        return base.compactMap { value in
-            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmed.isEmpty, trimmed != SafeEatL10n.text(L10nKey.Common.unknownFood), seen.insert(trimmed).inserted else {
-                return nil
-            }
-            return trimmed
+        // 食物库搜索结果，排除当前名称和输入值，最多3个
+        let filtered = searchResults.map(\.name).filter { name in
+            let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            return !trimmed.isEmpty
+                && trimmed != displayName
+                && trimmed != trimmedProposedName
+                && trimmed != SafeEatL10n.text(L10nKey.Common.unknownFood)
         }
+        return Array(filtered.prefix(3))
     }
 
     var body: some View {
@@ -269,51 +264,26 @@ struct FeedbackView: View {
     }
 
     private var correctionZone: some View {
-        GeometryReader { proxy in
-            let useHorizontal = proxy.size.width >= 360
+        VStack(alignment: .leading, spacing: 16) {
+            currentRecognitionCard
 
-            if useHorizontal {
-                let leftWidth = min(max(proxy.size.width * 0.36, 126), 158)
-                let arrowWidth: CGFloat = 34
-                let rightWidth = max(proxy.size.width - leftWidth - arrowWidth - 24, 140)
-
-                HStack(alignment: .center, spacing: 0) {
-                    currentRecognitionCard
-                        .frame(width: leftWidth)
-
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.44))
-                        .frame(width: arrowWidth)
-
-                    correctionCard
-                        .frame(width: rightWidth)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                VStack(alignment: .leading, spacing: 16) {
-                    currentRecognitionCard
-
-                    HStack {
-                        Spacer()
-                        Image(systemName: "arrow.down")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
-                            .frame(width: 36, height: 36)
-                            .background(
-                                Circle()
-                                    .fill(colorScheme == .dark
-                                          ? Color.white.opacity(0.08)
-                                          : Color.white.opacity(0.82))
-                            )
-                        Spacer()
-                    }
-
-                    correctionCard
-                }
+            HStack {
+                Spacer()
+                Image(systemName: "arrow.down")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .frame(width: 36, height: 36)
+                    .background(
+                        Circle()
+                            .fill(colorScheme == .dark
+                                  ? Color.white.opacity(0.08)
+                                  : Color.white.opacity(0.82))
+                    )
+                Spacer()
             }
+
+            correctionCard
         }
-        .frame(height: 272)
     }
 
     private var currentRecognitionCard: some View {
@@ -337,8 +307,6 @@ struct FeedbackView: View {
                 .buttonStyle(.plain)
             }
 
-            Spacer(minLength: 0)
-
             Group {
                 if let image = currentPreviewImage {
                     Image(uiImage: image)
@@ -356,16 +324,15 @@ struct FeedbackView: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 126)
+            .frame(height: 120)
 
             Text(displayName)
-                .font(SafeEatFont.custom(17, relativeTo: .headline, weight: .bold))
+                .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
                 .foregroundStyle(SafeEatTheme.textPrimary)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(16)
-        .frame(maxHeight: .infinity, alignment: .top)
         .background(correctionCardFill)
         .overlay(cardStroke(cornerRadius: 26))
         .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
@@ -376,15 +343,76 @@ struct FeedbackView: View {
             badge(title: SafeEatL10n.text(L10nKey.Feedback.badgeCorrect), emphasized: true)
 
             HStack(spacing: 10) {
+                // 当前识别名称（固定位第一个，可点选回填）
+                Button {
+                    proposedName = displayName
+                    searchResults = []
+                    isNameFieldFocused = false
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .font(.system(size: 13, weight: .semibold))
+                        Text(displayName)
+                            .font(SafeEatFont.custom(14, relativeTo: .footnote, weight: .bold))
+                            .lineLimit(1)
+                    }
+                    .foregroundStyle(SafeEatTheme.primaryDeep)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(
+                        Capsule()
+                            .fill(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.primarySoft.opacity(0.72))
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                // 搜索按钮
+                Button {
+                    isNameFieldFocused = false
+                    searchFoods()
+                } label: {
+                    Group {
+                        if isSearching {
+                            ProgressView()
+                                .frame(width: 18, height: 18)
+                        } else {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                    }
+                    .foregroundStyle(.white)
+                    .frame(width: 36, height: 36)
+                    .background(
+                        Circle()
+                            .fill(LinearGradient(
+                                colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ))
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(isSearching || trimmedProposedName.isEmpty)
+                .opacity(trimmedProposedName.isEmpty ? 0.4 : 1)
+            }
+
+            HStack(spacing: 10) {
                 TextField(SafeEatL10n.text(L10nKey.Feedback.inputPlaceholder), text: $proposedName)
+                    .focused($isNameFieldFocused)
                     .font(SafeEatFont.custom(18, relativeTo: .body, weight: .bold))
                     .foregroundStyle(SafeEatTheme.textPrimary)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
+                    .onChange(of: proposedName) { _, _ in
+                        searchResults = []
+                    }
 
                 if !trimmedProposedName.isEmpty {
                     Button {
                         proposedName = ""
+                        searchResults = []
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 18))
@@ -402,37 +430,55 @@ struct FeedbackView: View {
             )
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
-            Text(SafeEatL10n.text(L10nKey.Feedback.suggestionsTitle))
-                .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+            // 搜索结果
+            if !suggestionCandidates.isEmpty {
+                Text(SafeEatL10n.text(L10nKey.Feedback.suggestionsTitle))
+                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 10) {
-                ForEach(suggestionCandidates.prefix(4), id: \.self) { suggestion in
-                    Button {
-                        proposedName = suggestion
-                    } label: {
-                        Text(suggestion)
-                            .font(SafeEatFont.custom(14, relativeTo: .footnote, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.primaryDeep)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
-                            .background(
-                                Capsule()
-                                    .fill(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.primarySoft.opacity(0.72))
-                            )
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 10) {
+                    ForEach(suggestionCandidates, id: \.self) { suggestion in
+                        Button {
+                            proposedName = suggestion
+                            searchResults = []
+                            isNameFieldFocused = false
+                        } label: {
+                            Text(suggestion)
+                                .font(SafeEatFont.custom(14, relativeTo: .footnote, weight: .bold))
+                                .foregroundStyle(SafeEatTheme.primaryDeep)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 10)
+                                .background(
+                                    Capsule()
+                                        .fill(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.primarySoft.opacity(0.72))
+                                )
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
-
-            Spacer(minLength: 0)
         }
         .padding(16)
-        .frame(maxHeight: .infinity, alignment: .top)
         .background(correctionCardFill)
         .overlay(cardStroke(cornerRadius: 26))
         .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+    }
+
+    private func searchFoods() {
+        guard !trimmedProposedName.isEmpty else { return }
+        isSearching = true
+        Task {
+            do {
+                let response = try await store.authorizedRequest { token in
+                    try await store.api.searchFoods(accessToken: token, query: trimmedProposedName)
+                }
+                searchResults = response.items
+            } catch {
+                searchResults = []
+            }
+            isSearching = false
+        }
     }
 
 //    private var commentSection: some View {
@@ -480,6 +526,7 @@ struct FeedbackView: View {
 //    }
     
     @FocusState private var isCommentFocused: Bool
+    @FocusState private var isNameFieldFocused: Bool
 
     private var commentSection: some View {
         VStack(alignment: .leading, spacing: 12) {

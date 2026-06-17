@@ -34,8 +34,9 @@ struct SafeEatSettingsSheetContainer<Content: View>: View {
 
     let title: String
     let subtitle: String?
-    /// 内容区高度（不含标题、按钮、间距），容器根据此值自动计算 presentationDetents 高度
-    let contentHeight: CGFloat
+    /// 内容区高度（不含标题、按钮、间距），容器根据此值自动计算 presentationDetents 高度。
+    /// 传 nil 时使用 .medium 自动高度，适合内容行数不固定的场景。
+    let contentHeight: CGFloat?
     /// 是否允许下滑/遮罩关闭（false 时添加 interactiveDismissDisabled）
     var dismissible: Bool = true
     /// 主按钮（渐变背景）
@@ -44,7 +45,7 @@ struct SafeEatSettingsSheetContainer<Content: View>: View {
     var secondaryButton: SheetButton?
     @ViewBuilder let content: () -> Content
 
-    /// 容器自动计算的总高度
+    /// 容器自动计算的总高度（contentHeight 非 nil 时使用）
     private var totalHeight: CGFloat {
         var h: CGFloat = 0
         h += SheetLayout.topPadding
@@ -54,7 +55,7 @@ struct SafeEatSettingsSheetContainer<Content: View>: View {
             h += SheetLayout.subtitleBlockHeight
         }
         h += SheetLayout.contentTopSpacing
-        h += contentHeight
+        h += (contentHeight ?? 0)
         if primaryButton != nil || secondaryButton != nil {
             h += SheetLayout.buttonAreaTopSpacing
             h += buttonAreaHeight
@@ -113,7 +114,7 @@ struct SafeEatSettingsSheetContainer<Content: View>: View {
             .padding(.top, SheetLayout.topPadding)
             .padding(.bottom, SheetLayout.bottomPadding)
         }
-        .presentationDetents([.height(totalHeight)])
+        .presentationDetents(contentHeight != nil ? [.height(totalHeight)] : [.medium])
         .presentationDragIndicator(dismissible ? .visible : .hidden)
         .presentationBackground(.clear)
         .if(!dismissible) { view in

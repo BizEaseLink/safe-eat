@@ -11,11 +11,11 @@ struct RedeemCodeSheet: View {
 
     var body: some View {
         SafeEatSettingsSheetContainer(
-            title: "兑换码",
-            subtitle: "输入兑换码获取奖励",
+            title: SafeEatL10n.text(L10nKey.Profile.Redeem.title),
+            subtitle: SafeEatL10n.text(L10nKey.Profile.Redeem.subtitle),
             contentHeight: 150,
             primaryButton: SheetButton(
-                title: "兑换",
+                title: SafeEatL10n.text(L10nKey.Profile.Redeem.action),
                 isLoading: isRedeeming,
                 isDisabled: code.trimmingCharacters(in: .whitespaces).isEmpty
             ) {
@@ -36,17 +36,17 @@ struct RedeemCodeSheet: View {
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("输入兑换码")
+                            Text(SafeEatL10n.text(L10nKey.Profile.Redeem.inputLabel))
                                 .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
                                 .foregroundStyle(SafeEatTheme.textPrimary)
 
-                            Text("兑换码由数字和字母组成")
+                            Text(SafeEatL10n.text(L10nKey.Profile.Redeem.inputHint))
                                 .font(SafeEatFont.textStyle(.footnote))
                                 .foregroundStyle(SafeEatTheme.textSecondary)
                         }
                     }
 
-                    TextField("请输入兑换码", text: $code)
+                    TextField(SafeEatL10n.text(L10nKey.Profile.Redeem.inputPlaceholder), text: $code)
                         .font(SafeEatFont.textStyle(.body))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 12)
@@ -83,7 +83,7 @@ struct RedeemCodeSheet: View {
             if result.success {
                 dismiss()
             } else {
-                errorMessage = "兑换失败，请检查兑换码"
+                errorMessage = SafeEatL10n.text(L10nKey.Profile.Redeem.failedMessage)
             }
         } catch {
             errorMessage = error.localizedDescription

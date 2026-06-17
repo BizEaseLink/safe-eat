@@ -15,6 +15,7 @@ struct LocalHistoryItem: Codable, Identifiable {
     var imageRotationQuarterTurns: Int
     var feedbackPending: Bool = false
     var userId: String?
+    var alternateNames: [String]?
 
     var displayImageUri: String {
         previewImageUri ?? originalImageUri
@@ -32,7 +33,8 @@ struct LocalHistoryItem: Codable, Identifiable {
         createdAt: Date,
         cachedRecognition: RecognitionRecord? = nil,
         imageRotationQuarterTurns: Int = 0,
-        userId: String? = nil
+        userId: String? = nil,
+        alternateNames: [String]? = nil
     ) {
         self.id = "\(recognitionId)-\(createdAt.timeIntervalSince1970)"
         self.recognitionId = recognitionId
@@ -47,6 +49,7 @@ struct LocalHistoryItem: Codable, Identifiable {
         self.cachedRecognition = cachedRecognition
         self.imageRotationQuarterTurns = imageRotationQuarterTurns
         self.userId = userId
+        self.alternateNames = alternateNames
     }
 }
 
@@ -67,6 +70,7 @@ extension LocalHistoryItem {
         case imageRotationQuarterTurns
         case feedbackPending
         case userId
+        case alternateNames
     }
 
     init(from decoder: Decoder) throws {
@@ -87,6 +91,7 @@ extension LocalHistoryItem {
         let imageRotationQuarterTurns = try container.decodeIfPresent(Int.self, forKey: .imageRotationQuarterTurns) ?? 0
         let feedbackPending = try container.decodeIfPresent(Bool.self, forKey: .feedbackPending) ?? false
         let userId = try container.decodeIfPresent(String.self, forKey: .userId)
+        let alternateNames = try container.decodeIfPresent([String].self, forKey: .alternateNames)
 
         self.id =
             try container.decodeIfPresent(String.self, forKey: .id)
@@ -103,6 +108,7 @@ extension LocalHistoryItem {
         self.cachedRecognition = cachedRecognition
         self.imageRotationQuarterTurns = imageRotationQuarterTurns
         self.userId = userId
+        self.alternateNames = alternateNames
     }
 
     func encode(to encoder: Encoder) throws {
@@ -122,6 +128,7 @@ extension LocalHistoryItem {
         try container.encode(imageRotationQuarterTurns, forKey: .imageRotationQuarterTurns)
         try container.encodeIfPresent(feedbackPending, forKey: .feedbackPending)
         try container.encodeIfPresent(userId, forKey: .userId)
+        try container.encodeIfPresent(alternateNames, forKey: .alternateNames)
     }
 }
 

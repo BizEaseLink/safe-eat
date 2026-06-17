@@ -123,32 +123,32 @@ struct ProfileView: View {
             )
         case .minorProtection:
             DisclosureDetailView(
-                title: "未成年人保护指引",
+                title: SafeEatL10n.text(L10nKey.Profile.About.minorProtection),
                 category: "minor_protection_guide"
             )
         case .autoRenewalNotice:
             DisclosureDetailView(
-                title: "自动续费说明",
+                title: SafeEatL10n.text(L10nKey.Profile.About.autoRenewalNotice),
                 category: "auto_renewal_notice"
             )
         case .permissionUsage:
             DisclosureDetailView(
-                title: "权限使用说明",
+                title: SafeEatL10n.text(L10nKey.Profile.About.permissionUsage),
                 category: "permission_usage"
             )
         case .aiDisclaimer:
             DisclosureDetailView(
-                title: "AI 免责声明",
+                title: SafeEatL10n.text(L10nKey.Profile.About.aiDisclaimer),
                 category: "ai_disclaimer"
             )
         case .adServiceNotice:
             DisclosureDetailView(
-                title: "广告服务说明",
+                title: SafeEatL10n.text(L10nKey.Profile.About.adServiceNotice),
                 category: "ad_service_notice"
             )
         case .cancellationGuide:
             DisclosureDetailView(
-                title: "账号注销指引",
+                title: SafeEatL10n.text(L10nKey.Profile.About.cancellationGuide),
                 category: "account_cancellation_guide"
             )
         case .certificate:
@@ -169,19 +169,8 @@ struct ProfileView: View {
                             Text(store.profile?.displayNameOrFallback ?? SafeEatL10n.text(L10nKey.Profile.heroDefaultName))
                                 .font(SafeEatFont.custom(26, relativeTo: .title2, weight: .bold))
                                 .foregroundStyle(SafeEatTheme.textPrimary)
+                                .lineLimit(1)
 
-                            HStack(spacing: 8) {
-                            Text(PlanTierMapper.shortTitle(store.profile?.currentPlanTier))
-                                .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.primary)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Capsule()
-                                        .fill(SafeEatTheme.primarySoft)
-                                )
-
-                            // 试用状态标签
                             if let status = store.membershipStatus, status.isTrial == true {
                                 Text(SafeEatL10n.text(L10nKey.Membership.trialActive))
                                     .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
@@ -194,7 +183,6 @@ struct ProfileView: View {
                                     )
                             }
 
-                            // 首购奖励已领取标签
                             if store.hasFirstPurchaseBonusClaimed {
                                 Text(SafeEatL10n.text(L10nKey.Membership.firstPurchaseClaimed))
                                     .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
@@ -206,7 +194,6 @@ struct ProfileView: View {
                                             .fill(.green.opacity(0.14))
                                     )
                             }
-                        }
                         }
 
                         Text(store.profile?.phone ?? "--")
@@ -414,8 +401,8 @@ struct ProfileView: View {
             NavigationLink(value: ProfileRoute.helpCenter) {
                 ProfileNavigationRow(
                     icon: "questionmark.circle",
-                    title: "帮助中心",
-                    subtitle: "常见问题与使用指南"
+                    title: SafeEatL10n.text(L10nKey.Profile.Help.title),
+                    subtitle: SafeEatL10n.text(L10nKey.Profile.Help.subtitle)
                 )
             }
             .buttonStyle(.plain)

@@ -104,14 +104,16 @@ struct SafeEatApp: App {
             // App 从后台回到前台时，刷新配置
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
                 Task {
-                    // 回到前台时先刷新 profile，确保会员状态最新（避免付费会员看到插屏广告）
-                    await store.refreshProfile()
-                    // 回前台时用 fetchConfig（检查缓存 TTL），未过期则跳过
+                    // 回到前台时用 fetchConfig（检查缓存 TTL），未过期则跳过
                     await AdConfigStore.shared.fetchConfig()
-                    if let token = store.session?.accessToken {
-                        await ConfigParamStore.shared.fetchConfig(accessToken: token)
+                    // 已登录才刷新用户相关数据
+                    if store.session != nil {
+                        await store.refreshProfile()
+                        if let token = store.session?.accessToken {
+                            await ConfigParamStore.shared.fetchConfig(accessToken: token)
+                        }
+                        await store.refreshDailyQuota()
                     }
-                    await store.refreshDailyQuota()
                     await AppVersionStore.shared.checkVersion()
                     // profile 刷新完成后，由这里统一触发插屏广告判断
                     InterstitialAdManager.shared.onAppBecameActive()

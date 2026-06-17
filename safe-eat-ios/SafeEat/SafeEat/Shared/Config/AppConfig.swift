@@ -5,7 +5,22 @@ import Combine
 enum AppConfig {
     static let appCode = "safe-eat"
     static let appStoreID = "6741974970"
-    static let apiBaseURL = URL(string: "http://192.168.31.160:3000/api")!
+
+    // 根据 Xcode Scheme 环境变量切换 API 地址
+    // 开发: 本地 192.168.31.160:3000
+    // SIT: 106.53.186.117
+    // 生产: 按实际域名配置
+    static let apiBaseURL: URL = {
+        if let envURL = ProcessInfo.processInfo.environment["API_BASE_URL"],
+           let url = URL(string: envURL) {
+            return url
+        }
+        #if DEBUG
+        return URL(string: "http://192.168.31.160:3000/api")!
+        #else
+        return URL(string: "http://106.53.186.117/api")!
+        #endif
+    }()
     static let imageCompressionQuality: CGFloat = 0.9
     static let historyFileName = "safe-eat-history.json"
     static let historyImageFolder = "SafeEatHistoryImages"

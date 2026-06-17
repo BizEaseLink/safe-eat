@@ -12,6 +12,7 @@ struct AuthSession: Codable {
 struct SendSmsResponse: Codable {
     let expiresAt: Date?
     let devCode: String?
+    let needCaptcha: Bool?
 }
 
 struct RefreshTokenResponse: Codable {

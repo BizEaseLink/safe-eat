@@ -26,6 +26,7 @@ struct LoginView: View {
     @State private var loginRoute: LoginRoute? = nil
     @State private var agreedToTerms = false
     @State private var showCaptchaSheet = false
+    @State private var nextSmsNeedsCaptcha = false
 
     var body: some View {
         NavigationStack {
@@ -63,10 +64,27 @@ struct LoginView: View {
             )
         }
         .sheet(isPresented: $showCaptchaSheet) {
-            CaptchaSheet(phone: phone) {
-                // 验证码成功后的回调，已由 CaptchaSheet 内部调用 sendSMS
+            CaptchaSheet(phone: phone) { devCode in
+                // 验证码发送成功，非生产环境显示 devCode 提示
+                if let devCode, !devCode.isEmpty {
+                    devCodeHint = devCode
+                }
+                // 弹过验证码后，后续请求都走 CaptchaSheet
+                nextSmsNeedsCaptcha = true
             }
         }
+        .alert(SafeEatL10n.text(L10nKey.Common.notice), isPresented: showError) {
+            Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) { store.errorMessage = nil }
+        } message: {
+            Text(store.errorMessage ?? "")
+        }
+    }
+
+    private var showError: Binding<Bool> {
+        Binding(
+            get: { store.errorMessage != nil },
+            set: { if !$0 { store.errorMessage = nil } }
+        )
     }
 
     // MARK: - 验证码登录页（默认页）
@@ -463,7 +481,6 @@ struct LoginView: View {
 
             termsFlowText
                 .font(SafeEatFont.custom(13, relativeTo: .caption))
-                .foregroundStyle(SafeEatTheme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .sheet(item: $showDisclosureCategory) { link in
@@ -473,17 +490,32 @@ struct LoginView: View {
         }
     }
 
+    private func linkText(_ display: String, url: String) -> AttributedString {
+        var attr = AttributedString(display)
+        attr.foregroundColor = SafeEatTheme.primary
+        attr.underlineStyle = .single
+        attr.link = URL(string: url)
+        return attr
+    }
+
     private var termsFlowText: some View {
-        HStack(spacing: 0) {
-            Text("我已阅读并同意").foregroundStyle(SafeEatTheme.textSecondary)
-            Button { showDisclosureCategory = DisclosureLink(category: "user_agreement", title: "用户协议") } label: {
-                Text("《用户协议》").foregroundStyle(SafeEatTheme.primary).underline()
-            }.buttonStyle(.plain)
-            Text("和").foregroundStyle(SafeEatTheme.textSecondary)
-            Button { showDisclosureCategory = DisclosureLink(category: "privacy_policy", title: "隐私政策") } label: {
-                Text("《隐私政策》").foregroundStyle(SafeEatTheme.primary).underline()
-            }.buttonStyle(.plain)
-        }
+        let ua = SafeEatL10n.text(L10nKey.Auth.termsUserAgreement)
+        let pp = SafeEatL10n.text(L10nKey.Auth.termsPrivacyPolicy)
+
+        return (
+            Text(SafeEatL10n.text(L10nKey.Auth.termsPrefix))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+            + Text(linkText(ua, url: "safeeat://user_agreement"))
+            + Text(SafeEatL10n.text(L10nKey.Auth.termsAnd))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+            + Text(linkText(pp, url: "safeeat://privacy_policy"))
+        )
+        .environment(\.openURL, OpenURLAction { url in
+            guard let host = url.host() else { return .discarded }
+            let title = host == "user_agreement" ? ua : pp
+            showDisclosureCategory = DisclosureLink(category: host, title: title)
+            return .handled
+        })
     }
 
     private var canSubmitRegistration: Bool {
@@ -607,8 +639,32 @@ struct LoginView: View {
     // MARK: - 操作方法
 
     private func requestSMS() async {
-        // 先弹图形验证码
-        showCaptchaSheet = true
+        // 已知需要验证码，直接弹 CaptchaSheet
+        if nextSmsNeedsCaptcha {
+            showCaptchaSheet = true
+            return
+        }
+        // 先直接发短信（不带 captcha），每天前5次免验证码
+        do {
+            let response = try await store.sendSMS(phone: phone)
+            SMSCountdownManager.shared.markSent()
+            if let devCode = response.devCode, !devCode.isEmpty {
+                devCodeHint = devCode
+            }
+            // 后端提示下次需要验证码
+            if response.needCaptcha == true {
+                nextSmsNeedsCaptcha = true
+            }
+        } catch let error as APIError {
+            if error.localizedDescription.contains("图形验证码") {
+                nextSmsNeedsCaptcha = true
+                showCaptchaSheet = true
+            } else {
+                store.errorMessage = error.localizedDescription
+            }
+        } catch {
+            store.errorMessage = error.localizedDescription
+        }
     }
 
     private func register() async {

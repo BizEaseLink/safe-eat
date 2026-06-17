@@ -14,6 +14,7 @@ struct UserProfile: Codable {
     let huaweiOpenId: String?
     let huaweiUnionId: String?
     let currentPlanTier: String?
+    let currentPlanBillingCycle: String?
     let healthTags: [String]?
     let fitnessGoal: String?
     let avoidIngredients: [String]?

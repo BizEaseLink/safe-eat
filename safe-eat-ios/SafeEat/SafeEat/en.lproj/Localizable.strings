@@ -213,10 +213,10 @@
 "reminder.enable_failed" = "Notifications are disabled. Please allow Safe Eat notifications in system settings first.";
 "reminder.enabled" = "Reminders enabled.";
 "reminder.disabled" = "Reminders disabled.";
-"reminder.entry_subtitle" = "Let Safe Eat remind you when it's time to review today's food records.";
+"reminder.entry_subtitle" = "Daily food record reminders";
 "reminder.sheet.title" = "Reminder Settings";
 "reminder.sheet.subtitle" = "Choose the start day and time. Safe Eat will follow your rhythm with daily review reminders.";
-"reminder.sheet.toggle" = "Enable notifications";
+"reminder.sheet.toggle" = "Reminders";
 "reminder.sheet.time_label" = "Reminder time";
 "reminder.sheet.save" = "Save Settings";
 "reminder.option.today" = "Today";
@@ -245,7 +245,7 @@
 "request.quota_exceeded" = "Today's free recognition quota is used up. Free users can recognize 3 times per day.";
 
 "profile.root.title" = "Profile";
-"profile.hero.default_name" = "Safe Eat User";
+"profile.hero.default_name" = "Unnamed";
 "profile.member_entry.title" = "Membership";
 "profile.member_entry.subtitle" = "View available plans and new-user offers.";
 "profile.member_entry.format" = "Starting from %@, unlock more recognitions with %@.";
@@ -413,6 +413,13 @@
 "membership.purchase.order_created" = "Order created. Payment integration is coming soon.\nOrder No.: %@";
 "membership.purchase.cycle_yearly" = "Yearly";
 "membership.purchase.cycle_monthly" = "Monthly";
+"membership.purchase.yearly_price_hint" = "%@/year, %@/month";
+"membership.purchase.trial_prompt_body_with_days" = "Start your %d-day free trial, cancel anytime";
+"membership.purchase.free_trial_badge" = "Free Trial";
+"membership.purchase.free_trial_days" = "%d days free";
+"membership.purchase.trial_active" = "Trial Active";
+"membership.purchase.trial_ends_on" = "Trial ends on %@";
+"membership.purchase.trial_disclaimer" = "Auto-renews after trial ends";
 "membership.purchase.plan_name_format" = "%@ %@";
 "membership.purchase.plan_subtitle.pro" = "Best %@ plan for high-frequency recognition users";
 "membership.purchase.plan_subtitle.lite" = "A %@ plan for daily tracking and sugar/fat control";
@@ -460,7 +467,7 @@
 "membership.purchase.free_plan_description" = "3 free recognitions per day. Great for trying out basic features.";
 "membership.purchase.new_user_gift_banner" = "New users get 10 free scans on sign-up";
 "membership.purchase.badge.lite" = "Lite";
-"membership.purchase.badge.current" = "Current Plan";
+"membership.purchase.badge.current" = "Current";
 "membership.purchase.benefit.recognition_monthly" = "%d scans per month";
 "membership.purchase.benefit.ai_monthly" = "%d AI analyses per month";
 "membership.purchase.benefit.daily_quota" = "%d scans per day";
@@ -491,6 +498,7 @@
 "membership.purchase.detail.history_count_format" = "%d records";
 "membership.purchase.detail.benefits_title" = "Benefits";
 "membership.purchase.detail.nav_title" = "Plan Benefits";
+"membership.purchase.select_plan" = "Select";
 "membership.purchase.bonus.days_format" = "+%d days";
 "membership.purchase.bonus.recognition_format" = "+%d scans";
 "membership.purchase.bonus.ai_format" = "+%d AI credits";
@@ -529,9 +537,9 @@
 
 "user.unnamed" = "Unnamed User";
 "user.tier.free.title" = "Free User";
-"user.tier.lite.title" = "Lite Membership";
-"user.tier.pro.title" = "Pro Membership";
-"user.tier.premium.title" = "Premium Membership";
+"user.tier.lite.title" = "Lite";
+"user.tier.pro.title" = "Pro";
+"user.tier.premium.title" = "Premium";
 "user.tier.free.short" = "Free";
 "user.tier.lite.short" = "Lite";
 "user.tier.pro.short" = "Pro";
@@ -1031,9 +1039,47 @@
 "profile.health_profile.tag.avoid" = "Avoided Ingredients";
 "profile.member.free.title" = "Get Membership";
 "profile.member.free.subtitle" = "Unlock more health features";
-"profile.member.lite.title" = "Lite Membership";
+"profile.member.lite.title" = "Lite";
 "profile.member.lite.subtitle" = "Basic nutrition analysis";
-"profile.member.pro.title" = "Pro Membership";
+"profile.member.pro.title" = "Pro";
 "profile.member.pro.subtitle" = "Unlock more recognitions";
-"profile.member.premium.title" = "Premium Membership";
+"profile.member.premium.title" = "Premium";
 "profile.member.premium.subtitle" = "Full AI analysis";
+
+// Auth - Terms
+"auth.terms.prefix" = "I have read and agree to the";
+"auth.terms.and" = "and";
+"auth.terms.user_agreement" = " User Agreement ";
+"auth.terms.privacy_policy" = " Privacy Policy ";
+
+// Terms - Purchase & Delete
+"terms.purchase.prefix" = "I have read the";
+"terms.purchase.value_added" = " Value-Added Service Agreement ";
+"terms.purchase.and" = "and";
+"terms.purchase.auto_renewal" = " Auto-Renewal Notice ";
+"terms.purchase.suffix" = ", and understand the auto-renewal rules";
+"terms.delete.prefix" = "I have read the";
+"terms.delete.guide" = " Account Deletion Guide ";
+"terms.delete.suffix" = ", and confirm the deletion consequences";
+
+// Profile - About (补充)
+"profile.about.minor_protection" = "Minor Protection Guide";
+"profile.about.auto_renewal_notice" = "Auto-Renewal Notice";
+"profile.about.permission_usage" = "Permission Usage";
+"profile.about.ai_disclaimer" = "AI Disclaimer";
+"profile.about.ad_service_notice" = "Ad Service Notice";
+"profile.about.cancellation_guide" = "Account Cancellation Guide";
+
+// Profile - Redeem
+"profile.redeem.title" = "Redeem Code";
+"profile.redeem.subtitle" = "Enter your code to get rewards";
+"profile.redeem.action" = "Redeem";
+"profile.redeem.input_label" = "Enter Redeem Code";
+"profile.redeem.input_hint" = "Code consists of letters and numbers";
+"profile.redeem.input_placeholder" = "Enter your code";
+"profile.redeem.failed" = "Redeem failed, please check your code";
+
+// Profile - Help
+"profile.help.title" = "Help Center";
+"profile.help.subtitle" = "FAQs & User Guide";
+"profile.help.contact_section" = "Contact Us";

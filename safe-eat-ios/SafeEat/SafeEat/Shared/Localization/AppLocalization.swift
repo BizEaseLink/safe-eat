@@ -148,6 +148,21 @@ enum L10nKey {
         static let newUserSetPassword = "auth.new_user.set_password"
         static let passwordLoginErrorTitle = "auth.password_login.error_title"
         static let passwordLoginErrorMessage = "auth.password_login.error_message"
+        static let termsPrefix = "auth.terms.prefix"
+        static let termsAnd = "auth.terms.and"
+        static let termsUserAgreement = "auth.terms.user_agreement"
+        static let termsPrivacyPolicy = "auth.terms.privacy_policy"
+    }
+
+    enum Terms {
+        static let purchasePrefix = "terms.purchase.prefix"
+        static let purchaseValueAdded = "terms.purchase.value_added"
+        static let purchaseAnd = "terms.purchase.and"
+        static let purchaseAutoRenewal = "terms.purchase.auto_renewal"
+        static let purchaseSuffix = "terms.purchase.suffix"
+        static let deletePrefix = "terms.delete.prefix"
+        static let deleteGuide = "terms.delete.guide"
+        static let deleteSuffix = "terms.delete.suffix"
     }
 
     enum Onboarding {
@@ -342,8 +357,30 @@ enum L10nKey {
             static let userAgreement = "profile.about.user_agreement"
             static let privacyPolicy = "profile.about.privacy_policy"
             static let valueAdded = "profile.about.value_added"
+            static let minorProtection = "profile.about.minor_protection"
+            static let autoRenewalNotice = "profile.about.auto_renewal_notice"
+            static let permissionUsage = "profile.about.permission_usage"
+            static let aiDisclaimer = "profile.about.ai_disclaimer"
+            static let adServiceNotice = "profile.about.ad_service_notice"
+            static let cancellationGuide = "profile.about.cancellation_guide"
             static let certificate = "profile.about.certificate"
             static let copyright = "profile.about.copyright"
+        }
+
+        enum Redeem {
+            static let title = "profile.redeem.title"
+            static let subtitle = "profile.redeem.subtitle"
+            static let action = "profile.redeem.action"
+            static let inputLabel = "profile.redeem.input_label"
+            static let inputHint = "profile.redeem.input_hint"
+            static let inputPlaceholder = "profile.redeem.input_placeholder"
+            static let failedMessage = "profile.redeem.failed"
+        }
+
+        enum Help {
+            static let title = "profile.help.title"
+            static let subtitle = "profile.help.subtitle"
+            static let contactSection = "profile.help.contact_section"
         }
     }
 
@@ -459,6 +496,7 @@ enum L10nKey {
         static let detailHistoryCountFormat = "membership.purchase.detail.history_count_format"
         static let detailBenefitsTitle = "membership.purchase.detail.benefits_title"
         static let detailNavTitle = "membership.purchase.detail.nav_title"
+        static let selectPlan = "membership.purchase.select_plan"
         static let bonusDaysFormat = "membership.purchase.bonus.days_format"
         static let bonusRecognitionFormat = "membership.purchase.bonus.recognition_format"
         static let bonusAiFormat = "membership.purchase.bonus.ai_format"
