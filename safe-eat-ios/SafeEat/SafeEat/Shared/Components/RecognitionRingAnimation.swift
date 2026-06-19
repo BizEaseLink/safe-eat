@@ -5,12 +5,14 @@ enum RecognitionPhase: Equatable {
     case identifying
     case selecting(candidates: [IdentifyCandidate], sessionId: String)
     case evaluating
+    case nonFood
 
     static func == (lhs: RecognitionPhase, rhs: RecognitionPhase) -> Bool {
         switch (lhs, rhs) {
         case (.identifying, .identifying): return true
         case (.evaluating, .evaluating): return true
         case (.selecting, .selecting): return true
+        case (.nonFood, .nonFood): return true
         default: return false
         }
     }

@@ -1027,6 +1027,8 @@
 "recognition_phase.tip_content_2" = "Focus on a single dish, avoid stacking multiple items";
 "recognition_phase.tip_content_3" = "Shoot from the front, avoid extreme side or overhead angles";
 "recognition_phase.tip_content_4" = "Get closer for more detail — closer shots are more accurate";
+"recognition_phase.non_food_title" = "No Food Detected";
+"recognition_phase.non_food_subtitle" = "Please aim at food and try again";
 
 // Profile health & membership entry
 "profile.health_profile.title" = "Health Profile";

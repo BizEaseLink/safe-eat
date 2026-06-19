@@ -119,6 +119,10 @@ struct MainTabView: View {
                     previewImage: recognizingPreviewImage,
                     onCandidateSelected: { selectedName, sessionId in
                         performConfirm(selectedName: selectedName, sessionId: sessionId)
+                    },
+                    onDismiss: {
+                        recognitionPhase = nil
+                        recognizingPreviewImage = nil
                     }
                 )
                 .transition(.opacity)
@@ -355,6 +359,13 @@ struct MainTabView: View {
 
             let identifyResult = try await identifyTask
             let previewImage = await previewTask
+
+            // 无候选 → 非食物提示
+            if identifyResult.candidates.isEmpty {
+                recognitionPhase = .nonFood
+                recognizingPreviewImage = previewImage
+                return
+            }
 
             // 高置信（≥ 0.95）且只有1个候选 → 直接进入智评阶段
             if identifyResult.candidates.count == 1 && identifyResult.candidates[0].confidence >= 0.95 {

@@ -579,6 +579,7 @@ struct SafeEatLoadingOverlay: View {
     let phase: RecognitionPhase
     var previewImage: UIImage? = nil
     var onCandidateSelected: ((String, String) -> Void)? = nil
+    var onDismiss: (() -> Void)? = nil
 
     // 小贴士循环切换
     @State private var tipIndex: Int = 0
@@ -699,6 +700,31 @@ struct SafeEatLoadingOverlay: View {
                 phaseTitle(SafeEatL10n.text(L10nKey.RecognitionPhase.evaluating))
                 phaseSubtitle(SafeEatL10n.text(L10nKey.RecognitionPhase.evaluatingSubtitle))
                 RecognitionRingAnimation()
+            }
+
+        case .nonFood:
+            panelContainer {
+                phaseTitle(SafeEatL10n.text(L10nKey.RecognitionPhase.nonFoodTitle))
+                phaseSubtitle(SafeEatL10n.text(L10nKey.RecognitionPhase.nonFoodSubtitle))
+                previewStageCompact
+                Button {
+                    onDismiss?()
+                } label: {
+                    Text(SafeEatL10n.text(L10nKey.Common.ok))
+                        .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .fill(LinearGradient(
+                                    colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                ))
+                        )
+                }
+                .buttonStyle(.plain)
             }
         }
     }

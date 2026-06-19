@@ -989,6 +989,8 @@ enum L10nKey {
         static let tipContent2 = "recognition_phase.tip_content_2"
         static let tipContent3 = "recognition_phase.tip_content_3"
         static let tipContent4 = "recognition_phase.tip_content_4"
+        static let nonFoodTitle = "recognition_phase.non_food_title"
+        static let nonFoodSubtitle = "recognition_phase.non_food_subtitle"
     }
 
     enum Candidate {

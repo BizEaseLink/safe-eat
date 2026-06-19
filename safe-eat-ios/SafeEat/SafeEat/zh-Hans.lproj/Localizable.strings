@@ -902,6 +902,8 @@
 "recognition_phase.tip_content_2" = "尽量拍摄单个食物，避免多个菜品堆叠";
 "recognition_phase.tip_content_3" = "拍摄角度正对食物，避免侧拍或俯拍过度";
 "recognition_phase.tip_content_4" = "靠近拍摄可以获取更多细节，识别更精准";
+"recognition_phase.non_food_title" = "未识别到食物";
+"recognition_phase.non_food_subtitle" = "请对准食物重新拍摄";
 
 // Auth - Terms
 "auth.terms.prefix" = "我已阅读并同意";
