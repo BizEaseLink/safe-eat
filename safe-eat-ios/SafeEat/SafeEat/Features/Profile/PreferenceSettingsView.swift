@@ -84,6 +84,8 @@ struct PreferenceSettingsView: View {
                     gender: nil,
                     heightCm: nil,
                     weightKg: nil,
+                    age: nil,
+                    activityLevel: nil,
                     healthTags: Array(selectedTags).sorted(),
                     fitnessGoal: fitnessGoal.isEmpty ? nil : fitnessGoal,
                     avoidIngredients: nil,

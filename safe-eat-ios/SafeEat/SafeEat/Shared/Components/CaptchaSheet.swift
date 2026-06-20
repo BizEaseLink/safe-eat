@@ -34,6 +34,8 @@ struct CaptchaSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     let phone: String
+    let scene: String?
+    let templateCode: String?
     let onSuccess: (_ devCode: String?) -> Void
 
     @State private var captchaId: String?
@@ -149,7 +151,9 @@ struct CaptchaSheet: View {
                 let response = try await store.sendSMS(
                     phone: phone,
                     captchaId: captchaId,
-                    captchaCode: inputCode
+                    captchaCode: inputCode,
+                    scene: scene,
+                    templateCode: templateCode
                 )
                 SMSCountdownManager.shared.markSent()
                 dismiss()

@@ -8,7 +8,10 @@ struct UserProfile: Codable {
     let gender: String?
     let heightCm: Double?
     let weightKg: Double?
+    let age: Int?
+    let activityLevel: String?
     let bmi: Double?
+    let tdee: Double?
     let avatarObjectId: String?
     let avatarUrl: String?
     let huaweiOpenId: String?
@@ -101,6 +104,8 @@ struct UserProfileUpdatePayload: Encodable {
     let gender: String?
     let heightCm: Double?
     let weightKg: Double?
+    let age: Int?
+    let activityLevel: String?
     let healthTags: [String]?
     let fitnessGoal: String?
     let avoidIngredients: [String]?

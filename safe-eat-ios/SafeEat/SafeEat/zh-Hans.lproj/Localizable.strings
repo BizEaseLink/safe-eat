@@ -132,9 +132,19 @@
 "profile.edit.basic_section" = "基础信息";
 "profile.edit.display_name" = "名称";
 "profile.edit.gender" = "性别";
-"profile.edit.height" = "身高（cm）";
-"profile.edit.weight" = "体重（kg）";
+"profile.edit.height" = "身高";
+"profile.edit.weight" = "体重";
 "profile.edit.bmi_hint" = "会根据身高和体重自动计算";
+"profile.edit.age" = "年龄";
+"profile.edit.age_placeholder" = "输入年龄";
+"profile.edit.activity_level" = "活动等级";
+"profile.edit.activity.sedentary" = "久坐不动";
+"profile.edit.activity.light" = "轻度活动";
+"profile.edit.activity.moderate" = "中等活动";
+"profile.edit.activity.heavy" = "高强度活动";
+"profile.edit.activity.athlete" = "运动员级别";
+"profile.edit.tdee_label" = "TDEE";
+"profile.edit.tdee_unit" = "kcal/天";
 
 "profile.preference.subtitle.long" = "告诉食安安你的健康方向和训练目标，让建议更贴近你的日常习惯。";
 "profile.preference.health_tags" = "健康标签";
@@ -162,7 +172,7 @@
 "profile.security.sync" = "头像、资料与会员状态会与后端同步。";
 "profile.security.cache" = "本地缓存仅用于识别历史、贴纸图和页面提速。";
 "profile.security.change_phone" = "修改手机号";
-"profile.security.change_password" = "修改密码";
+"profile.security.change_password" = "找回密码";
 "profile.security.delete_account" = "注销账号";
 "profile.security.restore_purchases" = "恢复购买";
 
@@ -910,6 +920,18 @@
 "auth.terms.and" = "和";
 "auth.terms.user_agreement" = "《用户协议》";
 "auth.terms.privacy_policy" = "《隐私政策》";
+"auth.reset_password.title" = "重置密码";
+"auth.reset_password.subtitle" = "通过手机验证码设置新密码";
+"auth.reset_password.action" = "确认重置";
+"auth.reset_password.success" = "密码重置成功";
+"auth.field.new_password" = "新密码";
+"auth.switch.forgot_password" = "忘记密码";
+"auth.sms.sent" = "已发送";
+"auth.password.requirement.length" = "至少 8 个字符";
+"auth.password.requirement.uppercase" = "包含大写字母";
+"auth.password.requirement.lowercase" = "包含小写字母";
+"auth.password.requirement.digit" = "包含数字";
+"auth.password.requirement.special" = "包含特殊字符";
 
 // Terms - Purchase & Delete
 "terms.purchase.prefix" = "我已阅读";

@@ -148,7 +148,6 @@ struct DeleteAccountView: View {
 
     private var cooldownContent: some View {
         VStack(spacing: 20) {
-            // 冷静期提示卡片
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 12) {
                     Label {
@@ -185,7 +184,6 @@ struct DeleteAccountView: View {
                 }
             }
 
-            // 注销影响说明
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("注销后影响")
@@ -220,7 +218,6 @@ struct DeleteAccountView: View {
 
     private var requestDeletionContent: some View {
         VStack(spacing: 16) {
-            // 注销警告
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 12) {
                     Label {
@@ -237,68 +234,24 @@ struct DeleteAccountView: View {
                 }
             }
 
-            // 验证码输入区
             ProfileSurfaceCard {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("验证身份")
-                        .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                VStack(alignment: .leading, spacing: 16) {
+                    ProfileDisabledField(text: maskedPhone, colorScheme: colorScheme)
 
-                    Text("我们将向 \(maskedPhone) 发送验证码")
-                        .font(SafeEatFont.custom(13, relativeTo: .caption))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
-
-                    HStack(spacing: 12) {
-                        TextField("验证码", text: $verificationCode)
-                            .font(SafeEatFont.textStyle(.body))
-                            .keyboardType(.numberPad)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 14)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.04))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .stroke(SafeEatTheme.line, lineWidth: 1)
-                            )
-
-                        // 发送验证码按钮
-                        Button(action: { Task { await requestSMS() } }) {
-                            Group {
-                                if isSendingCode {
-                                    ProgressView()
-                                        .frame(maxWidth: .infinity)
-                                } else if smsCountdown.countdown > 0 {
-                                    Text("\(smsCountdown.countdown)s")
-                                        .frame(maxWidth: .infinity)
-                                } else {
-                                    Text(SafeEatL10n.text(L10nKey.Common.sendCode))
-                                        .frame(maxWidth: .infinity)
-                                }
-                            }
-                            .font(SafeEatFont.custom(14, relativeTo: .callout, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .padding(.vertical, 14)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [SafeEatTheme.danger.opacity(0.85), SafeEatTheme.danger],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(isSendingCode || smsCountdown.countdown > 0)
-                        .opacity(isSendingCode || smsCountdown.countdown > 0 ? 0.6 : 1.0)
-                    }
+                    ProfileCodeRow(
+                        code: $verificationCode,
+                        isDisabled: isSendingCode || smsCountdown.countdown > 0,
+                        buttonText: isSendingCode
+                            ? SafeEatL10n.text(L10nKey.Common.sending)
+                            : (smsCountdown.countdown > 0
+                                ? "\(smsCountdown.countdown)s"
+                                : SafeEatL10n.text(L10nKey.Common.sendCode)),
+                        useDangerColor: true,
+                        action: { Task { await requestSMS() } }
+                    )
                 }
             }
 
-            // 注销确认勾选
             HStack(alignment: .top, spacing: 8) {
                 Button {
                     agreedToDelete.toggle()
@@ -356,7 +309,6 @@ struct DeleteAccountView: View {
                 startCooldownCountdown(endsAt: endsAt)
             }
         } catch {
-            // 如果查询失败，默认为 none 状态让用户可以操作
             deletionStatus = "none"
         }
     }
@@ -369,7 +321,6 @@ struct DeleteAccountView: View {
             if remaining <= 0 {
                 remainingSeconds = 0
                 countdownTimer?.invalidate()
-                // 刷新状态
                 Task { await checkDeletionStatus() }
                 return
             }
@@ -386,7 +337,7 @@ struct DeleteAccountView: View {
         isSendingCode = true
         defer { isSendingCode = false }
         do {
-            _ = try await store.sendSMS(phone: userPhone)
+            _ = try await store.sendSMS(phone: userPhone, scene: "delete-account", templateCode: "100001")
             smsCountdown.markSent()
         } catch {
             store.errorMessage = error.localizedDescription
@@ -404,7 +355,6 @@ struct DeleteAccountView: View {
                         code: verificationCode
                     )
                 }
-                // 进入冷静期
                 deletionStatus = response.status
                 cooldownEndsAt = response.cooldownEndsAt
                 if let endsAt = response.cooldownEndsAt {
@@ -428,7 +378,6 @@ struct DeleteAccountView: View {
                     deletionStatus = "none"
                     countdownTimer?.invalidate()
                     remainingSeconds = 0
-                    // 刷新用户信息
                     await store.refreshProfile()
                 }
             } catch {

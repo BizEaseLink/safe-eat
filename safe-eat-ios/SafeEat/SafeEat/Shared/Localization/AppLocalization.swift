@@ -152,6 +152,18 @@ enum L10nKey {
         static let termsAnd = "auth.terms.and"
         static let termsUserAgreement = "auth.terms.user_agreement"
         static let termsPrivacyPolicy = "auth.terms.privacy_policy"
+        static let resetPasswordTitle = "auth.reset_password.title"
+        static let resetPasswordSubtitle = "auth.reset_password.subtitle"
+        static let resetPasswordAction = "auth.reset_password.action"
+        static let resetPasswordSuccess = "auth.reset_password.success"
+        static let newPasswordLabel = "auth.field.new_password"
+        static let forgotPassword = "auth.switch.forgot_password"
+        static let smsSent = "auth.sms.sent"
+        static let passwordRequirementLength = "auth.password.requirement.length"
+        static let passwordRequirementUppercase = "auth.password.requirement.uppercase"
+        static let passwordRequirementLowercase = "auth.password.requirement.lowercase"
+        static let passwordRequirementDigit = "auth.password.requirement.digit"
+        static let passwordRequirementSpecial = "auth.password.requirement.special"
     }
 
     enum Terms {
@@ -241,6 +253,16 @@ enum L10nKey {
             static let height = "profile.edit.height"
             static let weight = "profile.edit.weight"
             static let bmiHint = "profile.edit.bmi_hint"
+            static let age = "profile.edit.age"
+            static let agePlaceholder = "profile.edit.age_placeholder"
+            static let activityLevel = "profile.edit.activity_level"
+            static let activitySedentary = "profile.edit.activity.sedentary"
+            static let activityLight = "profile.edit.activity.light"
+            static let activityModerate = "profile.edit.activity.moderate"
+            static let activityHeavy = "profile.edit.activity.heavy"
+            static let activityAthlete = "profile.edit.activity.athlete"
+            static let tdeeLabel = "profile.edit.tdee_label"
+            static let tdeeUnit = "profile.edit.tdee_unit"
         }
 
         enum Preference {

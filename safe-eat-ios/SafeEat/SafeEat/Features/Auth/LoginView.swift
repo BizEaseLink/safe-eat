@@ -8,6 +8,7 @@ enum LoginRoute: Hashable {
     case passwordLogin
     case register
     case bindPhone
+    case forgotPassword
 }
 
 // MARK: - 登录页主视图
@@ -41,6 +42,8 @@ struct LoginView: View {
                         registerPage
                     case .bindPhone:
                         bindPhonePage
+                    case .forgotPassword:
+                        ResetPasswordView(phoneMode: .input)
                     }
                 }
         }
@@ -64,7 +67,7 @@ struct LoginView: View {
             )
         }
         .sheet(isPresented: $showCaptchaSheet) {
-            CaptchaSheet(phone: phone) { devCode in
+            CaptchaSheet(phone: phone, scene: loginRoute == .register ? "register" : "login", templateCode: "100001") { devCode in
                 // 验证码发送成功，非生产环境显示 devCode 提示
                 if let devCode, !devCode.isEmpty {
                     devCodeHint = devCode
@@ -337,6 +340,10 @@ struct LoginView: View {
                     loginRoute = .codeLogin
                 }
                 Spacer()
+                miniLink(title: SafeEatL10n.text(L10nKey.Auth.forgotPassword)) {
+                    loginRoute = .forgotPassword
+                }
+                Spacer()
                 miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToRegister)) {
                     loginRoute = .register
                 }
@@ -356,7 +363,13 @@ struct LoginView: View {
             authField(title: SafeEatL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
             codeField
             authSecureField(title: SafeEatL10n.text(L10nKey.Auth.passwordLabel), text: $password)
+            passwordRequirementHints(password)
             authSecureField(title: SafeEatL10n.text(L10nKey.Auth.confirmPasswordLabel), text: $confirmPassword)
+            if !confirmPassword.isEmpty && password != confirmPassword {
+                Text(SafeEatL10n.text(L10nKey.Auth.passwordMismatch))
+                    .font(SafeEatFont.textStyle(.footnote))
+                    .foregroundStyle(SafeEatTheme.danger)
+            }
             smsHintView
 
             termsAgreementRow
@@ -465,6 +478,31 @@ struct LoginView: View {
         }
     }
 
+    @ViewBuilder
+    private func passwordRequirementHints(_ password: String) -> some View {
+        if !password.isEmpty {
+            let result = PasswordValidator.validate(password)
+            VStack(alignment: .leading, spacing: 4) {
+                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementLength), passed: result.isLengthValid)
+                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementUppercase), passed: result.hasUppercase)
+                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementLowercase), passed: result.hasLowercase)
+                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementDigit), passed: result.hasDigit)
+                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementSpecial), passed: result.hasSpecialChar)
+            }
+        }
+    }
+
+    private func requirementRow(text: String, passed: Bool) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: passed ? "checkmark.circle.fill" : "circle")
+                .font(.system(size: 12))
+                .foregroundStyle(passed ? SafeEatTheme.success : SafeEatTheme.textSecondary)
+            Text(text)
+                .font(SafeEatFont.textStyle(.caption2))
+                .foregroundStyle(passed ? SafeEatTheme.success : SafeEatTheme.textSecondary)
+        }
+    }
+
     // 注册页协议勾选
     @State private var showDisclosureCategory: DisclosureLink?
 
@@ -519,10 +557,12 @@ struct LoginView: View {
     }
 
     private var canSubmitRegistration: Bool {
-        phone.trimmingCharacters(in: .whitespacesAndNewlines).count == 11
+        let passwordResult = PasswordValidator.validate(password)
+        return phone.trimmingCharacters(in: .whitespacesAndNewlines).count == 11
             && code.count >= 4
-            && password.count >= 6
-            && confirmPassword.count >= 6
+            && passwordResult.isValid
+            && !confirmPassword.isEmpty
+            && password == confirmPassword
     }
 
     private func authField(title: String, text: Binding<String>, keyboardType: UIKeyboardType) -> some View {
@@ -639,6 +679,10 @@ struct LoginView: View {
     // MARK: - 操作方法
 
     private func requestSMS() async {
+        // 根据当前页面决定场景：注册页用 register，其他用 login
+        let scene: String = loginRoute == .register ? "register" : "login"
+        let templateCode: String = loginRoute == .register ? "100001" : "100001"
+
         // 已知需要验证码，直接弹 CaptchaSheet
         if nextSmsNeedsCaptcha {
             showCaptchaSheet = true
@@ -646,7 +690,7 @@ struct LoginView: View {
         }
         // 先直接发短信（不带 captcha），每天前5次免验证码
         do {
-            let response = try await store.sendSMS(phone: phone)
+            let response = try await store.sendSMS(phone: phone, scene: scene, templateCode: templateCode)
             SMSCountdownManager.shared.markSent()
             if let devCode = response.devCode, !devCode.isEmpty {
                 devCodeHint = devCode
@@ -668,6 +712,11 @@ struct LoginView: View {
     }
 
     private func register() async {
+        let result = PasswordValidator.validate(password)
+        guard result.isValid else {
+            store.errorMessage = "密码必须包含大写字母、小写字母、数字和特殊字符"
+            return
+        }
         guard password == confirmPassword else {
             store.errorMessage = SafeEatL10n.text(L10nKey.Auth.passwordMismatch)
             return

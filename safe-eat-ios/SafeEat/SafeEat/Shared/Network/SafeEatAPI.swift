@@ -38,21 +38,31 @@ final class SafeEatAPI {
         self.decoder = SafeEatAPI.makeDecoder()
     }
 
-    func sendSMS(phone: String) async throws -> SendSmsResponse {
+    func sendSMS(phone: String, scene: String? = nil, templateCode: String? = nil) async throws -> SendSmsResponse {
+        var body: [String: String] = ["phone": phone]
+        if let scene { body["scene"] = scene }
+        if let templateCode { body["templateCode"] = templateCode }
         let request = try buildJSONRequest(
             path: "/v1/apps/\(AppConfig.appCode)/auth/sms/send",
             method: "POST",
-            body: PhoneBody(phone: phone)
+            body: body
         )
 
         return try await send(request, as: SendSmsResponse.self)
     }
 
-    func sendSMS(phone: String, captchaId: String, captchaCode: String) async throws -> SendSmsResponse {
+    func sendSMS(phone: String, captchaId: String, captchaCode: String, scene: String? = nil, templateCode: String? = nil) async throws -> SendSmsResponse {
+        var body: [String: String] = [
+            "phone": phone,
+            "captchaId": captchaId,
+            "captchaCode": captchaCode,
+        ]
+        if let scene { body["scene"] = scene }
+        if let templateCode { body["templateCode"] = templateCode }
         let request = try buildJSONRequest(
             path: "/v1/apps/\(AppConfig.appCode)/auth/sms/send",
             method: "POST",
-            body: ["phone": phone, "captchaId": captchaId, "captchaCode": captchaCode]
+            body: body
         )
 
         return try await send(request, as: SendSmsResponse.self)
@@ -198,14 +208,36 @@ final class SafeEatAPI {
         return try await send(request, as: UserProfile.self)
     }
 
-    func changePassword(accessToken: String, oldPassword: String, newPassword: String) async throws -> UserProfile {
+    func resetPassword(phone: String, code: String, newPassword: String) async throws -> ResetPasswordResult {
+        let request = try buildJSONRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/auth/reset-password",
+            method: "POST",
+            body: ResetPasswordBody(phone: phone, verificationCode: code, newPassword: newPassword)
+        )
+        return try await send(request, as: ResetPasswordResult.self)
+    }
+
+    func sendChangePhoneOldSms(accessToken: String, phone: String, captchaId: String? = nil, captchaCode: String? = nil) async throws -> SendSmsResponse {
+        var body: [String: String] = ["phone": phone]
+        if let captchaId { body["captchaId"] = captchaId }
+        if let captchaCode { body["captchaCode"] = captchaCode }
         var request = try buildJSONRequest(
-            path: "/v1/apps/\(AppConfig.appCode)/me/password",
-            method: "PATCH",
-            body: ChangePasswordBody(oldPassword: oldPassword, newPassword: newPassword)
+            path: "/v1/apps/\(AppConfig.appCode)/auth/send-change-phone-old-sms",
+            method: "POST",
+            body: body
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        return try await send(request, as: UserProfile.self)
+        return try await send(request, as: SendSmsResponse.self)
+    }
+
+    func verifyChangePhoneOld(accessToken: String, phone: String, code: String) async throws -> VerifyChangePhoneOldResult {
+        var request = try buildJSONRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/auth/verify-change-phone-old",
+            method: "POST",
+            body: PhoneCodeBody(phone: phone, code: code)
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: VerifyChangePhoneOldResult.self)
     }
 
     func deleteAccount(accessToken: String, phone: String, code: String) async throws -> DeletionRequestResponse {
@@ -785,8 +817,9 @@ private struct ChangePhoneBody: Encodable {
     let verificationCode: String
 }
 
-private struct ChangePasswordBody: Encodable {
-    let oldPassword: String
+private struct ResetPasswordBody: Encodable {
+    let phone: String
+    let verificationCode: String
     let newPassword: String
 }
 

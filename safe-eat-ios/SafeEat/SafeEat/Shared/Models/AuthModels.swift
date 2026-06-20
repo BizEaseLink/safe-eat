@@ -41,3 +41,11 @@ struct CaptchaResponse: Codable {
     let captchaId: String
     let svgBase64: String
 }
+
+struct ResetPasswordResult: Codable {
+    let success: Bool?
+}
+
+struct VerifyChangePhoneOldResult: Codable {
+    let verified: Bool?
+}

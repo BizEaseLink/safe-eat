@@ -3,6 +3,7 @@ import SwiftUI
 struct ChangePhoneView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var step: ChangePhoneStep = .verifyCurrent
     @State private var currentCode = ""
@@ -13,6 +14,10 @@ struct ChangePhoneView: View {
     @State private var newCountdown = 0
     @State private var errorMessage: String?
     @State private var showSuccess = false
+    @State private var oldSmsSent = false
+    @State private var showCaptchaSheet = false
+    @State private var nextNewSmsNeedsCaptcha = false
+    @State private var devCodeHint: String?
 
     @State private var currentTimer: Timer?
     @State private var newTimer: Timer?
@@ -54,6 +59,14 @@ struct ChangePhoneView: View {
                 }
             }
         }
+        .sheet(isPresented: $showCaptchaSheet) {
+            CaptchaSheet(phone: newPhone, scene: "change-phone-new", templateCode: "100004") { devCode in
+                if let devCode, !devCode.isEmpty {
+                    devCodeHint = devCode
+                }
+                nextNewSmsNeedsCaptcha = true
+            }
+        }
         .alert(SafeEatL10n.text(L10nKey.Common.notice), isPresented: showErrorMessage) {
             Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) { errorMessage = nil }
         } message: {
@@ -61,6 +74,10 @@ struct ChangePhoneView: View {
         }
         .alert(SafeEatL10n.text(L10nKey.Profile.ChangePhone.success), isPresented: $showSuccess) {
             Button(SafeEatL10n.text(L10nKey.Common.ok)) { dismiss() }
+        }
+        .onDisappear {
+            currentTimer?.invalidate()
+            newTimer?.invalidate()
         }
     }
 
@@ -76,44 +93,20 @@ struct ChangePhoneView: View {
     private var verifyCurrentPhoneContent: some View {
         ProfileSurfaceCard {
             VStack(alignment: .leading, spacing: 16) {
-                ProfileStaticRow(
-                    label: SafeEatL10n.text(L10nKey.Profile.ChangePhone.currentPhoneLabel),
-                    value: maskedCurrentPhone
+                ProfileDisabledField(text: maskedCurrentPhone, colorScheme: colorScheme)
+
+                ProfileCodeRow(
+                    code: $currentCode,
+                    isDisabled: oldSmsSent || currentCountdown > 0,
+                    buttonText: oldSmsSent
+                        ? SafeEatL10n.text(L10nKey.Auth.smsSent)
+                        : (currentCountdown > 0
+                           ? "\(currentCountdown)s"
+                           : SafeEatL10n.text(L10nKey.Common.sendCode)),
+                    action: sendCurrentCode
                 )
 
-                Divider().overlay(SafeEatTheme.line)
-
-                HStack(spacing: 12) {
-                    ProfileTextField(
-                        title: SafeEatL10n.text(L10nKey.Auth.codeLabel),
-                        text: $currentCode,
-                        keyboardType: .numberPad
-                    )
-
-                    Button(action: sendCurrentCode) {
-                        Text(currentCountdown > 0
-                             ? "\(currentCountdown)s"
-                             : SafeEatL10n.text(L10nKey.Common.sendCode))
-                            .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: currentCountdown > 0
-                                                ? [SafeEatTheme.textSecondary.opacity(0.3), SafeEatTheme.textSecondary.opacity(0.3)]
-                                                : [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(currentCountdown > 0)
-                }
+                smsHintView
             }
         }
     }
@@ -123,48 +116,32 @@ struct ChangePhoneView: View {
     private var inputNewPhoneContent: some View {
         ProfileSurfaceCard {
             VStack(alignment: .leading, spacing: 16) {
-                ProfileFieldBlock(label: SafeEatL10n.text(L10nKey.Profile.ChangePhone.newPhoneLabel)) {
-                    ProfileTextField(
-                        title: SafeEatL10n.text(L10nKey.Profile.ChangePhone.newPhoneLabel),
-                        text: $newPhone,
-                        keyboardType: .phonePad
-                    )
-                }
+                ProfileTextField(
+                    title: SafeEatL10n.text(L10nKey.Profile.ChangePhone.newPhoneLabel),
+                    text: $newPhone,
+                    keyboardType: .phonePad
+                )
 
-                Divider().overlay(SafeEatTheme.line)
+                ProfileCodeRow(
+                    code: $newCode,
+                    isDisabled: newCountdown > 0 || newPhone.count < 11,
+                    buttonText: newCountdown > 0
+                        ? "\(newCountdown)s"
+                        : SafeEatL10n.text(L10nKey.Profile.ChangePhone.sendNewCode),
+                    action: sendNewCode
+                )
 
-                HStack(spacing: 12) {
-                    ProfileTextField(
-                        title: SafeEatL10n.text(L10nKey.Auth.codeLabel),
-                        text: $newCode,
-                        keyboardType: .numberPad
-                    )
-
-                    Button(action: sendNewCode) {
-                        Text(newCountdown > 0
-                             ? "\(newCountdown)s"
-                             : SafeEatL10n.text(L10nKey.Profile.ChangePhone.sendNewCode))
-                            .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: newCountdown > 0
-                                                ? [SafeEatTheme.textSecondary.opacity(0.3), SafeEatTheme.textSecondary.opacity(0.3)]
-                                                : [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(newCountdown > 0 || newPhone.count < 11)
-                }
+                smsHintView
             }
+        }
+    }
+
+    @ViewBuilder
+    private var smsHintView: some View {
+        if let devCodeHint, !devCodeHint.isEmpty {
+            Text(SafeEatL10n.format(L10nKey.Auth.smsHintFormat, devCodeHint))
+                .font(SafeEatFont.textStyle(.footnote))
+                .foregroundStyle(Color(red: 0.82, green: 0.47, blue: 0.18))
         }
     }
 
@@ -175,22 +152,31 @@ struct ChangePhoneView: View {
         startCurrentCountdown()
         Task {
             do {
-                _ = try await store.sendSMS(phone: phone)
+                _ = try await store.authorizedRequest { token in
+                    try await store.api.sendChangePhoneOldSms(accessToken: token, phone: phone)
+                }
+                oldSmsSent = true
             } catch {
                 errorMessage = error.localizedDescription
+                stopCurrentCountdown()
             }
         }
     }
 
     private func verifyCurrentPhone() {
+        guard let phone = store.profile?.phone else {
+            errorMessage = "手机号获取失败"
+            return
+        }
         isLoading = true
         Task {
             do {
-                // 验证当前手机验证码：通过登录接口验证验证码有效性
-                let phone = store.profile?.phone ?? ""
-                _ = try await store.api.login(phone: phone, code: currentCode)
-                // 验证码有效，进入下一步
-                step = .inputNew
+                let result = try await store.authorizedRequest { token in
+                    try await store.api.verifyChangePhoneOld(accessToken: token, phone: phone, code: currentCode)
+                }
+                if result.verified == true {
+                    step = .inputNew
+                }
             } catch {
                 errorMessage = error.localizedDescription
             }
@@ -200,12 +186,34 @@ struct ChangePhoneView: View {
 
     private func sendNewCode() {
         guard newPhone.count >= 11 else { return }
+
+        if nextNewSmsNeedsCaptcha {
+            showCaptchaSheet = true
+            return
+        }
+
         startNewCountdown()
         Task {
             do {
-                _ = try await store.sendSMS(phone: newPhone)
+                let response = try await store.sendSMS(phone: newPhone, scene: "change-phone-new", templateCode: "100004")
+                SMSCountdownManager.shared.markSent()
+                if let devCode = response.devCode, !devCode.isEmpty {
+                    devCodeHint = devCode
+                }
+                if response.needCaptcha == true {
+                    nextNewSmsNeedsCaptcha = true
+                }
+            } catch let error as APIError {
+                if error.localizedDescription.contains("图形验证码") {
+                    nextNewSmsNeedsCaptcha = true
+                    showCaptchaSheet = true
+                } else {
+                    errorMessage = error.localizedDescription
+                }
+                stopNewCountdown()
             } catch {
                 errorMessage = error.localizedDescription
+                stopNewCountdown()
             }
         }
     }
@@ -237,6 +245,11 @@ struct ChangePhoneView: View {
         }
     }
 
+    private func stopCurrentCountdown() {
+        currentTimer?.invalidate()
+        currentCountdown = 0
+    }
+
     private func startNewCountdown() {
         newCountdown = 60
         newTimer?.invalidate()
@@ -245,9 +258,14 @@ struct ChangePhoneView: View {
             if newCountdown <= 0 { newTimer?.invalidate() }
         }
     }
+
+    private func stopNewCountdown() {
+        newTimer?.invalidate()
+        newCountdown = 0
+    }
 }
 
-private enum ChangePhoneStep {
+private enum ChangePhoneStep: Hashable {
     case verifyCurrent
     case inputNew
 }

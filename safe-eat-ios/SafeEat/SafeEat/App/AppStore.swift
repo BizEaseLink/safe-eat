@@ -149,12 +149,12 @@ final class AppStore: ObservableObject {
         startTransactionListener()
     }
 
-    func sendSMS(phone: String) async throws -> SendSmsResponse {
-        try await api.sendSMS(phone: phone)
+    func sendSMS(phone: String, scene: String? = nil, templateCode: String? = nil) async throws -> SendSmsResponse {
+        try await api.sendSMS(phone: phone, scene: scene, templateCode: templateCode)
     }
 
-    func sendSMS(phone: String, captchaId: String, captchaCode: String) async throws -> SendSmsResponse {
-        try await api.sendSMS(phone: phone, captchaId: captchaId, captchaCode: captchaCode)
+    func sendSMS(phone: String, captchaId: String, captchaCode: String, scene: String? = nil, templateCode: String? = nil) async throws -> SendSmsResponse {
+        try await api.sendSMS(phone: phone, captchaId: captchaId, captchaCode: captchaCode, scene: scene, templateCode: templateCode)
     }
 
     func getCaptcha() async throws -> CaptchaResponse {

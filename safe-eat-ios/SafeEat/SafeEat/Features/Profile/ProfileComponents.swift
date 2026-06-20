@@ -339,6 +339,7 @@ struct ProfileSecondaryActionButton: View {
 struct ProfileFieldBlock<Content: View>: View {
     let label: String
     var hint: String? = nil
+    var onInfo: (() -> Void)? = nil
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -352,6 +353,18 @@ struct ProfileFieldBlock<Content: View>: View {
                     Text(hint)
                         .font(SafeEatFont.custom(12, relativeTo: .caption))
                         .foregroundStyle(SafeEatTheme.textSecondary)
+                }
+
+                if let onInfo {
+                    Spacer()
+                    Button {
+                        onInfo()
+                    } label: {
+                        Image(systemName: "questionmark.circle")
+                            .font(.system(size: 16))
+                            .foregroundStyle(SafeEatTheme.textSecondary)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
 
@@ -372,7 +385,7 @@ struct ProfileTextField: View {
             .font(SafeEatFont.custom(16, relativeTo: .body))
             .foregroundStyle(SafeEatTheme.textPrimary)
             .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            .frame(height: 56)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(profileControlFill(for: colorScheme))
@@ -395,7 +408,7 @@ struct ProfileSecureField: View {
             .font(SafeEatFont.custom(16, relativeTo: .body))
             .foregroundStyle(SafeEatTheme.textPrimary)
             .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            .frame(height: 56)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(profileControlFill(for: colorScheme))
@@ -450,6 +463,71 @@ struct ProfileMenuField: View {
             )
         }
         .buttonStyle(.plain)
+    }
+}
+
+struct ProfileDisabledField: View {
+    let text: String
+    let colorScheme: ColorScheme
+
+    var body: some View {
+        TextField(text, text: .constant(text))
+            .font(SafeEatFont.custom(16, relativeTo: .body))
+            .foregroundStyle(SafeEatTheme.textSecondary)
+            .disabled(true)
+            .padding(.horizontal, 16)
+            .frame(height: 56)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(profileControlFill(for: colorScheme))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(profileStrokeColor(for: colorScheme), lineWidth: 1)
+            )
+    }
+}
+
+struct ProfileCodeRow: View {
+    let code: Binding<String>
+    let isDisabled: Bool
+    let buttonText: String
+    var useDangerColor: Bool = false
+    let action: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ProfileTextField(
+                title: SafeEatL10n.text(L10nKey.Auth.codeLabel),
+                text: code,
+                keyboardType: .numberPad
+            )
+
+            Button(action: action) {
+                Text(buttonText)
+                    .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 18)
+                    .frame(height: 56)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: isDisabled
+                                        ? [SafeEatTheme.textSecondary.opacity(0.3), SafeEatTheme.textSecondary.opacity(0.3)]
+                                        : (useDangerColor
+                                            ? [SafeEatTheme.danger.opacity(0.85), SafeEatTheme.danger]
+                                            : [SafeEatTheme.primaryDeep, SafeEatTheme.primary]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                    )
+            }
+            .buttonStyle(.plain)
+            .disabled(isDisabled)
+        }
     }
 }
 

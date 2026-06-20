@@ -101,7 +101,7 @@ struct ProfileView: View {
         case .changePhone:
             ChangePhoneView()
         case .changePassword:
-            ChangePasswordView()
+            ResetPasswordView(phoneMode: .fixed)
         case .restorePurchases:
             RestorePurchasesView()
         case .deleteAccount:

@@ -282,9 +282,19 @@
 "profile.edit.basic_section" = "Basic Info";
 "profile.edit.display_name" = "Name";
 "profile.edit.gender" = "Gender";
-"profile.edit.height" = "Height (cm)";
-"profile.edit.weight" = "Weight (kg)";
+"profile.edit.height" = "Height";
+"profile.edit.weight" = "Weight";
 "profile.edit.bmi_hint" = "Calculated automatically from your height and weight";
+"profile.edit.age" = "Age";
+"profile.edit.age_placeholder" = "Enter age";
+"profile.edit.activity_level" = "Activity Level";
+"profile.edit.activity.sedentary" = "Sedentary";
+"profile.edit.activity.light" = "Lightly Active";
+"profile.edit.activity.moderate" = "Moderately Active";
+"profile.edit.activity.heavy" = "Very Active";
+"profile.edit.activity.athlete" = "Athlete";
+"profile.edit.tdee_label" = "TDEE";
+"profile.edit.tdee_unit" = "kcal/day";
 
 "profile.preference.subtitle.long" = "Tell Safe Eat about your health direction and training goal so the advice fits your routine better.";
 "profile.preference.health_tags" = "Health Tags";
@@ -312,7 +322,7 @@
 "profile.security.sync" = "Avatar, profile data, and membership status sync with the backend.";
 "profile.security.cache" = "Local cache is only used for history images, stickers, and page performance.";
 "profile.security.change_phone" = "Change Phone Number";
-"profile.security.change_password" = "Change Password";
+"profile.security.change_password" = "Find Password";
 "profile.security.delete_account" = "Delete Account";
 "profile.security.restore_purchases" = "Restore Purchases";
 
@@ -1053,6 +1063,18 @@
 "auth.terms.and" = "and";
 "auth.terms.user_agreement" = " User Agreement ";
 "auth.terms.privacy_policy" = " Privacy Policy ";
+"auth.reset_password.title" = "Reset Password";
+"auth.reset_password.subtitle" = "Set a new password via SMS verification";
+"auth.reset_password.action" = "Reset Password";
+"auth.reset_password.success" = "Password reset successfully";
+"auth.field.new_password" = "New Password";
+"auth.switch.forgot_password" = "Forgot Password";
+"auth.sms.sent" = "Sent";
+"auth.password.requirement.length" = "At least 8 characters";
+"auth.password.requirement.uppercase" = "Contains uppercase letter";
+"auth.password.requirement.lowercase" = "Contains lowercase letter";
+"auth.password.requirement.digit" = "Contains number";
+"auth.password.requirement.special" = "Contains special character";
 
 // Terms - Purchase & Delete
 "terms.purchase.prefix" = "I have read the";
