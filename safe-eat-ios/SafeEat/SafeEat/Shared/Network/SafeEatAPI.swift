@@ -467,6 +467,54 @@ final class SafeEatAPI {
         return try await send(request, as: T.self)
     }
 
+    // MARK: - 消息通知
+
+    func getNotifications(accessToken: String, page: Int, pageSize: Int, type: String?) async throws -> PaginatedResult<NotificationMessage> {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/notifications",
+            method: "GET"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+        var queryItems = [
+            URLQueryItem(name: "page", value: String(page)),
+            URLQueryItem(name: "pageSize", value: String(pageSize)),
+        ]
+        if let type {
+            queryItems.append(URLQueryItem(name: "type", value: type))
+        }
+        components?.queryItems = queryItems
+        request.url = components?.url
+        return try await sendPaginated(request, as: NotificationMessage.self)
+    }
+
+    func getUnreadCount(accessToken: String) async throws -> UnreadCountResponse {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/notifications/unread",
+            method: "GET"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: UnreadCountResponse.self)
+    }
+
+    func markNotificationRead(accessToken: String, notificationId: String) async throws {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/notifications/\(notificationId)/read",
+            method: "PUT"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        try await sendVoid(request)
+    }
+
+    func markAllNotificationsRead(accessToken: String) async throws {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/notifications/read-all",
+            method: "PUT"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        try await sendVoid(request)
+    }
+
     // MARK: - 参数化配置
 
     /// 拉取参数化配置（支持 scope 筛选，如 "ios"/"global"）

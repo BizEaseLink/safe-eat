@@ -1023,6 +1023,20 @@ enum L10nKey {
         static let noResult = "candidate.no_result"
         static let emptyHint = "candidate.empty_hint"
     }
+
+    enum Message {
+        static let centerTitle = "message.center.title"
+        static let emptyTitle = "message.empty.title"
+        static let emptySubtitle = "message.empty.subtitle"
+        static let markAllRead = "message.mark_all_read"
+        static let typeMarketing = "message.type.marketing"
+        static let typeAppUpdate = "message.type.app_update"
+        static let typeDisclosureUpdate = "message.type.disclosure_update"
+        static let typeFoodSafetyAlert = "message.type.food_safety_alert"
+        static let typeFeedbackResolved = "message.type.feedback_resolved"
+        static let typeFeedbackReward = "message.type.feedback_reward"
+        static let typeAnnualReport = "message.type.annual_report"
+    }
 }
 
 enum AppLanguage: String, CaseIterable, Identifiable {

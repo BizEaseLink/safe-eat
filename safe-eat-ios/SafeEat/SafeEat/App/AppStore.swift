@@ -30,6 +30,7 @@ final class AppStore: ObservableObject {
     @Published private(set) var localCacheUsageBytes: Int64 = 0
     @Published var pendingNotificationDate: Date?
     @Published var dailyQuota: DailyQuotaSnapshot?
+    @Published var notificationUnreadCount: Int = 0
 
     // MARK: - 服务器历史记录（MOB-2）
     @Published var serverHistory: [RecognitionRecord] = []
@@ -69,6 +70,9 @@ final class AppStore: ObservableObject {
     private let storeKitService: StoreKitServiceProtocol
     private var refreshTask: Task<AuthSession, Error>?
 
+    let notificationStore: NotificationStore
+    private var cancellables = Set<AnyCancellable>()
+
     private var transactionListener: Task<Void, Never>?
 
     private static let onboardingKey = "safe-eat.onboarding.completed"
@@ -78,14 +82,24 @@ final class AppStore: ObservableObject {
         api: SafeEatAPI,
         sessionStore: AuthSessionStore,
         historyStore: LocalHistoryStore,
-        storeKitService: StoreKitServiceProtocol = StoreKitService.shared
+        storeKitService: StoreKitServiceProtocol = StoreKitService.shared,
+        notificationStore: NotificationStore? = nil
     ) {
         self.api = api
         self.sessionStore = sessionStore
         self.historyStore = historyStore
         self.storeKitService = storeKitService
+        self.notificationStore = notificationStore ?? NotificationStore(api: api)
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: Self.onboardingKey)
         self.allowsGuestHome = UserDefaults.standard.bool(forKey: Self.guestHomeKey)
+
+        // 同步 NotificationStore 的未读数到 @Published 属性
+        self.notificationStore.$unreadCount
+            .receive(on: RunLoop.main)
+            .sink { [weak self] count in
+                self?.notificationUnreadCount = count
+            }
+            .store(in: &cancellables)
     }
 
     convenience init() {
@@ -143,6 +157,10 @@ final class AppStore: ObservableObject {
             reloadLocalHistory()
             // 启动时检查待审核反馈是否已审批
             await checkPendingFeedbacks()
+            // 启动时拉取未读消息数
+            if let token = session?.accessToken {
+                await notificationStore.fetchUnreadCount(accessToken: token)
+            }
         }
 
         // 启动 Transaction 监听，订阅状态变更时自动刷新 profile
@@ -777,6 +795,10 @@ final class AppStore: ObservableObject {
                 // profile 加载后切换到该用户的历史文件
                 historyStore.switchUser(userId: profile?.id)
                 reloadLocalHistory()
+                // 登录成功后拉取未读消息数
+                if let token = self.session?.accessToken {
+                    await notificationStore.fetchUnreadCount(accessToken: token)
+                }
             }
         }
     }

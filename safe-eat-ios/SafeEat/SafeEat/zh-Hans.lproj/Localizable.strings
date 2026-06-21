@@ -964,3 +964,16 @@
 "profile.help.title" = "帮助中心";
 "profile.help.subtitle" = "常见问题与使用指南";
 "profile.help.contact_section" = "联系我们";
+
+// Message Center
+"message.center.title" = "消息中心";
+"message.empty.title" = "暂无消息";
+"message.empty.subtitle" = "新消息会出现在这里";
+"message.mark_all_read" = "全部已读";
+"message.type.marketing" = "营销消息";
+"message.type.app_update" = "更新消息";
+"message.type.disclosure_update" = "协议更新";
+"message.type.food_safety_alert" = "食品安全预警";
+"message.type.feedback_resolved" = "反馈完成";
+"message.type.feedback_reward" = "反馈奖励";
+"message.type.annual_report" = "年度报告";

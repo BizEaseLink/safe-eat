@@ -10,6 +10,7 @@ struct ScanHomeView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var scrollOffset: CGFloat = 0
+    @State private var showNotificationCenter = false
 
     var onShowMembership: (() -> Void)?
     var onOpenResult: ((String) -> Void)?
@@ -115,6 +116,9 @@ struct ScanHomeView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .navigationDestination(isPresented: $showNotificationCenter) {
+            MessageCenterView()
+        }
         .task {
             await store.refreshDailyQuota()
         }
@@ -140,20 +144,34 @@ struct ScanHomeView: View {
 
             // 消息按钮
             Button {
-                print("[ScanHomeView] 消息按钮点击 - 预留通知入口")
+                if store.session != nil {
+                    showNotificationCenter = true
+                } else {
+                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Message.centerTitle))
+                }
             } label: {
-                Image(systemName: "bell")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-                    .frame(width: 44, height: 44)
-                    .background(
+                ZStack(alignment: .topTrailing) {
+                    Image(systemName: "bell")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .frame(width: 44, height: 44)
+                        .background(
+                            Circle()
+                                .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.72))
+                        )
+                        .overlay(
+                            Circle()
+                                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                        )
+
+                    // 未读小圆点
+                    if store.notificationUnreadCount > 0 {
                         Circle()
-                            .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.72))
-                    )
-                    .overlay(
-                        Circle()
-                            .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
-                    )
+                            .fill(SafeEatTheme.danger)
+                            .frame(width: 10, height: 10)
+                            .offset(x: 2, y: 2)
+                    }
+                }
             }
             .buttonStyle(.plain)
         }

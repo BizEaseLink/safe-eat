@@ -1107,3 +1107,16 @@
 "profile.help.title" = "Help Center";
 "profile.help.subtitle" = "FAQs & User Guide";
 "profile.help.contact_section" = "Contact Us";
+
+// Message Center
+"message.center.title" = "Messages";
+"message.empty.title" = "No Messages";
+"message.empty.subtitle" = "New messages will appear here";
+"message.mark_all_read" = "Mark All Read";
+"message.type.marketing" = "Promotion";
+"message.type.app_update" = "Update";
+"message.type.disclosure_update" = "Policy Update";
+"message.type.food_safety_alert" = "Safety Alert";
+"message.type.feedback_resolved" = "Feedback Resolved";
+"message.type.feedback_reward" = "Feedback Reward";
+"message.type.annual_report" = "Annual Report";
