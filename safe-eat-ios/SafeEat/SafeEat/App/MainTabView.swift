@@ -37,6 +37,7 @@ struct MainTabView: View {
     @State private var historyPath = NavigationPath()
     // @State private var trendPath = NavigationPath()  // v1.3.0 启用
     @State private var profilePath = NavigationPath()
+    @State private var showNotificationCenter = false
 
     private var adConfig: AdConfigStore { AdConfigStore.shared }
 
@@ -64,7 +65,7 @@ struct MainTabView: View {
     private var isAtRoot: Bool {
         switch selectedTab {
         case .home:
-            return homePath.isEmpty && resultRoute == nil && !showMembership && recognitionPhase == nil
+            return homePath.isEmpty && resultRoute == nil && !showMembership && recognitionPhase == nil && !showNotificationCenter
         case .history:
             return historyPath.isEmpty && tabNavState.isHistoryAtRoot
         // case .trend:  // v1.3.0 启用
@@ -82,6 +83,7 @@ struct MainTabView: View {
                 case .home:
                     NavigationStack(path: $homePath) {
                         ScanHomeView(
+                            showNotificationCenter: $showNotificationCenter,
                             onShowMembership: { showMembership = true },
                             onOpenResult: { itemId in
                                 resultRoute = ResultRoute(id: itemId, itemId: itemId)
@@ -108,6 +110,9 @@ struct MainTabView: View {
                 case .profile:
                     NavigationStack(path: $profilePath) {
                         ProfileView()
+                            .navigationDestination(item: $store.pushProfileRoute) { route in
+                                profileDestination(for: route)
+                            }
                     }
                 }
             }
@@ -138,6 +143,11 @@ struct MainTabView: View {
         .animation(.easeInOut(duration: 0.25), value: isAtRoot)
         .toolbar(.hidden, for: .tabBar)
         .environment(tabNavState)
+        .onChange(of: store.selectedRootTab) { _, newTab in
+            if selectedTab != newTab {
+                selectedTab = newTab
+            }
+        }
         .fullScreenCover(isPresented: $showCamera) {
             CameraCaptureView { payload in
                 guard !isFreeQuotaExceeded else {
@@ -519,6 +529,22 @@ struct MainTabView: View {
                 }
             }
         )
+    }
+
+    @ViewBuilder
+    private func profileDestination(for route: ProfileRoute) -> some View {
+        switch route {
+        case .membership:
+            MembershipPurchaseView()
+        case .updates:
+            UpdateSettingsView()
+        case .feedback:
+            FeedbackProblemView()
+        case .helpCenter:
+            HelpCenterView()
+        default:
+            ProfileView()
+        }
     }
 }
 

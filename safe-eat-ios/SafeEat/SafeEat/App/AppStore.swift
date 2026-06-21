@@ -21,6 +21,7 @@ final class AppStore: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var selectedRootTab: AppRootTab = .home
+    @Published var pushProfileRoute: ProfileRoute?
     @Published var hasCompletedOnboarding: Bool
     @Published var allowsGuestHome: Bool
     @Published var showLoginPrompt = false

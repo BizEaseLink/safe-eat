@@ -10,7 +10,7 @@ struct ScanHomeView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var scrollOffset: CGFloat = 0
-    @State private var showNotificationCenter = false
+    @Binding var showNotificationCenter: Bool
 
     var onShowMembership: (() -> Void)?
     var onOpenResult: ((String) -> Void)?
@@ -468,7 +468,7 @@ private extension Date {
 
 #Preview {
     NavigationStack {
-        ScanHomeView()
+        ScanHomeView(showNotificationCenter: .constant(false))
             .environmentObject(AppStore())
     }
 }
