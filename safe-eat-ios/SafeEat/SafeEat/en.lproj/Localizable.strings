@@ -206,6 +206,10 @@
 "reminder.on" = "On";
 "reminder.off" = "Off";
 "reminder.system_denied" = "System Permission Off";
+"reminder.enable_failed" = "Notifications are disabled. Please allow Safe Eat notifications in system settings first.";
+"reminder.denied_title" = "Cannot Enable Reminders";
+"reminder.denied_body" = "Push notification permission has been turned off. Please go to Settings to re-enable it to use reminders.";
+"reminder.denied_open_settings" = "Open Settings";
 "brand.app_name" = "Safe Eat";
 "brand.slogan" = "Every bite, a safer choice.";
 "brand.slogan_en" = "Every bite, a safer choice.";
@@ -243,6 +247,11 @@
 "error.request_failed" = "Request failed: %d";
 "error.decode_failed" = "Failed to decode response: %@";
 "request.quota_exceeded" = "Today's free recognition quota is used up. Free users can recognize 3 times per day.";
+"error.network_unavailable" = "Network unavailable. Please check your connection and try again.";
+"error.local_network_denied_title" = "Cannot Connect to Server";
+"error.local_network_denied_body" = "The app needs local network access to connect to the server. Please go to Settings → Privacy & Security → Local Network to enable it.";
+"error.local_network_open_settings" = "Open Settings";
+"error.image_capture_failed" = "Image processing failed. Please retake the photo.";
 
 "profile.root.title" = "Profile";
 "profile.hero.default_name" = "Unnamed";

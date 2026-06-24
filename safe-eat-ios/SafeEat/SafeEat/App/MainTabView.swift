@@ -32,6 +32,7 @@ struct MainTabView: View {
     // 识别流程中间数据
     @State private var identifySession: IdentifySessionData?
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.openURL) private var openURL
     @State private var scanPressed = false
     @State private var homePath = NavigationPath()
     @State private var historyPath = NavigationPath()
@@ -203,6 +204,21 @@ struct MainTabView: View {
             },
             message: {
                 Text(store.errorMessage ?? "")
+            }
+        )
+        // 本地网络权限被拒绝时的专用引导弹窗
+        .alert(
+            SafeEatL10n.text(L10nKey.Errors.localNetworkDeniedTitle),
+            isPresented: $store.showLocalNetworkDenied,
+            actions: {
+                Button(SafeEatL10n.text(L10nKey.Errors.localNetworkOpenSettings)) {
+                    guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
+                    openURL(settingsURL)
+                }
+                Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+            },
+            message: {
+                Text(SafeEatL10n.text(L10nKey.Errors.localNetworkDeniedBody))
             }
         )
         .task {

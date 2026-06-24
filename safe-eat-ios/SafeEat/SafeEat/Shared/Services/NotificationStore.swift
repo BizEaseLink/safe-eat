@@ -1,6 +1,10 @@
 import Foundation
 import Combine
 
+extension Notification.Name {
+    static let localNetworkDenied = Notification.Name("localNetworkDenied")
+}
+
 @MainActor
 final class NotificationStore: ObservableObject {
     private let api: SafeEatAPI
@@ -39,6 +43,11 @@ final class NotificationStore: ObservableObject {
             #if DEBUG
             print("[NotificationStore] fetchUnreadCount failed: \(error)")
             #endif
+            // 本地网络权限被拒绝时，通知 AppStore 显示引导弹窗
+            let nsError = error as NSError
+            if nsError.domain == NSURLErrorDomain && nsError.code == -1009 {
+                NotificationCenter.default.post(name: .localNetworkDenied, object: nil)
+            }
         }
     }
 
@@ -90,6 +99,10 @@ final class NotificationStore: ObservableObject {
             #if DEBUG
             print("[NotificationStore] fetchMessages failed: \(error)")
             #endif
+            let nsError = error as NSError
+            if nsError.domain == NSURLErrorDomain && nsError.code == -1009 {
+                NotificationCenter.default.post(name: .localNetworkDenied, object: nil)
+            }
         }
     }
 

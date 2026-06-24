@@ -2,23 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UMengAppKey</key>
-	<string>69f4675e9a7f376488d17f59</string>
-	<key>CFBundleDisplayName</key>
-	<string>食安安</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>SafeEat 需要访问本地网络以连接开发服务器</string>
 	<key>NSCameraUsageDescription</key>
-	<string>食安安需要使用相机拍照识别食物并提供饮食建议。</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>食安安会在本地保存识别历史图片用于菜单回看。</string>
+	<string>SafeEat 需要使用相机来拍摄食物照片进行识别</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>食安安需要访问相册以便选择已有图片进行识别或反馈纠错。</string>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>食安安需要使用广告标识来为您提供个性化的广告体验，您可以选择允许或拒绝。</string>
+	<string>SafeEat 需要访问相册以选择食物照片进行识别</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>SafeEat 需要保存图片到相册</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>resource/fonts/ChillRoundFRegular.ttf</string>
@@ -28,5 +24,7 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>UMengAppKey</key>
+	<string>69f4675e9a7f376488d17f59</string>
 </dict>
 </plist>

@@ -3,6 +3,7 @@ import SwiftUI
 struct SafeEatReminderSettingsSheet: View {
     @EnvironmentObject private var settings: AppSettingsStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
 
     @State private var draftEnabled = false
     @State private var draftStartDayOffset = ReminderStartDay.today.rawValue
@@ -38,6 +39,21 @@ struct SafeEatReminderSettingsSheet: View {
             draftStartDayOffset = settings.reminderStartDayOffset
             draftTimeMinutes = settings.reminderTimeMinutes
         }
+        // 推送通知权限被拒绝时的引导弹窗
+        .alert(
+            SafeEatL10n.text(L10nKey.Reminder.deniedTitle),
+            isPresented: $settings.showNotificationDenied,
+            actions: {
+                Button(SafeEatL10n.text(L10nKey.Reminder.deniedOpenSettings)) {
+                    guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
+                    openURL(settingsURL)
+                }
+                Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+            },
+            message: {
+                Text(SafeEatL10n.text(L10nKey.Reminder.deniedBody))
+            }
+        )
     }
 
     private var toggleCard: some View {

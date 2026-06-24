@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UserNotifications
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -20,6 +21,7 @@ final class AppStore: ObservableObject {
     @Published var localHistory: [LocalHistoryItem] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var showLocalNetworkDenied = false
     @Published var selectedRootTab: AppRootTab = .home
     @Published var pushProfileRoute: ProfileRoute?
     @Published var hasCompletedOnboarding: Bool
@@ -101,6 +103,14 @@ final class AppStore: ObservableObject {
                 self?.notificationUnreadCount = count
             }
             .store(in: &cancellables)
+
+        // 监听本地网络权限被拒绝的通知（来自 NotificationStore 等子 Store）
+        NotificationCenter.default.publisher(for: .localNetworkDenied)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.showLocalNetworkDenied = true
+            }
+            .store(in: &cancellables)
     }
 
     convenience init() {
@@ -150,6 +160,9 @@ final class AppStore: ObservableObject {
         defer { hasBootstrapped = true }
         session = sessionStore.load()
         reloadLocalHistory()
+
+        // 首次启动：统一请求推送通知权限（仅 .notDetermined 时弹系统弹窗）
+        await requestNotificationPermissionIfNeeded()
 
         if session != nil, !requiresPhoneBinding {
             await refreshProfile()
@@ -537,7 +550,26 @@ final class AppStore: ObservableObject {
         // 请求被取消（如 Tab 切换导致前一个请求 cancel）不应弹窗
         if let urlError = error as? URLError, urlError.code == .cancelled { return }
         if (error as NSError).code == NSURLErrorCancelled { return }
+        // 本地网络权限被拒绝（-1009），显示专用引导弹窗
+        if isLocalNetworkDeniedError(error) {
+            showLocalNetworkDenied = true
+            return
+        }
         errorMessage = error.localizedDescription
+    }
+
+    /// 检测本地网络权限被拒绝的错误
+    /// URLError.Code = -1009 (.notConnectedToInternet) + iOS 16+ 本地网络禁止时也会触发
+    private func isLocalNetworkDeniedError(_ error: Error) -> Bool {
+        let nsError = error as NSError
+        // -1009 = NSURLErrorNotConnectedToInternet
+        if nsError.domain == NSURLErrorDomain && nsError.code == -1009 {
+            return true
+        }
+        if let urlError = error as? URLError, urlError.code == .notConnectedToInternet {
+            return true
+        }
+        return false
     }
 
     // MARK: - 会员购买（StoreKit 2）
@@ -693,6 +725,17 @@ final class AppStore: ObservableObject {
     }
 
     // MARK: - 私有方法
+
+    /// 首次启动时请求推送通知权限
+    /// 仅在 .notDetermined（从未请求过）时弹系统授权弹窗
+    /// .denied 时不做任何事（用户在提醒设置中开启时会触发引导）
+    private func requestNotificationPermissionIfNeeded() async {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        guard settings.authorizationStatus == .notDetermined else { return }
+        _ = try? await UNUserNotificationCenter.current().requestAuthorization(
+            options: [.alert, .sound, .badge]
+        )
+    }
 
     private func markOrderFailedSilently(orderId: String) async {
         do {

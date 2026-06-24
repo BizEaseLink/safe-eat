@@ -43,6 +43,9 @@
 "reminder.off" = "已关闭";
 "reminder.system_denied" = "系统未授权";
 "reminder.enable_failed" = "未开启系统通知，请先在系统设置里允许食安安发送提醒。";
+"reminder.denied_title" = "无法开启提醒";
+"reminder.denied_body" = "推送通知权限已被关闭，需要前往「设置」中重新开启才能使用提醒功能。";
+"reminder.denied_open_settings" = "去设置";
 "reminder.enabled" = "已开启提醒。";
 "reminder.disabled" = "已关闭提醒。";
 "reminder.entry_subtitle" = "把每天的回看时间交给食安安来提醒。";
@@ -76,6 +79,9 @@
 "error.decode_failed" = "响应解析失败：%@";
 "request.quota_exceeded" = "今日免费识别次数已用完，免费用户每天可识别 3 次。";
 "error.network_unavailable" = "网络不可用，请检查网络连接后重试";
+"error.local_network_denied_title" = "无法连接服务器";
+"error.local_network_denied_body" = "App 需要本地网络权限才能连接服务器。请前往「设置 → 隐私与安全 → 本地网络」中开启权限";
+"error.local_network_open_settings" = "去设置";
 "error.image_capture_failed" = "图片处理失败，请重新拍照";
 
 "profile.root.title" = "个人";

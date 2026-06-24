@@ -302,8 +302,6 @@ struct LoginView: View {
                     loginRoute = .register
                 }
             }
-
-            appleCircleButton
         }
         .padding(24)
         .background(cardBackground)
@@ -348,8 +346,6 @@ struct LoginView: View {
                     loginRoute = .register
                 }
             }
-
-            appleCircleButton
         }
         .padding(24)
         .background(cardBackground)
@@ -390,8 +386,6 @@ struct LoginView: View {
                     loginRoute = .codeLogin
                 }
             }
-
-            appleCircleButton
         }
         .padding(24)
         .background(cardBackground)
@@ -638,40 +632,6 @@ struct LoginView: View {
         .buttonStyle(.plain)
     }
 
-    private var appleCircleButton: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                SignInWithAppleButton(.signIn) { request in
-                    request.requestedScopes = [.fullName]
-                } onCompletion: { result in
-                    handleAppleResult(result)
-                }
-                .signInWithAppleButtonStyle(.black)
-                .frame(width: 56, height: 56)
-                .clipShape(Circle())
-
-                Circle()
-                    .fill(Color.black)
-                    .frame(width: 56, height: 56)
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                    )
-                    .allowsHitTesting(false)
-
-                Image(systemName: "apple.logo")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(.white)
-                    .allowsHitTesting(false)
-            }
-
-            Text(SafeEatL10n.text(L10nKey.Auth.appleAction))
-                .font(SafeEatFont.custom(12, relativeTo: .caption))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-
     // MARK: - 倒计时管理器
 
     @ObservedObject private var smsCountdownManager = SMSCountdownManager.shared
@@ -747,29 +707,6 @@ struct LoginView: View {
         password = ""
         confirmPassword = ""
         devCodeHint = nil
-    }
-
-    private func handleAppleResult(_ result: Result<ASAuthorization, Error>) {
-        switch result {
-        case let .success(authorization):
-            guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-                return
-            }
-
-            let formatter = PersonNameComponentsFormatter()
-            let displayName = credential.fullName.flatMap { formatter.string(from: $0) }
-                .flatMap { value -> String? in
-                    let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-                    return trimmed.isEmpty ? nil : trimmed
-                }
-                ?? SafeEatL10n.text(L10nKey.Auth.appleNameFallback)
-
-            Task {
-                await store.loginWithApple(appleSub: credential.user, displayName: displayName)
-            }
-        case let .failure(error):
-            store.errorMessage = error.localizedDescription
-        }
     }
 }
 

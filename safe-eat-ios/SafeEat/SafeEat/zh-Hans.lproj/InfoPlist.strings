@@ -1,4 +1,4 @@
-"CFBundleDisplayName" = "食安安";
+"CFBundleDisplayName" = "食安安 sit";
 "NSCameraUsageDescription" = "食安安需要使用相机拍照识别食物并提供饮食建议。";
 "NSPhotoLibraryAddUsageDescription" = "食安安会在本地保存识别历史图片用于菜单回看。";
 "NSPhotoLibraryUsageDescription" = "食安安需要访问相册以便选择已有图片进行识别或反馈纠错。";

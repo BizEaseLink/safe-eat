@@ -65,6 +65,9 @@ enum L10nKey {
         static let off = "reminder.off"
         static let systemDenied = "reminder.system_denied"
         static let enableFailed = "reminder.enable_failed"
+        static let deniedTitle = "reminder.denied_title"
+        static let deniedBody = "reminder.denied_body"
+        static let deniedOpenSettings = "reminder.denied_open_settings"
         static let enabled = "reminder.enabled"
         static let disabled = "reminder.disabled"
         static let entrySubtitle = "reminder.entry_subtitle"
@@ -100,6 +103,9 @@ enum L10nKey {
         static let decodeFailed = "error.decode_failed"
         static let requestQuotaExceeded = "request.quota_exceeded"
         static let networkUnavailable = "error.network_unavailable"
+        static let localNetworkDeniedTitle = "error.local_network_denied_title"
+        static let localNetworkDeniedBody = "error.local_network_denied_body"
+        static let localNetworkOpenSettings = "error.local_network_open_settings"
         static let imageCaptureFailed = "error.image_capture_failed"
     }
 
@@ -1212,6 +1218,7 @@ final class AppSettingsStore: ObservableObject {
 
     @Published private(set) var notificationStatus: UNAuthorizationStatus = .notDetermined
     @Published var notificationMessage: String?
+    @Published var showNotificationDenied = false
 
     private static let languageKey = "safeeat.settings.language"
     private static let reminderKey = "safeeat.settings.reminderEnabled"
@@ -1294,18 +1301,31 @@ final class AppSettingsStore: ObservableObject {
         reminderTimeMinutes = timeMinutes
 
         if enabled {
-            let granted = try? await UNUserNotificationCenter.current().requestAuthorization(
-                options: [.alert, .sound, .badge]
-            )
-
+            // 先刷新权限状态
             await refreshNotificationStatus()
 
-            guard granted == true || notificationStatus == .authorized || notificationStatus == .provisional else {
+            // 已被用户拒绝，无法再弹系统弹窗，引导去设置
+            if notificationStatus == .denied {
                 reminderEnabled = false
-                notificationMessage = SafeEatL10n.text(L10nKey.Reminder.enableFailed)
+                showNotificationDenied = true
                 return false
             }
 
+            // 首次请求或未决定状态，弹出系统授权弹窗
+            if notificationStatus == .notDetermined {
+                let granted = try? await UNUserNotificationCenter.current().requestAuthorization(
+                    options: [.alert, .sound, .badge]
+                )
+                await refreshNotificationStatus()
+
+                guard granted == true || notificationStatus == .authorized || notificationStatus == .provisional else {
+                    reminderEnabled = false
+                    notificationMessage = SafeEatL10n.text(L10nKey.Reminder.enableFailed)
+                    return false
+                }
+            }
+
+            // 已授权或临时授权
             reminderEnabled = true
             await scheduleReminder()
             notificationMessage = SafeEatL10n.text(L10nKey.Reminder.enabled)
