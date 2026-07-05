@@ -145,7 +145,7 @@ final class LocalHistoryStore {
         previewImageData: Data?
     ) throws {
         guard let originalURL = fileURL(from: item.originalImageUri) else {
-            throw APIError.server(status: 0, message: "本地原图路径无效。")
+            throw APIError.server(status: 0, message: "本地原图路径无效。", code: nil)
         }
 
         try originalImageData.write(to: originalURL, options: [.atomic])

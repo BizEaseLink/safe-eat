@@ -1,0 +1,319 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "8D27B11F",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6784615823",
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_developerTeamID" : "M99NCSX352",
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 804675841.22157097,
+    "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "22190105",
+      "localizations" : [
+        {
+          "description" : "",
+          "displayName" : "食安安-订阅组",
+          "locale" : "zh_Hans"
+        }
+      ],
+      "name" : "safe_eat_membership",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "0.99",
+              "displayPrice" : "0.99",
+              "internalID" : "6784677590_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "0.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6784677590",
+          "introductoryOffers" : [
+
+          ],
+          "localizations" : [
+            {
+              "description" : "每月180次拍照识别+AI建议",
+              "displayName" : "Lite 月卡",
+              "locale" : "zh_Hans"
+            },
+            {
+              "description" : "180 scans/month with AI advice",
+              "displayName" : "Lite Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.bizeaselink.safeeat.lite.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "safe_eat_lite_monthly",
+          "subscriptionGroupID" : "22190105",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "9.99",
+              "displayPrice" : "9.99",
+              "internalID" : "6784683445_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "9.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6784683445",
+          "introductoryOffers" : [
+
+          ],
+          "localizations" : [
+            {
+              "description" : "每月180次拍照识别+AI建议",
+              "displayName" : "Lite 年卡",
+              "locale" : "zh_Hans"
+            },
+            {
+              "description" : "180 scans/month with AI advice",
+              "displayName" : "Lite Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.bizeaselink.safeeat.lite.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "safe_eat_lite_yearly",
+          "subscriptionGroupID" : "22190105",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "6.99",
+              "displayPrice" : "6.99",
+              "internalID" : "6784713420_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "6.99",
+          "familyShareable" : false,
+          "groupNumber" : 5,
+          "internalID" : "6784713420",
+          "introductoryOffers" : [
+
+          ],
+          "localizations" : [
+            {
+              "description" : " 1000 scans/month with AI advice",
+              "displayName" : "Premium Monthly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "每月1000次拍照识别+AI建议",
+              "displayName" : "Premium 月卡",
+              "locale" : "zh_Hans"
+            }
+          ],
+          "productID" : "com.bizeaselink.safeeat.premium.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "safe_eat_premium_monthly",
+          "subscriptionGroupID" : "22190105",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "59.99",
+              "displayPrice" : "59.99",
+              "internalID" : "6784715387_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "59.99",
+          "familyShareable" : false,
+          "groupNumber" : 6,
+          "internalID" : "6784715387",
+          "introductoryOffers" : [
+
+          ],
+          "localizations" : [
+            {
+              "description" : "1000 scans/month with AI advice",
+              "displayName" : "Premium Yearly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "每月1000次拍照识别+AI建议",
+              "displayName" : "Premium 年卡",
+              "locale" : "zh_Hans"
+            }
+          ],
+          "productID" : "com.bizeaselink.safeeat.premium.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "safe_eat_premium_yearly",
+          "subscriptionGroupID" : "22190105",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "2.99",
+              "displayPrice" : "2.99",
+              "internalID" : "6784706120_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "2.99",
+          "familyShareable" : false,
+          "groupNumber" : 3,
+          "internalID" : "6784706120",
+          "introductoryOffers" : [
+
+          ],
+          "localizations" : [
+            {
+              "description" : "月380次拍照（识别+AI建议）",
+              "displayName" : "Pro 月卡",
+              "locale" : "zh_Hans"
+            },
+            {
+              "description" : "380 scans/month with AI advice",
+              "displayName" : "Pro Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.bizeaselink.safeeat.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "safe_eat_pro_monthly",
+          "subscriptionGroupID" : "22190105",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "24.99",
+              "displayPrice" : "24.99",
+              "internalID" : "6784708544_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "24.99",
+          "familyShareable" : false,
+          "groupNumber" : 4,
+          "internalID" : "6784708544",
+          "introductoryOffers" : [
+
+          ],
+          "localizations" : [
+            {
+              "description" : "每月380次拍照识别+AI建议",
+              "displayName" : "Pro 年卡",
+              "locale" : "zh_Hans"
+            },
+            {
+              "description" : "380 scans/month with AI advice",
+              "displayName" : "Pro Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.bizeaselink.safeeat.pro.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "safe_eat_pro_yearly",
+          "subscriptionGroupID" : "22190105",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 5,
+    "minor" : 0
+  }
+}

@@ -693,3 +693,141 @@ struct ProfileSecondaryPage<Content: View, Footer: View>: View {
         }
     }
 }
+
+// MARK: - T7 取消订阅过期提醒组件（方案 B 两段式）
+
+/// 常驻轻提示：用户已关闭自动续费，权益使用至 X 日期
+/// 触发条件：autoRenew == false（与剩余天数无关，常驻显示）
+struct CancelledRenewalBanner: View {
+    let endsAt: Date
+
+    private var formattedEndsAt: String {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .none
+        f.locale = Locale.autoupdatingCurrent
+        return f.string(from: endsAt)
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "info.circle.fill")
+                .font(.system(size: 16))
+                .foregroundStyle(SafeEatTheme.warning)
+                .padding(.top, 2)
+
+            Text("已关闭自动续费，当前会员权益可正常使用至 \(formattedEndsAt)，到期后将自动关闭会员特权")
+                .font(SafeEatFont.custom(13, relativeTo: .footnote))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(SafeEatTheme.warning.opacity(0.10))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(SafeEatTheme.warning.opacity(0.35), lineWidth: 1)
+        )
+    }
+}
+
+/// 紧迫提醒：会员将于 X 日期到期（≤7 天时叠加显示）
+/// 触发条件：autoRenew == false && daysLeft <= 7
+struct ExpiryUrgentReminderView: View {
+    let endsAt: Date
+
+    private var formattedEndsAt: String {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .none
+        f.locale = Locale.autoupdatingCurrent
+        return f.string(from: endsAt)
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "exclamationmark.circle.fill")
+                .font(.system(size: 16))
+                .foregroundStyle(SafeEatTheme.danger)
+                .padding(.top, 2)
+
+            Text("您的会员将于 \(formattedEndsAt) 到期，如需继续使用请重新开通订阅")
+                .font(SafeEatFont.custom(13, relativeTo: .footnote, weight: .semibold))
+                .foregroundStyle(SafeEatTheme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(SafeEatTheme.danger.opacity(0.10))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(SafeEatTheme.danger.opacity(0.35), lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - T9 购买确认 loading 遮罩
+
+/// 全屏 loading 遮罩：购买确认期间禁 swipeBack、禁交互
+/// 右上角"取消等待"按钮解除 loading（不中止 Apple 交易）
+struct PurchaseLoadingOverlay: View {
+    /// 点击"取消等待"时调用（解除 loading，Apple 交易继续）
+    var onCancelWait: () -> Void
+
+    var body: some View {
+        ZStack {
+            // 半透明背景，挡住底层交互
+            Color.black.opacity(0.45)
+                .ignoresSafeArea()
+
+            VStack(spacing: 18) {
+                ProgressView()
+                    .tint(.white)
+                    .scaleEffect(1.2)
+
+                Text("正在确认购买…")
+                    .font(SafeEatFont.custom(15, relativeTo: .body, weight: .semibold))
+                    .foregroundStyle(.white)
+
+                Text("请勿离开此页面，购买确认通常需要几秒到一分钟")
+                    .font(SafeEatFont.custom(12, relativeTo: .caption))
+                    .foregroundStyle(.white.opacity(0.8))
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 240)
+            }
+            .padding(28)
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(Color.black.opacity(0.75))
+            )
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(alignment: .topTrailing) {
+            Button {
+                onCancelWait()
+            } label: {
+                Text("取消等待")
+                    .font(SafeEatFont.custom(13, relativeTo: .footnote))
+                    .foregroundStyle(.white.opacity(0.85))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .fill(Color.white.opacity(0.18))
+                    )
+            }
+            .padding(.top, 16)
+            .padding(.trailing, 20)
+        }
+    }
+}

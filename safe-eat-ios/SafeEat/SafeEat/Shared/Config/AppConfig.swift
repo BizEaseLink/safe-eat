@@ -16,7 +16,7 @@ enum AppConfig {
             return url
         }
         #if DEBUG
-        return URL(string: "http://192.168.31.160:3000/api")!
+        return URL(string: "http://192.168.31.189:3000/api")!
         #else
         return URL(string: "http://106.53.186.117/api")!
         #endif

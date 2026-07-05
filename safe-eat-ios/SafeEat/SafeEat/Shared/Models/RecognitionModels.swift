@@ -108,6 +108,7 @@ struct DietaryInfo: Codable {
     let isLactoseFree: Bool?
     let isLowFodmap: Bool?
     let isHalal: Bool?
+    let isBuddhistStrict: Bool?
     // isDairyFree/isNutFree 是 iOS 本地扩展字段，后端不返回
     let isDairyFree: Bool?
     let isNutFree: Bool?

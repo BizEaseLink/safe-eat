@@ -155,34 +155,34 @@ final class StoreKitService: StoreKitServiceProtocol, ObservableObject {
 // MARK: - 商品 ID 映射
 
 enum MembershipProductID {
-    // 商品 ID 格式: com.bizeasylink.safeeat.membership.<billingCycle>.<planTier>
+    // 商品 ID 格式: com.bizeaselink.safeeat.<planTier>.<billingCycle>
     // 与后端 planTier 对应: lite, pro, premium
     // 与 billingCycle 对应: monthly, yearly
 
     static let allProductIDs: [String] = [
-        "com.bizeasylink.safeeat.membership.monthly.lite",
-        "com.bizeasylink.safeeat.membership.yearly.lite",
-        "com.bizeasylink.safeeat.membership.monthly.pro",
-        "com.bizeasylink.safeeat.membership.yearly.pro",
-        "com.bizeasylink.safeeat.membership.monthly.premium",
-        "com.bizeasylink.safeeat.membership.yearly.premium",
+        "com.bizeaselink.safeeat.lite.monthly",
+        "com.bizeaselink.safeeat.lite.yearly",
+        "com.bizeaselink.safeeat.pro.monthly",
+        "com.bizeaselink.safeeat.pro.yearly",
+        "com.bizeaselink.safeeat.premium.monthly",
+        "com.bizeaselink.safeeat.premium.yearly",
     ]
 
     static func productID(for planTier: String) -> String {
-        "com.bizeasylink.safeeat.membership.\(planTier)"
+        "com.bizeaselink.safeeat.\(planTier).monthly"
     }
 
-    /// 从商品 ID 解析 planTier（格式: ...membership.<billingCycle>.<planTier>）
+    /// 从商品 ID 解析 planTier（格式: com.bizeaselink.safeeat.<planTier>.<billingCycle>）
     static func planTier(from productID: String) -> String? {
         let components = productID.components(separatedBy: ".")
         guard components.count >= 5 else { return nil }
-        return components.last
+        return components[components.count - 2]
     }
 
     /// 从商品 ID 解析 billingCycle
     static func billingCycle(from productID: String) -> String? {
         let components = productID.components(separatedBy: ".")
         guard components.count >= 5 else { return nil }
-        return components[components.count - 2]
+        return components.last
     }
 }

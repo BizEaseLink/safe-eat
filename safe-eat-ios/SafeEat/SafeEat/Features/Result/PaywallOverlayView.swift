@@ -23,10 +23,10 @@ enum PaywallSection: Int, CaseIterable {
         case .s4Minerals: return .lite
         case .s4_5TraceMinerals: return .lite      // 与 S4 同层级可见
         case .s6Glycemic: return .lite
-        case .s7Allergens: return .free            // 所有级别全可见
+        case .s7Allergens: return .pro             // 后端 PRO 级别过滤，iOS 对齐
         case .s8Dietary: return .pro               // Pro 部分露出，Premium 全可见
-        case .s9Preparation: return .pro
-        case .s10Ingredients: return .pro            // Pro 直接遮罩，Premium 全可见
+        case .s9Preparation: return .premium       // 后端 PREMIUM 级别过滤，iOS 对齐
+        case .s10Ingredients: return .premium       // 后端 PREMIUM 级别过滤，iOS 对齐
         }
     }
 

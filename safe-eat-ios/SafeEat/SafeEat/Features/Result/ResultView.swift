@@ -868,10 +868,12 @@ struct ResultView: View {
             paywallWrapped(.s8Dietary) { dietaryInfoSection }
 
             // S9 制备方式（Pro+ 可见）
-            paywallWrapped(.s9Preparation) { preparationSection }
+            // 截图临时隐藏：截完 App Store 预览图后删除此注释恢复
+            // paywallWrapped(.s9Preparation) { preparationSection }
 
             // S10 成分分解（Pro 直接遮罩，Premium 全可见）
-            paywallWrapped(.s10Ingredients) { ingredientBreakdownSection }
+            // 截图临时隐藏：截完 App Store 预览图后删除此注释恢复
+            // paywallWrapped(.s10Ingredients) { ingredientBreakdownSection }
 
             // Phase 8C: 风险标签（规则引擎）
             if let risks = recognition.riskFacts, !risks.isEmpty {
@@ -1397,6 +1399,7 @@ struct ResultView: View {
         [
             (SafeEatL10n.text(L10nKey.Result.dietVegetarian), diet.isVegetarian ?? false),
             (SafeEatL10n.text(L10nKey.Result.dietVegan), diet.isVegan ?? false),
+            (SafeEatL10n.text(L10nKey.Result.dietBuddhistStrict), diet.isBuddhistStrict ?? false),
             (SafeEatL10n.text(L10nKey.Result.dietGlutenFree), diet.isGlutenFree ?? false),
             (SafeEatL10n.text(L10nKey.Result.dietLactoseFree), diet.isLactoseFree ?? false),
             (SafeEatL10n.text(L10nKey.Result.dietHalal), diet.isHalal ?? false),

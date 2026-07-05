@@ -3,6 +3,8 @@ import Combine
 
 extension Notification.Name {
     static let localNetworkDenied = Notification.Name("localNetworkDenied")
+    /// IAP 购买完成（success 后）由 AppStore 发出，ProfileView 监听后刷新会员/个人信息
+    static let membershipPurchaseDidComplete = Notification.Name("membershipPurchaseDidComplete")
 }
 
 @MainActor

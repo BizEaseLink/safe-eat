@@ -7,14 +7,6 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>SafeEat 需要访问本地网络以连接开发服务器</string>
-	<key>NSCameraUsageDescription</key>
-	<string>SafeEat 需要使用相机来拍摄食物照片进行识别</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>SafeEat 需要访问相册以选择食物照片进行识别</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>SafeEat 需要保存图片到相册</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>resource/fonts/ChillRoundFRegular.ttf</string>
@@ -26,5 +18,7 @@
 	</array>
 	<key>UMengAppKey</key>
 	<string>69f4675e9a7f376488d17f59</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

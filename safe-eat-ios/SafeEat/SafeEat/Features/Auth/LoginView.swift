@@ -9,6 +9,8 @@ enum LoginRoute: Hashable {
     case register
     case bindPhone
     case forgotPassword
+    case accountRecovery
+    case setPassword
 }
 
 // MARK: - 登录页主视图
@@ -28,6 +30,10 @@ struct LoginView: View {
     @State private var agreedToTerms = false
     @State private var showCaptchaSheet = false
     @State private var nextSmsNeedsCaptcha = false
+    @State private var showAccountDeletingAlert = false
+    @State private var showAccountLockedAlert = false
+    @State private var showContactSupport = false
+    @State private var showTermsNotAgreed = false
 
     var body: some View {
         NavigationStack {
@@ -44,6 +50,10 @@ struct LoginView: View {
                         bindPhonePage
                     case .forgotPassword:
                         ResetPasswordView(phoneMode: .input)
+                    case .accountRecovery:
+                        AccountRecoveryView(phone: phone)
+                    case .setPassword:
+                        setPasswordPage
                     }
                 }
         }
@@ -56,6 +66,16 @@ struct LoginView: View {
         .onChange(of: store.isNewUser) { newValue in
             if newValue {
                 showNewUserAlert = true
+            }
+        }
+        .onChange(of: store.requiresRegistration) { newValue in
+            if newValue && loginRoute != .setPassword {
+                loginRoute = .setPassword
+            }
+        }
+        .onChange(of: store.requiresPasswordSetup) { newValue in
+            if newValue && loginRoute != .setPassword {
+                loginRoute = .setPassword
             }
         }
         .sheet(isPresented: $showNewUserAlert) {
@@ -75,6 +95,30 @@ struct LoginView: View {
                 // 弹过验证码后，后续请求都走 CaptchaSheet
                 nextSmsNeedsCaptcha = true
             }
+        }
+        .sheet(isPresented: $showContactSupport) {
+            ContactSupportSheet()
+        }
+        .alert(SafeEatL10n.text(L10nKey.Auth.accountDeletingTitle), isPresented: $showAccountDeletingAlert) {
+            Button(SafeEatL10n.text(L10nKey.Auth.accountDeletingRecover)) {
+                loginRoute = .accountRecovery
+            }
+            Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+        } message: {
+            Text(SafeEatL10n.text(L10nKey.Auth.accountDeletingMessage))
+        }
+        .alert(SafeEatL10n.text(L10nKey.Common.notice), isPresented: $showTermsNotAgreed) {
+            Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) {}
+        } message: {
+            Text(SafeEatL10n.text(L10nKey.Auth.termsNotAgreed))
+        }
+        .alert(SafeEatL10n.text(L10nKey.Auth.accountLockedTitle), isPresented: $showAccountLockedAlert) {
+            Button(SafeEatL10n.text(L10nKey.Auth.loginWithSms)) {
+                loginRoute = .codeLogin
+            }
+            Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+        } message: {
+            Text(SafeEatL10n.text(L10nKey.Auth.accountLockedMessage))
         }
         .alert(SafeEatL10n.text(L10nKey.Common.notice), isPresented: showError) {
             Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) { store.errorMessage = nil }
@@ -194,6 +238,31 @@ struct LoginView: View {
         .toolbar(.hidden, for: .navigationBar)
     }
 
+    // MARK: - 设置密码页（验证码登录后强制设置）
+
+    private var setPasswordPage: some View {
+        GeometryReader { proxy in
+            ZStack {
+                authBackground
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 24) {
+                        Color.clear
+                            .frame(height: SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
+
+                        heroBlock(title: SafeEatL10n.text(L10nKey.Auth.setPasswordTitle))
+                        setPasswordContent
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 36)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture { hideKeyboard() }
+        }
+        .toolbar(.hidden, for: .navigationBar)
+    }
+
     // MARK: - 共享组件
 
     private func hideKeyboard() {
@@ -288,10 +357,25 @@ struct LoginView: View {
 
             authPrimaryButton(title: SafeEatL10n.text(L10nKey.Auth.actionCodeLogin), isLoading: store.isLoading) {
                 Task {
-                    await store.login(phone: phone, code: code)
+                    await performSmsLogin()
                 }
             }
             .disabled(phone.trimmingCharacters(in: .whitespacesAndNewlines).count != 11 || code.count < 4 || store.isLoading)
+
+            // 底部辅助入口：忘记密码 | 联系客服
+            HStack {
+                Spacer()
+                miniLink(title: SafeEatL10n.text(L10nKey.Auth.forgotPassword)) {
+                    loginRoute = .forgotPassword
+                }
+                Text("|")
+                    .font(SafeEatFont.custom(14, relativeTo: .footnote))
+                    .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.5))
+                miniLink(title: SafeEatL10n.text(L10nKey.Auth.contactSupport)) {
+                    showContactSupport = true
+                }
+                Spacer()
+            }
 
             HStack {
                 miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToPassword)) {
@@ -317,10 +401,7 @@ struct LoginView: View {
 
             authPrimaryButton(title: SafeEatL10n.text(L10nKey.Auth.actionLogin), isLoading: store.isLoading) {
                 Task {
-                    await store.loginWithPassword(phone: phone, password: password)
-                    if store.isNewUser == false && store.session == nil && !store.isLoading {
-                        showPasswordLoginError = true
-                    }
+                    await performPasswordLogin()
                 }
             }
             .disabled(phone.trimmingCharacters(in: .whitespacesAndNewlines).count != 11 || password.count < 6 || store.isLoading)
@@ -333,13 +414,24 @@ struct LoginView: View {
                 Text(SafeEatL10n.text(L10nKey.Auth.passwordLoginErrorMessage))
             }
 
+            // 底部辅助入口：忘记密码 | 联系客服
             HStack {
-                miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToCode)) {
-                    loginRoute = .codeLogin
-                }
                 Spacer()
                 miniLink(title: SafeEatL10n.text(L10nKey.Auth.forgotPassword)) {
                     loginRoute = .forgotPassword
+                }
+                Text("|")
+                    .font(SafeEatFont.custom(14, relativeTo: .footnote))
+                    .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.5))
+                miniLink(title: SafeEatL10n.text(L10nKey.Auth.contactSupport)) {
+                    showContactSupport = true
+                }
+                Spacer()
+            }
+
+            HStack {
+                miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToCode)) {
+                    loginRoute = .codeLogin
                 }
                 Spacer()
                 miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToRegister)) {
@@ -412,6 +504,56 @@ struct LoginView: View {
                 resetFields()
                 loginRoute = nil
             }
+        }
+        .padding(24)
+        .background(cardBackground)
+        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
+    }
+
+    // MARK: - 设置密码内容
+
+    /// 是否为新用户注册场景（无 token，需要验证码）
+    private var isRegistrationFlow: Bool {
+        store.requiresRegistration
+    }
+
+    private var setPasswordContent: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            if isRegistrationFlow {
+                Text(SafeEatL10n.text(L10nKey.Auth.setPasswordSubtitle))
+                    .font(SafeEatFont.custom(15, relativeTo: .body))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
+
+                authField(title: SafeEatL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
+                    .disabled(true)
+                codeField
+                smsHintView
+            }
+
+            authSecureField(title: SafeEatL10n.text(L10nKey.Auth.passwordLabel), text: $password)
+            passwordRequirementHints(password)
+            authSecureField(title: SafeEatL10n.text(L10nKey.Auth.confirmPasswordLabel), text: $confirmPassword)
+            if !confirmPassword.isEmpty && password != confirmPassword {
+                Text(SafeEatL10n.text(L10nKey.Auth.passwordMismatch))
+                    .font(SafeEatFont.textStyle(.footnote))
+                    .foregroundStyle(SafeEatTheme.danger)
+            }
+
+            // 注册需要同意协议
+            if isRegistrationFlow {
+                termsAgreementRow
+            }
+
+            authPrimaryButton(title: SafeEatL10n.text(L10nKey.Auth.setPasswordTitle), isLoading: store.isLoading) {
+                if isRegistrationFlow && !agreedToTerms {
+                    showTermsNotAgreed = true
+                    return
+                }
+                Task {
+                    await setPassword()
+                }
+            }
+            .disabled(!canSubmitSetPassword || store.isLoading)
         }
         .padding(24)
         .background(cardBackground)
@@ -559,6 +701,23 @@ struct LoginView: View {
             && password == confirmPassword
     }
 
+    private var canSubmitSetPassword: Bool {
+        let passwordResult = PasswordValidator.validate(password)
+        let passwordValid = passwordResult.isValid
+            && !confirmPassword.isEmpty
+            && password == confirmPassword
+
+        if isRegistrationFlow {
+            // 新用户注册：需要手机号 + 验证码 + 密码
+            return phone.trimmingCharacters(in: .whitespacesAndNewlines).count == 11
+                && code.count >= 4
+                && passwordValid
+        } else {
+            // 老用户设密码：只需要密码
+            return passwordValid
+        }
+    }
+
     private func authField(title: String, text: Binding<String>, keyboardType: UIKeyboardType) -> some View {
         TextField(title, text: text)
             .keyboardType(keyboardType)
@@ -638,6 +797,33 @@ struct LoginView: View {
 
     // MARK: - 操作方法
 
+    /// 统一登录入口：检测 ACCOUNT_DELETING 错误码
+    private func performSmsLogin() async {
+        await store.login(phone: phone, code: code)
+        if store.accountDeletingDetected {
+            showAccountDeletingAlert = true
+            store.accountDeletingDetected = false
+        }
+    }
+
+    /// 统一密码登录入口：检测 ACCOUNT_DELETING / ACCOUNT_LOCKED 错误码
+    private func performPasswordLogin() async {
+        await store.loginWithPassword(phone: phone, password: password)
+        if store.accountDeletingDetected {
+            showAccountDeletingAlert = true
+            store.accountDeletingDetected = false
+            return
+        }
+        if store.accountLockedDetected {
+            showAccountLockedAlert = true
+            store.accountLockedDetected = false
+            return
+        }
+        if store.isNewUser == false && store.session == nil && !store.isLoading {
+            showPasswordLoginError = true
+        }
+    }
+
     private func requestSMS() async {
         // 根据当前页面决定场景：注册页用 register，其他用 login
         let scene: String = loginRoute == .register ? "register" : "login"
@@ -685,9 +871,39 @@ struct LoginView: View {
         await store.registerWithPassword(phone: phone, code: code, password: password)
     }
 
+    private func setPassword() async {
+        let result = PasswordValidator.validate(password)
+        guard result.isValid else {
+            store.errorMessage = "密码必须包含大写字母、小写字母、数字和特殊字符"
+            return
+        }
+        guard password == confirmPassword else {
+            store.errorMessage = SafeEatL10n.text(L10nKey.Auth.passwordMismatch)
+            return
+        }
+
+        if isRegistrationFlow {
+            // 新用户注册：验证码 + 密码（底层调用 setPassword API）
+            await store.registerWithPassword(phone: phone, code: code, password: password)
+            if store.session != nil {
+                store.requiresRegistration = false
+                await store.completePasswordSetup()
+            }
+        } else {
+            // 老用户设密码：只需密码（用 token 验证身份）
+            await store.setPasswordAfterLogin(password: password)
+            if store.session != nil {
+                await store.completePasswordSetup()
+            }
+        }
+    }
+
     private func handleBack() {
         if loginRoute == nil {
             store.resetOnboarding()
+        } else if loginRoute == .setPassword && isRegistrationFlow {
+            // 新用户注册流程不允许返回（必须设置密码完成注册）
+            return
         } else {
             loginRoute = nil
         }

@@ -7,13 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4397D61D2FD7DA1D00396543 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 4397D40D2FD7D6F800396543 /* Lottie */; };
+		434439D52FF3B3A500B96C63 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 434439D42FF3B3A500B96C63 /* Lottie */; };
 		43B562FB2FA4AC8A00B62CD8 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B562FA2FA4AC8A00B62CD8 /* CoreTelephony.framework */; };
 		43B562FD2FA4AC9400B62CD8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B562FC2FA4AC9400B62CD8 /* SystemConfiguration.framework */; };
 		43B562FF2FA4AC9D00B62CD8 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B562FE2FA4AC9D00B62CD8 /* AdSupport.framework */; };
 		43B563032FA4ACB000B62CD8 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B563022FA4ACB000B62CD8 /* WebKit.framework */; };
 		43B563062FA4ACCD00B62CD8 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B563052FA4ACC000B62CD8 /* libsqlite3.tbd */; };
 		43B563072FA4ACD800B62CD8 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 43B563042FA4ACB800B62CD8 /* libz.tbd */; };
+		43E2079C2FF65FF5007EB152 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43E2079B2FF65FF5007EB152 /* StoreKit.framework */; };
+		43E207A12FF660FB007EB152 /* products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 43E207A02FF660FB007EB152 /* products.storekit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,8 @@
 		43B563022FA4ACB000B62CD8 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
 		43B563042FA4ACB800B62CD8 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
 		43B563052FA4ACC000B62CD8 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/usr/lib/libsqlite3.tbd; sourceTree = DEVELOPER_DIR; };
+		43E2079B2FF65FF5007EB152 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		43E207A02FF660FB007EB152 /* products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = products.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -104,13 +108,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4397D61D2FD7DA1D00396543 /* Lottie in Frameworks */,
 				43B562FD2FA4AC9400B62CD8 /* SystemConfiguration.framework in Frameworks */,
 				43B562FB2FA4AC8A00B62CD8 /* CoreTelephony.framework in Frameworks */,
 				43B563062FA4ACCD00B62CD8 /* libsqlite3.tbd in Frameworks */,
 				43B563072FA4ACD800B62CD8 /* libz.tbd in Frameworks */,
 				43B562FF2FA4AC9D00B62CD8 /* AdSupport.framework in Frameworks */,
 				43B563032FA4ACB000B62CD8 /* WebKit.framework in Frameworks */,
+				43E2079C2FF65FF5007EB152 /* StoreKit.framework in Frameworks */,
+				434439D52FF3B3A500B96C63 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,6 +132,7 @@
 		43604B4D2F87D83A009131CE = {
 			isa = PBXGroup;
 			children = (
+				43E207A02FF660FB007EB152 /* products.storekit */,
 				43604B582F87D83A009131CE /* SafeEat */,
 				43B562E92FA4AC7000B62CD8 /* Frameworks */,
 				43604B572F87D83A009131CE /* Products */,
@@ -145,6 +151,7 @@
 		43B562E92FA4AC7000B62CD8 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				43E2079B2FF65FF5007EB152 /* StoreKit.framework */,
 				43B563052FA4ACC000B62CD8 /* libsqlite3.tbd */,
 				43B563042FA4ACB800B62CD8 /* libz.tbd */,
 				43B563022FA4ACB000B62CD8 /* WebKit.framework */,
@@ -177,7 +184,7 @@
 			);
 			name = SafeEat;
 			packageProductDependencies = (
-				4397D40D2FD7D6F800396543 /* Lottie */,
+				434439D42FF3B3A500B96C63 /* Lottie */,
 			);
 			productName = SafeEat;
 			productReference = 43604B562F87D83A009131CE /* SafeEat.app */;
@@ -233,7 +240,7 @@
 			mainGroup = 43604B4D2F87D83A009131CE;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				4397D40C2FD7D6F800396543 /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				434437892FF1260D00B96C63 /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 43604B572F87D83A009131CE /* Products */;
@@ -251,6 +258,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				43E207A12FF660FB007EB152 /* products.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -309,9 +317,10 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SafeEat/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "食安安";
-				INFOPLIST_KEY_NSCameraUsageDescription = "食安安需要使用相机拍照识别食物并提供饮食建议。";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "食安安会在本地保存识别历史图片用于菜单回看。";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "食安安需要访问相册以便选择已有图片进行识别或反馈纠错。";
+				INFOPLIST_KEY_NSCameraUsageDescription = "SafeEat 需要使用相机来拍摄食物照片进行识别";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "SafeEat 需要访问本地网络以连接开发服务器";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "SafeEat 需要保存图片到相册";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "SafeEat 需要访问相册以选择食物照片进行识别";
 				INFOPLIST_KEY_NSUserTrackingUsageDescription = "食安安需要使用广告标识来为您提供个性化的广告体验，您可以选择允许或拒绝。";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -328,13 +337,14 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 1.0.0;
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = com.bizeasylink.SafeEat;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bizeaselink.SafeEat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -365,9 +375,10 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SafeEat/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "食安安";
-				INFOPLIST_KEY_NSCameraUsageDescription = "食安安需要使用相机拍照识别食物并提供饮食建议。";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "食安安会在本地保存识别历史图片用于菜单回看。";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "食安安需要访问相册以便选择已有图片进行识别或反馈纠错。";
+				INFOPLIST_KEY_NSCameraUsageDescription = "SafeEat 需要使用相机来拍摄食物照片进行识别";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "SafeEat 需要访问本地网络以连接开发服务器";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "SafeEat 需要保存图片到相册";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "SafeEat 需要访问相册以选择食物照片进行识别";
 				INFOPLIST_KEY_NSUserTrackingUsageDescription = "食安安需要使用广告标识来为您提供个性化的广告体验，您可以选择允许或拒绝。";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -384,13 +395,14 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 1.0.0;
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = com.bizeasylink.SafeEat;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bizeaselink.SafeEat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -457,6 +469,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
+				NEW_SETTING = "";
 				ONLY_ACTIVE_ARCH = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -513,6 +526,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				NEW_SETTING = "";
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -595,20 +609,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		4397D40C2FD7D6F800396543 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+		434437892FF1260D00B96C63 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
+			repositoryURL = "https://gh-proxy.com/https://github.com/airbnb/lottie-ios.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 4.6.0;
+				minimumVersion = 4.6.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4397D40D2FD7D6F800396543 /* Lottie */ = {
+		434439D42FF3B3A500B96C63 /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4397D40C2FD7D6F800396543 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			package = 434437892FF1260D00B96C63 /* XCRemoteSwiftPackageReference "lottie-ios" */;
 			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */

@@ -30,6 +30,13 @@ final class AppStore: ObservableObject {
     @Published var loginPromptFeature: String?
     @Published var isNewUser: Bool = false
     @Published var pendingSignupBonus: Bool = false
+    /// 登录后需要设置密码（新注册用户或未设密码用户）
+    @Published var requiresPasswordSetup: Bool = false
+    /// 验证码登录未注册用户，需要注册（设密码后才算注册完成）
+    @Published var requiresRegistration: Bool = false
+    /// 登录/注册时检测到账号注销中状态
+    @Published var accountDeletingDetected: Bool = false
+    @Published var accountLockedDetected: Bool = false
     @Published private(set) var localCacheUsageBytes: Int64 = 0
     @Published var pendingNotificationDate: Date?
     @Published var dailyQuota: DailyQuotaSnapshot?
@@ -77,6 +84,9 @@ final class AppStore: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     private var transactionListener: Task<Void, Never>?
+
+    /// R2-2: 轮询任务句柄。新轮询前 cancel 旧轮询，避免快速重入并发多个轮询
+    private var pollTask: Task<VerifyPollResult, Never>?
 
     private static let onboardingKey = "safe-eat.onboarding.completed"
     private static let guestHomeKey = "safe-eat.onboarding.guest-home"
@@ -212,6 +222,40 @@ final class AppStore: ObservableObject {
         }
     }
 
+    /// 注销恢复：通过手机号+验证码恢复账号（公开接口，无需登录态）
+    func cancelDeletionPublic(phone: String, code: String) async {
+        await handleLoginTask {
+            try await api.cancelDeletionPublic(phone: phone, code: code)
+        }
+    }
+
+    /// 设置密码完成后：刷新 profile 并取消 requiresPasswordSetup 标记
+    func completePasswordSetup() async {
+        requiresPasswordSetup = false
+        await refreshProfile()
+        historyStore.switchUser(userId: profile?.id)
+        reloadLocalHistory()
+        if let token = session?.accessToken {
+            await notificationStore.fetchUnreadCount(accessToken: token)
+        }
+    }
+
+    /// 已登录用户设置密码（老用户首次设密码，无需验证码）
+    func setPasswordAfterLogin(password: String) async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let updatedSession = try await authorizedRequest { token in
+                try await api.setPasswordAfterLogin(accessToken: token, password: password)
+            }
+            finishLogin(with: updatedSession)
+            requiresPasswordSetup = false
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     func loginWithApple(appleSub: String, displayName: String?) async {
         await handleLoginTask {
             try await api.appleLogin(appleSub: appleSub, displayName: displayName)
@@ -300,7 +344,7 @@ final class AppStore: ObservableObject {
 
     func updateAvatar(_ image: UIImage) async throws -> UserProfile {
         guard let imageData = image.avatarUploadData() else {
-            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.avatarCompressionFailed))
+            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.avatarCompressionFailed), code: nil)
         }
 
         let updated = try await authorizedRequest { token in
@@ -435,12 +479,12 @@ final class AppStore: ObservableObject {
         // 原图缩小到 720 再编码，减少磁盘写入量
         let uploadSource = originalImage.scaledDown(maxDimension: 720)
         guard let originalImageData = uploadSource.jpegData(compressionQuality: 0.78) else {
-            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveOriginalFailed))
+            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveOriginalFailed), code: nil)
         }
         // raw 图进一步缩小和质量降低，仅用于旋转等降级场景
         let rawSource = (rawImage ?? originalImage).scaledDown(maxDimension: 540)
         guard let rawImageData = rawSource.jpegData(compressionQuality: 0.72) else {
-            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveHiddenOriginalFailed))
+            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveHiddenOriginalFailed), code: nil)
         }
 
         // 预览图有透明背景（背景去除），必须用 PNG 保留 alpha 通道
@@ -507,15 +551,15 @@ final class AppStore: ObservableObject {
 
     func rotateHistoryItemClockwise(_ itemID: LocalHistoryItem.ID) throws {
         guard var item = historyItem(id: itemID) else {
-            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.localRecordMissing))
+            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.localRecordMissing), code: nil)
         }
         guard let originalImage = LocalImageLoader.loadOriginalImage(for: item)?.rotated(clockwise: true) else {
-            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.localOriginalMissing))
+            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.localOriginalMissing), code: nil)
         }
 
         let rotatedPreview = LocalImageLoader.loadImage(from: item.previewImageUri)?.rotated(clockwise: true)
         guard let originalImageData = originalImage.jpegDataForUpload() else {
-            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveRotatedOriginalFailed))
+            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveRotatedOriginalFailed), code: nil)
         }
 
         let previewImageData = rotatedPreview?.pngDataForPreview()
@@ -574,6 +618,31 @@ final class AppStore: ObservableObject {
 
     // MARK: - 会员购买（StoreKit 2）
 
+    /// 购买流程结果（T8：替代"只看 purchaseError==nil"的间接判断）
+    /// 调用方按 case 处理 UI 反馈，不再依赖 purchaseError 副作用
+    enum PurchaseFlowResult {
+        /// 购买成功并拿到 transactionId（可进入轮询确认）
+        case purchased(transactionId: String)
+        /// 用户取消付款（不弹任何成功提示）
+        case userCancelled
+        /// 购买待确认（Apple pending 状态，等 Transaction.updates 异步补激活）
+        case pending
+        /// 购买失败（purchaseError 已设）
+        case failed
+    }
+
+    /// 轮询 verify-status 的结果（T9）
+    enum VerifyPollResult {
+        /// 会员已激活
+        case activated
+        /// 会员已生效但已过期（active=false）
+        case expired
+        /// 超时未确认
+        case timeout
+        /// 请求失败
+        case failed(Error)
+    }
+
     func loadMembershipProducts() async {
         do {
             membershipProducts = try await storeKitService.loadProducts()
@@ -598,8 +667,12 @@ final class AppStore: ObservableObject {
         }
     }
 
-    func purchaseMembership(product: Product, planId: String) async {
+    @discardableResult
+    func purchaseMembership(product: Product, planId: String) async -> PurchaseFlowResult {
         isPurchasingMembership = true
+        // R2-1/R1-2 修复：defer 保证所有 return 分支（含 throw / 取消 / 失败 / pending）都复位 loading，
+        // 不再依赖调用方在 View 层手动写 store.isPurchasingMembership
+        defer { isPurchasingMembership = false }
         purchaseError = nil
 
         var orderId: String?
@@ -616,18 +689,25 @@ final class AppStore: ObservableObject {
             case .success(let transaction):
                 // 3. 购买成功，发送收据到后端验证
                 await handleSuccessfulPurchase(transaction: transaction, orderId: order.id)
+                // T8：返回 purchased，让调用方决定 UI 反馈（不再依赖 purchaseError==nil）
+                // handleSuccessfulPurchase 验证失败会设 purchaseError，但只要 StoreKit 成功就算 purchased
+                return .purchased(transactionId: String(transaction.id))
 
             case .userCancelled:
                 // 用户取消，通知后端标记订单失败（静默失败）
                 await markOrderFailedSilently(orderId: order.id)
+                // T8：不设 purchaseError，调用方按 .userCancelled 不弹成功
+                return .userCancelled
 
             case .pending:
                 purchaseError = SafeEatL10n.text(L10nKey.Membership.purchasePending)
+                return .pending
 
             case .failed(let error):
                 // 购买失败，通知后端标记订单失败（静默失败）
                 purchaseError = error.localizedDescription
                 await markOrderFailedSilently(orderId: order.id)
+                return .failed
             }
         } catch {
             purchaseError = error.localizedDescription
@@ -635,9 +715,8 @@ final class AppStore: ObservableObject {
             if let orderId {
                 await markOrderFailedSilently(orderId: orderId)
             }
+            return .failed
         }
-
-        isPurchasingMembership = false
     }
 
     func restorePurchases() async {
@@ -692,6 +771,13 @@ final class AppStore: ObservableObject {
                     productId: transaction.productID
                 )
             )
+        }
+    }
+
+    /// 激活体验会员（调用后端 POST /membership/trial）
+    func activateTrialMembership() async throws -> TrialActivationResult {
+        try await authorizedRequest { token in
+            try await api.activateTrial(accessToken: token)
         }
     }
 
@@ -750,8 +836,120 @@ final class AppStore: ObservableObject {
         }
     }
 
+    // MARK: - IAP 购买状态轮询（T9）
+
+    /// 轮询后端 verify-status 接口确认购买是否真正生效
+    /// - Parameters:
+    ///   - transactionId: Apple 交易 ID
+    ///   - interval: 轮询间隔（秒），默认 5
+    ///   - timeout: 总超时（秒），默认 60
+    /// - Returns: VerifyPollResult（activated/expired/timeout/failed）
+    /// - Note: 不起 iOS 后台 Task（不可靠，§11.3），超时后靠下拉刷新 + Transaction.updates 异步补激活
+    /// - R2-2: 调用前 cancel 旧 pollTask，防快速重入并发多个轮询
+    /// - R2-3: 循环内检查 Task.isCancelled，配合 R2-2 立即退出
+    /// - S-1: 401/认证失败立即 .failed（不继续刷 token / 不登出用户）；连续网络错误 3 次也 .failed
+    func pollVerifyStatus(
+        transactionId: String,
+        interval: TimeInterval = 5,
+        timeout: TimeInterval = 60
+    ) async -> VerifyPollResult {
+        // R2-2: 取消旧轮询，避免并发
+        pollTask?.cancel()
+        let task = Task<VerifyPollResult, Never> { [weak self] in
+            guard let self else { return .failed(APIError.server(status: 0, message: "store released", code: nil)) }
+            return await self.runPollLoop(transactionId: transactionId, interval: interval, timeout: timeout)
+        }
+        pollTask = task
+        defer { pollTask = nil }
+        return await task.value
+    }
+
+    private func runPollLoop(
+        transactionId: String,
+        interval: TimeInterval,
+        timeout: TimeInterval
+    ) async -> VerifyPollResult {
+        let deadline = Date().addingTimeInterval(timeout)
+        var consecutiveNetworkErrors = 0
+        let maxConsecutiveNetworkErrors = 3  // S-2: 连续 3 次网络错误提前 .failed，不一路吞到 60s
+
+        while Date() < deadline {
+            // R2-3: cancel 检查（配合 R2-2 的 pollTask.cancel）
+            if Task.isCancelled { break }
+
+            // S-1: 轮询不走 authorizedRequest（避免 401 时 refresh 失败 logout 把用户登出）。
+            // 直接用当前 token，401/认证失败立即 .failed 由调用方提示，用户仍登录。
+            let tokenResult: Result<String, Error>
+            do {
+                tokenResult = .success(try currentAccessToken())
+            } catch {
+                // 无 session：立即 .failed（不登出，currentAccessToken 已设 showLoginPrompt）
+                return .failed(error)
+            }
+
+            do {
+                let token = try tokenResult.get()
+                let result = try await api.verifyIapStatus(accessToken: token, transactionId: transactionId)
+
+                // 单次成功请求，重置网络错误计数
+                consecutiveNetworkErrors = 0
+
+                switch result.status {
+                case "success":
+                    // 后端确认成功，刷新本地状态
+                    await refreshProfile()
+                    await loadMembershipStatus()
+                    // T10：post 通知让 ProfileView 刷新
+                    NotificationCenter.default.post(name: .membershipPurchaseDidComplete, object: nil)
+                    if result.membership?.active == false {
+                        return .expired
+                    }
+                    return .activated
+                case "failed":
+                    return .failed(APIError.server(
+                        status: 0,
+                        message: SafeEatL10n.text(L10nKey.Membership.verifyFailed),
+                        code: nil
+                    ))
+                case "pending":
+                    break // 继续轮询
+                default:
+                    break
+                }
+            } catch {
+                // S-1: 401/认证失败立即 .failed（不继续刷 token、不登出用户）
+                if isUnauthorizedError(error) {
+                    return .failed(error)
+                }
+
+                // 网络错误（URLError）累计，连续 N 次提前 .failed
+                if error is URLError || (error as NSError).domain == NSURLErrorDomain {
+                    consecutiveNetworkErrors += 1
+                    if consecutiveNetworkErrors >= maxConsecutiveNetworkErrors {
+                        return .failed(error)
+                    }
+                    // 否则继续重试
+                } else {
+                    // 其他错误（如 APIError 5xx），也算一次网络类失败，累计
+                    consecutiveNetworkErrors += 1
+                    if consecutiveNetworkErrors >= maxConsecutiveNetworkErrors {
+                        return .failed(error)
+                    }
+                }
+            }
+
+            // R2-3: sleep 前再检查一次 cancel，cancel 后立即退出不等下一轮
+            if Task.isCancelled { break }
+            try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+            // sleep 后立即检查 cancel
+            if Task.isCancelled { break }
+        }
+
+        return .timeout
+    }
+
     private func isUnauthorizedError(_ error: Error) -> Bool {
-        guard case let APIError.server(status, _) = error else {
+        guard case let APIError.server(status, _, _) = error else {
             return false
         }
         return status == 401
@@ -760,7 +958,7 @@ final class AppStore: ObservableObject {
     private func currentAccessToken() throws -> String {
         guard let token = session?.accessToken else {
             showLoginPrompt = true
-            throw APIError.server(status: 401, message: SafeEatL10n.text(L10nKey.Errors.sessionExpired))
+            throw APIError.server(status: 401, message: SafeEatL10n.text(L10nKey.Errors.sessionExpired), code: nil)
         }
         return token
     }
@@ -771,7 +969,7 @@ final class AppStore: ObservableObject {
         }
 
         guard let currentSession = session else {
-            let expiredError = APIError.server(status: 401, message: SafeEatL10n.text(L10nKey.Errors.sessionExpired))
+            let expiredError = APIError.server(status: 401, message: SafeEatL10n.text(L10nKey.Errors.sessionExpired), code: nil)
             logout(message: expiredError.localizedDescription)
             throw expiredError
         }
@@ -782,7 +980,9 @@ final class AppStore: ObservableObject {
                 accessToken: refreshed.accessToken,
                 refreshToken: refreshed.refreshToken,
                 requiresPhoneBinding: currentSession.requiresPhoneBinding,
-                isNewUser: nil
+                isNewUser: nil,
+                requiresPasswordSetup: nil,
+                requiresRegistration: nil
             )
         }
         refreshTask = task
@@ -815,25 +1015,42 @@ final class AppStore: ObservableObject {
         do {
             let logged = try await operation()
             finishLogin(with: logged)
+        } catch let error as APIError {
+            if error.errorCode == "ACCOUNT_DELETING" {
+                accountDeletingDetected = true
+            } else if error.errorCode == "ACCOUNT_LOCKED" {
+                accountLockedDetected = true
+            } else {
+                errorMessage = error.localizedDescription
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
     private func finishLogin(with session: AuthSession) {
+        // 未注册手机号：验证码通过但不发 token，需要跳转设置密码页完成注册
+        if session.needsRegistration {
+            requiresRegistration = true
+            isLoading = false
+            return
+        }
+
         applySession(session)
         isNewUser = session.isNew
         pendingSignupBonus = session.isNew
+        requiresPasswordSetup = session.needsPasswordSetup
         allowsGuestHome = true
         UserDefaults.standard.set(true, forKey: Self.guestHomeKey)
         #if DEBUG
-        print("[AppStore] login success, session updated")
+        print("[AppStore] login success, session updated, requiresPasswordSetup=\(session.needsPasswordSetup)")
         #endif
         if session.requiresPhoneBinding == true {
             profile = nil
             historyStore.switchUser(userId: nil)
             reloadLocalHistory()
-        } else {
+        } else if !session.needsPasswordSetup {
+            // 不需要设置密码时才自动加载 profile
             Task {
                 await refreshProfile()
                 // profile 加载后切换到该用户的历史文件
@@ -931,8 +1148,20 @@ final class AppStore: ObservableObject {
                 guard let transaction = try? self.checkVerifiedTransaction(result) else { continue }
                 await transaction.finish()
 
-                // 订阅状态变更（续费/退款/取消等），刷新 profile
+                // 续费/家庭共享等场景，必须同步到服务端
+                do {
+                    _ = try await self.verifyTransaction(transaction: transaction)
+                } catch {
+                    print("[AppStore] Transaction listener verifyTransaction failed: \(error)")
+                }
+
+                // 刷新 profile 确保本地状态同步
                 await self.refreshProfile()
+                await self.loadMembershipStatus()
+
+                // T9 §11.4 / T10：Transaction.updates 异步补激活（pending→success），
+                // post 通知让前端刷新（ProfileView 监听）
+                NotificationCenter.default.post(name: .membershipPurchaseDidComplete, object: nil)
             }
         }
     }
@@ -952,6 +1181,9 @@ final class AppStore: ObservableObject {
 
     var shouldShowLoginAfterOnboarding: Bool {
         if requiresPhoneBinding {
+            return true
+        }
+        if requiresPasswordSetup {
             return true
         }
         return session == nil && !allowsGuestHome

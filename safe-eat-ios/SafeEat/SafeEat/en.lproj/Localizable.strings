@@ -506,6 +506,9 @@
 "membership.purchase.confirm_bonus_title" = "Bonus Benefits";
 "membership.purchase.confirm_apple_offer" = "Apple Offer";
 "membership.purchase.confirm_final_price_hint" = "Actual charge is per Apple payment dialog. Bonus benefits will be credited after purchase.";
+"membership.purchase.confirm_auto_renewal" = "Auto-renews 24 hours before expiry. Cancel anytime.";
+"membership.purchase.confirm_cancel_path" = "To cancel: Settings → Apple ID → Subscriptions";
+"membership.purchase.confirm_trial_info" = "%d-day free trial, no charge during trial";
 "membership.purchase.confirm_pay_button" = "Confirm Pay %@";
 "membership.purchase.detail.recognition_monthly_label" = "Monthly Scans";
 "membership.purchase.detail.count_format" = "%d scans";
@@ -801,6 +804,7 @@
 "result.data.not_available" = "Data not available";
 "result.diet.vegetarian" = "Vegetarian";
 "result.diet.vegan" = "Vegan";
+"result.diet.buddhist_strict" = "Buddhist Strict";
 "result.diet.gluten_free" = "Gluten-Free";
 "result.diet.lactose_free" = "Lactose-Free";
 "result.diet.halal" = "Halal";
@@ -1129,3 +1133,24 @@
 "message.type.feedback_resolved" = "Feedback Resolved";
 "message.type.feedback_reward" = "Feedback Reward";
 "message.type.annual_report" = "Annual Report";
+
+// Auth - Login Flow Optimization
+"auth.contact_support" = "Contact Support";
+"auth.account_deleting.title" = "Account Deletion Pending";
+"auth.account_deleting.message" = "This account has been requested for deletion. Verify your identity to recover it.";
+"auth.account_deleting.recover" = "Recover Account";
+"auth.account_locked.title" = "Account Locked";
+"auth.account_locked.message" = "Too many failed password attempts. Your account is locked for 30 minutes. Please log in with SMS verification or try again later.";
+"auth.login_with_sms" = "Log in with SMS";
+"auth.account_recovery.title" = "Recover Account";
+"auth.account_recovery.subtitle" = "Recover your deleted account via SMS verification";
+"auth.account_recovery.action" = "Recover Account";
+"auth.account_recovery.success" = "Account Recovered";
+"auth.contact.xhs" = "Xiaohongshu ID";
+"auth.contact.email" = "Support Email";
+"auth.contact_support.subtitle" = "Tap to copy contact info to clipboard";
+"auth.contact.copied" = "Copied to clipboard";
+"auth.contact.default_email" = "bel_safeeat@163.com";
+"auth.terms.not_agreed" = "Please agree to the User Agreement and Privacy Policy first";
+"auth.set_password.title" = "Set Password";
+"auth.set_password.subtitle" = "Set a password to secure your account";

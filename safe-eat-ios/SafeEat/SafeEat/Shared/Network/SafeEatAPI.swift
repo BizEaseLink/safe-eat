@@ -2,17 +2,27 @@ import Foundation
 
 enum APIError: LocalizedError {
     case invalidResponse
-    case server(status: Int, message: String)
+    case server(status: Int, message: String, code: String?)
     case invalidURL
 
     var errorDescription: String? {
         switch self {
         case .invalidResponse:
             return SafeEatL10n.text(L10nKey.Errors.invalidResponse)
-        case let .server(_, message):
+        case let .server(_, message, _):
             return message
         case .invalidURL:
             return SafeEatL10n.text(L10nKey.Errors.invalidURL)
+        }
+    }
+
+    /// 后端返回的业务错误码（如 ACCOUNT_DELETING）
+    var errorCode: String? {
+        switch self {
+        case let .server(_, _, code):
+            return code
+        default:
+            return nil
         }
     }
 }
@@ -102,6 +112,18 @@ final class SafeEatAPI {
             method: "POST",
             body: PhoneCodePasswordBody(phone: phone, code: code, password: password)
         )
+
+        return try await send(request, as: AuthSession.self)
+    }
+
+    /// 已登录用户设置密码（老用户首次设密码，无需验证码）
+    func setPasswordAfterLogin(accessToken: String, password: String) async throws -> AuthSession {
+        var request = try buildJSONRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/auth/password/set-after-login",
+            method: "POST",
+            body: PasswordOnlyBody(password: password)
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 
         return try await send(request, as: AuthSession.self)
     }
@@ -268,6 +290,16 @@ final class SafeEatAPI {
         return try await send(request, as: CancelDeletionResponse.self)
     }
 
+    /// 注销恢复公开接口（无需登录态），通过短信验证码恢复账号
+    func cancelDeletionPublic(phone: String, code: String) async throws -> AuthSession {
+        let request = try buildJSONRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/auth/cancel-deletion",
+            method: "POST",
+            body: PhoneCodeBody(phone: phone, code: code)
+        )
+        return try await send(request, as: AuthSession.self)
+    }
+
     func fetchDisclosure(category: String, page: Int = 1, pageSize: Int = 20) async throws -> PaginatedResult<DisclosureItem> {
         var request = try buildRequest(
             path: "/v1/apps/\(AppConfig.appCode)/disclosures",
@@ -304,6 +336,22 @@ final class SafeEatAPI {
         return try await send(request, as: IAPVerifyTransactionResult.self)
     }
 
+    /// IAP 购买状态轮询（GET /iap/verify-status?transactionId=X）
+    /// 后端先查本地 iap_receipt_log，未命中再调 Apple Server API，返回 status + membership
+    func verifyIapStatus(accessToken: String, transactionId: String) async throws -> IAPVerifyStatusResult {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/iap/verify-status",
+            method: "GET"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "transactionId", value: transactionId)
+        ]
+        request.url = components?.url
+        return try await send(request, as: IAPVerifyStatusResult.self)
+    }
+
     func redeemCode(accessToken: String, code: String) async throws -> RedeemCodeResult {
         var request = try buildJSONRequest(
             path: "/v1/apps/\(AppConfig.appCode)/membership/redeem",
@@ -312,6 +360,16 @@ final class SafeEatAPI {
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         return try await send(request, as: RedeemCodeResult.self)
+    }
+
+    func activateTrial(accessToken: String) async throws -> TrialActivationResult {
+        var request = try buildJSONRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/membership/trial",
+            method: "POST",
+            body: EmptyPayload()
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: TrialActivationResult.self)
     }
 
     func getAvailableCampaigns(accessToken: String, page: Int = 1, pageSize: Int = 20) async throws -> PaginatedResult<AvailableCampaign> {
@@ -386,7 +444,7 @@ final class SafeEatAPI {
 
         let result = try await sendPaginated(request, as: RecognitionRecord.self)
         guard let first = result.items.first else {
-            throw APIError.server(status: 200, message: SafeEatL10n.text(L10nKey.Errors.invalidResponse))
+            throw APIError.server(status: 200, message: SafeEatL10n.text(L10nKey.Errors.invalidResponse), code: nil)
         }
         return first
     }
@@ -617,17 +675,22 @@ final class SafeEatAPI {
             if status == 1 { return }
             let errorMessage = json["message"] as? String
                 ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
+            let errorCode = json["code"] as? String
             throw APIError.server(
                 status: httpResponse.statusCode,
-                message: localizedMessage(for: errorMessage, statusCode: httpResponse.statusCode)
+                message: localizedMessage(for: errorMessage, statusCode: httpResponse.statusCode),
+                code: errorCode
             )
         }
 
         guard (200 ..< 300).contains(httpResponse.statusCode) else {
-            let serverMessage = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["message"] as? String
+            let jsonObj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+            let serverMessage = jsonObj?["message"] as? String
+            let serverCode = jsonObj?["code"] as? String
             throw APIError.server(
                 status: httpResponse.statusCode,
-                message: localizedMessage(for: serverMessage, statusCode: httpResponse.statusCode)
+                message: localizedMessage(for: serverMessage, statusCode: httpResponse.statusCode),
+                code: serverCode
             )
         }
     }
@@ -662,8 +725,8 @@ final class SafeEatAPI {
                 guard let responseData = json["data"] else {
                     throw APIError.server(
                         status: httpResponse.statusCode,
-                        message: SafeEatL10n.text(L10nKey.Errors.invalidResponse)
-                    )
+                        message: SafeEatL10n.text(L10nKey.Errors.invalidResponse),
+                        code: nil)
                 }
                 let dataJSON = try JSONSerialization.data(withJSONObject: responseData)
                 do {
@@ -677,15 +740,17 @@ final class SafeEatAPI {
                     #endif
                     throw APIError.server(
                         status: httpResponse.statusCode,
-                        message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription)
-                    )
+                        message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription),
+                        code: nil)
                 }
             } else {
                 let errorMessage = json["message"] as? String
                     ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
+                let errorCode = json["code"] as? String
                 throw APIError.server(
                     status: httpResponse.statusCode,
-                    message: localizedMessage(for: errorMessage, statusCode: httpResponse.statusCode)
+                    message: localizedMessage(for: errorMessage, statusCode: httpResponse.statusCode),
+                    code: errorCode
                 )
             }
         }
@@ -693,9 +758,11 @@ final class SafeEatAPI {
         // 旧格式兼容：后端拦截器未启用时，直接解码整个 body
         guard (200 ..< 300).contains(httpResponse.statusCode) else {
             let serverMessage = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["message"] as? String
+            let serverCode = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["code"] as? String
             throw APIError.server(
                 status: httpResponse.statusCode,
-                message: localizedMessage(for: serverMessage, statusCode: httpResponse.statusCode)
+                message: localizedMessage(for: serverMessage, statusCode: httpResponse.statusCode),
+                code: serverCode
             )
         }
 
@@ -704,8 +771,8 @@ final class SafeEatAPI {
         } catch {
             throw APIError.server(
                 status: httpResponse.statusCode,
-                message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription)
-            )
+                message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription),
+                        code: nil)
         }
     }
 
@@ -716,8 +783,8 @@ final class SafeEatAPI {
         guard let first = array.first else {
             throw APIError.server(
                 status: 200,
-                message: SafeEatL10n.text(L10nKey.Errors.invalidResponse)
-            )
+                message: SafeEatL10n.text(L10nKey.Errors.invalidResponse),
+                        code: nil)
         }
         return first
     }
@@ -741,7 +808,7 @@ final class SafeEatAPI {
         else {
             let errorMessage = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["message"] as? String
                 ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
-            throw APIError.server(status: httpResponse.statusCode, message: errorMessage)
+            throw APIError.server(status: httpResponse.statusCode, message: errorMessage, code: nil)
         }
 
         do {
@@ -768,8 +835,8 @@ final class SafeEatAPI {
             #endif
             throw APIError.server(
                 status: httpResponse.statusCode,
-                message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription)
-            )
+                message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription),
+                        code: nil)
         }
     }
 
@@ -852,6 +919,10 @@ private struct PhonePasswordBody: Encodable {
 private struct PhoneCodePasswordBody: Encodable {
     let phone: String
     let code: String
+    let password: String
+}
+
+private struct PasswordOnlyBody: Encodable {
     let password: String
 }
 

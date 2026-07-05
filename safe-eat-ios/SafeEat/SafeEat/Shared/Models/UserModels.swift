@@ -155,6 +155,23 @@ struct IAPVerifyTransactionResult: Decodable {
     let transactionId: String
 }
 
+// MARK: - IAP 购买状态轮询（GET /iap/verify-status）
+
+/// 后端 verify-status 返回的 membership 子结构（与 /membership/me 部分字段对齐）
+struct IAPVerifyStatusMembership: Decodable {
+    let tier: String?
+    let endsAt: Date?
+    let autoRenew: Bool?
+    let active: Bool?
+}
+
+/// 后端 verify-status 响应
+/// status: "pending" | "success" | "failed"
+struct IAPVerifyStatusResult: Decodable {
+    let status: String
+    let membership: IAPVerifyStatusMembership?
+}
+
 // MARK: - 兑换码使用（新 Redeem API）
 
 struct RedeemCodePayload: Encodable {
@@ -172,6 +189,17 @@ struct RedeemGranted: Decodable {
     let days: Int
     let recognitionQuota: Int
     let aiQuota: Int
+}
+
+// MARK: - 体验会员激活
+
+struct EmptyPayload: Encodable {}
+
+struct TrialActivationResult: Decodable {
+    let id: String
+    let tier: String
+    let isTrial: Bool
+    let endsAt: Date
 }
 
 // MARK: - 会员权益查询（/membership/me）

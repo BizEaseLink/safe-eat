@@ -368,6 +368,9 @@
 "membership.purchase.confirm_bonus_title" = "赠送权益";
 "membership.purchase.confirm_apple_offer" = "Apple 优惠";
 "membership.purchase.confirm_final_price_hint" = "实际扣费以 Apple 支付弹窗为准，赠送权益将在购买后自动到账";
+"membership.purchase.confirm_auto_renewal" = "到期前24小时自动扣款，可随时取消";
+"membership.purchase.confirm_cancel_path" = "取消路径：设置 → Apple ID → 订阅";
+"membership.purchase.confirm_trial_info" = "%d天免费试用，试用期间不扣费";
 "membership.purchase.confirm_pay_button" = "确认支付 %@";
 "membership.purchase.detail.recognition_monthly_label" = "月识别额度";
 "membership.purchase.detail.count_format" = "%d 次";
@@ -801,8 +804,9 @@
 "result.glycemic.sugar" = "含糖量";
 "result.glycemic.not_collected" = "暂时未收集";
 "result.data.not_available" = "暂无数据";
-"result.diet.vegetarian" = "素食友好";
+"result.diet.vegetarian" = "蛋奶素友好";
 "result.diet.vegan" = "纯素友好";
+"result.diet.buddhist_strict" = "佛教全素";
 "result.diet.gluten_free" = "无麸质";
 "result.diet.lactose_free" = "无乳糖";
 "result.diet.halal" = "清真";
@@ -983,3 +987,24 @@
 "message.type.feedback_resolved" = "反馈完成";
 "message.type.feedback_reward" = "反馈奖励";
 "message.type.annual_report" = "年度报告";
+
+// Auth - 登录流程优化
+"auth.contact_support" = "联系客服";
+"auth.account_deleting.title" = "账号注销中";
+"auth.account_deleting.message" = "账号已申请注销，如需恢复请验证身份";
+"auth.account_deleting.recover" = "恢复账号";
+"auth.account_locked.title" = "账号已锁定";
+"auth.account_locked.message" = "密码连续错误次数过多，账号已被锁定30分钟。请使用短信验证码登录，或稍后再试。";
+"auth.login_with_sms" = "使用短信验证码登录";
+"auth.account_recovery.title" = "恢复账号";
+"auth.account_recovery.subtitle" = "通过短信验证码恢复已注销的账号";
+"auth.account_recovery.action" = "恢复账号";
+"auth.account_recovery.success" = "账号已恢复";
+"auth.contact.xhs" = "小红书号";
+"auth.contact.email" = "客服邮箱";
+"auth.contact_support.subtitle" = "点击联系方式可复制到剪贴板";
+"auth.contact.copied" = "已复制到剪贴板";
+"auth.contact.default_email" = "bel_safeeat@163.com";
+"auth.terms.not_agreed" = "请先同意用户协议和隐私政策";
+"auth.set_password.title" = "设置密码";
+"auth.set_password.subtitle" = "设置密码以保护您的账户安全";

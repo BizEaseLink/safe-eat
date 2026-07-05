@@ -28,7 +28,6 @@ struct MainTabView: View {
     @State private var resultRoute: ResultRoute?
     @State private var showAdRewardResult = false
     @State private var adRewardResultType: AdRewardResultType = .claimFailed
-    @State private var showSignupBonus = false
     // 识别流程中间数据
     @State private var identifySession: IdentifySessionData?
     @Environment(\.colorScheme) private var colorScheme
@@ -187,12 +186,6 @@ struct MainTabView: View {
         .sheet(isPresented: $showAdRewardResult) {
             AdRewardResultSheet(resultType: adRewardResultType)
         }
-        .sheet(isPresented: $showSignupBonus) {
-            SignupBonusSheet(bonusQuota: 10) {
-                showSignupBonus = false
-                store.pendingSignupBonus = false
-            }
-        }
         .alert(
             SafeEatL10n.text(L10nKey.Common.notice),
             isPresented: Binding<Bool>(
@@ -223,9 +216,6 @@ struct MainTabView: View {
         )
         .task {
             await store.refreshDailyQuota()
-            if store.pendingSignupBonus {
-                showSignupBonus = true
-            }
         }
         // 初始化配置：进入首页 2 秒后后台拉取广告配置和参数配置
         // 仅在初始化时检查缓存过期，使用时直接读内存不检查过期
@@ -500,7 +490,7 @@ struct MainTabView: View {
     }
 
     private func isQuotaExceededError(_ error: Error) -> Bool {
-        guard case let APIError.server(status, message) = error else { return false }
+        guard case let APIError.server(status, message, _) = error else { return false }
         return status == 400 && message == SafeEatL10n.text(L10nKey.Errors.requestQuotaExceeded)
     }
 

@@ -11,6 +11,8 @@ struct ProfileView: View {
     @State private var activeSheet: ProfileSheet?
     @State private var didWarmProfileData = false
     @State private var showRedeemCodeSheet = false
+    /// T10：onAppear 防抖时间戳（5s 内不重复刷新）
+    @State private var lastRefreshAt: Date?
 
     private let scrollCoordinateSpace = "safeeat.profile.scroll"
 
@@ -49,6 +51,11 @@ struct ProfileView: View {
                 .onPreferenceChange(SafeEatScrollOffsetKey.self) { value in
                     scrollOffset = value
                 }
+                // T10：下拉刷新
+                .refreshable {
+                    await store.refreshProfile()
+                    await store.loadMembershipStatus()
+                }
 
                 SafeEatScrollNavChrome(
                     title: SafeEatL10n.text(L10nKey.Profile.title),
@@ -72,6 +79,18 @@ struct ProfileView: View {
         }
         .task {
             await warmProfileDataIfNeeded()
+        }
+        // T10：每次进个人页防抖刷新 membershipStatus（5s 内不重复刷）
+        .onAppear {
+            Task { await refreshMembershipIfStale() }
+        }
+        // T10：购买完成通知触发强制刷新（跳过防抖）
+        .onReceive(NotificationCenter.default.publisher(for: .membershipPurchaseDidComplete)) { _ in
+            Task {
+                await store.refreshProfile()
+                await store.loadMembershipStatus()
+                lastRefreshAt = Date()
+            }
         }
     }
 
@@ -297,11 +316,69 @@ struct ProfileView: View {
     // MARK: - 会员入口（扁平极简等级卡片，4 种背景色）
 
     private var membershipEntry: some View {
-        NavigationLink(value: ProfileRoute.membership) {
-            let tier = PlanTierMapper.map(store.profile?.currentPlanTier)
-            MembershipTierCard(tier: tier)
+        VStack(spacing: 10) {
+            NavigationLink(value: ProfileRoute.membership) {
+                let tier = PlanTierMapper.map(store.profile?.currentPlanTier)
+                MembershipTierCard(tier: tier)
+            }
+            .buttonStyle(.plain)
+
+            // T7：取消订阅过期提醒（两段式，方案 B）
+            cancelledRenewalReminders
+
+            // T12：跳转系统订阅管理页（仅付费会员显示）
+            if store.membershipStatus?.active == true {
+                manageSubscriptionsLink
+            }
+        }
+    }
+
+    /// T12：跳转 Apple 系统订阅管理页
+    /// 用 itms-apps 协议跳 App Store 订阅页，兼容性好，不依赖 UIWindowScene
+    private var manageSubscriptionsLink: some View {
+        Link(destination: URL(string: "https://apps.apple.com/account/subscriptions")!) {
+            HStack(spacing: 8) {
+                Image(systemName: "creditcard.and.123")
+                    .font(.system(size: 14))
+                    .foregroundStyle(SafeEatTheme.primary)
+                Text("管理订阅")
+                    .font(SafeEatFont.custom(13, relativeTo: .footnote))
+                    .foregroundStyle(SafeEatTheme.primary)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(SafeEatTheme.primary.opacity(0.08))
+            )
         }
         .buttonStyle(.plain)
+    }
+
+    /// T7：根据 autoRenew + endsAt 渲染两段式提醒
+    /// - 常驻轻提示：autoRenew == false 即显示
+    /// - 紧迫提醒：autoRenew == false && daysLeft <= 7 叠加显示
+    @ViewBuilder
+    private var cancelledRenewalReminders: some View {
+        if let status = store.membershipStatus,
+           status.active == true,
+           status.autoRenew == false,
+           let endsAt = status.endsAt,
+           endsAt > Date() {
+            // daysLeft 按自然天计算（截断到日，防时区/夏令时，R-12）
+            let daysLeft = Calendar.current.dateComponents([.day], from: Date(), to: endsAt).day ?? 0
+
+            CancelledRenewalBanner(endsAt: endsAt)
+
+            if daysLeft <= 7 {
+                ExpiryUrgentReminderView(endsAt: endsAt)
+            }
+        }
     }
 
     // MARK: - 账号与安全（含兑换码、订单历史）
@@ -620,6 +697,19 @@ struct ProfileView: View {
 
         guard store.session != nil else { return }
         await store.refreshProfile()
+        await store.loadMembershipStatus()
+        lastRefreshAt = Date()
+    }
+
+    /// T10：进个人页防抖刷新（5s 内不重复刷）
+    /// 仅刷新 membershipStatus（轻量），profile 由 warmProfileDataIfNeeded 首次预热
+    private func refreshMembershipIfStale() async {
+        let now = Date()
+        if let last = lastRefreshAt, now.timeIntervalSince(last) < 5 {
+            return  // 5s 内已刷过，跳过
+        }
+        lastRefreshAt = now
+        await store.loadMembershipStatus()
     }
 
     private func requestAppReview() {

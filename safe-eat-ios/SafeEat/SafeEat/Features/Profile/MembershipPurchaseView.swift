@@ -16,6 +16,19 @@ struct MembershipPurchaseView: View {
     @State private var showTrialPrompt = false
     @State private var showPurchaseConfirmSheet = false
     @State private var agreedToPurchaseTerms = false
+    @State private var activatingTrial = false
+    /// T9：是否正在轮询确认购买状态（控制 loading 遮罩）
+    @State private var isPollingVerifyStatus = false
+    /// T9：用户点"取消等待"时为 true，解除 loading 但不中止 Apple 交易
+    @State private var didCancelWaiting = false
+    /// T11：当前选中方案相对当前订阅的升级类型（决定文案）
+    @State private var pendingUpgradeKind: UpgradeKind? = nil
+
+    /// T11：升级类型
+    enum UpgradeKind {
+        case crossLevel      // 跨 Level 升级（Lite→Pro / Pro→Premium）
+        case sameLevelCycle  // 同 Level 月/年切换（Pro 月↔Pro 年）
+    }
 
     private var isNewUser: Bool {
         guard let tier = store.profile?.currentPlanTier else { return true }
@@ -72,7 +85,11 @@ struct MembershipPurchaseView: View {
                     isLoading: creatingOrder || store.isPurchasingMembership,
                     isDisabled: selectedPlanID == nil || !agreedToPurchaseTerms
                 ) {
-                    showPurchaseConfirmSheet = true
+                    if store.trialAvailable {
+                        showTrialPrompt = true
+                    } else {
+                        showPurchaseConfirmSheet = true
+                    }
                 }
 
                 // 恢复购买按钮
@@ -101,6 +118,17 @@ struct MembershipPurchaseView: View {
         } message: {
             Text(successMessage ?? "")
         }
+        // R1-1: purchaseError 绑 alert，超时/failed 都提示用户（之前 onChange 是空闭包，用户看不到）
+        .alert(SafeEatL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
+            get: { store.purchaseError != nil },
+            set: { if !$0 { store.purchaseError = nil } }
+        )) {
+            Button(SafeEatL10n.text(L10nKey.Common.ok)) {
+                store.purchaseError = nil
+            }
+        } message: {
+            Text(store.purchaseError ?? "")
+        }
         .sheet(isPresented: $showTrialPrompt) {
             trialPromptSheet
         }
@@ -117,11 +145,20 @@ struct MembershipPurchaseView: View {
         .sheet(item: $benefitsPlan) {
             benefitsDetailSheet(for: $0.plan)
         }
-        .onChange(of: store.purchaseError) { newValue in
-            if newValue != nil && isNewUser {
-                showTrialPrompt = true
+        // T9：购买确认期间全屏 loading 遮罩 + 禁交互
+        // 注：iOS 17 无标准 API 禁 swipeBack，overlay 全屏覆盖 + disabled 已最大限度阻挡；
+        // 即使加载期间用户滑动返回，AppStore 轮询 Task 仍在单例上运行，最终一致
+        .overlay {
+            if store.isPurchasingMembership || isPollingVerifyStatus {
+                PurchaseLoadingOverlay {
+                    // 用户点"取消等待"：解除本地 loading，不中止 Apple 交易
+                    // R2-1: 不再写 store.isPurchasingMembership（由 AppStore.purchaseMembership 的 defer 复位）
+                    isPollingVerifyStatus = false
+                    didCancelWaiting = true
+                }
             }
         }
+        .disabled(store.isPurchasingMembership || isPollingVerifyStatus)
     }
 
     // MARK: - 新用户赠送提示
@@ -503,34 +540,60 @@ struct MembershipPurchaseView: View {
 
     private var trialPromptSheet: some View {
         SafeEatSettingsSheetContainer(
-            title: SafeEatL10n.text(L10nKey.Membership.trialPromptTitle),
-            subtitle: SafeEatL10n.text(L10nKey.Membership.trialPromptBody),
-            contentHeight: 120,
-            primaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Membership.trialPromptAction)) {
+            title: "体验 Premium 会员",
+            subtitle: "免费体验3天最高等级会员，享受全部功能",
+            contentHeight: 160,
+            primaryButton: SheetButton(title: "立即体验") {
                 showTrialPrompt = false
+                Task { await activateTrial() }
             },
-            secondaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Common.cancel)) {
+            secondaryButton: SheetButton(title: "稍后使用") {
                 showTrialPrompt = false
+                showPurchaseConfirmSheet = true
             }
         ) {
             ProfileSurfaceCard {
-                HStack(spacing: 14) {
-                    ZStack {
-                        Circle()
-                            .fill(SafeEatTheme.primary.opacity(0.12))
-                            .frame(width: 46, height: 46)
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 14) {
+                        ZStack {
+                            Circle()
+                                .fill(SafeEatTheme.primary.opacity(0.12))
+                                .frame(width: 46, height: 46)
 
-                        Image(systemName: "gift.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(SafeEatTheme.primary)
+                            Image(systemName: "crown.fill")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(SafeEatTheme.warning)
+                        }
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("3天 Premium 体验")
+                                .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
+                                .foregroundStyle(SafeEatTheme.textPrimary)
+
+                            Text("全部功能解锁，到期自动降级")
+                                .font(SafeEatFont.textStyle(.footnote))
+                                .foregroundStyle(SafeEatTheme.textSecondary)
+                        }
                     }
 
-                    Text(SafeEatL10n.text(L10nKey.Membership.trialPromptBody))
-                        .font(SafeEatFont.textStyle(.footnote))
+                    Text("体验结束后可随时购买正式会员")
+                        .font(SafeEatFont.textStyle(.caption))
                         .foregroundStyle(SafeEatTheme.textSecondary)
                 }
             }
         }
+    }
+
+    private func activateTrial() async {
+        activatingTrial = true
+        do {
+            _ = try await store.activateTrialMembership()
+            successMessage = "体验会员已激活，畅享3天 Premium！"
+        } catch {
+            // 激活失败，继续正常购买流程
+            showPurchaseConfirmSheet = true
+        }
+        activatingTrial = false
     }
 
     // MARK: - Purchase Confirm Sheet（付款折扣展示）
@@ -543,7 +606,7 @@ struct MembershipPurchaseView: View {
         return SafeEatSettingsSheetContainer(
             title: SafeEatL10n.text(L10nKey.Membership.confirmSheetTitle),
             subtitle: "\(PlanTierMapper.title(plan.tier)) \(cycleTitle)",
-            contentHeight: 240,
+            contentHeight: 340,
             primaryButton: SheetButton(
                 title: SafeEatL10n.format(L10nKey.Membership.confirmPayButton, displayPrice(for: plan)),
                 isLoading: creatingOrder || store.isPurchasingMembership
@@ -557,6 +620,11 @@ struct MembershipPurchaseView: View {
         ) {
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 16) {
+                    // T11：升级/切换文案（按 Level 是否跨级区分）
+                    if let kind = upgradeKind(for: plan) {
+                        upgradeKindNoticeView(kind: kind)
+                    }
+
                     // 原价
                     HStack {
                         Text(SafeEatL10n.text(L10nKey.Membership.confirmOriginalPrice))
@@ -614,6 +682,45 @@ struct MembershipPurchaseView: View {
                         .foregroundStyle(SafeEatTheme.textSecondary)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
+
+                    // 合规提示区
+                    Divider().overlay(SafeEatTheme.line)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        // 免费试用说明（仅含试用优惠时显示）
+                        if let product = storeKitProduct(for: plan),
+                           let intro = product.subscription?.introductoryOffer,
+                           intro.paymentMode == .freeTrial {
+                            HStack(spacing: 6) {
+                                Image(systemName: "gift.fill")
+                                    .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                                    .foregroundStyle(SafeEatTheme.primary)
+                                Text(SafeEatL10n.format(L10nKey.Membership.confirmTrialInfo, trialDays(for: intro)))
+                                    .font(SafeEatFont.custom(12, relativeTo: .caption2))
+                                    .foregroundStyle(SafeEatTheme.primary)
+                            }
+                        }
+
+                        // 自动续费提示
+                        HStack(spacing: 6) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                                .foregroundStyle(SafeEatTheme.textSecondary)
+                            Text(SafeEatL10n.text(L10nKey.Membership.confirmAutoRenewal))
+                                .font(SafeEatFont.custom(12, relativeTo: .caption2))
+                                .foregroundStyle(SafeEatTheme.textSecondary)
+                        }
+
+                        // 取消路径提示
+                        HStack(spacing: 6) {
+                            Image(systemName: "xmark.circle")
+                                .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                                .foregroundStyle(SafeEatTheme.textSecondary)
+                            Text(SafeEatL10n.text(L10nKey.Membership.confirmCancelPath))
+                                .font(SafeEatFont.custom(12, relativeTo: .caption2))
+                                .foregroundStyle(SafeEatTheme.textSecondary)
+                        }
+                    }
                 }
             }
         }
@@ -763,6 +870,64 @@ struct MembershipPurchaseView: View {
         return tierOrder(plan.tier) < tierOrder(currentTier)
     }
 
+    // MARK: - T11 升级类型判定 + 文案
+
+    /// 判定当前选中方案相对当前订阅的升级类型
+    /// - 跨 Level（tier 不同）：crossLevel
+    /// - 同 Level 月/年切换（tier 同 + cycle 不同）：sameLevelCycle
+    /// - 同 tier 同 cycle（重新点同一产品）：返回 nil，不显示文案
+    /// - R1-6: currentTier == "free"（新用户首购）返回 nil，不显示"原套餐退款"升级专属文案
+    private func upgradeKind(for plan: MembershipPlan) -> UpgradeKind? {
+        let currentTier = store.profile?.currentPlanTier ?? "free"
+        // R1-6: free 用户首购，没有"原套餐"可退，不显示升级专属文案
+        if currentTier == "free" {
+            return nil
+        }
+        if plan.tier != currentTier {
+            return .crossLevel
+        }
+        // tier 相同：看 cycle 是否不同
+        if let currentCycle = store.membershipStatus?.billingCycle,
+           plan.billingCycle != currentCycle {
+            return .sameLevelCycle
+        }
+        return nil
+    }
+
+    private func upgradeKindNoticeView(kind: UpgradeKind) -> some View {
+        let text: String
+        let icon: String
+        let color: Color
+        switch kind {
+        case .crossLevel:
+            text = "升级高阶会员将全额扣除套餐费用，原套餐未使用时长按比例原路退款，权益立即生效"
+            icon = "arrow.up.circle.fill"
+            color = SafeEatTheme.primary
+        case .sameLevelCycle:
+            text = "同权限时长切换，本期会员时长不变，新套餐将于当前会员到期后生效"
+            icon = "arrow.triangle.2.circlepath.circle.fill"
+            color = SafeEatTheme.accent
+        }
+
+        return HStack(alignment: .top, spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundStyle(color)
+                .padding(.top, 2)
+            Text(text)
+                .font(SafeEatFont.custom(12, relativeTo: .caption))
+                .foregroundStyle(SafeEatTheme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(color.opacity(0.10))
+        )
+    }
+
     /// 判断某方案是否为当前精确订阅（tier + billingCycle 完全匹配）
     /// 当前精确订阅的圆圈不可点击（已订阅，无需再选）
     private func isCurrentExactPlan(_ plan: MembershipPlan) -> Bool {
@@ -875,6 +1040,16 @@ struct MembershipPurchaseView: View {
         return product.subscription?.introductoryOffer != nil
     }
 
+    private func trialDays(for offer: Product.SubscriptionOffer) -> Int {
+        switch offer.period.unit {
+        case .day: return offer.period.value
+        case .week: return offer.period.value * 7
+        case .month: return offer.period.value * 30
+        case .year: return offer.period.value * 365
+        @unknown default: return offer.period.value
+        }
+    }
+
     private func appleOfferText(_ offer: Product.SubscriptionOffer) -> String {
         switch offer.paymentMode {
         case .freeTrial:
@@ -959,10 +1134,46 @@ struct MembershipPurchaseView: View {
             return
         }
 
-        await store.purchaseMembership(product: product, planId: plan.id)
+        didCancelWaiting = false
+        let result = await store.purchaseMembership(product: product, planId: plan.id)
 
-        if store.purchaseError == nil && !store.isPurchasingMembership {
-            successMessage = SafeEatL10n.text(L10nKey.Membership.purchaseSuccess)
+        // T8：根据结果决定 UI 反馈（不再只看 purchaseError==nil）
+        switch result {
+        case .purchased(let transactionId):
+            // T9：进入轮询确认阶段
+            // R2-1: 不写 store.isPurchasingMembership（defer 已复位为 false）。
+            // 这里 isPurchasingMembership 会自动变 false，overlay 由 isPollingVerifyStatus 继续撑住
+            isPollingVerifyStatus = true
+
+            let pollResult = await store.pollVerifyStatus(transactionId: transactionId)
+            isPollingVerifyStatus = false
+
+            // 用户已取消等待，不弹任何结果
+            if didCancelWaiting { return }
+
+            switch pollResult {
+            case .activated:
+                successMessage = SafeEatL10n.text(L10nKey.Membership.purchaseSuccess)
+            case .expired:
+                // 会员已生效但已过期（active=false）—— 不弹开通成功
+                successMessage = SafeEatL10n.text(L10nKey.Membership.verifyFailed)
+            case .timeout:
+                store.purchaseError = "购买确认超时，请稍后下拉刷新会员页查看购买状态"
+            case .failed(let error):
+                store.purchaseError = error.localizedDescription
+            }
+
+        case .userCancelled:
+            // T8：不弹任何东西（Apple 交易被用户取消）
+            break
+
+        case .pending:
+            // Apple pending，等 Transaction.updates 异步补激活
+            store.purchaseError = SafeEatL10n.text(L10nKey.Membership.purchasePending)
+
+        case .failed:
+            // purchaseError 已在 store 内设置
+            break
         }
     }
 

@@ -5,8 +5,12 @@ struct AuthSession: Codable {
     let refreshToken: String
     let requiresPhoneBinding: Bool?
     let isNewUser: Bool?
+    let requiresPasswordSetup: Bool?
+    let requiresRegistration: Bool?
 
     var isNew: Bool { isNewUser == true }
+    var needsPasswordSetup: Bool { requiresPasswordSetup == true }
+    var needsRegistration: Bool { requiresRegistration == true }
 }
 
 struct SendSmsResponse: Codable {
@@ -35,6 +39,14 @@ struct DeletionStatusResponse: Codable {
 struct CancelDeletionResponse: Codable {
     let status: String
     let message: String?
+}
+
+/// 注销恢复公开接口的响应，包含登录态
+struct CancelDeletionPublicResponse: Codable {
+    let accessToken: String?
+    let refreshToken: String?
+    let isNewUser: Bool?
+    let requiresPasswordSetup: Bool?
 }
 
 struct CaptchaResponse: Codable {
