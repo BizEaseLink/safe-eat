@@ -6,7 +6,7 @@ import StoreKit
 
 protocol StoreKitServiceProtocol {
     func loadProducts() async throws -> [Product]
-    func purchase(_ product: Product) async throws -> StoreKitPurchaseResult
+    func purchase(_ product: Product, appAccountToken: UUID?) async throws -> StoreKitPurchaseResult
     func currentEntitlements() async -> [Transaction]
     func restorePurchases() async throws -> [Transaction]
     func checkIntroOfferEligibility(for productID: String) async -> Bool?
@@ -78,8 +78,14 @@ final class StoreKitService: StoreKitServiceProtocol, ObservableObject {
 
     // MARK: - 购买
 
-    func purchase(_ product: Product) async throws -> StoreKitPurchaseResult {
-        let result = try await product.purchase()
+    func purchase(_ product: Product, appAccountToken: UUID?) async throws -> StoreKitPurchaseResult {
+        // T6：传 appAccountToken = UUID(userId)，后端 webhook 用它反查 userId（F3 修复）
+        // 通过 PurchaseOption.appAccountToken 传入；nil 则用空 options（StoreKit 默认行为）
+        var options: Set<Product.PurchaseOption> = []
+        if let appAccountToken {
+            options.insert(.appAccountToken(appAccountToken))
+        }
+        let result = try await product.purchase(options: options)
 
         switch result {
         case .success(let verification):

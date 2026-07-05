@@ -683,7 +683,11 @@ final class AppStore: ObservableObject {
             orderId = order.id
 
             // 2. 发起 StoreKit 购买
-            let result = try await storeKitService.purchase(product)
+            // T6：appAccountToken = UUID(userId)，后端 webhook 反查 userId 用（F3 修复）
+            // userId 是后端用户 UUID 字符串，直接转 UUID；非法或未登录时传 nil 退回默认行为
+            let userId = profile?.id
+            let appAccountToken = userId.flatMap { UUID(uuidString: $0) }
+            let result = try await storeKitService.purchase(product, appAccountToken: appAccountToken)
 
             switch result {
             case .success(let transaction):
