@@ -29,11 +29,14 @@ struct OrderHistoryView: View {
             }
         }
         .task {
-            await loadOrders()
+            await loadOrders(isInitial: true)
         }
         .refreshable {
-            orders = []
-            await loadOrders()
+            // 刷新：清错误状态 + 回第 1 页，但不清 orders（保持旧数据，避免闪空）
+            // 不设 isLoading（.refreshable 自带刷新动画，设了会闪 ProgressView 盖住旧数据）
+            loadError = nil
+            currentPage = 1
+            await loadOrders(isInitial: false)
         }
     }
 
@@ -78,7 +81,7 @@ struct OrderHistoryView: View {
             Button {
                 loadError = nil
                 orders = []
-                Task { await loadOrders() }
+                Task { await loadOrders(isInitial: true) }
             } label: {
                 Text(SafeEatL10n.text(L10nKey.Common.ok))
                     .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
@@ -96,17 +99,30 @@ struct OrderHistoryView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private func loadOrders() async {
-        isLoading = true
-        defer { isLoading = false }
+    /// isInitial=true：首次加载（设 isLoading，显示 ProgressView）
+    /// isInitial=false：下拉刷新（不设 isLoading，保持旧数据，.refreshable 自带动画）
+    private func loadOrders(isInitial: Bool) async {
+        if isInitial { isLoading = true }
+        defer { if isInitial { isLoading = false } }
 
+        // 捕获当前页码，await 期间若用户再次刷新（currentPage 变化），本结果不覆盖
+        let targetPage = currentPage
         do {
             let result = try await store.authorizedRequest { token in
-                try await store.api.getUserOrders(accessToken: token, page: currentPage)
+                try await store.api.getUserOrders(accessToken: token, page: targetPage)
             }
+            // 原子赋值：仅当 currentPage 仍是本次请求的页码时才应用结果
+            guard currentPage == targetPage else { return }
             orders = result.items
             totalOrders = result.total
         } catch {
+            // 下拉刷新时前一个请求被取消是正常行为（URLError.cancelled），不显示错误
+            if let urlError = error as? URLError, urlError.code == .cancelled { return }
+            if (error as NSError).code == NSURLErrorCancelled { return }
+            #if DEBUG
+            print("[OrderHistoryView] loadOrders failed: \(error)")
+            #endif
+            guard currentPage == targetPage else { return }
             loadError = error.localizedDescription
         }
     }
