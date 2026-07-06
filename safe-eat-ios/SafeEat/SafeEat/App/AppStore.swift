@@ -675,14 +675,14 @@ final class AppStore: ObservableObject {
         defer { isPurchasingMembership = false }
         purchaseError = nil
 
-        var orderId: String?
+        // Apple IAP 路径不再创建预订单：
+        // - Apple transactionId 由 Apple 生成，后端无法预知
+        // - 旧流程创建预订单后 verify-transaction 又建了第二条订单，导致用户看到两条订单（pending 预订单 + paid 正式订单）
+        // - 现改为直接购买，verify-transaction 不传 orderId，后端 createAndPayIapOrder 自动建单
+        // - POST /orders 接口保留给未来微信/支付宝路径使用
 
         do {
-            // 1. 先创建后端订单
-            let order = try await createMembershipOrder(planId: planId, channel: "apple_iap")
-            orderId = order.id
-
-            // 2. 发起 StoreKit 购买
+            // 1. 发起 StoreKit 购买
             // T6：appAccountToken = UUID(userId)，后端 webhook 反查 userId 用（F3 修复）
             // userId 是后端用户 UUID 字符串，直接转 UUID；非法或未登录时传 nil 退回默认行为
             let userId = profile?.id
@@ -691,15 +691,14 @@ final class AppStore: ObservableObject {
 
             switch result {
             case .success(let transaction):
-                // 3. 购买成功，发送收据到后端验证
-                await handleSuccessfulPurchase(transaction: transaction, orderId: order.id)
+                // 2. 购买成功，发送收据到后端验证（不传 orderId，后端自动建单）
+                await handleSuccessfulPurchase(transaction: transaction)
                 // T8：返回 purchased，让调用方决定 UI 反馈（不再依赖 purchaseError==nil）
                 // handleSuccessfulPurchase 验证失败会设 purchaseError，但只要 StoreKit 成功就算 purchased
                 return .purchased(transactionId: String(transaction.id))
 
             case .userCancelled:
-                // 用户取消，通知后端标记订单失败（静默失败）
-                await markOrderFailedSilently(orderId: order.id)
+                // 用户取消，无需通知后端（没有预订单需要标记失败）
                 // T8：不设 purchaseError，调用方按 .userCancelled 不弹成功
                 return .userCancelled
 
@@ -708,17 +707,12 @@ final class AppStore: ObservableObject {
                 return .pending
 
             case .failed(let error):
-                // 购买失败，通知后端标记订单失败（静默失败）
+                // 购买失败，无需通知后端（没有预订单需要标记失败）
                 purchaseError = error.localizedDescription
-                await markOrderFailedSilently(orderId: order.id)
                 return .failed
             }
         } catch {
             purchaseError = error.localizedDescription
-            // 创建订单后的异常也需要标记失败
-            if let orderId {
-                await markOrderFailedSilently(orderId: orderId)
-            }
             return .failed
         }
     }
@@ -785,17 +779,17 @@ final class AppStore: ObservableObject {
         }
     }
 
-    private func handleSuccessfulPurchase(transaction: Transaction, orderId: String) async {
+    private func handleSuccessfulPurchase(transaction: Transaction) async {
         let transactionID = String(transaction.id)
 
         // C5: 使用新的 verify-transaction 接口发放权益
+        // Apple IAP 路径不传 orderId，让后端 createAndPayIapOrder 自动建单
         do {
             let result = try await authorizedRequest { token in
                 try await api.verifyTransaction(
                     accessToken: token,
                     payload: IAPVerifyTransactionPayload(
                         transactionId: transactionID,
-                        orderId: orderId,
                         productId: transaction.productID
                     )
                 )
@@ -825,19 +819,6 @@ final class AppStore: ObservableObject {
         _ = try? await UNUserNotificationCenter.current().requestAuthorization(
             options: [.alert, .sound, .badge]
         )
-    }
-
-    private func markOrderFailedSilently(orderId: String) async {
-        do {
-            try await authorizedRequest { token in
-                try await api.markOrderFailed(accessToken: token, orderId: orderId)
-            }
-        } catch {
-            // 静默失败，不阻塞用户操作
-            #if DEBUG
-            print("[AppStore] markOrderFailed failed: \(error)")
-            #endif
-        }
     }
 
     // MARK: - IAP 购买状态轮询（T9）

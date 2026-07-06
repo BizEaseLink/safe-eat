@@ -403,7 +403,7 @@ final class SafeEatAPI {
         try await sendVoid(request)
     }
 
-    func getUserOrders(accessToken: String, page: Int = 1, pageSize: Int = 20) async throws -> PaginatedResult<OrderRecord> {
+    func getUserOrders(accessToken: String, page: Int = 1, pageSize: Int = 20) async throws -> PaginatedResult<OrderContainer> {
         var request = try buildRequest(
             path: "/v1/apps/\(AppConfig.appCode)/orders",
             method: "GET"
@@ -415,7 +415,7 @@ final class SafeEatAPI {
             URLQueryItem(name: "pageSize", value: String(pageSize)),
         ]
         request.url = components?.url
-        return try await sendPaginated(request, as: OrderRecord.self)
+        return try await sendPaginated(request, as: OrderContainer.self)
     }
 
     func claimAdReward(accessToken: String, payload: ClaimAdRewardPayload) async throws -> ClaimAdRewardResult {

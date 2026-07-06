@@ -957,10 +957,6 @@ enum L10nKey {
         static let subtitle = "order.history.subtitle"
         static let emptyTitle = "order.history.empty_title"
         static let emptyMessage = "order.history.empty_message"
-        static let statusPending = "order.status.pending"
-        static let statusPaid = "order.status.paid"
-        static let statusFailed = "order.status.failed"
-        static let statusCancelled = "order.status.cancelled"
         static let orderNoLabel = "order.detail.order_no"
         static let planLabel = "order.detail.plan"
         static let amountLabel = "order.detail.amount"
@@ -968,6 +964,21 @@ enum L10nKey {
         static let channelLabel = "order.detail.channel"
         static let createdAtLabel = "order.detail.created_at"
         static let paidAtLabel = "order.detail.paid_at"
+        // v7 lastEvent（OrderEventType）映射
+        static let eventUnknown = "order.event.unknown"
+        static let eventInitialPurchase = "order.event.initial_purchase"
+        static let eventRenewal = "order.event.renewal"
+        static let eventRenewalFailed = "order.event.renewal_failed"
+        static let eventExpired = "order.event.expired"
+        static let eventUpgrade = "order.event.upgrade"
+        static let eventUpgradeScheduled = "order.event.upgrade_scheduled"
+        static let eventChangeCycle = "order.event.change_cycle"
+        static let eventDowngradeScheduled = "order.event.downgrade_scheduled"
+        static let eventRefund = "order.event.refund"
+        static let eventRevoke = "order.event.revoke"
+        static let eventFamilySharingRevoke = "order.event.family_sharing_revoke"
+        static let eventCancelRenewal = "order.event.cancel_renewal"
+        static let eventRenewalReenabled = "order.event.renewal_reenabled"
     }
 
     enum User {

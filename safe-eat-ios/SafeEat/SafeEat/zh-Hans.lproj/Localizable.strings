@@ -256,10 +256,6 @@
 "order.history.subtitle" = "查看您的购买历史";
 "order.history.empty_title" = "暂无订单记录";
 "order.history.empty_message" = "您还没有购买记录，购买会员后这里会显示订单信息";
-"order.status.pending" = "待支付";
-"order.status.paid" = "已支付";
-"order.status.failed" = "支付失败";
-"order.status.cancelled" = "已取消";
 "order.detail.order_no" = "订单号";
 "order.detail.plan" = "套餐";
 "order.detail.amount" = "金额";
@@ -267,6 +263,20 @@
 "order.detail.channel" = "支付渠道";
 "order.detail.created_at" = "创建时间";
 "order.detail.paid_at" = "支付时间";
+"order.event.unknown" = "已完成";
+"order.event.initial_purchase" = "首次购买";
+"order.event.renewal" = "续费成功";
+"order.event.renewal_failed" = "续费失败";
+"order.event.expired" = "已过期";
+"order.event.upgrade" = "已升级";
+"order.event.upgrade_scheduled" = "升级已预约";
+"order.event.change_cycle" = "已换周期";
+"order.event.downgrade_scheduled" = "降级已预约";
+"order.event.refund" = "已退款";
+"order.event.revoke" = "已撤销";
+"order.event.family_sharing_revoke" = "家庭共享撤销";
+"order.event.cancel_renewal" = "已取消续费";
+"order.event.renewal_reenabled" = "续费已恢复";
 
 "membership.purchase.title" = "会员购买";
 "membership.purchase.subtitle" = "查看套餐、选择支付方式，并创建待支付订单。";

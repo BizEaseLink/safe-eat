@@ -308,34 +308,79 @@ struct DailyQuotaSnapshot: Decodable {
     let periodEnd: String?
 }
 
-// MARK: - 订单记录
+// MARK: - 订单记录（v7 订单容器壳子）
 
-struct OrderRecord: Codable, Identifiable {
-    let id: String
-    let userId: String
-    let planId: String
+/// v7 OrderContainer：后端按 Apple 动作折叠后的"订单壳子"。
+/// 一个壳子 = 一次 Apple 交互动作（同 transactionId 的 webhook+verify 挂同一壳子）。
+/// iOS 用户端列表只展示壳子层级，不展开 orders[] 子列表。
+struct OrderContainer: Codable, Identifiable {
+    var id: String { orderNo }
+    let containerKey: String
     let orderNo: String
-    let planTier: String
-    let channel: String
-    let amountFen: Int
-    let status: String
-    let paidAt: Date?
     let createdAt: Date
+    let currentPlanTier: String
+    let channel: String
+    let totalAmountFen: Int
+    /// 最近一次 Apple 事件类型（OrderEventType），非 Apple 渠道/状态变更时为 nil
+    let lastEvent: String?
+    // 以下字段保留做 Codable 兼容，UI 列表行不展示
+    let appleTransactionId: String?
+    let appleOriginalTransactionId: String?
+    let currentPlanId: String
+    let autoRenew: Bool?
+    let endsAt: Date?
+    let orderCount: Int
+    let firstPaidAt: Date?
+    let lastPaidAt: Date?
+    let orders: [OrderContainerItem]?
 }
 
-enum OrderStatusMapper {
-    static func title(_ status: String) -> String {
-        switch status {
-        case "pending":
-            return SafeEatL10n.text(L10nKey.Order.statusPending)
-        case "paid":
-            return SafeEatL10n.text(L10nKey.Order.statusPaid)
-        case "failed":
-            return SafeEatL10n.text(L10nKey.Order.statusFailed)
-        case "cancelled":
-            return SafeEatL10n.text(L10nKey.Order.statusCancelled)
+/// 壳子内子订单行（UI 不展开，仅做 Codable 兼容）
+struct OrderContainerItem: Codable {
+    let orderNo: String?
+    let lastEvent: String?
+    let amountFen: Int?
+    let paidAt: Date?
+    let status: String?
+    let createdAt: Date?
+}
+
+/// lastEvent（OrderEventType）→ 本地化文案映射
+/// 颜色逻辑放 OrderHistoryView.OrderRow（保持模型层不依赖 SwiftUI）
+enum OrderEventMapper {
+    static func title(_ event: String?) -> String {
+        guard let event = event else {
+            return SafeEatL10n.text(L10nKey.Order.eventUnknown)
+        }
+        switch event {
+        case "initial_purchase":
+            return SafeEatL10n.text(L10nKey.Order.eventInitialPurchase)
+        case "renewal":
+            return SafeEatL10n.text(L10nKey.Order.eventRenewal)
+        case "renewal_failed":
+            return SafeEatL10n.text(L10nKey.Order.eventRenewalFailed)
+        case "expired":
+            return SafeEatL10n.text(L10nKey.Order.eventExpired)
+        case "upgrade":
+            return SafeEatL10n.text(L10nKey.Order.eventUpgrade)
+        case "upgrade_scheduled":
+            return SafeEatL10n.text(L10nKey.Order.eventUpgradeScheduled)
+        case "change_cycle":
+            return SafeEatL10n.text(L10nKey.Order.eventChangeCycle)
+        case "downgrade_scheduled":
+            return SafeEatL10n.text(L10nKey.Order.eventDowngradeScheduled)
+        case "refund":
+            return SafeEatL10n.text(L10nKey.Order.eventRefund)
+        case "revoke":
+            return SafeEatL10n.text(L10nKey.Order.eventRevoke)
+        case "family_sharing_revoke":
+            return SafeEatL10n.text(L10nKey.Order.eventFamilySharingRevoke)
+        case "cancel_renewal":
+            return SafeEatL10n.text(L10nKey.Order.eventCancelRenewal)
+        case "renewal_reenabled":
+            return SafeEatL10n.text(L10nKey.Order.eventRenewalReenabled)
         default:
-            return status
+            return event
         }
     }
 }

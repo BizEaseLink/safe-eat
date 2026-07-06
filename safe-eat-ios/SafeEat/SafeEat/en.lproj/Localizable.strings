@@ -405,10 +405,6 @@
 "order.history.subtitle" = "View your purchase history";
 "order.history.empty_title" = "No Orders Yet";
 "order.history.empty_message" = "Your order history will appear here after purchasing a membership";
-"order.status.pending" = "Pending";
-"order.status.paid" = "Paid";
-"order.status.failed" = "Failed";
-"order.status.cancelled" = "Cancelled";
 "order.detail.order_no" = "Order No.";
 "order.detail.plan" = "Plan";
 "order.detail.amount" = "Amount";
@@ -416,6 +412,20 @@
 "order.detail.channel" = "Channel";
 "order.detail.created_at" = "Created";
 "order.detail.paid_at" = "Paid At";
+"order.event.unknown" = "Completed";
+"order.event.initial_purchase" = "First Purchase";
+"order.event.renewal" = "Renewed";
+"order.event.renewal_failed" = "Renewal Failed";
+"order.event.expired" = "Expired";
+"order.event.upgrade" = "Upgraded";
+"order.event.upgrade_scheduled" = "Upgrade Scheduled";
+"order.event.change_cycle" = "Cycle Changed";
+"order.event.downgrade_scheduled" = "Downgrade Scheduled";
+"order.event.refund" = "Refunded";
+"order.event.revoke" = "Revoked";
+"order.event.family_sharing_revoke" = "Family Sharing Revoked";
+"order.event.cancel_renewal" = "Renewal Canceled";
+"order.event.renewal_reenabled" = "Renewal Re-enabled";
 
 "membership.purchase.title" = "Membership";
 "membership.purchase.subtitle" = "Browse plans, choose a payment channel, and create a pending order.";

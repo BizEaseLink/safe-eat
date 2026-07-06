@@ -3,7 +3,7 @@ import SwiftUI
 struct OrderHistoryView: View {
     @EnvironmentObject private var store: AppStore
 
-    @State private var orders: [OrderRecord] = []
+    @State private var orders: [OrderContainer] = []
     @State private var currentPage = 1
     @State private var totalOrders = 0
     @State private var isLoadingMore = false
@@ -131,7 +131,7 @@ struct OrderHistoryView: View {
 }
 
 private struct OrderRow: View {
-    let order: OrderRecord
+    let order: OrderContainer
 
     var body: some View {
         ProfileSurfaceCard {
@@ -161,7 +161,7 @@ private struct OrderRow: View {
                     VStack(alignment: .leading, spacing: 6) {
                         ProfileStaticRow(
                             label: SafeEatL10n.text(L10nKey.Order.planLabel),
-                            value: PlanTierMapper.title(order.planTier)
+                            value: PlanTierMapper.title(order.currentPlanTier)
                         )
                         ProfileStaticRow(
                             label: SafeEatL10n.text(L10nKey.Order.channelLabel),
@@ -172,15 +172,9 @@ private struct OrderRow: View {
                     Spacer()
 
                     VStack(alignment: .trailing, spacing: 4) {
-                        Text(SafeEatTheme.priceText(order.amountFen))
+                        Text(SafeEatTheme.priceText(order.totalAmountFen))
                             .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
                             .foregroundStyle(SafeEatTheme.textPrimary)
-
-                        if let paidAt = order.paidAt {
-                            Text(formatDate(paidAt))
-                                .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-                        }
                     }
                 }
             }
@@ -188,7 +182,7 @@ private struct OrderRow: View {
     }
 
     private var statusBadge: some View {
-        let statusText = OrderStatusMapper.title(order.status)
+        let statusText = OrderEventMapper.title(order.lastEvent)
         let color = statusColor
         return Text(statusText)
             .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
@@ -201,13 +195,17 @@ private struct OrderRow: View {
             )
     }
 
+    /// lastEvent 颜色：正向=success，警告=warning，负面=danger，未知=灰
     private var statusColor: Color {
-        switch order.status {
-        case "paid":
+        guard let event = order.lastEvent else {
+            return SafeEatTheme.textSecondary
+        }
+        switch event {
+        case "initial_purchase", "renewal", "upgrade", "renewal_reenabled":
             return SafeEatTheme.success
-        case "pending":
+        case "renewal_failed", "expired", "upgrade_scheduled", "downgrade_scheduled", "cancel_renewal":
             return SafeEatTheme.warning
-        case "failed", "cancelled":
+        case "refund", "revoke", "family_sharing_revoke":
             return SafeEatTheme.danger
         default:
             return SafeEatTheme.textSecondary
