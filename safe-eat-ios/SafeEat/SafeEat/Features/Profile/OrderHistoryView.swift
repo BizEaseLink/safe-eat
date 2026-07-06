@@ -230,7 +230,13 @@ private struct OrderRow: View {
 
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
+        // 显式设手机本地时区，确保 UTC 时间按用户当前时区展示
+        formatter.timeZone = .current
+        formatter.locale = .current
         formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        #if DEBUG
+        print("[OrderHistoryView] formatDate: raw=\(date) epoch=\(date.timeIntervalSince1970) tz=\(formatter.timeZone.identifier) -> \(formatter.string(from: date))")
+        #endif
         return formatter.string(from: date)
     }
 }
