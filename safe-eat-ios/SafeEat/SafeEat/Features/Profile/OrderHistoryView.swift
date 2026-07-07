@@ -149,52 +149,78 @@ struct OrderHistoryView: View {
 private struct OrderRow: View {
     let order: OrderContainer
 
+    /// 卡片主时间：优先用容器内最早付款时间（用户感知的"我什么时候买的"），
+    /// 没有付款记录时降级到 DB 写库时间 createdAt
+    private var displayDate: Date {
+        order.firstPaidAt ?? order.createdAt
+    }
+
     var body: some View {
-        ProfileSurfaceCard {
-            VStack(alignment: .leading, spacing: 12) {
-                // 订单号 + 状态
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(order.orderNo)
-                            .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
-                            .lineLimit(1)
+        SafeEatSurfaceCard(cornerRadius: 26) {
+            VStack(alignment: .leading, spacing: 14) {
+                // 顶部：订单号 + 状态 badge
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Text(order.orderNo)
+                        .font(SafeEatFont.custom(15, relativeTo: .body, weight: .semibold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
 
-                        Text(formatDate(order.createdAt))
-                            .font(SafeEatFont.custom(12, relativeTo: .caption))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
-                    }
-
-                    Spacer()
+                    Spacer(minLength: 8)
 
                     statusBadge
                 }
 
-                Divider().overlay(SafeEatTheme.line)
+                // 付款时间（用户感知的购买时间）
+                Text(formatDate(displayDate))
+                    .font(SafeEatFont.custom(12, relativeTo: .caption))
+                    .foregroundStyle(SafeEatTheme.textSecondary)
 
-                // 套餐 + 金额 + 渠道
-                HStack(spacing: 0) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        ProfileStaticRow(
-                            label: SafeEatL10n.text(L10nKey.Order.planLabel),
-                            value: PlanTierMapper.title(order.currentPlanTier)
-                        )
-                        ProfileStaticRow(
-                            label: SafeEatL10n.text(L10nKey.Order.channelLabel),
-                            value: PaymentChannelMapper.title(order.channel)
-                        )
-                    }
+                // 细分割线
+                Rectangle()
+                    .fill(SafeEatTheme.line)
+                    .frame(height: 0.5)
+
+                // 底部：tier + 渠道 chip 组（左） / 金额（右，视觉焦点）
+                HStack(alignment: .center, spacing: 8) {
+                    infoChip(
+                        text: PlanTierMapper.title(order.currentPlanTier),
+                        color: SafeEatTheme.primary
+                    )
+                    infoChip(
+                        text: PaymentChannelMapper.title(order.channel),
+                        color: SafeEatTheme.textSecondary
+                    )
 
                     Spacer()
 
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text(SafeEatTheme.priceText(order.totalAmountFen))
-                            .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
-                    }
+                    Text(SafeEatTheme.priceText(order.totalAmountFen))
+                        .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
             }
         }
+    }
+
+    /// 紧凑型信息 chip：低饱和背景 + 描边 + 12pt 文本
+    private func infoChip(text: String, color: Color) -> some View {
+        Text(text)
+            .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .semibold))
+            .foregroundStyle(color)
+            .lineLimit(1)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(
+                Capsule()
+                    .fill(color.opacity(0.12))
+            )
+            .overlay(
+                Capsule()
+                    .stroke(color.opacity(0.25), lineWidth: 0.5)
+            )
     }
 
     private var statusBadge: some View {
@@ -203,8 +229,9 @@ private struct OrderRow: View {
         return Text(statusText)
             .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
             .foregroundStyle(color)
+            .lineLimit(1)
             .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .padding(.vertical, 5)
             .background(
                 Capsule()
                     .fill(color.opacity(0.14))
