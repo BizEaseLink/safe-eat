@@ -113,7 +113,14 @@ struct OrderHistoryView: View {
             }
             // 原子赋值：仅当 currentPage 仍是本次请求的页码时才应用结果
             guard currentPage == targetPage else { return }
-            orders = result.items
+            // 过滤纯 NOTICE 容器：用户端只展示含付费记录(非 notice 状态)的容器，
+            // 整容器都是状态变更预告(DID_CHANGE_RENEWAL_PREF/STATUS)的不显示。
+            // totalOrders 仍用 result.total，避免后端分页计数错乱。
+            orders = result.items.filter { container in
+                // 容器没有子订单 or 子订单全是 notice → 过滤掉
+                let subOrders = container.orders ?? []
+                return subOrders.contains { $0.status != "notice" }
+            }
             totalOrders = result.total
         } catch {
             // 下拉刷新时前一个请求被取消是正常行为（URLError.cancelled），不显示错误
@@ -138,7 +145,12 @@ struct OrderHistoryView: View {
                 try await store.api.getUserOrders(accessToken: token, page: nextPage)
             }
             currentPage = nextPage
-            orders.append(contentsOf: result.items)
+            // 翻页加载同样过滤纯 NOTICE 容器，保持与首页一致
+            let filtered = result.items.filter { container in
+                let subOrders = container.orders ?? []
+                return subOrders.contains { $0.status != "notice" }
+            }
+            orders.append(contentsOf: filtered)
             totalOrders = result.total
         } catch {
             // 静默失败，不影响已加载的数据
@@ -246,7 +258,7 @@ private struct OrderRow: View {
         switch event {
         case "initial_purchase", "renewal", "upgrade", "renewal_reenabled":
             return SafeEatTheme.success
-        case "renewal_failed", "expired", "upgrade_scheduled", "downgrade_scheduled", "cancel_renewal":
+        case "renewal_failed", "expired", "upgrade_scheduled", "downgrade_scheduled", "cancel_renewal", "change_cycle":
             return SafeEatTheme.warning
         case "refund", "revoke", "family_sharing_revoke":
             return SafeEatTheme.danger
