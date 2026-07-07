@@ -113,13 +113,13 @@ struct OrderHistoryView: View {
             }
             // 原子赋值：仅当 currentPage 仍是本次请求的页码时才应用结果
             guard currentPage == targetPage else { return }
-            // 过滤纯 NOTICE 容器：用户端只展示含付费记录(非 notice 状态)的容器，
-            // 整容器都是状态变更预告(DID_CHANGE_RENEWAL_PREF/STATUS)的不显示。
+            // 过滤纯状态变更容器：用户端只展示含付费子订单(status=paid)的容器。
+            // 纯状态变更审计容器(全是 notice/expired/revoked/refunded/grace 等无 paid 子订单)
+            // 不显示；混合容器(有 paid + 有状态变更)保留,用户能看到付费记录。
             // totalOrders 仍用 result.total，避免后端分页计数错乱。
             orders = result.items.filter { container in
-                // 容器没有子订单 or 子订单全是 notice → 过滤掉
                 let subOrders = container.orders ?? []
-                return subOrders.contains { $0.status != "notice" }
+                return subOrders.contains { $0.status == "paid" }
             }
             totalOrders = result.total
         } catch {
@@ -145,10 +145,10 @@ struct OrderHistoryView: View {
                 try await store.api.getUserOrders(accessToken: token, page: nextPage)
             }
             currentPage = nextPage
-            // 翻页加载同样过滤纯 NOTICE 容器，保持与首页一致
+            // 翻页加载同样过滤纯状态变更容器，保持与首页一致
             let filtered = result.items.filter { container in
                 let subOrders = container.orders ?? []
-                return subOrders.contains { $0.status != "notice" }
+                return subOrders.contains { $0.status == "paid" }
             }
             orders.append(contentsOf: filtered)
             totalOrders = result.total
@@ -250,7 +250,10 @@ private struct OrderRow: View {
             )
     }
 
-    /// lastEvent 颜色：正向=success，警告=warning，负面=danger，未知=灰
+    /// lastEvent 颜色：与 Admin OrderManageView 对齐
+    /// - danger(=Admin destructive)：renewal_failed/expired/refund/revoke/family_sharing_revoke/cancel_renewal/downgrade_scheduled
+    /// - success(=Admin default)：initial_purchase/renewal/upgrade/renewal_reenabled
+    /// - textSecondary(=Admin secondary)：其余(grace_period/change_cycle/upgrade_scheduled 等)
     private var statusColor: Color {
         guard let event = order.lastEvent else {
             return SafeEatTheme.textSecondary
@@ -258,11 +261,11 @@ private struct OrderRow: View {
         switch event {
         case "initial_purchase", "renewal", "upgrade", "renewal_reenabled":
             return SafeEatTheme.success
-        case "renewal_failed", "expired", "upgrade_scheduled", "downgrade_scheduled", "cancel_renewal", "change_cycle":
-            return SafeEatTheme.warning
-        case "refund", "revoke", "family_sharing_revoke":
+        case "renewal_failed", "expired", "refund", "revoke",
+             "family_sharing_revoke", "cancel_renewal", "downgrade_scheduled":
             return SafeEatTheme.danger
         default:
+            // grace_period / change_cycle / upgrade_scheduled / 未知事件 → 灰
             return SafeEatTheme.textSecondary
         }
     }

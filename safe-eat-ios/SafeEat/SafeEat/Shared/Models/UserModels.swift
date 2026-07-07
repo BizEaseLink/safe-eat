@@ -379,6 +379,8 @@ enum OrderEventMapper {
             return SafeEatL10n.text(L10nKey.Order.eventCancelRenewal)
         case "renewal_reenabled":
             return SafeEatL10n.text(L10nKey.Order.eventRenewalReenabled)
+        case "grace_period":
+            return SafeEatL10n.text(L10nKey.Order.eventGracePeriod)
         default:
             return event
         }

@@ -979,6 +979,7 @@ enum L10nKey {
         static let eventFamilySharingRevoke = "order.event.family_sharing_revoke"
         static let eventCancelRenewal = "order.event.cancel_renewal"
         static let eventRenewalReenabled = "order.event.renewal_reenabled"
+        static let eventGracePeriod = "order.event.grace_period"
     }
 
     enum User {

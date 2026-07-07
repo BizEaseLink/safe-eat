@@ -416,6 +416,7 @@
 "order.event.initial_purchase" = "First Purchase";
 "order.event.renewal" = "Renewed";
 "order.event.renewal_failed" = "Renewal Failed";
+"order.event.grace_period" = "Grace Period";
 "order.event.expired" = "Expired";
 "order.event.upgrade" = "Upgraded";
 "order.event.upgrade_scheduled" = "Upgrade Scheduled";
