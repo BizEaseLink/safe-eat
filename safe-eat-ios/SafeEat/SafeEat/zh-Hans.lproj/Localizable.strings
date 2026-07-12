@@ -247,6 +247,7 @@
 "profile.about.value_added" = "增值服务协议";
 "profile.about.certificate" = "证照展示";
 "profile.about.copyright" = "© 2026 郑凯杰";
+"profile.about.icp_record" = "粤ICP备2026086581号-2A";
 
 "profile.not_logged_in.title" = "需要登录";
 "profile.not_logged_in.message" = "登录后即可查看个人信息和使用会员功能";
@@ -752,10 +753,14 @@
 "profile.not_logged_in.message" = "登录后即可查看个人信息和使用会员功能";
 "profile.not_logged_in.action" = "去登录";
 
-"home.signup_bonus.welcome_title" = "欢迎加入！";
-"home.signup_bonus.quota_format" = "恭喜获得 %d 次免费识别额度";
-"home.signup_bonus.subtitle" = "立即拍照识别食物安全信息";
-"home.signup_bonus.start_action" = "开始使用";
+"home.trial_prompt.title" = "体验 Premium 会员";
+"home.trial_prompt.subtitle" = "免费体验3天最高等级会员，享受全部功能";
+"home.trial_prompt.badge_title" = "3天 Premium 体验";
+"home.trial_prompt.badge_subtitle" = "全部功能解锁，到期自动降级";
+"home.trial_prompt.footnote" = "体验结束后可随时购买正式会员";
+"home.trial_prompt.claim_action" = "立即体验";
+"home.trial_prompt.later_action" = "稍后使用";
+"home.trial_prompt.success_message" = "体验会员已激活，畅享3天 Premium！";
 
 "home.quota_exceeded.daily_title" = "今日额度已用完";
 "home.quota_exceeded.monthly_title" = "本月额度已用完";

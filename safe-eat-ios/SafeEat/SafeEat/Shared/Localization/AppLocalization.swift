@@ -412,6 +412,7 @@ enum L10nKey {
             static let cancellationGuide = "profile.about.cancellation_guide"
             static let certificate = "profile.about.certificate"
             static let copyright = "profile.about.copyright"
+            static let icpRecord = "profile.about.icp_record"
         }
 
         enum Redeem {
@@ -632,10 +633,14 @@ enum L10nKey {
         static let summaryAvoid = "home.record.summary.avoid"
         static let summaryUnknown = "home.record.summary.unknown"
         static let unknownFood = "home.record.unknown_food"
-        static let signupBonusWelcomeTitle = "home.signup_bonus.welcome_title"
-        static let signupBonusQuotaFormat = "home.signup_bonus.quota_format"
-        static let signupBonusSubtitle = "home.signup_bonus.subtitle"
-        static let signupBonusStartAction = "home.signup_bonus.start_action"
+        static let trialPromptTitle = "home.trial_prompt.title"
+        static let trialPromptSubtitle = "home.trial_prompt.subtitle"
+        static let trialPromptBadgeTitle = "home.trial_prompt.badge_title"
+        static let trialPromptBadgeSubtitle = "home.trial_prompt.badge_subtitle"
+        static let trialPromptFootnote = "home.trial_prompt.footnote"
+        static let trialPromptClaimAction = "home.trial_prompt.claim_action"
+        static let trialPromptLaterAction = "home.trial_prompt.later_action"
+        static let trialPromptSuccessMessage = "home.trial_prompt.success_message"
         static let quotaExceededDailyTitle = "home.quota_exceeded.daily_title"
         static let quotaExceededMonthlyTitle = "home.quota_exceeded.monthly_title"
         static let quotaExceededDailyHintFormat = "home.quota_exceeded.daily_hint_format"

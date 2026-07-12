@@ -29,7 +29,6 @@ final class AppStore: ObservableObject {
     @Published var showLoginPrompt = false
     @Published var loginPromptFeature: String?
     @Published var isNewUser: Bool = false
-    @Published var pendingSignupBonus: Bool = false
     /// 登录后需要设置密码（新注册用户或未设密码用户）
     @Published var requiresPasswordSetup: Bool = false
     /// 验证码登录未注册用户，需要注册（设密码后才算注册完成）
@@ -652,19 +651,14 @@ final class AppStore: ObservableObject {
     }
 
     /// 检查 StoreKit Introductory Offer 试用资格
-    /// 优先使用后端 trialAvailable，StoreKit 资格检查作为补充
+    /// 内部试用只信后端 trialAvailable，StoreKit 资格仅作展示参考，不覆盖后端结果
     func checkTrialEligibility() async {
         // 检查第一个付费套餐的 StoreKit 试用资格
         let firstPaidPlan = membershipPlans.first(where: { $0.tier != "free" && $0.appleProductId != nil })
         if let plan = firstPaidPlan, let productID = plan.appleProductId {
             trialEligibleFromStoreKit = await storeKitService.checkIntroOfferEligibility(for: productID)
         }
-        // 综合判断：后端标记可用 + StoreKit 资格检查
-        // nil 表示无法判断（产品未加载），此时不覆盖后端结果
-        if trialAvailable && trialEligibleFromStoreKit == false {
-            // 后端说可用但 StoreKit 明确说不可用（可能已用过试用），以 StoreKit 为准
-            trialAvailable = false
-        }
+        // 内部试用不走 Apple，trialAvailable 只信后端，不再被 StoreKit 覆盖
     }
 
     @discardableResult
@@ -1023,7 +1017,6 @@ final class AppStore: ObservableObject {
 
         applySession(session)
         isNewUser = session.isNew
-        pendingSignupBonus = session.isNew
         requiresPasswordSetup = session.needsPasswordSetup
         allowsGuestHome = true
         UserDefaults.standard.set(true, forKey: Self.guestHomeKey)

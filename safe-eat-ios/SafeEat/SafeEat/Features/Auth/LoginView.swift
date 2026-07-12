@@ -65,7 +65,11 @@ struct LoginView: View {
         }
         .onChange(of: store.isNewUser) { newValue in
             if newValue {
-                showNewUserAlert = true
+                // 新用户首登：先拉 plans（含 trialAvailable），保证 NewUserWelcomeSheet 弹出时试用资格已就绪
+                Task {
+                    await store.loadPlansWithCampaigns()
+                    showNewUserAlert = true
+                }
             }
         }
         .onChange(of: store.requiresRegistration) { newValue in

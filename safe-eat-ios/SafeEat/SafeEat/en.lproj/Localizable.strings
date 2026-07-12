@@ -400,6 +400,7 @@
 "profile.about.value_added" = "Value-Added Service Agreement";
 "profile.about.certificate" = "Certificates";
 "profile.about.copyright" = "© 2026 Zheng Kaijie";
+"profile.about.icp_record" = "粤ICP备2026086581号-2A";
 
 "order.history.title" = "Order History";
 "order.history.subtitle" = "View your purchase history";
@@ -1013,10 +1014,14 @@
 "profile.not_logged_in.message" = "Sign in to view your profile and use membership features";
 "profile.not_logged_in.action" = "Sign In";
 
-"home.signup_bonus.welcome_title" = "Welcome!";
-"home.signup_bonus.quota_format" = "You've got %d free recognition scans";
-"home.signup_bonus.subtitle" = "Start scanning food safety info now";
-"home.signup_bonus.start_action" = "Get Started";
+"home.trial_prompt.title" = "Try Premium";
+"home.trial_prompt.subtitle" = "3 days of the highest tier, all features unlocked";
+"home.trial_prompt.badge_title" = "3-Day Premium Trial";
+"home.trial_prompt.badge_subtitle" = "All features unlocked, auto-downgrade on expiry";
+"home.trial_prompt.footnote" = "You can upgrade to a paid plan anytime after the trial";
+"home.trial_prompt.claim_action" = "Try Now";
+"home.trial_prompt.later_action" = "Maybe Later";
+"home.trial_prompt.success_message" = "Trial activated! Enjoy 3 days of Premium.";
 
 "home.quota_exceeded.daily_title" = "Daily limit reached";
 "home.quota_exceeded.monthly_title" = "Monthly limit reached";

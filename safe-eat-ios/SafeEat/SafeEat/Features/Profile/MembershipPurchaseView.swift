@@ -588,6 +588,9 @@ struct MembershipPurchaseView: View {
         activatingTrial = true
         do {
             _ = try await store.activateTrialMembership()
+            // 激活后强刷 membershipStatus + plans（含 trialAvailable），保证 trialAvailable 立即变 false
+            await store.loadMembershipStatus()
+            await store.loadPlansWithCampaigns()
             successMessage = "体验会员已激活，畅享3天 Premium！"
         } catch {
             // 激活失败，继续正常购买流程
