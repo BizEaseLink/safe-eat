@@ -33,6 +33,7 @@ struct ProfileView: View {
                             notLoggedInView
                             systemSettingsSection
                             serviceSection
+                            footerLegalSection
                         } else {
                             heroSection
 //                            healthProfileSection
@@ -41,6 +42,7 @@ struct ProfileView: View {
                             systemSettingsSection
                             serviceSection
                             logoutButton
+                            footerLegalSection
                         }
                     }
                     .padding(.horizontal, 20)
@@ -532,6 +534,41 @@ struct ProfileView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    /// 个人页底部法律信息区：用户协议 ｜ 隐私政策 + ICP 备案号
+    /// 未登录和已登录状态都显示
+    private var footerLegalSection: some View {
+        VStack(spacing: 6) {
+            HStack(spacing: 8) {
+                NavigationLink(value: ProfileRoute.userAgreement) {
+                    Text(SafeEatL10n.text(L10nKey.Profile.About.userAgreement))
+                        .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                        .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.7))
+                }
+                .buttonStyle(.plain)
+
+                Text("｜")
+                    .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                    .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.7))
+
+                NavigationLink(value: ProfileRoute.privacyPolicy) {
+                    Text(SafeEatL10n.text(L10nKey.Profile.About.privacyPolicy))
+                        .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                        .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.7))
+                }
+                .buttonStyle(.plain)
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+
+            // ICP 备案号：中文政务信息，中英文语言下都显示中文原文，不做本地化翻译
+            Text(SafeEatL10n.text(L10nKey.Profile.About.icpRecord))
+                .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.7))
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.top, 24)
+        .padding(.bottom, 16)
     }
 
     private var notLoggedInView: some View {

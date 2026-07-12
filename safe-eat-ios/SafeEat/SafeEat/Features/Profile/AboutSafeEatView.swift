@@ -106,12 +106,17 @@ struct AboutSafeEatView: View {
                 .buttonStyle(.plain)
             }
 
-            Text(SafeEatL10n.text(L10nKey.Profile.About.copyright))
-                .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                .foregroundStyle(Color.gray.opacity(0.6))
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.top, 24)
-                .padding(.bottom, 16)
+            VStack(spacing: 4) {
+                Text(SafeEatL10n.text(L10nKey.Profile.About.icpRecord))
+                    .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                    .foregroundStyle(Color.gray.opacity(0.6))
+                Text(SafeEatL10n.text(L10nKey.Profile.About.copyright))
+                    .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                    .foregroundStyle(Color.gray.opacity(0.6))
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.top, 24)
+            .padding(.bottom, 16)
         }
     }
 }
