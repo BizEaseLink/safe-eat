@@ -27,6 +27,14 @@ enum AppConfig {
     static let avatarMaxDimension: CGFloat = 1024
     static let avatarTargetMaxBytes = 300 * 1024
 
+    /// 识别上传图压缩配置：拍照/相册上传前统一压缩，避免 413。
+    /// - maxDimension：长边上限（pt 像素），食物识别不需要原图分辨率
+    /// - targetMaxBytes：目标体积上限，给 nginx 留余量
+    /// - minQuality：质量下限，防止压到看不清影响识别
+    static let uploadImageMaxDimension: CGFloat = 1600
+    static let uploadImageTargetMaxBytes = 1024 * 1024
+    static let uploadImageMinQuality: CGFloat = 0.5
+
     /// 相册上传入口 feature flag。默认关，用户明确说开才开。
     /// 当前：测试中，临时开启
     static let galleryPickerEnabled = true

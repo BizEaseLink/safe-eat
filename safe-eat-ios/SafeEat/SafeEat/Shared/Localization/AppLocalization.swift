@@ -744,6 +744,7 @@ enum L10nKey {
         static let scoreLogicFormat = "result.score.logic_format"
         static let scoreLogicHint = "result.score.logic_hint"
         static let medicalDisclaimer = "result.medical_disclaimer"
+        static let aiDisclaimerLink = "result.ai_disclaimer.link"
         static let metricCalories = "result.metric.calories"
         static let metricProtein = "result.metric.protein"
         static let metricFat = "result.metric.fat"
@@ -835,7 +836,6 @@ enum L10nKey {
         static let sectionDetailedNutrients = "result.section.detailed_nutrients"
         static let sectionVitamins = "result.section.vitamins"
         static let sectionMinerals = "result.section.minerals"
-        static let sectionOtherTraceMinerals = "result.section.other_trace_minerals"
         static let sectionDailyValues = "result.section.daily_values"
         static let sectionGlycemic = "result.section.glycemic"
         static let sectionDietary = "result.section.dietary"
@@ -888,7 +888,6 @@ enum L10nKey {
         static let membershipBannerDescLite = "result.membership_banner.desc_lite"
         static let membershipBannerDescPro = "result.membership_banner.desc_pro"
         static let membershipBannerAction = "result.membership_banner.action"
-        // 其他微量元素 — 使用 sectionOtherTraceMinerals
         static let perServing = "result.nutrition.per_serving"
         static let actionAnalysisDetail = "result.action.analysis_detail"
         static let emptyDataHint = "result.empty_data_hint"

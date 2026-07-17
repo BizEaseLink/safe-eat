@@ -7,7 +7,6 @@ enum PaywallSection: Int, CaseIterable {
     case s2DetailedNutrients
     case s3Vitamins
     case s4Minerals
-    case s4_5TraceMinerals  // 其他微量元素，独立于 S4 矿物质
     case s6Glycemic
     case s7Allergens
     case s8Dietary
@@ -21,7 +20,6 @@ enum PaywallSection: Int, CaseIterable {
         case .s2DetailedNutrients: return .free   // Free 部分露出，Lite+ 全可见
         case .s3Vitamins: return .lite
         case .s4Minerals: return .lite
-        case .s4_5TraceMinerals: return .lite      // 与 S4 同层级可见
         case .s6Glycemic: return .lite
         case .s7Allergens: return .pro             // 后端 PRO 级别过滤，iOS 对齐
         case .s8Dietary: return .pro               // Pro 部分露出，Premium 全可见

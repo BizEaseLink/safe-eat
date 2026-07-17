@@ -59,7 +59,25 @@ extension UIImage {
     }
 
     func jpegDataForUpload() -> Data? {
-        normalizedUprightImage().jpegData(compressionQuality: AppConfig.imageCompressionQuality)
+        var workingImage = normalizedUprightImage().scaledDown(maxDimension: AppConfig.uploadImageMaxDimension)
+        var compressionQuality: CGFloat = AppConfig.imageCompressionQuality
+        var data = workingImage.jpegData(compressionQuality: compressionQuality)
+
+        while let currentData = data, currentData.count > AppConfig.uploadImageTargetMaxBytes, compressionQuality > AppConfig.uploadImageMinQuality {
+            compressionQuality -= 0.08
+            data = workingImage.jpegData(compressionQuality: compressionQuality)
+        }
+
+        while let currentData = data, currentData.count > AppConfig.uploadImageTargetMaxBytes {
+            let nextDimension = max(max(workingImage.size.width, workingImage.size.height) * 0.82, 640)
+            guard nextDimension < max(workingImage.size.width, workingImage.size.height) else {
+                break
+            }
+            workingImage = workingImage.scaledDown(maxDimension: nextDimension)
+            data = workingImage.jpegData(compressionQuality: compressionQuality)
+        }
+
+        return data
     }
 
     func avatarUploadData() -> Data? {

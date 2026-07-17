@@ -187,7 +187,6 @@ struct ResultView: View {
         case .s2DetailedNutrients: return SafeEatL10n.text(L10nKey.Result.sectionDetailedNutrients)
         case .s3Vitamins: return SafeEatL10n.text(L10nKey.Result.sectionVitamins)
         case .s4Minerals: return SafeEatL10n.text(L10nKey.Result.sectionMinerals)
-        case .s4_5TraceMinerals: return SafeEatL10n.text(L10nKey.Result.sectionOtherTraceMinerals)
         case .s6Glycemic: return SafeEatL10n.text(L10nKey.Result.sectionGlycemic)
         case .s7Allergens: return SafeEatL10n.text(L10nKey.Result.allergenTitle)
         case .s8Dietary: return SafeEatL10n.text(L10nKey.Result.sectionDietary)
@@ -202,7 +201,6 @@ struct ResultView: View {
         case .s2DetailedNutrients: return "chart.bar.fill"
         case .s3Vitamins: return "capsule.fill"
         case .s4Minerals: return "hexagon.fill"
-        case .s4_5TraceMinerals: return "circle.hexagongrid.fill"
         case .s6Glycemic: return "drop.fill"
         case .s7Allergens: return "exclamationmark.shield.fill"
         case .s8Dietary: return "leaf.fill"
@@ -824,14 +822,16 @@ struct ResultView: View {
                             .background(scoreLogicFill)
                             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
-                        // 营养指标评分列表（折叠展开时显示）
-                        if let impacts = recognition.metricImpacts, !impacts.isEmpty {
-                            metricImpactsList(impacts)
-                        } else {
-                            Text(SafeEatL10n.text(L10nKey.Result.emptyDataHint))
-                                .font(SafeEatFont.textStyle(.subheadline))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-                                .padding(.top, 8)
+                        // 营养指标评分列表：Pro+ 可见，Free/Lite 不显示列表
+                        if canShowDetailedAdvice {
+                            if let impacts = recognition.metricImpacts, !impacts.isEmpty {
+                                metricImpactsList(impacts)
+                            } else {
+                                Text(SafeEatL10n.text(L10nKey.Result.emptyDataHint))
+                                    .font(SafeEatFont.textStyle(.subheadline))
+                                    .foregroundStyle(SafeEatTheme.textSecondary)
+                                    .padding(.top, 8)
+                            }
                         }
                     }
                 }
@@ -860,9 +860,6 @@ struct ResultView: View {
 
             // S4 矿物质（Lite+ 可见）
             paywallWrapped(.s4Minerals) { mineralsSection }
-
-            // S4.5 其他微量元素（v3 中微量矿物质已包含在 Minerals 属性内）
-            paywallWrapped(.s4_5TraceMinerals) { otherTraceMineralsSection }
 
             // S8 饮食信息（Lite 部分露出第1条+遮罩，Pro+ 全可见）
             paywallWrapped(.s8Dietary) { dietaryInfoSection }
@@ -1075,7 +1072,7 @@ struct ResultView: View {
                                 Button {
                                     showMembership = true
                                 } label: {
-                                    Label(SafeEatL10n.text(L10nKey.Result.upgradeForMoreAdvice), systemImage: "lock.fill")
+                                    Label(SafeEatL10n.text(L10nKey.Result.paywallUpgradeAction), systemImage: "lock.fill")
                                         .font(SafeEatFont.custom(14, relativeTo: .subheadline))
                                 }
                                 .buttonStyle(.borderedProminent)
@@ -1097,11 +1094,11 @@ struct ResultView: View {
                             Button {
                                 showMembership = true
                             } label: {
-                                Label(SafeEatL10n.text(L10nKey.Result.upgradeForMoreAdvice), systemImage: "lock.fill")
+                                Label(SafeEatL10n.text(L10nKey.Result.paywallUpgradeAction), systemImage: "lock.fill")
                                     .font(SafeEatFont.custom(14, relativeTo: .subheadline))
                             }
                             .buttonStyle(.borderedProminent)
-                            .tint(.green)
+                            .tint(SafeEatTheme.primary)
                         }
                     }
                 }
@@ -1280,11 +1277,6 @@ struct ResultView: View {
         if let zn = m.zinc { result.append((SafeEatL10n.text(L10nKey.Result.mineralZinc), zn.value, zn.unit, zn.dailyValuePercent)) }
         if let se = m.selenium { result.append((SafeEatL10n.text(L10nKey.Result.mineralSelenium), se.value, se.unit, se.dailyValuePercent)) }
         return result
-    }
-
-    // S4.5: 其他微量元素（v3 中微量矿物质已包含在 Minerals 属性内，此 section 无数据不渲染）
-    private var otherTraceMineralsSection: some View {
-        EmptyView()
     }
 
     // S6: 血糖信息
@@ -1669,7 +1661,7 @@ struct ResultView: View {
     }
 
     private var medicalDisclaimerView: some View {
-        HStack(spacing: 4) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(medicalDisclaimerText)
                 .font(SafeEatFont.custom(11, relativeTo: .caption))
                 .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.86))
@@ -1677,7 +1669,7 @@ struct ResultView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             NavigationLink(value: ProfileRoute.aiDisclaimer) {
-                Text("详见《AI免责声明》")
+                Text(SafeEatL10n.text(L10nKey.Result.aiDisclaimerLink))
                     .font(SafeEatFont.custom(11, relativeTo: .caption, weight: .bold))
                     .foregroundStyle(SafeEatTheme.primary.opacity(0.86))
             }

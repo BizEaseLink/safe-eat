@@ -743,6 +743,7 @@
 "result.score.logic_format" = "Health Score %d";
 "result.score.logic_hint" = "Tap to view how the score is calculated";
 "result.medical_disclaimer" = "Safe Eat offers everyday dietary guidance only. It does not replace clinical diagnosis, prescriptions, or professional nutrition intervention. If you have hypertension, hyperlipidemia, high blood sugar, kidney disease, pregnancy, or other special conditions, follow advice from qualified medical professionals.";
+"result.ai_disclaimer.link" = "Read the AI Disclaimer";
 "result.metric.calories" = "Calories";
 "result.metric.protein" = "Protein";
 "result.metric.fat" = "Fat";
@@ -776,7 +777,7 @@
 "result.ai_advice.upgrade_hint" = "Upgrade for more advice";
 "result.ai_advice.summary_label" = "Summary";
 "result.ai_advice.detailed_label" = "Detailed Advice";
-"result.ai_advice.upgrade_tier_hint_format" = "Upgrade to %@ for more advice";
+"result.ai_advice.upgrade_tier_hint_format" = "Unlock full AI advice with %@";
 // C1: Quick metric cards
 "result.quick_metric.glycemic_index" = "Glycemic";
 "result.quick_metric.glycemic.low" = "LOW";
@@ -804,7 +805,6 @@
 "result.section.detailed_nutrients" = "Detailed Nutrients";
 "result.section.vitamins" = "Vitamins";
 "result.section.minerals" = "Minerals";
-"result.section.other_trace_minerals" = "Other Trace Minerals";
 "result.section.daily_values" = "Daily Values";
 "result.section.glycemic" = "Glycemic Index";
 "result.section.dietary" = "Dietary Info";

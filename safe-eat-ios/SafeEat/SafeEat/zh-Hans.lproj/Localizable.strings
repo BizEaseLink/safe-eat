@@ -602,6 +602,7 @@
 "result.score.logic_format" = "健康评分 %d";
 "result.score.logic_hint" = "点击查看评分说明与计算逻辑";
 "result.medical_disclaimer" = "食安安提供的是日常饮食辅助建议，不替代医院诊断、医生处方或专业营养干预。若你有高血压、高血脂、高血糖、肾病、妊娠或其他特殊健康情况，请以正规医院和专业医生建议为准。";
+"result.ai_disclaimer.link" = "阅读《AI免责声明》";
 "result.metric.calories" = "热量";
 "result.metric.protein" = "蛋白质";
 "result.metric.fat" = "脂肪";
@@ -794,7 +795,7 @@
 // MOB-3: AI 建议分区标题
 "result.ai_advice.summary_label" = "摘要";
 "result.ai_advice.detailed_label" = "详细建议";
-"result.ai_advice.upgrade_tier_hint_format" = "升级至 %@ 查看更多建议";
+"result.ai_advice.upgrade_tier_hint_format" = "解锁 %@ 完整 AI 建议";
 // C1: 快捷指标卡
 "result.quick_metric.glycemic_index" = "升糖指数";
 "result.quick_metric.glycemic.low" = "低";
@@ -822,7 +823,6 @@
 "result.section.detailed_nutrients" = "详细营养素";
 "result.section.vitamins" = "维生素";
 "result.section.minerals" = "矿物质";
-"result.section.other_trace_minerals" = "其他微量元素";
 "result.section.daily_values" = "每日参考值";
 "result.section.glycemic" = "血糖指数";
 "result.section.dietary" = "饮食适配";
