@@ -245,7 +245,14 @@ struct MainTabView: View {
 
     private var floatingBottomBar: some View {
         HStack(spacing: 4) {
-            // 拍摄按钮（第一位）
+            // 相册按钮（feature flag 默认关，开启时在拍照按钮左边）
+            if AppConfig.galleryPickerEnabled {
+                AlbumPicker { image in
+                    startAlbumRecognition(with: image)
+                }
+            }
+
+            // 拍摄按钮
             scanBarItem
 
             tabBarItem(tab: .home, icon: "house.fill", label: SafeEatL10n.text(L10nKey.Tab.home))
@@ -345,6 +352,27 @@ struct MainTabView: View {
         }
 
         showCamera = true
+    }
+
+    /// 相册选图后走识别管道：相册图不裁，已扶正到 .up，raw 传同一份。
+    @MainActor
+    private func startAlbumRecognition(with image: UIImage) {
+        guard recognitionPhase == nil else { return }
+
+        guard store.session != nil else {
+            store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.scanAction))
+            return
+        }
+
+        if isFreeQuotaExceeded {
+            showQuotaExceeded = true
+            return
+        }
+
+        recognizingPreviewImage = image.loadingOverlayPreviewImage()
+        Task {
+            await recognize(croppedImage: image, rawImage: image)
+        }
     }
 
     @MainActor

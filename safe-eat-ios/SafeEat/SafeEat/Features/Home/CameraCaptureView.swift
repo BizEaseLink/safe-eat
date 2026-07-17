@@ -393,8 +393,47 @@ final class CameraSessionModel: NSObject, ObservableObject {
         return rect
     }
 
-    private func cropImageToGuideRectIfPossible(_ image: UIImage) -> UIImage {
-        return image
+    /// 裁切到引导框区域。在扶正之前调用：先旋转会让宽高对调，引导框坐标反而对不上。
+    ///
+    /// 坐标系一致性依据（横拍 EXIF 90°/270° 高风险点，防御性确认）：
+    /// - `normalizedGuideRect` 由 `previewLayer.metadataOutputRectConverted(fromLayerRect:)` 算出。
+    ///   该 API 输出的是 **AVCaptureOutput 原始输出坐标系的归一化 rect**（device sensor 原始方向，
+    ///   横版 sensor 即横版坐标），内部已处理预览图层的旋转（videoRotationAngle=90），
+    ///   但**不应用 photo 的 EXIF orientation**。
+    /// - `image`（rawImage）由 `OrientationBaker.rawImage(from:)` 用
+    ///   `CIImage(data: options:[.applyOrientationProperty:false])` 解出，也是**未应用 EXIF orientation
+    ///   的原始像素**，方向 = device sensor 原始方向。
+    /// - 两者同处 device sensor 原始坐标系 → **一致，无需按 EXIF orientation 换算 x/y**。
+    /// - `photoOutput` 回调里 `orientation` 参数仅用于 Debug 日志定位，不参与裁切逻辑。
+    private func cropImageToGuideRectIfPossible(
+        _ image: UIImage,
+        exifOrientation: CGImagePropertyOrientation
+    ) -> UIImage {
+        let normalized = currentNormalizedGuideRect()
+        guard !normalized.isNull, !normalized.isEmpty,
+              normalized.width > 0, normalized.height > 0,
+              let cgImage = image.cgImage else {
+            return image
+        }
+
+        let imageWidth = CGFloat(cgImage.width)
+        let imageHeight = CGFloat(cgImage.height)
+        let pixelRect = CGRect(
+            x: normalized.minX * imageWidth,
+            y: normalized.minY * imageHeight,
+            width: normalized.width * imageWidth,
+            height: normalized.height * imageHeight
+        ).standardized.intersection(CGRect(x: 0, y: 0, width: imageWidth, height: imageHeight))
+
+        #if DEBUG
+        print("[CameraCrop] exif=\(exifOrientation.rawValue) normalized=\(normalized) pixelRect=\(pixelRect) cgSize=\(imageWidth)x\(imageHeight)")
+        #endif
+
+        guard !pixelRect.isNull, !pixelRect.isEmpty,
+              let cropped = cgImage.cropping(to: pixelRect) else {
+            return image
+        }
+        return UIImage(cgImage: cropped, scale: image.scale, orientation: .up)
     }
 }
 
@@ -414,7 +453,7 @@ extension CameraSessionModel: AVCapturePhotoCaptureDelegate {
 
         guard
             let data = photo.fileDataRepresentation(),
-            let rawImage = Self.bakedCaptureImage(from: photo, data: data)
+            let rawImage = OrientationBaker.rawImage(from: data)
         else {
             Task { @MainActor in
                 self.isCapturingPhoto = false
@@ -423,50 +462,21 @@ extension CameraSessionModel: AVCapturePhotoCaptureDelegate {
             return
         }
 
-        let croppedImage = cropImageToGuideRectIfPossible(rawImage)
+        // 管道：记方向（只算一次）→ 裁切（原始坐标，不碰方向）→ 扶正 → 压缩（复用 jpegDataForUpload）
+        let orientation = OrientationBaker.resolveOrientationForCapture(photo: photo, data: data)
+        let croppedRaw = cropImageToGuideRectIfPossible(rawImage, exifOrientation: orientation)
+        let bakedCropped = OrientationBaker.bake(croppedRaw, to: orientation) ?? croppedRaw
+        let bakedFull = OrientationBaker.bake(rawImage, to: orientation) ?? rawImage
 
         Task { @MainActor in
             self.isCapturingPhoto = false
             self.capturedImage = CameraCapturePayload(
-                croppedImage: croppedImage,
-                rawImage: rawImage
+                croppedImage: bakedCropped,
+                rawImage: bakedFull
             )
         }
     }
-
-    nonisolated private static func bakedCaptureImage(from photo: AVCapturePhoto, data: Data) -> UIImage? {
-        guard var ciImage = CIImage(data: data, options: [.applyOrientationProperty: false]) else {
-            return UIImage(data: data)?.normalizedUprightImage()
-        }
-
-        let exifOrientation =
-            (photo.metadata[kCGImagePropertyOrientation as String] as? UInt32)
-            ?? imageSourceOrientation(from: data)
-
-        if let exifOrientation {
-            ciImage = ciImage.oriented(forExifOrientation: Int32(exifOrientation))
-        }
-
-        let ciContext = CIContext()
-        guard let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) else {
-            return UIImage(data: data)?.normalizedUprightImage()
-        }
-
-        return UIImage(cgImage: cgImage, scale: UIScreen.main.scale, orientation: .up)
-    }
-
-    nonisolated private static func imageSourceOrientation(from data: Data) -> UInt32? {
-        guard
-            let imageSource = CGImageSourceCreateWithData(data as CFData, nil),
-            let properties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [CFString: Any]
-        else {
-            return nil
-        }
-
-        return properties[kCGImagePropertyOrientation] as? UInt32
-    }
 }
-
 private struct CameraPreview: UIViewRepresentable {
     let session: AVCaptureSession
     let rotationAngle: CGFloat

@@ -172,6 +172,7 @@
 "tab.home" = "Home";
 "tab.menu" = "History";
 "tab.scan" = "Scan";
+"tab.album" = "Album";
 "tab.trend" = "Trends";
 "tab.profile" = "Profile";
 
@@ -1022,6 +1023,18 @@
 "home.trial_prompt.claim_action" = "Try Now";
 "home.trial_prompt.later_action" = "Maybe Later";
 "home.trial_prompt.success_message" = "Trial activated! Enjoy 3 days of Premium.";
+
+"home.welcome.title" = "Welcome to SafeEat";
+"home.welcome.subtitle" = "Eat with peace of mind";
+"home.welcome.app_name" = "Food Safety Assistant";
+"home.welcome.app_tagline" = "Snap a photo to check food ingredient safety";
+"home.welcome.feature_scan_title" = "Scan";
+"home.welcome.feature_scan_detail" = "Recognize ingredients";
+"home.welcome.feature_score_title" = "Safety Score";
+"home.welcome.feature_score_detail" = "At a glance";
+"home.welcome.feature_reminder_title" = "Reminders";
+"home.welcome.feature_reminder_detail" = "Never miss an expiry";
+"home.welcome.start_action" = "Get Started";
 
 "home.quota_exceeded.daily_title" = "Daily limit reached";
 "home.quota_exceeded.monthly_title" = "Monthly limit reached";

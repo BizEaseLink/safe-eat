@@ -27,6 +27,10 @@ enum AppConfig {
     static let avatarMaxDimension: CGFloat = 1024
     static let avatarTargetMaxBytes = 300 * 1024
 
+    /// 相册上传入口 feature flag。默认关，用户明确说开才开。
+    /// 当前：测试中，临时开启
+    static let galleryPickerEnabled = true
+
     /// 广告配置刷新间隔（秒），缓存过期后重新请求网络，同时作为定时刷新周期
     /// 测试阶段设 1 小时，上线后可改为 24 小时或更长
     static let adConfigRefreshInterval: TimeInterval = 1 * 60 * 60

@@ -8,6 +8,7 @@
 "tab.home" = "主页";
 "tab.menu" = "历史";
 "tab.scan" = "拍摄";
+"tab.album" = "相册";
 "tab.trend" = "趋势";
 "tab.profile" = "个人";
 
@@ -759,8 +760,20 @@
 "home.trial_prompt.badge_subtitle" = "全部功能解锁，到期自动降级";
 "home.trial_prompt.footnote" = "体验结束后可随时购买正式会员";
 "home.trial_prompt.claim_action" = "立即体验";
-"home.trial_prompt.later_action" = "稍后使用";
+"home.trial_prompt.later_action" = "稍后再说";
 "home.trial_prompt.success_message" = "体验会员已激活，畅享3天 Premium！";
+
+"home.welcome.title" = "欢迎使用 SafeEat";
+"home.welcome.subtitle" = "让每一口都安心";
+"home.welcome.app_name" = "食品安全助手";
+"home.welcome.app_tagline" = "拍照即可检测食品成分安全性";
+"home.welcome.feature_scan_title" = "拍照扫描";
+"home.welcome.feature_scan_detail" = "识别食品成分";
+"home.welcome.feature_score_title" = "安全评分";
+"home.welcome.feature_score_detail" = "一目了然";
+"home.welcome.feature_reminder_title" = "定时提醒";
+"home.welcome.feature_reminder_detail" = "不遗漏保质期";
+"home.welcome.start_action" = "开始体验";
 
 "home.quota_exceeded.daily_title" = "今日额度已用完";
 "home.quota_exceeded.monthly_title" = "本月额度已用完";

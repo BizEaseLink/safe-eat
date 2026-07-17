@@ -40,6 +40,7 @@ enum L10nKey {
         static let trend = "tab.trend"
         static let profile = "tab.profile"
         static let scan = "tab.scan"
+        static let album = "tab.album"
     }
 
     enum Advice {
@@ -641,6 +642,17 @@ enum L10nKey {
         static let trialPromptClaimAction = "home.trial_prompt.claim_action"
         static let trialPromptLaterAction = "home.trial_prompt.later_action"
         static let trialPromptSuccessMessage = "home.trial_prompt.success_message"
+        static let welcomeTitle = "home.welcome.title"
+        static let welcomeSubtitle = "home.welcome.subtitle"
+        static let welcomeAppName = "home.welcome.app_name"
+        static let welcomeAppTagline = "home.welcome.app_tagline"
+        static let welcomeFeatureScanTitle = "home.welcome.feature_scan_title"
+        static let welcomeFeatureScanDetail = "home.welcome.feature_scan_detail"
+        static let welcomeFeatureScoreTitle = "home.welcome.feature_score_title"
+        static let welcomeFeatureScoreDetail = "home.welcome.feature_score_detail"
+        static let welcomeFeatureReminderTitle = "home.welcome.feature_reminder_title"
+        static let welcomeFeatureReminderDetail = "home.welcome.feature_reminder_detail"
+        static let welcomeStartAction = "home.welcome.start_action"
         static let quotaExceededDailyTitle = "home.quota_exceeded.daily_title"
         static let quotaExceededMonthlyTitle = "home.quota_exceeded.monthly_title"
         static let quotaExceededDailyHintFormat = "home.quota_exceeded.daily_hint_format"
