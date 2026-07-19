@@ -38,7 +38,8 @@ struct MembershipPurchaseView: View {
     var body: some View {
         ProfileSecondaryPage(
             title: SafeEatL10n.text(L10nKey.Membership.title),
-            subtitle: SafeEatL10n.text(L10nKey.Membership.subtitle)
+            subtitle: SafeEatL10n.text(L10nKey.Membership.subtitle),
+            onRefresh: { await loadPlans(force: true) }
         ) {
             // 新用户赠送提示
             if isNewUser {
@@ -128,6 +129,17 @@ struct MembershipPurchaseView: View {
             }
         } message: {
             Text(store.purchaseError ?? "")
+        }
+        // 试用激活失败：走 store.errorMessage 通道，sheet 已关，用 alert 提示用户可重试
+        .alert(SafeEatL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
+            get: { store.errorMessage != nil },
+            set: { if !$0 { store.errorMessage = nil } }
+        )) {
+            Button(SafeEatL10n.text(L10nKey.Common.ok)) {
+                store.errorMessage = nil
+            }
+        } message: {
+            Text(store.errorMessage ?? "")
         }
         .sheet(isPresented: $showTrialPrompt) {
             trialPromptSheet
@@ -401,25 +413,11 @@ struct MembershipPurchaseView: View {
             } else {
                 // 降级：本地额度文案
                 VStack(alignment: .leading, spacing: 4) {
-                    if let quota = plan.recognitionQuotaMonthly {
-                        benefitRow(SafeEatL10n.format(L10nKey.Membership.benefitRecognitionMonthly, quota))
-                    }
-                    if let aiQuota = plan.aiQuotaMonthly {
-                        benefitRow(SafeEatL10n.format(L10nKey.Membership.benefitAiMonthly, aiQuota))
-                    }
-                    if let daily = plan.dailyQuota, daily > 0 {
-                        benefitRow(SafeEatL10n.format(L10nKey.Membership.benefitDailyQuota, daily))
-                    }
                     if let level = plan.aiAdviceLevel, !level.isEmpty {
                         benefitRow(SafeEatL10n.format(L10nKey.Membership.benefitAiAdviceLevel, AiAdviceLevelMapper.title(level)))
                     }
-                    if let profiles = plan.maxHealthProfiles, profiles > 0 {
-                        benefitRow(SafeEatL10n.format(L10nKey.Membership.benefitMaxHealthProfiles, profiles))
-                    }
-                    if let limit = plan.maxHistoryRecords {
-                        benefitRow(limit == -1
-                            ? SafeEatL10n.text(L10nKey.Membership.benefitHistoryLimitUnlimited)
-                            : SafeEatL10n.format(L10nKey.Membership.benefitHistoryLimit, limit))
+                    if let quota = plan.recognitionQuotaMonthly {
+                        benefitRow(SafeEatL10n.format(L10nKey.Membership.benefitRecognitionMonthly, quota))
                     }
                 }
             }
@@ -540,14 +538,14 @@ struct MembershipPurchaseView: View {
 
     private var trialPromptSheet: some View {
         SafeEatSettingsSheetContainer(
-            title: "体验 Premium 会员",
-            subtitle: "免费体验3天最高等级会员，享受全部功能",
+            title: SafeEatL10n.text(L10nKey.Home.trialPromptTitle),
+            subtitle: SafeEatL10n.text(L10nKey.Home.trialPromptSubtitle),
             contentHeight: 160,
-            primaryButton: SheetButton(title: "立即体验") {
+            primaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Home.trialPromptClaimAction), isLoading: activatingTrial) {
                 showTrialPrompt = false
                 Task { await activateTrial() }
             },
-            secondaryButton: SheetButton(title: "稍后使用") {
+            secondaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Home.trialPromptLaterAction)) {
                 showTrialPrompt = false
                 showPurchaseConfirmSheet = true
             }
@@ -566,17 +564,17 @@ struct MembershipPurchaseView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("3天 Premium 体验")
+                            Text(SafeEatL10n.text(L10nKey.Home.trialPromptBadgeTitle))
                                 .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
                                 .foregroundStyle(SafeEatTheme.textPrimary)
 
-                            Text("全部功能解锁，到期自动降级")
+                            Text(SafeEatL10n.text(L10nKey.Home.trialPromptBadgeSubtitle))
                                 .font(SafeEatFont.textStyle(.footnote))
                                 .foregroundStyle(SafeEatTheme.textSecondary)
                         }
                     }
 
-                    Text("体验结束后可随时购买正式会员")
+                    Text(SafeEatL10n.text(L10nKey.Home.trialPromptFootnote))
                         .font(SafeEatFont.textStyle(.caption))
                         .foregroundStyle(SafeEatTheme.textSecondary)
                 }
@@ -586,17 +584,15 @@ struct MembershipPurchaseView: View {
 
     private func activateTrial() async {
         activatingTrial = true
-        do {
-            _ = try await store.activateTrialMembership()
-            // 激活后强刷 membershipStatus + plans（含 trialAvailable），保证 trialAvailable 立即变 false
-            await store.loadMembershipStatus()
-            await store.loadPlansWithCampaigns()
-            successMessage = "体验会员已激活，畅享3天 Premium！"
-        } catch {
-            // 激活失败，继续正常购买流程
-            showPurchaseConfirmSheet = true
+        defer { activatingTrial = false }
+        // 走共享激活流程：成功刷新 membership/plans 并返回 true；失败写入 store.errorMessage 并返回 false
+        let ok = await store.activateTrialAndRefresh()
+        if ok {
+            // 成功：弹统一成功提示（与 NewUserWelcomeSheet 一致）
+            successMessage = SafeEatL10n.text(L10nKey.Home.trialPromptSuccessMessage)
         }
-        activatingTrial = false
+        // 失败：store.errorMessage 已设置，sheet 已关 —— errorMessage 通过本页 alert 通道展示，
+        // 用户可重新进入购买流程，不再自动跳转 purchaseConfirmSheet
     }
 
     // MARK: - Purchase Confirm Sheet（付款折扣展示）
@@ -751,18 +747,6 @@ struct MembershipPurchaseView: View {
         ) {
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 16) {
-                    // 月识别额度
-                    if let quota = plan.recognitionQuotaMonthly {
-                        HStack {
-                            Label(SafeEatL10n.text(L10nKey.Membership.detailRecognitionMonthlyLabel), systemImage: "camera.viewfinder")
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-                            Spacer()
-                            Text(SafeEatL10n.format(L10nKey.Membership.detailCountFormat, quota))
-                                .bold()
-                        }
-                        .font(SafeEatFont.custom(15, relativeTo: .body))
-                    }
-
                     // AI 建议等级
                     if let level = plan.aiAdviceLevel, !level.isEmpty {
                         HStack {
@@ -775,27 +759,13 @@ struct MembershipPurchaseView: View {
                         .font(SafeEatFont.custom(15, relativeTo: .body))
                     }
 
-                    // 最大健康档案数
-                    if let profiles = plan.maxHealthProfiles, profiles > 0 {
+                    // 识别次数
+                    if let quota = plan.recognitionQuotaMonthly {
                         HStack {
-                            Label(SafeEatL10n.text(L10nKey.Membership.detailHealthProfilesLabel), systemImage: "person.2")
+                            Label(SafeEatL10n.text(L10nKey.Membership.detailRecognitionMonthlyLabel), systemImage: "camera.viewfinder")
                                 .foregroundStyle(SafeEatTheme.textSecondary)
                             Spacer()
-                            Text(SafeEatL10n.format(L10nKey.Membership.detailHealthProfilesFormat, profiles))
-                                .bold()
-                        }
-                        .font(SafeEatFont.custom(15, relativeTo: .body))
-                    }
-
-                    // 历史记录限制
-                    if let limit = plan.maxHistoryRecords {
-                        HStack {
-                            Label(SafeEatL10n.text(L10nKey.Membership.detailHistoryLabel), systemImage: "clock.arrow.circlepath")
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-                            Spacer()
-                            Text(limit == -1
-                                ? SafeEatL10n.text(L10nKey.Membership.detailHistoryUnlimited)
-                                : SafeEatL10n.format(L10nKey.Membership.detailHistoryCountFormat, limit))
+                            Text(SafeEatL10n.format(L10nKey.Membership.detailCountFormat, quota))
                                 .bold()
                         }
                         .font(SafeEatFont.custom(15, relativeTo: .body))
@@ -803,7 +773,9 @@ struct MembershipPurchaseView: View {
 
                     // 权益描述
                     if let desc = plan.benefitsDescription, !desc.isEmpty {
-                        Divider().overlay(SafeEatTheme.line)
+                        Rectangle()
+                            .fill(SafeEatTheme.line)
+                            .frame(height: 1)
 
                         Text(SafeEatL10n.text(L10nKey.Membership.detailBenefitsTitle))
                             .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
@@ -1101,8 +1073,8 @@ struct MembershipPurchaseView: View {
 
     // MARK: - Data Loading
 
-    private func loadPlans() async {
-        guard store.membershipPlans.isEmpty else {
+    private func loadPlans(force: Bool = false) async {
+        guard force || store.membershipPlans.isEmpty else {
             selectedPlanID = firstUpgradePlan?.id
             return
         }

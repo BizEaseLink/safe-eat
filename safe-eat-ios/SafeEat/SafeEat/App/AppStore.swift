@@ -773,6 +773,22 @@ final class AppStore: ObservableObject {
         }
     }
 
+    /// 统一的试用激活流程：调用后端激活 → 刷新会员状态 + plans（含 trialAvailable） → 返回是否成功
+    /// 成功返回 true，失败返回 false 并把错误写入 errorMessage（调用方据此决定是否关闭 sheet）
+    /// 两处试用入口（NewUserWelcomeSheet / MembershipPurchaseView 的 trialPromptSheet）共用此方法
+    @discardableResult
+    func activateTrialAndRefresh() async -> Bool {
+        do {
+            _ = try await activateTrialMembership()
+            await loadMembershipStatus()
+            await loadPlansWithCampaigns()
+            return true
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
+        }
+    }
+
     private func handleSuccessfulPurchase(transaction: Transaction) async {
         let transactionID = String(transaction.id)
 

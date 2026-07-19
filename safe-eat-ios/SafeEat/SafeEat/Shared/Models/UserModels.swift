@@ -53,6 +53,17 @@ struct MembershipPlan: Decodable, Identifiable {
     let maxHistoryRecords: Int?
     // 每个套餐适用的活动（已过滤叠加）
     let applicableCampaigns: [CampaignBenefit]?
+
+    // 后端返回 monthlyQuota，iOS 模型语义化为 recognitionQuotaMonthly
+    enum CodingKeys: String, CodingKey {
+        case id, tier, billingCycle, name, priceFen, dailyQuota, active, appleProductId
+        case recognitionQuota, aiQuota
+        case recognitionQuotaMonthly = "monthlyQuota"
+        case aiQuotaMonthly
+        case priceDisplay, sortOrder, yearlyPriceFen
+        case benefitsDescription, aiAdviceLevel, maxHealthProfiles, maxHistoryRecords
+        case applicableCampaigns
+    }
 }
 
 // MARK: - 活动权益

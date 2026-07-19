@@ -12,6 +12,7 @@ struct ResultView: View {
     @State private var showFeedback = false
     @State private var showScoreLogicDetail = false
     @State private var showMembership = false
+    @State private var showAiDisclaimer = false
     @State private var flipDirection: Double = -1
     @State private var scrollOffset: CGFloat = 0
 
@@ -111,10 +112,6 @@ struct ResultView: View {
         SafeEatL10n.text(L10nKey.Result.scoreLogicBody)
     }
 
-    private var medicalDisclaimerText: String {
-        SafeEatL10n.text(L10nKey.Result.medicalDisclaimer)
-    }
-
     private var pairedMetrics: [(String, String, String, String)] {
         let metrics = recognition?.effectiveNutrition
         let nutrients = metrics?.nutrients
@@ -158,7 +155,10 @@ struct ResultView: View {
         _ section: PaywallSection,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        Group {
+        // header 由 paywallWrapped 统一渲染：无论哪个 tier、有无数据，标题都稳定显示
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(sectionTitle(for: section), icon: sectionIcon(for: section))
+
             if section.isFullyVisible(for: membershipTier) {
                 content()
             } else if section.isPartiallyRevealed(for: membershipTier) {
@@ -170,13 +170,10 @@ struct ResultView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
             } else {
                 // 完全遮罩
-                VStack(alignment: .leading, spacing: 12) {
-                    sectionHeader(sectionTitle(for: section), icon: sectionIcon(for: section))
-                    PaywallOverlayView(section: section) {
-                        showMembership = true
-                    }
-                    .frame(height: 120)
+                PaywallOverlayView(section: section) {
+                    showMembership = true
                 }
+                .frame(height: 120)
             }
         }
     }
@@ -187,11 +184,13 @@ struct ResultView: View {
         case .s2DetailedNutrients: return SafeEatL10n.text(L10nKey.Result.sectionDetailedNutrients)
         case .s3Vitamins: return SafeEatL10n.text(L10nKey.Result.sectionVitamins)
         case .s4Minerals: return SafeEatL10n.text(L10nKey.Result.sectionMinerals)
+        case .s5RiskFacts: return SafeEatL10n.text(L10nKey.Result.riskTitle)
         case .s6Glycemic: return SafeEatL10n.text(L10nKey.Result.sectionGlycemic)
         case .s7Allergens: return SafeEatL10n.text(L10nKey.Result.allergenTitle)
         case .s8Dietary: return SafeEatL10n.text(L10nKey.Result.sectionDietary)
         case .s9Preparation: return SafeEatL10n.text(L10nKey.Result.preparation)
         case .s10Ingredients: return SafeEatL10n.text(L10nKey.Result.sectionIngredients)
+        case .s11AiAdvice: return SafeEatL10n.text(L10nKey.Result.aiAdviceTitle)
         }
     }
 
@@ -201,35 +200,86 @@ struct ResultView: View {
         case .s2DetailedNutrients: return "chart.bar.fill"
         case .s3Vitamins: return "capsule.fill"
         case .s4Minerals: return "hexagon.fill"
+        case .s5RiskFacts: return "exclamationmark.triangle.fill"
         case .s6Glycemic: return "drop.fill"
         case .s7Allergens: return "exclamationmark.shield.fill"
         case .s8Dietary: return "leaf.fill"
         case .s9Preparation: return "frying.pan.fill"
         case .s10Ingredients: return "list.bullet.clipboard.fill"
+        case .s11AiAdvice: return "sparkles"
         }
     }
 
-    // Phase 8C: AI 建议访问控制
-    private var aiAdviceLevel: String {
-        store.profile?.currentPlanTier ?? "free"
+    // Phase 8C: AI 建议（header 由 paywallWrapped 统一渲染；内部三档子块仍按 membershipTier 分级：
+    // Summary Lite+、Detailed Pro+、HealthTips Premium。Free 完全遮罩）
+    private var aiAdviceSectionContent: some View {
+        Group {
+            if let explanation = recognition?.aiExplanation {
+                VStack(alignment: .leading, spacing: 12) {
+                    // 摘要区（Lite+ 可见）
+                    if let summary = aiSummaryText(for: explanation) {
+                        sectionCard {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label(SafeEatL10n.text(L10nKey.Result.aiAdviceSummaryLabel), systemImage: "text.quote")
+                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                    .foregroundStyle(SafeEatTheme.primary)
+                                Text(summary)
+                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+
+                    // 详细建议区（Pro+ 可见）
+                    if membershipTier >= .pro {
+                        if let detailed = aiDetailedText(for: explanation) {
+                            sectionCard {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Label(SafeEatL10n.text(L10nKey.Result.aiAdviceDetailedLabel), systemImage: "doc.text.fill")
+                                        .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                        .foregroundStyle(SafeEatTheme.primary)
+                                    Text(detailed)
+                                        .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                                        .foregroundStyle(SafeEatTheme.textPrimary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
+                    }
+
+                    // 健康提示区（Premium 可见）
+                    if membershipTier >= .premium {
+                        if let tips = aiHealthTips(for: explanation), !tips.isEmpty {
+                            sectionCard {
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Label(SafeEatL10n.text(L10nKey.Result.healthTipsTitle), systemImage: "heart.text.square.fill")
+                                        .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                        .foregroundStyle(SafeEatTheme.success)
+                                    ForEach(tips, id: \.self) { tip in
+                                        HStack(alignment: .top, spacing: 8) {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .font(.system(size: 16))
+                                                .foregroundStyle(SafeEatTheme.success)
+                                            Text(tip)
+                                                .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                                                .foregroundStyle(SafeEatTheme.textPrimary)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                emptyDataCard
+            }
+        }
     }
 
-    private var canShowSummary: Bool {
-        let tier = aiAdviceLevel
-        return tier != "free"
-    }
-
-    private var canShowDetailedAdvice: Bool {
-        let tier = aiAdviceLevel
-        return tier == "pro" || tier == "premium"
-    }
-
-    private var canShowHealthTips: Bool {
-        aiAdviceLevel == "premium"
-    }
-
-    private var showUpgradeHint: Bool {
-        !canShowHealthTips
+    // Phase 8C: AI 建议区域（统一走 paywallWrapped：Free 完全遮罩，Lite+ 全可见）
+    private var aiAdviceSection: some View {
+        paywallWrapped(.s11AiAdvice) { aiAdviceSectionContent }
     }
 
     @State private var loadingTimeoutReached = false
@@ -823,7 +873,7 @@ struct ResultView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
                         // 营养指标评分列表：Pro+ 可见，Free/Lite 不显示列表
-                        if canShowDetailedAdvice {
+                        if membershipTier >= .pro {
                             if let impacts = recognition.metricImpacts, !impacts.isEmpty {
                                 metricImpactsList(impacts)
                             } else {
@@ -843,44 +893,43 @@ struct ResultView: View {
             }
             .buttonStyle(.plain)
 
-            // S1 基础营养素（所有级别可见）
+            // ===== Free 档全可见 =====
+            // S1 基础营养素（含膳食纤维：有值才显示）
             paywallWrapped(.s1BasicNutrients) { basicNutrientsSection }
 
-            // S6 血糖信息（Lite+ 可见）
-            paywallWrapped(.s6Glycemic) { glycemicSection }
+            // S7 过敏原（安全信息，全档放开）
+            paywallWrapped(.s7Allergens) { backAllergenSection }
 
-            // S7 过敏原（所有级别全可见，无 paywall 门控）
-            backAllergenSection
-
-            // S2 详细营养素（Free 部分露出第1条+遮罩，Lite+ 全可见）
-            paywallWrapped(.s2DetailedNutrients) { detailedNutrientsSection }
-
-            // S3 维生素（Lite+ 可见）
-            paywallWrapped(.s3Vitamins) { vitaminsSection }
-
-            // S4 矿物质（Lite+ 可见）
-            paywallWrapped(.s4Minerals) { mineralsSection }
-
-            // S8 饮食信息（Lite 部分露出第1条+遮罩，Pro+ 全可见）
-            paywallWrapped(.s8Dietary) { dietaryInfoSection }
-
-            // S9 制备方式（Pro+ 可见）
-            // 截图临时隐藏：截完 App Store 预览图后删除此注释恢复
-            // paywallWrapped(.s9Preparation) { preparationSection }
-
-            // S10 成分分解（Pro 直接遮罩，Premium 全可见）
-            // 截图临时隐藏：截完 App Store 预览图后删除此注释恢复
-            // paywallWrapped(.s10Ingredients) { ingredientBreakdownSection }
-
-            // Phase 8C: 风险标签（规则引擎）
-            if let risks = recognition.riskFacts, !risks.isEmpty {
-                riskFactsSection(risks)
-            } else {
-                emptyDataSection(title: SafeEatL10n.text(L10nKey.Result.riskTitle), icon: "exclamationmark.triangle.fill")
+            // S5 风险提示（静态规则不花钱，全档放开）
+            paywallWrapped(.s5RiskFacts) {
+                if let risks = recognition.riskFacts, !risks.isEmpty {
+                    riskFactsSection(risks)
+                } else {
+                    emptyDataCard
+                }
             }
 
-            // Phase 8C: AI 建议区域
+            // ===== Lite 档起解锁 =====
+            // S3 维生素
+            paywallWrapped(.s3Vitamins) { vitaminsSection }
+
+            // S4 矿物质
+            paywallWrapped(.s4Minerals) { mineralsSection }
+
+            // S6 血糖指数
+            paywallWrapped(.s6Glycemic) { glycemicSection }
+
+            // S11 AI 建议（Free 完全遮罩，Lite+ 全可见）
             aiAdviceSection
+
+            // ===== Pro 档起解锁 =====
+            // S8 饮食标签
+            paywallWrapped(.s8Dietary) { dietaryInfoSection }
+
+            // ===== 后台数据不完整，暂隐藏（枚举保留待恢复）=====
+            // paywallWrapped(.s2DetailedNutrients) { detailedNutrientsSection }
+            // paywallWrapped(.s9Preparation) { preparationSection }
+            // paywallWrapped(.s10Ingredients) { ingredientBreakdownSection }
 
             // 会员引导横幅（背面底部）
             MembershipBannerView(tier: membershipTier, isFront: false, onUpgrade: { showMembership = true })
@@ -967,152 +1016,30 @@ struct ResultView: View {
         return SafeEatTheme.danger
     }
 
-    // Phase 8C: 风险标签 section
+    // Phase 8C: 风险标签 section（header 由 paywallWrapped 统一渲染）
     private func riskFactsSection(_ risks: [RiskFact]) -> some View {
         let isZh = SafeEatL10n.isZh
-        return VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(SafeEatL10n.text(L10nKey.Result.riskTitle), icon: "exclamationmark.triangle.fill")
-
-            sectionCard {
-                VStack(alignment: .leading, spacing: 10) {
-                    ForEach(risks) { risk in
-                        HStack(spacing: 10) {
-                            Image(systemName: risk.severity == "danger" ? "exclamationmark.triangle.fill" : "exclamationmark.circle.fill")
-                                .foregroundStyle(risk.severity == "danger" ? SafeEatTheme.danger : SafeEatTheme.warning)
-                                .font(.system(size: 18))
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(isZh ? (risk.label ?? risk.tag) : (risk.labelEn ?? risk.tag))
-                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                                    .foregroundStyle(SafeEatTheme.textPrimary)
-                                let descText: String? = isZh ? risk.description : risk.descriptionEn
-                                if let descText, !descText.isEmpty {
-                                    Text(descText)
-                                        .font(SafeEatFont.custom(13, relativeTo: .caption))
-                                        .foregroundStyle(SafeEatTheme.textSecondary)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Phase 8C: AI 建议区域
-    private var aiAdviceSection: some View {
-        Group {
-            if let explanation = recognition?.aiExplanation {
-                VStack(alignment: .leading, spacing: 12) {
-                    sectionHeader(SafeEatL10n.text(L10nKey.Result.aiAdviceTitle), icon: "sparkles")
-
-                    // 摘要区
-                    if canShowSummary {
-                        if let summary = aiSummaryText(for: explanation) {
-                        sectionCard {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Label(SafeEatL10n.text(L10nKey.Result.aiAdviceSummaryLabel), systemImage: "text.quote")
-                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                                    .foregroundStyle(SafeEatTheme.primary)
-                                Text(summary)
-                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                                    .foregroundStyle(SafeEatTheme.textPrimary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
-                        }
-                    }
-
-                    // 详细建议区
-                    if canShowDetailedAdvice {
-                        if let detailed = aiDetailedText(for: explanation) {
-                        sectionCard {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Label(SafeEatL10n.text(L10nKey.Result.aiAdviceDetailedLabel), systemImage: "doc.text.fill")
-                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                                    .foregroundStyle(SafeEatTheme.primary)
-                                Text(detailed)
-                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                                    .foregroundStyle(SafeEatTheme.textPrimary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
-                        }
-                    }
-
-                    // 健康提示区
-                    if canShowHealthTips {
-                        if let tips = aiHealthTips(for: explanation), !tips.isEmpty {
-                        sectionCard {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Label(SafeEatL10n.text(L10nKey.Result.healthTipsTitle), systemImage: "heart.text.square.fill")
-                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                                    .foregroundStyle(SafeEatTheme.success)
-                                ForEach(tips, id: \.self) { tip in
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .font(.system(size: 16))
-                                            .foregroundStyle(SafeEatTheme.success)
-                                        Text(tip)
-                                            .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                                            .foregroundStyle(SafeEatTheme.textPrimary)
-                                    }
-                                }
-                            }
-                        }
-                        }
-                    }
-
-                    // 升级提示（非 Premium 用户）
-                    if showUpgradeHint {
-                        sectionCard {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(SafeEatL10n.format(L10nKey.Result.upgradeTierHintFormat, upgradeTierName))
-                                    .font(SafeEatFont.custom(13, relativeTo: .footnote))
+        return sectionCard {
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(risks) { risk in
+                    HStack(spacing: 10) {
+                        Image(systemName: risk.severity == "danger" ? "exclamationmark.triangle.fill" : "exclamationmark.circle.fill")
+                            .foregroundStyle(risk.severity == "danger" ? SafeEatTheme.danger : SafeEatTheme.warning)
+                            .font(.system(size: 18))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(isZh ? (risk.label ?? risk.tag) : (risk.labelEn ?? risk.tag))
+                                .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                .foregroundStyle(SafeEatTheme.textPrimary)
+                            let descText: String? = isZh ? risk.description : risk.descriptionEn
+                            if let descText, !descText.isEmpty {
+                                Text(descText)
+                                    .font(SafeEatFont.custom(13, relativeTo: .caption))
                                     .foregroundStyle(SafeEatTheme.textSecondary)
-                                Button {
-                                    showMembership = true
-                                } label: {
-                                    Label(SafeEatL10n.text(L10nKey.Result.paywallUpgradeAction), systemImage: "lock.fill")
-                                        .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .tint(SafeEatTheme.primary)
                             }
-                        }
-                    }
-                }
-            } else if showUpgradeHint {
-                // Free 用户无 AI 建议数据时显示升级占位
-                VStack(alignment: .leading, spacing: 12) {
-                    sectionHeader(SafeEatL10n.text(L10nKey.Result.aiAdviceTitle), icon: "sparkles")
-
-                    sectionCard {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(SafeEatL10n.format(L10nKey.Result.upgradeTierHintFormat, upgradeTierName))
-                                .font(SafeEatFont.custom(13, relativeTo: .footnote))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-                            Button {
-                                showMembership = true
-                            } label: {
-                                Label(SafeEatL10n.text(L10nKey.Result.paywallUpgradeAction), systemImage: "lock.fill")
-                                    .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .tint(SafeEatTheme.primary)
                         }
                     }
                 }
             }
-        }
-    }
-
-    /// 升级目标 tier 名称
-    private var upgradeTierName: String {
-        let tier = aiAdviceLevel
-        switch tier {
-        case "free": return "Lite"
-        case "lite": return "Pro"
-        default: return "Premium"
         }
     }
 
@@ -1129,25 +1056,22 @@ struct ResultView: View {
         }
     }
 
-    private func emptyDataSection(title: String, icon: String) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title, icon: icon)
-            sectionCard {
-                Text(SafeEatL10n.text(L10nKey.Result.emptyDataHint))
-                    .font(SafeEatFont.textStyle(.subheadline))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
-            }
+    /// 无 header 的空态卡（header 由 paywallWrapped 统一渲染）
+    private var emptyDataCard: some View {
+        sectionCard {
+            Text(SafeEatL10n.text(L10nKey.Result.emptyDataHint))
+                .font(SafeEatFont.textStyle(.subheadline))
+                .foregroundStyle(SafeEatTheme.textSecondary)
         }
     }
 
-    // S1: 基础营养素
+    // S1: 基础营养素（header 由 paywallWrapped 统一渲染）
     private var basicNutrientsSection: some View {
         Group {
             if let nutrients = recognition?.effectiveNutrition?.nutrients {
                 let hasData = nutrients.calories.value > 0 || nutrients.protein.value > 0 || nutrients.fat.value > 0 || nutrients.carbohydrates.value > 0 || nutrients.sodium != nil
                 if hasData {
                     VStack(alignment: .leading, spacing: 12) {
-                        sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionMacronutrients), icon: "flame.fill")
                         Text(SafeEatL10n.text(L10nKey.Result.per100gServing))
                             .font(SafeEatFont.custom(12, relativeTo: .caption))
                             .foregroundStyle(SafeEatTheme.textSecondary)
@@ -1158,33 +1082,32 @@ struct ResultView: View {
                                 NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.metricFat), value: nutrients.fat.value, unit: nutrients.fat.unit, nrvPercent: nutrients.fat.dailyValuePercent)
                                 NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.metricCarbs), value: nutrients.carbohydrates.value, unit: nutrients.carbohydrates.unit, nrvPercent: nutrients.carbohydrates.dailyValuePercent)
                                 NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.sodium), value: nutrients.sodium?.value, unit: nutrients.sodium?.unit, nrvPercent: nutrients.sodium?.dailyValuePercent)
+                                // 膳食纤维：由 S2 迁入，有值才显示，无值整行不渲染
+                                if let fiber = nutrients.dietaryFiber, fiber.value > 0 {
+                                    NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.dietaryFiber), value: fiber.value, unit: fiber.unit, nrvPercent: fiber.dailyValuePercent)
+                                }
                             }
                         }
                     }
                 } else {
-                    emptyDataSection(title: SafeEatL10n.text(L10nKey.Result.sectionMacronutrients), icon: "flame.fill")
+                    emptyDataCard
                 }
             } else {
-                emptyDataSection(title: SafeEatL10n.text(L10nKey.Result.sectionMacronutrients), icon: "flame.fill")
+                emptyDataCard
             }
         }
     }
 
-    // S2: 详细营养素（Free 部分露出第1条，Lite+ 全可见）
+    // S2: 详细营养素（header 由 paywallWrapped 统一渲染；当前 S2 隐藏，枚举保留待恢复）
     private var detailedNutrientsSection: some View {
         Group {
             if let nutrients = recognition?.effectiveNutrition?.nutrients {
                 let allItems = detailedNutrientItems(nutrients)
                 if !allItems.isEmpty {
-                    let isPartial = PaywallSection.s2DetailedNutrients.isPartiallyRevealed(for: membershipTier)
-                    let displayItems = isPartial ? Array(allItems.prefix(1)) : allItems
-                    VStack(alignment: .leading, spacing: 12) {
-                        sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionDetailedNutrients), icon: "chart.bar.fill")
-                        sectionCard {
-                            VStack(alignment: .leading, spacing: 8) {
-                                ForEach(displayItems, id: \.0) { item in
-                                    NutritionFactRowView(name: item.0, value: item.1.value, unit: item.1.unit, nrvPercent: item.1.dailyValuePercent)
-                                }
+                    sectionCard {
+                        VStack(alignment: .leading, spacing: 8) {
+                            ForEach(allItems, id: \.0) { item in
+                                NutritionFactRowView(name: item.0, value: item.1.value, unit: item.1.unit, nrvPercent: item.1.dailyValuePercent)
                             }
                         }
                     }
@@ -1202,22 +1125,21 @@ struct ResultView: View {
         return items
     }
 
-    // S3: 维生素（从 vitamins 对象各属性读取分量 + NRV%）
+    // S3: 维生素（header 由 paywallWrapped 统一渲染）
     @ViewBuilder
     private var vitaminsSection: some View {
         let dvItems = vitaminItems
 
         if !dvItems.isEmpty {
-            VStack(alignment: .leading, spacing: 12) {
-                sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionVitamins), icon: "capsule.fill")
-                sectionCard {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ForEach(dvItems, id: \.0) { item in
-                            NutritionFactRowView(name: item.0, value: item.1, unit: item.2, nrvPercent: item.3)
-                        }
+            sectionCard {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(dvItems, id: \.0) { item in
+                        NutritionFactRowView(name: item.0, value: item.1, unit: item.2, nrvPercent: item.3)
                     }
                 }
             }
+        } else {
+            emptyDataCard
         }
     }
 
@@ -1249,16 +1171,15 @@ struct ResultView: View {
         let dvItems = mineralItems
 
         if !dvItems.isEmpty {
-            VStack(alignment: .leading, spacing: 12) {
-                sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionMinerals), icon: "hexagon.fill")
-                sectionCard {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ForEach(dvItems, id: \.0) { item in
-                            NutritionFactRowView(name: item.0, value: item.1, unit: item.2, nrvPercent: item.3)
-                        }
+            sectionCard {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(dvItems, id: \.0) { item in
+                        NutritionFactRowView(name: item.0, value: item.1, unit: item.2, nrvPercent: item.3)
                     }
                 }
             }
+        } else {
+            emptyDataCard
         }
     }
 
@@ -1279,52 +1200,50 @@ struct ResultView: View {
         return result
     }
 
-    // S6: 血糖信息
+    // S6: 血糖信息（header 由 paywallWrapped 统一渲染）
     private var glycemicSection: some View {
         Group {
-            if let gi = recognition?.effectiveNutrition?.glycemicInfo {
-                if gi.glycemicIndex != nil || gi.glycemicLoad != nil {
-                    VStack(alignment: .leading, spacing: 12) {
-                        sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionGlycemic), icon: "drop.fill")
-                        sectionCard {
-                            VStack(alignment: .leading, spacing: 8) {
-                                if let idx = gi.glycemicIndex {
-                                    HStack {
-                                        Text(SafeEatL10n.text(L10nKey.Result.glycemicIndex))
-                                            .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                                            .foregroundStyle(SafeEatTheme.textPrimary)
-                                        Spacer()
-                                        Text(String(format: "%.0f", idx))
-                                            .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                                            .foregroundStyle(glycemicColor(idx))
-                                    }
-                                }
-                                if let load = gi.glycemicLoad {
-                                    HStack {
-                                        Text(SafeEatL10n.text(L10nKey.Result.glycemicLoad))
-                                            .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                                            .foregroundStyle(SafeEatTheme.textPrimary)
-                                        Spacer()
-                                        Text(String(format: "%.1f", load))
-                                            .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                                            .foregroundStyle(SafeEatTheme.textPrimary)
-                                    }
-                                }
-                                if let insulin = gi.insulinIndex {
-                                    HStack {
-                                        Text(SafeEatL10n.text(L10nKey.Result.insulinIndex))
-                                            .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                                            .foregroundStyle(SafeEatTheme.textPrimary)
-                                        Spacer()
-                                        Text(String(format: "%.0f", insulin))
-                                            .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                                            .foregroundStyle(SafeEatTheme.textPrimary)
-                                    }
-                                }
+            if let gi = recognition?.effectiveNutrition?.glycemicInfo,
+               gi.glycemicIndex != nil || gi.glycemicLoad != nil {
+                sectionCard {
+                    VStack(alignment: .leading, spacing: 8) {
+                        if let idx = gi.glycemicIndex {
+                            HStack {
+                                Text(SafeEatL10n.text(L10nKey.Result.glycemicIndex))
+                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                                Spacer()
+                                Text(String(format: "%.0f", idx))
+                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                    .foregroundStyle(glycemicColor(idx))
+                            }
+                        }
+                        if let load = gi.glycemicLoad {
+                            HStack {
+                                Text(SafeEatL10n.text(L10nKey.Result.glycemicLoad))
+                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                                Spacer()
+                                Text(String(format: "%.1f", load))
+                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                            }
+                        }
+                        if let insulin = gi.insulinIndex {
+                            HStack {
+                                Text(SafeEatL10n.text(L10nKey.Result.insulinIndex))
+                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                                Spacer()
+                                Text(String(format: "%.0f", insulin))
+                                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                    .foregroundStyle(SafeEatTheme.textPrimary)
                             }
                         }
                     }
                 }
+            } else {
+                emptyDataCard
             }
         }
     }
@@ -1335,54 +1254,52 @@ struct ResultView: View {
         return SafeEatTheme.danger
     }
 
-    // S7: 过敏原 — 所有级别全可见（contains + mayContain）
+    // S7: 过敏原 — 全档全可见（header 由 paywallWrapped 统一渲染）
     private var backAllergenSection: some View {
         Group {
             if let data = allergensData, !data.contains.isEmpty || !data.mayContain.isEmpty {
-                VStack(alignment: .leading, spacing: 12) {
-                    sectionHeader(SafeEatL10n.text(L10nKey.Result.allergenTitle), icon: "exclamationmark.shield.fill")
-                    sectionCard {
-                        VStack(alignment: .leading, spacing: 10) {
-                            if !data.contains.isEmpty {
-                                allergenRow(
-                                    label: SafeEatL10n.text(L10nKey.Result.allergenContains),
-                                    items: data.contains,
-                                    color: SafeEatTheme.danger
-                                )
-                            }
-                            if !data.mayContain.isEmpty {
-                                allergenRow(
-                                    label: SafeEatL10n.text(L10nKey.Result.allergenMayContain),
-                                    items: data.mayContain,
-                                    color: SafeEatTheme.warning
-                                )
-                            }
+                sectionCard {
+                    VStack(alignment: .leading, spacing: 10) {
+                        if !data.contains.isEmpty {
+                            allergenRow(
+                                label: SafeEatL10n.text(L10nKey.Result.allergenContains),
+                                items: data.contains,
+                                color: SafeEatTheme.danger
+                            )
+                        }
+                        if !data.mayContain.isEmpty {
+                            allergenRow(
+                                label: SafeEatL10n.text(L10nKey.Result.allergenMayContain),
+                                items: data.mayContain,
+                                color: SafeEatTheme.warning
+                            )
                         }
                     }
                 }
+            } else {
+                emptyDataCard
             }
         }
     }
 
-    // S8: 饮食信息（Lite 部分露出第1条，Pro+ 全可见）
+    // S8: 饮食信息（Pro 起解锁；header 由 paywallWrapped 统一渲染）
     private var dietaryInfoSection: some View {
         Group {
             if let diet = recognition?.effectiveNutrition?.dietaryInfo {
                 let allTags = dietaryTagItems(diet).filter { $0.1 }
                 if !allTags.isEmpty {
-                    let isPartial = PaywallSection.s8Dietary.isPartiallyRevealed(for: membershipTier)
-                    let displayTags = isPartial ? Array(allTags.prefix(1)) : allTags
-                    VStack(alignment: .leading, spacing: 12) {
-                        sectionHeader(SafeEatL10n.text(L10nKey.Result.sectionDietary), icon: "leaf.fill")
-                        sectionCard {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 8)], spacing: 8) {
-                                ForEach(displayTags, id: \.0) { tag in
-                                    dietaryTag(tag.0, isOn: tag.1)
-                                }
+                    sectionCard {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 8)], spacing: 8) {
+                            ForEach(allTags, id: \.0) { tag in
+                                dietaryTag(tag.0, isOn: tag.1)
                             }
                         }
                     }
+                } else {
+                    emptyDataCard
                 }
+            } else {
+                emptyDataCard
             }
         }
     }
@@ -1661,20 +1578,39 @@ struct ResultView: View {
     }
 
     private var medicalDisclaimerView: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(medicalDisclaimerText)
-                .font(SafeEatFont.custom(11, relativeTo: .caption))
-                .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.86))
-                .lineSpacing(2)
-                .fixedSize(horizontal: false, vertical: true)
-
-            NavigationLink(value: ProfileRoute.aiDisclaimer) {
-                Text(SafeEatL10n.text(L10nKey.Result.aiDisclaimerLink))
-                    .font(SafeEatFont.custom(11, relativeTo: .caption, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.primary.opacity(0.86))
+        (Text(Self.medicalDisclaimerBodyAttributed)
+            + Text(Self.aiDisclaimerLinkAttributed))
+        .font(SafeEatFont.custom(13, relativeTo: .caption))
+        .lineSpacing(2)
+        .fixedSize(horizontal: false, vertical: true)
+        .environment(\.openURL, OpenURLAction { url in
+            guard url.absoluteString == "safeeat://ai_disclaimer" else { return .discarded }
+            showAiDisclaimer = true
+            return .handled
+        })
+        .sheet(isPresented: $showAiDisclaimer) {
+            NavigationStack {
+                DisclosureDetailView(
+                    title: SafeEatL10n.text(L10nKey.Profile.About.aiDisclaimer),
+                    category: "ai_disclaimer"
+                )
             }
-            .buttonStyle(.plain)
+            .environmentObject(store)
         }
+    }
+
+    private static var medicalDisclaimerBodyAttributed: AttributedString {
+        var attr = AttributedString(SafeEatL10n.text(L10nKey.Result.medicalDisclaimer))
+        attr.foregroundColor = SafeEatTheme.textSecondary.opacity(0.86)
+        return attr
+    }
+
+    private static var aiDisclaimerLinkAttributed: AttributedString {
+        var attr = AttributedString(SafeEatL10n.text(L10nKey.Result.aiDisclaimerLink))
+        attr.foregroundColor = SafeEatTheme.primary
+        attr.underlineStyle = .single
+        attr.link = URL(string: "safeeat://ai_disclaimer")
+        return attr
     }
 
     private func statusChip(text: String, color: Color) -> some View {

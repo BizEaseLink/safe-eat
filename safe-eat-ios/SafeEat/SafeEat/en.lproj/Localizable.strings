@@ -501,12 +501,7 @@
 "membership.purchase.badge.lite" = "Lite";
 "membership.purchase.badge.current" = "Current";
 "membership.purchase.benefit.recognition_monthly" = "%d scans per month";
-"membership.purchase.benefit.ai_monthly" = "%d AI analyses per month";
-"membership.purchase.benefit.daily_quota" = "%d scans per day";
 "membership.purchase.benefit.ai_advice_level" = "AI Advice: %@";
-"membership.purchase.benefit.max_health_profiles" = "Up to %d health profiles";
-"membership.purchase.benefit.history_limit" = "%d days history";
-"membership.purchase.benefit.history_limit_unlimited" = "Unlimited history";
 "membership.purchase.redeem_code_entry_title" = "Redeem Code";
 "membership.purchase.redeem_code_entry_subtitle" = "Enter a code for extra membership benefits";
 "membership.purchase.redeem_code_sheet_title" = "Enter Redeem Code";
@@ -526,11 +521,6 @@
 "membership.purchase.detail.recognition_monthly_label" = "Monthly Scans";
 "membership.purchase.detail.count_format" = "%d scans";
 "membership.purchase.detail.ai_advice_level_label" = "AI Advice Level";
-"membership.purchase.detail.health_profiles_label" = "Health Profiles";
-"membership.purchase.detail.health_profiles_format" = "%d profiles";
-"membership.purchase.detail.history_label" = "History";
-"membership.purchase.detail.history_unlimited" = "Unlimited";
-"membership.purchase.detail.history_count_format" = "%d records";
 "membership.purchase.detail.benefits_title" = "Benefits";
 "membership.purchase.detail.nav_title" = "Plan Benefits";
 "membership.purchase.select_plan" = "Select";
@@ -807,7 +797,7 @@
 "result.section.minerals" = "Minerals";
 "result.section.daily_values" = "Daily Values";
 "result.section.glycemic" = "Glycemic Index";
-"result.section.dietary" = "Dietary Info";
+"result.section.dietary" = "Dietary Tags";
 "result.section.ingredients" = "Ingredients & Preparation";
 "result.glycemic.index" = "Glycemic Index";
 "result.glycemic.load" = "Glycemic Load";

@@ -7,35 +7,36 @@ enum PaywallSection: Int, CaseIterable {
     case s2DetailedNutrients
     case s3Vitamins
     case s4Minerals
+    case s5RiskFacts
     case s6Glycemic
     case s7Allergens
     case s8Dietary
     case s9Preparation
     case s10Ingredients
+    case s11AiAdvice
 
     /// 返回解锁此 Section 所需的最低 tier
     var minimumTier: MembershipTier {
         switch self {
         case .s1BasicNutrients: return .free
-        case .s2DetailedNutrients: return .free   // Free 部分露出，Lite+ 全可见
+        case .s2DetailedNutrients: return .free   // S2 暂隐藏（后台数据不完整），枚举保留待恢复
         case .s3Vitamins: return .lite
         case .s4Minerals: return .lite
+        case .s5RiskFacts: return .free            // 风险提示静态规则不花钱，全档放开
         case .s6Glycemic: return .lite
-        case .s7Allergens: return .pro             // 后端 PRO 级别过滤，iOS 对齐
-        case .s8Dietary: return .pro               // Pro 部分露出，Premium 全可见
-        case .s9Preparation: return .premium       // 后端 PREMIUM 级别过滤，iOS 对齐
-        case .s10Ingredients: return .premium       // 后端 PREMIUM 级别过滤，iOS 对齐
+        case .s7Allergens: return .free            // 安全信息，全档放开
+        case .s8Dietary: return .pro               // Pro 起解锁
+        case .s9Preparation: return .premium       // S9 暂隐藏（后台数据不完整），枚举保留待恢复
+        case .s10Ingredients: return .premium       // S10 暂隐藏（后台数据不完整），枚举保留待恢复
+        case .s11AiAdvice: return .lite            // AI 建议要花钱算，Free 完全不给，Lite+ 全可见
         }
     }
 
     /// 此 section 是否对当前 tier 采用"部分露出"效果
     /// 部分露出 = 渲染第1条数据，下方渐变模糊+锁+升级CTA
     func isPartiallyRevealed(for tier: MembershipTier) -> Bool {
-        switch self {
-        case .s2DetailedNutrients: return tier == .free
-        case .s8Dietary: return tier == .pro
-        default: return false
-        }
+        // 定稿矩阵：无部分露出档位。未达门槛一律完全遮罩，达标全可见
+        return false
     }
 
     /// 此 section 是否对当前 tier 完全不可见（直接遮罩，不部分露出）
@@ -89,10 +90,6 @@ struct PaywallOverlayView: View {
                 Image(systemName: "lock.fill")
                     .font(.system(size: 22, weight: .semibold))
                     .foregroundStyle(SafeEatTheme.primary)
-
-                Text(SafeEatL10n.text(L10nKey.Result.paywallUpgradeHint))
-                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
 
                 Button {
                     onUpgrade()

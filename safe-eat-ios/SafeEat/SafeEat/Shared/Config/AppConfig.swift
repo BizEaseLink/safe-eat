@@ -11,12 +11,12 @@ enum AppConfig {
     // SIT: 106.53.186.117
     // 生产: 按实际域名配置
     static let apiBaseURL: URL = {
-        if let envURL = ProcessInfo.processInfo.environment["API_BASE_URL"],
-           let url = URL(string: envURL) {
-            return url
-        }
+//        if let envURL = ProcessInfo.processInfo.environment["API_BASE_URL"],
+//           let url = URL(string: envURL) {
+//            return url
+//        }
         #if DEBUG
-        return URL(string: "http://192.168.31.189:3000/api")!
+        return URL(string: "http://192.168.31.216:3000/api")!
         #else
         return URL(string: "http://106.53.186.117/api")!
         #endif

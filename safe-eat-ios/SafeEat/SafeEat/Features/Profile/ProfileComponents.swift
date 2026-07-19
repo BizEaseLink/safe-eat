@@ -610,6 +610,8 @@ struct ProfileSecondaryPage<Content: View, Footer: View>: View {
     let title: String
     var subtitle: String? = nil
     var onBack: (() -> Void)? = nil
+    /// 下拉刷新回调；传了才启用下拉刷新（不传则无 refreshable）
+    var onRefresh: (() async -> Void)? = nil
     @ViewBuilder let content: Content
     @ViewBuilder let footer: Footer
 
@@ -620,12 +622,14 @@ struct ProfileSecondaryPage<Content: View, Footer: View>: View {
         title: String,
         subtitle: String? = nil,
         onBack: (() -> Void)? = nil,
+        onRefresh: (() async -> Void)? = nil,
         @ViewBuilder content: () -> Content,
         @ViewBuilder footer: () -> Footer
     ) {
         self.title = title
         self.subtitle = subtitle
         self.onBack = onBack
+        self.onRefresh = onRefresh
         self.content = content()
         self.footer = footer()
     }
@@ -634,9 +638,10 @@ struct ProfileSecondaryPage<Content: View, Footer: View>: View {
         title: String,
         subtitle: String? = nil,
         onBack: (() -> Void)? = nil,
+        onRefresh: (() async -> Void)? = nil,
         @ViewBuilder content: () -> Content
     ) where Footer == EmptyView {
-        self.init(title: title, subtitle: subtitle, onBack: onBack, content: content, footer: { EmptyView() })
+        self.init(title: title, subtitle: subtitle, onBack: onBack, onRefresh: onRefresh, content: content, footer: { EmptyView() })
     }
 
     var body: some View {
@@ -665,6 +670,9 @@ struct ProfileSecondaryPage<Content: View, Footer: View>: View {
                 .coordinateSpace(name: scrollCoordinateSpace)
                 .onPreferenceChange(SafeEatScrollOffsetKey.self) { value in
                     scrollOffset = value
+                }
+                .applyIf(onRefresh != nil) { scroll in
+                    scroll.refreshable { await onRefresh?() }
                 }
 
                 ProfileSecondaryChrome(
@@ -828,6 +836,18 @@ struct PurchaseLoadingOverlay: View {
             }
             .padding(.top, 16)
             .padding(.trailing, 20)
+        }
+    }
+}
+
+// 条件性 modifier：仅当 condition 为 true 时套用 transform，否则原样返回
+private extension View {
+    @ViewBuilder
+    func applyIf<T: View>(_ condition: Bool, transform: (Self) -> T) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
         }
     }
 }

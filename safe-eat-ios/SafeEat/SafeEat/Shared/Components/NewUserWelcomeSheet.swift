@@ -5,13 +5,14 @@ import SwiftUI
 struct NewUserWelcomeSheet: View {
     @EnvironmentObject private var store: AppStore
     @State private var isActivatingTrial = false
+    @State private var successMessage: String?
 
     let onDismiss: () -> Void
 
     var body: some View {
         SafeEatSettingsSheetContainer(
-            title: "欢迎使用 SafeEat",
-            subtitle: "让每一口都安心",
+            title: SafeEatL10n.text(L10nKey.Home.welcomeTitle),
+            subtitle: SafeEatL10n.text(L10nKey.Home.welcomeSubtitle),
             contentHeight: contentHeight,
             primaryButton: primaryButton,
             secondaryButton: store.trialAvailable
@@ -33,11 +34,11 @@ struct NewUserWelcomeSheet: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("食品安全助手")
+                        Text(SafeEatL10n.text(L10nKey.Home.welcomeAppName))
                             .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
                             .foregroundStyle(SafeEatTheme.textPrimary)
 
-                        Text("拍照即可检测食品成分安全性")
+                        Text(SafeEatL10n.text(L10nKey.Home.welcomeAppTagline))
                             .font(SafeEatFont.textStyle(.footnote))
                             .foregroundStyle(SafeEatTheme.textSecondary)
                     }
@@ -46,15 +47,49 @@ struct NewUserWelcomeSheet: View {
 
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 10) {
-                    featureRow(icon: "camera.fill", title: "拍照扫描", detail: "识别食品成分")
-                    featureRow(icon: "chart.bar.fill", title: "安全评分", detail: "一目了然")
-                    featureRow(icon: "bell.fill", title: "定时提醒", detail: "不遗漏保质期")
+                    featureRow(
+                        icon: "camera.fill",
+                        title: SafeEatL10n.text(L10nKey.Home.welcomeFeatureScanTitle),
+                        detail: SafeEatL10n.text(L10nKey.Home.welcomeFeatureScanDetail)
+                    )
+                    featureRow(
+                        icon: "chart.bar.fill",
+                        title: SafeEatL10n.text(L10nKey.Home.welcomeFeatureScoreTitle),
+                        detail: SafeEatL10n.text(L10nKey.Home.welcomeFeatureScoreDetail)
+                    )
+                    featureRow(
+                        icon: "bell.fill",
+                        title: SafeEatL10n.text(L10nKey.Home.welcomeFeatureReminderTitle),
+                        detail: SafeEatL10n.text(L10nKey.Home.welcomeFeatureReminderDetail)
+                    )
                 }
             }
 
             if store.trialAvailable {
                 trialCard
             }
+        }
+        .alert(SafeEatL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
+            get: { successMessage != nil },
+            set: { if !$0 { successMessage = nil } }
+        )) {
+            Button(SafeEatL10n.text(L10nKey.Common.ok)) {
+                successMessage = nil
+                onDismiss()
+            }
+        } message: {
+            Text(successMessage ?? "")
+        }
+        // 试用激活失败：走 store.errorMessage 通道，sheet 不关，让用户重试或点"稍后再说"
+        .alert(SafeEatL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
+            get: { store.errorMessage != nil },
+            set: { if !$0 { store.errorMessage = nil } }
+        )) {
+            Button(SafeEatL10n.text(L10nKey.Common.ok)) {
+                store.errorMessage = nil
+            }
+        } message: {
+            Text(store.errorMessage ?? "")
         }
     }
 
@@ -72,7 +107,7 @@ struct NewUserWelcomeSheet: View {
                 Task { await activateTrial() }
             }
         } else {
-            return SheetButton(title: "开始体验") { onDismiss() }
+            return SheetButton(title: SafeEatL10n.text(L10nKey.Home.welcomeStartAction)) { onDismiss() }
         }
     }
 
@@ -111,16 +146,13 @@ struct NewUserWelcomeSheet: View {
     private func activateTrial() async {
         isActivatingTrial = true
         defer { isActivatingTrial = false }
-        do {
-            _ = try await store.activateTrialMembership()
-            // 激活后强刷 membershipStatus + plans（含 trialAvailable），保证 trialAvailable 立即变 false
-            await store.loadMembershipStatus()
-            await store.loadPlansWithCampaigns()
-            onDismiss()
-        } catch {
-            // 激活失败：错误走 store.errorMessage 通道，sheet 不关（让用户重试或点"稍后使用"）
-            store.errorMessage = error.localizedDescription
+        // 走共享激活流程：成功刷新 membership/plans 并返回 true；失败写入 store.errorMessage 并返回 false
+        let ok = await store.activateTrialAndRefresh()
+        if ok {
+            // 成功：弹统一成功提示，用户点 OK 后再关 sheet（先关 sheet alert 会消失）
+            successMessage = SafeEatL10n.text(L10nKey.Home.trialPromptSuccessMessage)
         }
+        // 失败：store.errorMessage 已设置，sheet 不关，让用户重试或点"稍后再说"
     }
 
     private func featureRow(icon: String, title: String, detail: String) -> some View {

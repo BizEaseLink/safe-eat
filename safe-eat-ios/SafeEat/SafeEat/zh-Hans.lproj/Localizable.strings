@@ -363,12 +363,7 @@
 "membership.purchase.badge.lite" = "轻享";
 "membership.purchase.badge.current" = "当前";
 "membership.purchase.benefit.recognition_monthly" = "每月识别 %d 次";
-"membership.purchase.benefit.ai_monthly" = "每月 AI 分析 %d 次";
-"membership.purchase.benefit.daily_quota" = "每日可识别 %d 次";
 "membership.purchase.benefit.ai_advice_level" = "AI 建议：%@";
-"membership.purchase.benefit.max_health_profiles" = "最多 %d 个健康画像";
-"membership.purchase.benefit.history_limit" = "历史记录 %d 天";
-"membership.purchase.benefit.history_limit_unlimited" = "历史记录不限";
 "membership.purchase.redeem_code_entry_title" = "兑换码";
 "membership.purchase.redeem_code_entry_subtitle" = "输入兑换码获取额外会员权益";
 "membership.purchase.redeem_code_sheet_title" = "输入兑换码";
@@ -388,11 +383,6 @@
 "membership.purchase.detail.recognition_monthly_label" = "月识别额度";
 "membership.purchase.detail.count_format" = "%d 次";
 "membership.purchase.detail.ai_advice_level_label" = "AI 建议等级";
-"membership.purchase.detail.health_profiles_label" = "健康档案数";
-"membership.purchase.detail.health_profiles_format" = "%d 个";
-"membership.purchase.detail.history_label" = "历史记录";
-"membership.purchase.detail.history_unlimited" = "无限";
-"membership.purchase.detail.history_count_format" = "%d 条";
 "membership.purchase.detail.benefits_title" = "权益详情";
 "membership.purchase.detail.nav_title" = "套餐权益";
 "membership.purchase.select_plan" = "选中";
@@ -825,7 +815,7 @@
 "result.section.minerals" = "矿物质";
 "result.section.daily_values" = "每日参考值";
 "result.section.glycemic" = "血糖指数";
-"result.section.dietary" = "饮食适配";
+"result.section.dietary" = "饮食标签";
 "result.section.ingredients" = "成分与烹饪";
 "result.glycemic.index" = "血糖指数";
 "result.glycemic.load" = "血糖负荷";
