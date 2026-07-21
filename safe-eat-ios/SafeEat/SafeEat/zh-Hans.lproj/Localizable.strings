@@ -801,7 +801,7 @@
 
 // T6: 过敏原标签 + 饱腹感指数
 "result.allergen.title" = "过敏原";
-"result.allergen.contains" = "含有";
+"result.allergen.contains" = "可能含有";
 "result.allergen.may_contain" = "可能含有";
 "result.satiety.title" = "饱腹感";
 "result.satiety.low" = "低";

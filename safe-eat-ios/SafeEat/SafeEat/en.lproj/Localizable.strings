@@ -783,7 +783,7 @@
 
 // T6: Allergen tags + Satiety index
 "result.allergen.title" = "Allergens";
-"result.allergen.contains" = "Contains";
+"result.allergen.contains" = "May Contain";
 "result.allergen.may_contain" = "May Contain";
 "result.satiety.title" = "Satiety";
 "result.satiety.low" = "Low";

@@ -596,7 +596,8 @@ struct SafeEatLoadingOverlay: View {
 
     let phase: RecognitionPhase
     var previewImage: UIImage? = nil
-    var onCandidateSelected: ((String, String) -> Void)? = nil
+    /// (foodId, name, sessionId):foodId 与 name 互斥。选 DB food 传 foodId,选 AI 名走草稿传 name
+    var onCandidateSelected: ((String?, String?, String) -> Void)? = nil
     var onDismiss: (() -> Void)? = nil
 
     // 小贴士循环切换
@@ -614,6 +615,9 @@ struct SafeEatLoadingOverlay: View {
     @State private var dotTimer: Timer?
 
     // 小贴士随机起始，点击顺序切换
+
+    // 树展开状态:可展开 AI 父项的 name 集合
+    @State private var expandedAiNames: Set<String> = []
 
     private var brandLabelColor: Color {
         colorScheme == .dark ? Color(red: 0.67, green: 0.86, blue: 0.73) : SafeEatTheme.primaryDeep
@@ -705,12 +709,12 @@ struct SafeEatLoadingOverlay: View {
                 previewStage
             }
 
-        case .selecting(let candidates, let sessionId):
+        case .selecting(let candidates, let dbMatches, let sessionId):
             panelContainer {
                 phaseTitle(SafeEatL10n.text(L10nKey.RecognitionPhase.selectTitle))
                 phaseSubtitle(SafeEatL10n.text(L10nKey.RecognitionPhase.selectSubtitle))
                 previewStageCompact
-                candidateList(candidates: candidates, sessionId: sessionId)
+                candidateList(candidates: candidates, dbMatches: dbMatches, sessionId: sessionId)
             }
 
         case .evaluating:
@@ -858,43 +862,119 @@ struct SafeEatLoadingOverlay: View {
 
     // MARK: - 候选列表
 
-    private func candidateList(candidates: [IdentifyCandidate], sessionId: String) -> some View {
+    /// 树状:AI 候选作父项,其命中的 DB 作子项按 matchedAiName 分组
+    /// 子项=0 或 1 → 父项直进(无箭头);子项≥2 → 展开(有箭头),子项点选传 foodId
+    private func candidateList(candidates: [IdentifyCandidate], dbMatches: [DbMatch], sessionId: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(SafeEatL10n.text(L10nKey.Candidate.aiResult))
-                .font(SafeEatFont.textStyle(.subheadline))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-
             ForEach(candidates) { candidate in
-                candidateRow(candidate, sessionId: sessionId)
+                let children = dbMatches.filter { $0.matchedAiName == candidate.name }
+                candidateTreeRow(candidate: candidate, children: children, sessionId: sessionId)
             }
         }
     }
 
-    private func candidateRow(_ candidate: IdentifyCandidate, sessionId: String) -> some View {
+    /// 父项:有≥2 子项才展开+箭头;否则直进(0 子项走草稿传 name,1 子项传 foodId)
+    private func candidateTreeRow(candidate: IdentifyCandidate, children: [DbMatch], sessionId: String) -> some View {
+        let expandable = children.count >= 2
+        let isExpanded = expandedAiNames.contains(candidate.name)
+
+        return VStack(alignment: .leading, spacing: 8) {
+            Button {
+                if expandable {
+                    withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
+                        if isExpanded {
+                            expandedAiNames.remove(candidate.name)
+                        } else {
+                            expandedAiNames.insert(candidate.name)
+                        }
+                    }
+                } else if children.count == 1 {
+                    // 单子项直进:传该 foodId
+                    onCandidateSelected?(children[0].foodId, nil, sessionId)
+                } else {
+                    // 无子项直进:走草稿传 AI 名
+                    onCandidateSelected?(nil, candidate.name, sessionId)
+                }
+            } label: {
+                aiParentRow(candidate: candidate, expandable: expandable, isExpanded: isExpanded)
+            }
+            .buttonStyle(.plain)
+
+            if expandable && isExpanded {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(children) { match in
+                        dbChildRow(match, sessionId: sessionId)
+                    }
+                }
+                .padding(.leading, 16)
+                .transition(
+                    .asymmetric(
+                        insertion: .opacity.combined(with: .scale(scale: 0.96, anchor: .top)),
+                        removal: .opacity
+                    )
+                )
+            }
+        }
+        .animation(.spring(response: 0.32, dampingFraction: 0.82), value: isExpanded)
+    }
+
+    private func aiParentRow(candidate: IdentifyCandidate, expandable: Bool, isExpanded: Bool) -> some View {
         let percent = Int((candidate.confidence * 100).rounded())
 
+        return HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .stroke(SafeEatTheme.line, lineWidth: 3)
+                    .frame(width: 40, height: 40)
+                Circle()
+                    .trim(from: 0, to: candidate.confidence)
+                    .stroke(
+                        confidenceColor(candidate.confidence),
+                        style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                    )
+                    .frame(width: 40, height: 40)
+                    .rotationEffect(.degrees(-90))
+                Text("\(percent)%")
+                    .font(SafeEatFont.custom(11, relativeTo: .caption2, weight: .semibold))
+                    .foregroundColor(SafeEatTheme.textPrimary)
+            }
+
+            Text(candidate.name)
+                .font(SafeEatFont.textStyle(.body))
+                .foregroundColor(SafeEatTheme.textPrimary)
+
+            Spacer()
+
+            if expandable {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(SafeEatTheme.textSecondary)
+                    .rotationEffect(.degrees(isExpanded ? 90 : 0))
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.72))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(SafeEatTheme.line, lineWidth: 1)
+        )
+    }
+
+    private func dbChildRow(_ match: DbMatch, sessionId: String) -> some View {
         return Button {
-            onCandidateSelected?(candidate.name, sessionId)
+            onCandidateSelected?(match.foodId, nil, sessionId)
         } label: {
             HStack(spacing: 14) {
-                ZStack {
-                    Circle()
-                        .stroke(SafeEatTheme.line, lineWidth: 3)
-                        .frame(width: 40, height: 40)
-                    Circle()
-                        .trim(from: 0, to: candidate.confidence)
-                        .stroke(
-                            confidenceColor(candidate.confidence),
-                            style: StrokeStyle(lineWidth: 3, lineCap: .round)
-                        )
-                        .frame(width: 40, height: 40)
-                        .rotationEffect(.degrees(-90))
-                    Text("\(percent)%")
-                        .font(SafeEatFont.custom(11, relativeTo: .caption2, weight: .semibold))
-                        .foregroundColor(SafeEatTheme.textPrimary)
-                }
+                Image(systemName: "fork.knife")
+                    .font(.system(size: 16))
+                    .foregroundColor(SafeEatTheme.primary)
+                    .frame(width: 40, height: 40)
 
-                Text(candidate.name)
+                Text(match.canonicalName)
                     .font(SafeEatFont.textStyle(.body))
                     .foregroundColor(SafeEatTheme.textPrimary)
 

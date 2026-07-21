@@ -12,6 +12,9 @@ struct DisclosureDetailView: View {
 
     var body: some View {
         ZStack {
+            // 文档内容固定白底黑字,无论深浅色模式都强制白底,避免深色模式下黑底看不清
+            Color.white.ignoresSafeArea()
+
             if isLoading {
                 ProgressView()
             } else if let err = errorMessage {
@@ -77,8 +80,8 @@ struct FullHTMLWebView: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         webView.isOpaque = false
-        webView.backgroundColor = .clear
-        webView.scrollView.backgroundColor = .clear
+        webView.backgroundColor = .white
+        webView.scrollView.backgroundColor = .white
         webView.navigationDelegate = context.coordinator
         return webView
     }

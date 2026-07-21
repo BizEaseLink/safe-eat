@@ -198,7 +198,7 @@ struct ResultView: View {
         switch section {
         case .s1BasicNutrients: return "flame.fill"
         case .s2DetailedNutrients: return "chart.bar.fill"
-        case .s3Vitamins: return "capsule.fill"
+        case .s3Vitamins: return "pill.fill"
         case .s4Minerals: return "hexagon.fill"
         case .s5RiskFacts: return "exclamationmark.triangle.fill"
         case .s6Glycemic: return "drop.fill"
@@ -676,14 +676,11 @@ struct ResultView: View {
             Text(label)
                 .font(SafeEatFont.custom(12, relativeTo: .caption))
                 .foregroundStyle(SafeEatTheme.textSecondary)
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(items, id: \.self) { item in
-                        allergenChip(text: item, color: color, isDark: colorScheme == .dark)
-                    }
+            FlowLayout(spacing: 8, lineSpacing: 8) {
+                ForEach(items, id: \.self) { item in
+                    allergenChip(text: item, color: color, isDark: colorScheme == .dark)
                 }
             }
-            .frame(height: 32) // 固定一行高度
         }
     }
 
@@ -1289,7 +1286,7 @@ struct ResultView: View {
                 let allTags = dietaryTagItems(diet).filter { $0.1 }
                 if !allTags.isEmpty {
                     sectionCard {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 8)], spacing: 8) {
+                        FlowLayout(spacing: 8, lineSpacing: 8) {
                             ForEach(allTags, id: \.0) { tag in
                                 dietaryTag(tag.0, isOn: tag.1)
                             }

@@ -246,9 +246,52 @@ struct IdentifyCandidate: Codable, Identifiable {
     }
 }
 
+/// DB 匹配候选(二级,无百分比)。后端两层匹配合并去重后返回
+struct DbMatch: Codable, Identifiable {
+    var id: String { foodId }
+    /// food 表 UUID 主键,confirm 时回传给后端
+    let foodId: String
+    let canonicalName: String
+    /// "alias" | "name"
+    let matchSource: String?
+    /// 综合分,iOS 不显示,仅排序参考(后端已排好)
+    let score: Double?
+    let matchedName: String?
+    /// 命中的 AI 候选名,据此把 DB 子项挂到对应 AI 父项下
+    let matchedAiName: String?
+}
+
 struct IdentifyResponse: Codable {
-    let candidates: [IdentifyCandidate]
+    /// 新契约:一级 AI 候选
+    let aiCandidates: [IdentifyCandidate]?
+    /// 新契约:二级 DB 命中(去重排序后)
+    let dbMatches: [DbMatch]?
+    /// 新契约:走法 "direct" | "select"
+    let walkAction: String?
     let sessionId: String
+
+    /// 旧契约兼容(后端已不返回,保险)
+    private let candidates: [IdentifyCandidate]?
+
+    /// 统一访问 AI 候选:优先 aiCandidates,降级旧 candidates
+    var effectiveAiCandidates: [IdentifyCandidate] {
+        aiCandidates ?? candidates ?? []
+    }
+
+    var effectiveDbMatches: [DbMatch] {
+        dbMatches ?? []
+    }
+
+    /// 统一走法:无 walkAction 时按候选数推断(旧契约降级)
+    var effectiveWalkAction: String {
+        if let action = walkAction { return action }
+        let ai = effectiveAiCandidates.count
+        return ai <= 1 ? "direct" : "select"
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case aiCandidates, dbMatches, walkAction, sessionId, candidates
+    }
 }
 
 struct FoodSearchItem: Codable, Identifiable {

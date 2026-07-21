@@ -467,11 +467,11 @@ final class SafeEatAPI {
         return try await send(request, as: IdentifyResponse.self)
     }
 
-    func confirm(accessToken: String, selectedName: String, sessionId: String) async throws -> RecognitionRecord {
+    func confirm(accessToken: String, selectedFoodId: String? = nil, selectedName: String? = nil, sessionId: String) async throws -> RecognitionRecord {
         var request = try buildJSONRequest(
             path: "/v1/apps/\(AppConfig.appCode)/recognitions/confirm",
             method: "POST",
-            body: ConfirmRequestBody(selectedName: selectedName, sessionId: sessionId)
+            body: ConfirmRequestBody(selectedFoodId: selectedFoodId, selectedName: selectedName, sessionId: sessionId)
         )
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         return try await send(request, as: RecognitionRecord.self)
@@ -949,8 +949,21 @@ private struct FeedbackRequestBody: Encodable {
 }
 
 private struct ConfirmRequestBody: Encodable {
-    let selectedName: String
+    let selectedFoodId: String?
+    let selectedName: String?
     let sessionId: String
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        // 只编码非 nil 字段,避免把 nil 当 null 传(后端 IsOptional 能接,但保持请求干净)
+        try container.encodeIfPresent(selectedFoodId, forKey: .selectedFoodId)
+        try container.encodeIfPresent(selectedName, forKey: .selectedName)
+        try container.encode(sessionId, forKey: .sessionId)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case selectedFoodId, selectedName, sessionId
+    }
 }
 
 private enum ISO8601DateFormatter {

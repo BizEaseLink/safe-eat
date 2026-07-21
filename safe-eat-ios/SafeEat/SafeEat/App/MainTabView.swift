@@ -122,8 +122,8 @@ struct MainTabView: View {
                 SafeEatLoadingOverlay(
                     phase: phase,
                     previewImage: recognizingPreviewImage,
-                    onCandidateSelected: { selectedName, sessionId in
-                        performConfirm(selectedName: selectedName, sessionId: sessionId)
+                    onCandidateSelected: { foodId, name, sessionId in
+                        performConfirm(selectedFoodId: foodId, selectedName: name, sessionId: sessionId)
                     },
                     onDismiss: {
                         recognitionPhase = nil
@@ -404,23 +404,32 @@ struct MainTabView: View {
             let identifyResult = try await identifyTask
             let previewImage = await previewTask
 
+            let aiList = identifyResult.effectiveAiCandidates
+            let dbMatches = identifyResult.effectiveDbMatches
+            let walkAction = identifyResult.effectiveWalkAction
+
             // 无候选 → 非食物提示
-            if identifyResult.candidates.isEmpty {
+            if aiList.isEmpty && dbMatches.isEmpty {
                 recognitionPhase = .nonFood
                 recognizingPreviewImage = previewImage
                 return
             }
 
-            // 高置信（≥ 0.95）且只有1个候选 → 直接进入智评阶段
-            if identifyResult.candidates.count == 1 && identifyResult.candidates[0].confidence >= 0.95 {
+            // direct:直接 confirm,不展开选择页
+            // DB 命中=1 → 传 foodId;AI=1 且 DB=0 → 传 AI top1 名走草稿
+            if walkAction == "direct" {
                 recognitionPhase = .evaluating
                 recognizingPreviewImage = previewImage
+
+                let directFoodId = dbMatches.first?.foodId
+                let directName = (directFoodId == nil) ? aiList.first?.name : nil
 
                 do {
                     let record = try await store.authorizedRequest { token in
                         try await store.api.confirm(
                             accessToken: token,
-                            selectedName: identifyResult.candidates[0].name,
+                            selectedFoodId: directFoodId,
+                            selectedName: directName,
                             sessionId: identifyResult.sessionId
                         )
                     }
@@ -429,7 +438,7 @@ struct MainTabView: View {
                         originalImage: croppedImage,
                         previewImage: previewImage,
                         rawImage: rawImage,
-                        alternateNames: identifyResult.candidates.map { $0.name }
+                        alternateNames: aiList.map { $0.name }
                     )
                     recognitionPhase = nil
                     recognizingPreviewImage = nil
@@ -446,16 +455,18 @@ struct MainTabView: View {
                     }
                 }
             } else {
-                // 多候选或低置信 → 进入选择阶段
+                // select:展开选择页(DB≥2 或 AI≥2+DB=0)
                 identifySession = IdentifySessionData(
-                    candidates: identifyResult.candidates,
+                    candidates: aiList,
+                    dbMatches: dbMatches,
+                    walkAction: walkAction,
                     sessionId: identifyResult.sessionId,
                     croppedImage: croppedImage,
                     rawImage: rawImage,
                     previewImage: previewImage
                 )
                 recognizingPreviewImage = previewImage
-                recognitionPhase = .selecting(candidates: identifyResult.candidates, sessionId: identifyResult.sessionId)
+                recognitionPhase = .selecting(candidates: aiList, dbMatches: dbMatches, sessionId: identifyResult.sessionId)
             }
         } catch {
             #if DEBUG
@@ -474,9 +485,9 @@ struct MainTabView: View {
         }
     }
 
-    // confirm 流程：从候选选择后调用
+    // confirm 流程：从候选选择后调用(foodId 与 name 互斥)
     @MainActor
-    private func performConfirm(selectedName: String, sessionId: String) {
+    private func performConfirm(selectedFoodId: String? = nil, selectedName: String? = nil, sessionId: String) {
         guard let session = identifySession else { return }
 
         recognitionPhase = .evaluating
@@ -487,6 +498,7 @@ struct MainTabView: View {
                 let record = try await store.authorizedRequest { token in
                     try await store.api.confirm(
                         accessToken: token,
+                        selectedFoodId: selectedFoodId,
                         selectedName: selectedName,
                         sessionId: sessionId
                     )
@@ -595,9 +607,11 @@ private struct ResultRoute: Identifiable, Hashable {
     }
 }
 
-// identify 会话数据：候选列表 + sessionId + 原图/预览图
+// identify 会话数据：候选列表 + DB 匹配 + 走法 + sessionId + 原图/预览图
 struct IdentifySessionData {
     let candidates: [IdentifyCandidate]
+    let dbMatches: [DbMatch]
+    let walkAction: String
     let sessionId: String
     let croppedImage: UIImage
     let rawImage: UIImage?
