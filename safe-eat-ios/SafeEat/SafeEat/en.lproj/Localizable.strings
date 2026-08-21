@@ -400,8 +400,8 @@
 "profile.about.privacy_policy" = "Privacy Policy";
 "profile.about.value_added" = "Value-Added Service Agreement";
 "profile.about.certificate" = "Certificates";
-"profile.about.copyright" = "© 2026 Zheng Kaijie";
-"profile.about.icp_record" = "粤ICP备2026086581号-2A";
+"profile.about.copyright" = "© 2026 Liao Caixia";
+"profile.about.icp_record" = "粤ICP备2026115172号-2A";
 
 "order.history.title" = "Order History";
 "order.history.subtitle" = "View your purchase history";
@@ -906,6 +906,7 @@
 "feedback.submit" = "Submit Correction";
 "feedback.thanks" = "Thanks for helping us make recognition more accurate!";
 "feedback.error.evidence_required" = "Feedback must include an evidence image.";
+"feedback.submit_failed" = "Failed to submit feedback. Please check your network and try again.";
 "feedback.suggestion.soba" = "Japanese soba noodles";
 "feedback.suggestion.cold_soba" = "Cold soba noodles";
 "feedback.suggestion.chilled_soba" = "Chilled soba salad";

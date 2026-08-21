@@ -904,6 +904,7 @@ enum L10nKey {
         static let submit = "feedback.submit"
         static let thanks = "feedback.thanks"
         static let evidenceRequired = "feedback.error.evidence_required"
+        static let submitFailed = "feedback.submit_failed"
         static let typeTitle = "feedback.type.title"
         static let typePlaceholder = "feedback.type.placeholder"
         static let typeHint = "feedback.type.hint"

@@ -743,8 +743,9 @@ struct FeedbackView: View {
                 #if DEBUG
                 print("[Feedback] 后端请求失败: \(error)")
                 #endif
-                // 后端失败时，本地只改名称作为降级
-                store.updateLocalRecognizedName(trimmedProposedName, for: historyItem.id)
+                // 提交失败提示用户，不静默降级：
+                // 否则后端（admin 端）收不到反馈，用户却误以为已提交成功
+                store.errorMessage = SafeEatL10n.text(L10nKey.Feedback.submitFailed)
             }
         }
 

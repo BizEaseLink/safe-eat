@@ -247,8 +247,8 @@
 "profile.about.privacy_policy" = "隐私政策";
 "profile.about.value_added" = "增值服务协议";
 "profile.about.certificate" = "证照展示";
-"profile.about.copyright" = "© 2026 郑凯杰";
-"profile.about.icp_record" = "粤ICP备2026086581号-2A";
+"profile.about.copyright" = "© 2026 廖彩霞";
+"profile.about.icp_record" = "粤ICP备2026115172号-2A";
 
 "profile.not_logged_in.title" = "需要登录";
 "profile.not_logged_in.message" = "登录后即可查看个人信息和使用会员功能";
@@ -646,6 +646,7 @@
 "feedback.submit" = "提交修正";
 "feedback.thanks" = "感谢你的帮助，你的反馈将让识别更精准！";
 "feedback.error.evidence_required" = "反馈必须附带证据图。";
+"feedback.submit_failed" = "反馈提交失败，请检查网络后重试。";
 "feedback.suggestion.soba" = "日式荞麦面";
 "feedback.suggestion.cold_soba" = "荞麦冷面";
 "feedback.suggestion.chilled_soba" = "凉拌荞麦面";

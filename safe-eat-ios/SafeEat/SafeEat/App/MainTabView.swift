@@ -1,19 +1,27 @@
 import SwiftUI
 
-// 共享导航状态：子页面通过 Environment 通知 MainTabView 自己是否在根页面
-@Observable
-class TabNavigationState {
-    var isHistoryAtRoot: Bool = true
+// 历史 Tab 内的页面层级状态。
+// 不用 @Observable class 跨视图追踪（依赖环境传递 + Observation 追踪，易断链），
+// 改用 Environment 绑定的 Binding<Bool> 直连 MainTabView 的 @State，
+// 写值必然触发 MainTabView body 重算，最可靠。
+private struct HistoryStackRootKey: EnvironmentKey {
+    static let defaultValue: Binding<Bool> = .constant(true)
 }
 
-private struct TabNavigationStateKey: EnvironmentKey {
-    static let defaultValue = TabNavigationState()
+private struct ResultDetailPresentedKey: EnvironmentKey {
+    static let defaultValue: Binding<Bool> = .constant(false)
 }
 
 extension EnvironmentValues {
-    var tabNavigationState: TabNavigationState {
-        get { self[TabNavigationStateKey.self] }
-        set { self[TabNavigationStateKey.self] = newValue }
+    /// 是否在 MenuWeekView 根页面（未 push 日/周视图）
+    var historyStackRoot: Binding<Bool> {
+        get { self[HistoryStackRootKey.self] }
+        set { self[HistoryStackRootKey.self] = newValue }
+    }
+    /// 是否从 HistoryDayView/HistoryWeekView push 到了 ResultView
+    var resultDetailPresented: Binding<Bool> {
+        get { self[ResultDetailPresentedKey.self] }
+        set { self[ResultDetailPresentedKey.self] = newValue }
     }
 }
 
@@ -60,14 +68,26 @@ struct MainTabView: View {
     // 当前选中的 Tab
     @State private var selectedTab: AppRootTab = .home
 
-    @State private var tabNavState = TabNavigationState()
+    // 历史 Tab 的页面层级状态（via Environment Binding 直写，见 isAtRoot）
+    @State private var historyStackRoot = true
+    @State private var resultDetailPresented = false
 
     private var isAtRoot: Bool {
         switch selectedTab {
         case .home:
             return homePath.isEmpty && resultRoute == nil && !showMembership && recognitionPhase == nil && !showNotificationCenter
         case .history:
-            return historyPath.isEmpty && tabNavState.isHistoryAtRoot
+            // historyPath 恒为空（MenuWeekView 用本地 dayRoute/weekRoute push）
+            // historyStackRoot: 是否在 MenuWeekView 根页面（子视图经 Binding 直写）
+            // resultDetailPresented: 是否 push 到了 ResultView（HistoryDay/WeekView 经 Binding 直写）
+            let histPathEmpty = historyPath.isEmpty
+            let root = historyStackRoot
+            let detail = resultDetailPresented
+            let atRoot = histPathEmpty && root && !detail
+            #if DEBUG
+            print("[DBG isAtRoot] selectedTab=\(selectedTab) pathEmpty=\(histPathEmpty) historyStackRoot=\(root) resultDetailPresented=\(detail) => atRoot=\(atRoot)")
+            #endif
+            return atRoot
         // case .trend:  // v1.3.0 启用
         //     return trendPath.isEmpty
         case .profile:
@@ -142,7 +162,8 @@ struct MainTabView: View {
         }
         .animation(.easeInOut(duration: 0.25), value: isAtRoot)
         .toolbar(.hidden, for: .tabBar)
-        .environment(tabNavState)
+        .environment(\.historyStackRoot, $historyStackRoot)
+        .environment(\.resultDetailPresented, $resultDetailPresented)
         .onChange(of: store.selectedRootTab) { _, newTab in
             if selectedTab != newTab {
                 selectedTab = newTab
@@ -245,13 +266,6 @@ struct MainTabView: View {
 
     private var floatingBottomBar: some View {
         HStack(spacing: 4) {
-            // 相册按钮（feature flag 默认关，开启时在拍照按钮左边）
-            if AppConfig.galleryPickerEnabled {
-                AlbumPicker { image in
-                    startAlbumRecognition(with: image)
-                }
-            }
-
             // 拍摄按钮
             scanBarItem
 
@@ -263,6 +277,7 @@ struct MainTabView: View {
 
             tabBarItem(tab: .profile, icon: "person.fill", label: SafeEatL10n.text(L10nKey.Tab.profile))
         }
+        .accessibilityIdentifier("floatingBottomBar")
         .padding(.horizontal, 8)
         .padding(.vertical, 8)
         .background(
@@ -355,26 +370,7 @@ struct MainTabView: View {
     }
 
     /// 相册选图后走识别管道：相册图不裁，已扶正到 .up，raw 传同一份。
-    @MainActor
-    private func startAlbumRecognition(with image: UIImage) {
-        guard recognitionPhase == nil else { return }
-
-        guard store.session != nil else {
-            store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.scanAction))
-            return
-        }
-
-        if isFreeQuotaExceeded {
-            showQuotaExceeded = true
-            return
-        }
-
-        recognizingPreviewImage = image.loadingOverlayPreviewImage()
-        Task {
-            await recognize(croppedImage: image, rawImage: image)
-        }
-    }
-
+    /// 入口已迁移到 CameraCaptureView，相册选图复用 onCapture 通道，走下面的 recognize。
     @MainActor
     private func recognize(croppedImage: UIImage, rawImage: UIImage) async {
         guard store.session != nil else {
@@ -412,6 +408,8 @@ struct MainTabView: View {
             if aiList.isEmpty && dbMatches.isEmpty {
                 recognitionPhase = .nonFood
                 recognizingPreviewImage = previewImage
+                // 识别结束（未识别到食物）：刷新首页额度，避免返回后额度信息停在旧值
+                await store.refreshDailyQuota()
                 return
             }
 
@@ -444,6 +442,8 @@ struct MainTabView: View {
                     recognizingPreviewImage = nil
                     selectedTab = .home
                     store.selectedRootTab = .home
+                    // 识别完成（confirm 已扣款）：刷新首页额度
+                    await store.refreshDailyQuota()
                     resultRoute = ResultRoute(id: item.id, itemId: item.id)
                 } catch {
                     recognitionPhase = nil
@@ -477,6 +477,8 @@ struct MainTabView: View {
             #endif
             recognitionPhase = nil
             recognizingPreviewImage = nil
+            // 识别失败后刷新额度（后端 confirm 已扣款时需反映；未扣款时保持显示准确）
+            await store.refreshDailyQuota()
             if isQuotaExceededError(error) {
                 showQuotaExceeded = true
             } else {
@@ -515,11 +517,15 @@ struct MainTabView: View {
                 recognizingPreviewImage = nil
                 selectedTab = .home
                 store.selectedRootTab = .home
+                // 识别完成（confirm 已扣款）：刷新首页额度
+                await store.refreshDailyQuota()
                 resultRoute = ResultRoute(id: item.id, itemId: item.id)
             } catch {
                 identifySession = nil
                 recognitionPhase = nil
                 recognizingPreviewImage = nil
+                // 识别失败后刷新额度，保持首页额度与后端一致
+                await store.refreshDailyQuota()
                 if isQuotaExceededError(error) {
                     showQuotaExceeded = true
                 } else {
