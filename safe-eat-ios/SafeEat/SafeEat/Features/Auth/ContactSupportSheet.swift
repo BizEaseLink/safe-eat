@@ -14,7 +14,7 @@ struct ContactSupportSheet: View {
     }
 
     private var displayEmail: String {
-        ConfigParamStore.shared.getString("contact_email", fallback: "bel_safeeat@163.com")
+        ConfigParamStore.shared.getString("contact_email", fallback: "bizeaselink_SE@163.com")
     }
 
     var body: some View {

@@ -186,7 +186,7 @@ enum L10nKey {
         static let contactEmail = "auth.contact.email"
         static let contactSupportSubtitle = "auth.contact_support.subtitle"
         static let contactCopied = "auth.contact.copied"
-        static let contactDefaultEmail = "bel_safeeat@163.com"
+        static let contactDefaultEmail = "bizeaselink_SE@163.com"
         static let termsNotAgreed = "auth.terms.not_agreed"
         static let setPasswordTitle = "auth.set_password.title"
         static let setPasswordSubtitle = "auth.set_password.subtitle"

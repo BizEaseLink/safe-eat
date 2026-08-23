@@ -24,12 +24,12 @@ struct HelpCenterView: View {
                     Image(systemName: "envelope.fill")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(SafeEatTheme.primary)
-                    Text("bel_safeeat@163.com")
+                    Text("bizeaselink_SE@163.com")
                         .font(SafeEatFont.textStyle(.body))
                         .foregroundStyle(SafeEatTheme.primary)
                 }
                 .onTapGesture {
-                    if let url = URL(string: "mailto:bel_safeeat@163.com") {
+                    if let url = URL(string: "mailto:bizeaselink_SE@163.com") {
                         UIApplication.shared.open(url)
                     }
                 }
@@ -119,7 +119,7 @@ private let faqSectionsZh: [FAQSection] = [
     FAQSection(title: "会员与订阅", items: [
         FAQItem(question: "会员有哪些等级？", answer: "共三个付费等级：轻享版（Lite）适合日常管理入门，专业版（Pro）提供深度营养分析，至尊版（Premium）全功能解锁且无广告。"),
         FAQItem(question: "如何取消自动续费？", answer: "iOS：设置 → Apple ID → 订阅 → 选择食安安 → 取消订阅。鸿蒙/华为：华为应用市场 → 订阅管理 → 取消。微信/支付宝：在对应支付平台的自动扣款管理中关闭。取消后当前周期权益不受影响。"),
-        FAQItem(question: "如何申请退款？", answer: "iOS/Apple 内购：访问 reportaproblem.apple.com 申请退款，由 Apple 审核。鸿蒙/华为：在应用市场订单管理中申请。微信/支付宝代扣：联系 bel_safeeat@163.com 处理。"),
+        FAQItem(question: "如何申请退款？", answer: "iOS/Apple 内购：访问 reportaproblem.apple.com 申请退款，由 Apple 审核。鸿蒙/华为：在应用市场订单管理中申请。微信/支付宝代扣：联系 bizeaselink_SE@163.com 处理。"),
         FAQItem(question: "免费试用到期会自动扣费吗？", answer: "是的，3天免费试用到期后会自动转为付费订阅并扣款。如不想继续，请在试用期内取消订阅。"),
     ]),
     FAQSection(title: "账号与数据", items: [
@@ -145,7 +145,7 @@ private let faqSectionsEn: [FAQSection] = [
     FAQSection(title: "Membership & Subscription", items: [
         FAQItem(question: "What membership tiers are available?", answer: "Three paid tiers: Lite for everyday management basics, Pro for in-depth nutritional analysis, and Premium for full access with no ads."),
         FAQItem(question: "How do I cancel auto-renewal?", answer: "iOS: Settings → Apple ID → Subscriptions → select SafeEat → Cancel Subscription. HarmonyOS/Huawei: Huawei AppMarket → Subscription Management → Cancel. WeChat/Alipay: Disable auto-deduction in the respective payment platform. Your current period benefits remain unaffected after cancellation."),
-        FAQItem(question: "How do I request a refund?", answer: "iOS/Apple in-app purchase: Visit reportaproblem.apple.com to request a refund, reviewed by Apple. HarmonyOS/Huawei: Apply through the app store order management. WeChat/Alipay: Contact bel_safeeat@163.com."),
+        FAQItem(question: "How do I request a refund?", answer: "iOS/Apple in-app purchase: Visit reportaproblem.apple.com to request a refund, reviewed by Apple. HarmonyOS/Huawei: Apply through the app store order management. WeChat/Alipay: Contact bizeaselink_SE@163.com."),
         FAQItem(question: "Will I be charged automatically after the free trial ends?", answer: "Yes, after the 3-day free trial ends, it will automatically convert to a paid subscription and be charged. If you don't wish to continue, please cancel before the trial expires."),
     ]),
     FAQSection(title: "Account & Data", items: [

@@ -1024,7 +1024,7 @@
 "auth.contact.email" = "客服邮箱";
 "auth.contact_support.subtitle" = "点击联系方式可复制到剪贴板";
 "auth.contact.copied" = "已复制到剪贴板";
-"auth.contact.default_email" = "bel_safeeat@163.com";
+"auth.contact.default_email" = "bizeaselink_SE@163.com";
 "auth.terms.not_agreed" = "请先同意用户协议和隐私政策";
 "auth.set_password.title" = "设置密码";
 "auth.set_password.subtitle" = "设置密码以保护您的账户安全";
