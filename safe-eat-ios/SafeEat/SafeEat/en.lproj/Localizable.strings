@@ -180,6 +180,7 @@
 "common.save" = "Save";
 "common.saving" = "Saving";
 "common.cancel" = "Cancel";
+"common.close" = "Close";
 "common.clear" = "Clear";
 "common.delete" = "Delete";
 "common.retry" = "Retry";
@@ -942,6 +943,15 @@
 "history.weekday.thursday" = "Thursday";
 "history.weekday.friday" = "Friday";
 "history.weekday.saturday" = "Saturday";
+"history.search.title" = "Search History";
+"history.search.placeholder" = "Search food name";
+"history.search.all_hint" = "Type a food name to search all records";
+"history.search.scope_format" = "Scope: since %@";
+"history.search.empty_title" = "No matching records";
+"history.search.empty_message" = "Try another keyword, or clear the input to search again.";
+"history.search.scope_day" = "This day";
+"history.search.scope_week" = "This week";
+"history.search.scope_all" = "All";
 "common.notice" = "Notice";
 "common.send_code" = "Send code";
 "common.sending" = "Sending";

@@ -26,12 +26,14 @@ private struct WeekDayMarkerOffsetKey: PreferenceKey {
 struct HistoryWeekView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.resultDetailPresented) private var resultDetailPresented
 
     let referenceDate: Date
 
     @State private var resultRoute: HistoryWeekResultRoute?
     @State private var scrollOffset: CGFloat = 0
     @State private var currentVisibleDate: Date?
+    @State private var showSearch = false
 
     private let columns = [GridItem(.flexible(), spacing: 18), GridItem(.flexible(), spacing: 18)]
     private let scrollCoordinateSpace = "safeeat.history.week.scroll"
@@ -103,6 +105,13 @@ struct HistoryWeekView: View {
                     topInset: topInset,
                     minimumBackdropOpacity: 0,
                     emphasizesSafeAreaFill: true,
+                    trailingContent: {
+                        AnyView(
+                            HistorySearchMagnifier {
+                                showSearch = true
+                            }
+                        )
+                    },
                     onBack: { dismiss() }
                 )
             }
@@ -113,9 +122,20 @@ struct HistoryWeekView: View {
         .navigationDestination(item: $resultRoute) { route in
             ResultView(itemId: route.itemId)
         }
+        .sheet(isPresented: $showSearch) {
+            HistorySearchView(dateRange: weekInterval.flatMap { $0.start...($0.end.addingTimeInterval(-1)) }, scopeTitle: SafeEatL10n.text(L10nKey.History.searchScopeWeek)) { item in
+                resultRoute = HistoryWeekResultRoute(id: item.id, itemId: item.id)
+            }
+        }
         .onAppear {
             currentVisibleDate = dayGroups.first?.date
             StickerImageCache.preload(for: Array(weekItems.prefix(12)))
+        }
+        .onChange(of: resultRoute) { _, newValue in
+            resultDetailPresented.wrappedValue = newValue != nil
+            #if DEBUG
+            print("[DBG WeekView onChange resultRoute] newValue=\(newValue != nil) => resultDetailPresented=\(resultDetailPresented.wrappedValue)")
+            #endif
         }
     }
 

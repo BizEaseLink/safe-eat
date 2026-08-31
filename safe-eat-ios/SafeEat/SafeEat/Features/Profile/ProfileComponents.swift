@@ -851,3 +851,28 @@ private extension View {
         }
     }
 }
+
+// MARK: - 个人页顶部图标按钮（风格对齐历史页放大镜 / 主页铃铛）
+
+struct ProfileHeaderIconButton: View {
+    let systemName: String
+    var accessibilityLabel: String = ""
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        Image(systemName: systemName)
+            .font(.system(size: 20, weight: .medium))
+            .foregroundStyle(SafeEatTheme.textPrimary)
+            .frame(width: 44, height: 44)
+            .background(
+                Circle()
+                    .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.72))
+            )
+            .overlay(
+                Circle()
+                    .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+            )
+            .accessibilityLabel(accessibilityLabel)
+    }
+}

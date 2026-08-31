@@ -84,9 +84,9 @@ struct ScanHomeView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 26) {
-                        SafeEatScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
-
                         homeHeaderBar
+
+                        SafeEatScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
 
                         heroSection
 
@@ -108,11 +108,12 @@ struct ScanHomeView: View {
                     scrollOffset = value
                 }
 
-                SafeEatScrollNavChrome(
-                    title: SafeEatL10n.text(L10nKey.Home.title),
-                    scrollOffset: scrollOffset,
-                    topInset: proxy.safeAreaInsets.top
-                )
+                // 注销：滚动标题条（ScrollNavChrome），避免滚动时铃铛位置视觉下移；如需恢复取消注释
+                // SafeEatScrollNavChrome(
+                //     title: SafeEatL10n.text(L10nKey.Home.title),
+                //     scrollOffset: scrollOffset,
+                //     topInset: proxy.safeAreaInsets.top
+                // )
             }
         }
         .toolbar(.hidden, for: .navigationBar)

@@ -23,11 +23,15 @@ struct ProfileView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 22) {
+                        // 顶部容器占位（高度对齐历史页放大镜 / 首页铃铛；按钮逻辑后续加入）
+                        HStack {
+                            Spacer()
+
+                            Color.clear
+                                .frame(width: 44, height: 44)
+                        }
+
                         SafeEatScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
-
-                        Color.clear.frame(height: 8)
-
-                        SafeEatPageHeader(title: SafeEatL10n.text(L10nKey.Profile.title))
 
                         if store.session == nil {
                             notLoggedInView

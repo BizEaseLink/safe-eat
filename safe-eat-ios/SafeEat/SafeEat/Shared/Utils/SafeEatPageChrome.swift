@@ -160,6 +160,7 @@ struct SafeEatTopBackChrome: View {
     var minimumBackdropOpacity: CGFloat = 0
     var emphasizesSafeAreaFill: Bool = false
     var usesSolidBackdrop: Bool = false
+    var trailingContent: (() -> AnyView)? = nil
     let onBack: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
@@ -216,8 +217,12 @@ struct SafeEatTopBackChrome: View {
 
             Spacer(minLength: 0)
 
-            Color.clear
-                .frame(width: buttonSize, height: buttonSize)
+            if let trailingContent {
+                trailingContent()
+            } else {
+                Color.clear
+                    .frame(width: buttonSize, height: buttonSize)
+            }
         }
         .padding(.horizontal, 20)
         .padding(.top, rowTopPadding)

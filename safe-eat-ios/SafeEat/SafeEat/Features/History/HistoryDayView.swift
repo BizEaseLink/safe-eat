@@ -8,11 +8,13 @@ private struct HistoryDayResultRoute: Identifiable, Hashable {
 struct HistoryDayView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.resultDetailPresented) private var resultDetailPresented
 
     let date: Date
 
     @State private var resultRoute: HistoryDayResultRoute?
     @State private var scrollOffset: CGFloat = 0
+    @State private var showSearch = false
 
     private let columns = [GridItem(.flexible(), spacing: 18), GridItem(.flexible(), spacing: 18)]
 
@@ -20,6 +22,13 @@ struct HistoryDayView: View {
         store.localHistory
             .filter { Calendar.current.isDate($0.createdAt, inSameDayAs: date) }
             .sorted { $0.createdAt > $1.createdAt }
+    }
+
+    /// 当天搜索范围：当天 00:00 起，到次日 00:00 前最后一秒（含当天全部记录）
+    private var daySearchRange: ClosedRange<Date> {
+        let start = Calendar.current.startOfDay(for: date)
+        let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: start) ?? start
+        return start...(nextDay.addingTimeInterval(-1))
     }
 
     var body: some View {
@@ -61,6 +70,13 @@ struct HistoryDayView: View {
                     topInset: topInset,
                     minimumBackdropOpacity: 0,
                     emphasizesSafeAreaFill: true,
+                    trailingContent: {
+                        AnyView(
+                            HistorySearchMagnifier {
+                                showSearch = true
+                            }
+                        )
+                    },
                     onBack: { dismiss() }
                 )
             }
@@ -71,9 +87,21 @@ struct HistoryDayView: View {
         .navigationDestination(item: $resultRoute) { route in
             ResultView(itemId: route.itemId)
         }
+        .sheet(isPresented: $showSearch) {
+            HistorySearchView(dateRange: daySearchRange, scopeTitle: SafeEatL10n.text(L10nKey.History.searchScopeDay)) { item in
+                // 搜当天：点结果直接进详情（复用现有 resultRoute）
+                resultRoute = HistoryDayResultRoute(id: item.id, itemId: item.id)
+            }
+        }
         .onAppear {
             scrollOffset = 0
             StickerImageCache.preload(for: Array(dayItems.prefix(10)))
+        }
+        .onChange(of: resultRoute) { _, newValue in
+            resultDetailPresented.wrappedValue = newValue != nil
+            #if DEBUG
+            print("[DBG DayView onChange resultRoute] newValue=\(newValue != nil) => resultDetailPresented=\(resultDetailPresented.wrappedValue)")
+            #endif
         }
     }
 

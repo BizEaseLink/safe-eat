@@ -24,6 +24,7 @@ enum L10nKey {
         static let `continue` = "common.continue"
         static let back = "common.back"
         static let cancel = "common.cancel"
+        static let close = "common.close"
         static let clear = "common.clear"
         static let delete = "common.delete"
         static let notSet = "common.not_set"
@@ -952,6 +953,16 @@ enum L10nKey {
         static let upgradePromptAction = "history.server.upgrade_prompt_action"
         static let loadingTitle = "history.server.loading_title"
         static let dateLabel = "history.date_label"
+        // 历史秒搜
+        static let searchTitle = "history.search.title"
+        static let searchPlaceholder = "history.search.placeholder"
+        static let searchAllHint = "history.search.all_hint"
+        static let searchScopeFormat = "history.search.scope_format"
+        static let searchEmptyTitle = "history.search.empty_title"
+        static let searchEmptyMessage = "history.search.empty_message"
+        static let searchScopeDay = "history.search.scope_day"
+        static let searchScopeWeek = "history.search.scope_week"
+        static let searchScopeAll = "history.search.scope_all"
     }
 
     enum Sticker {

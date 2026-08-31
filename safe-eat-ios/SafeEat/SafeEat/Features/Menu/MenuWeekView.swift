@@ -204,10 +204,11 @@ struct MenuWeekView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var settings: AppSettingsStore
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.tabNavigationState) private var tabNavState
+    @Environment(\.historyStackRoot) private var historyStackRoot
 
     @State private var selectedDate = Date()
     @State private var showNotificationSheet = false
+    @State private var showSearch = false
 
     @State private var dayRoute: HistoryDayRoute?
     @State private var weekRoute: HistoryWeekRoute?
@@ -252,7 +253,14 @@ struct MenuWeekView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // topBar  // 注释：移除顶部标题栏，页面直接从 WeekDatePicker 开始
+                // 历史搜索入口（仅放大镜，靠右）
+                HStack {
+                    Spacer()
+
+                    HistorySearchMagnifier {
+                        showSearch = true
+                    }
+                }
 
                 if store.session == nil {
                     // 未登录时显示空内容模板
@@ -273,7 +281,13 @@ struct MenuWeekView: View {
                             store.requireLogin()
                             return
                         }
-                        tabNavState.isHistoryAtRoot = false
+                        #if DEBUG
+                        print("[DBG DayTap-before] historyStackRoot=\(historyStackRoot.wrappedValue)")
+                        #endif
+                        historyStackRoot.wrappedValue = false
+                        #if DEBUG
+                        print("[DBG DayTap-after] historyStackRoot=\(historyStackRoot.wrappedValue)")
+                        #endif
                         dayRoute = HistoryDayRoute(date: selectedDate)
                     }
 
@@ -285,7 +299,7 @@ struct MenuWeekView: View {
                                 store.requireLogin()
                                 return
                             }
-                            tabNavState.isHistoryAtRoot = false
+                            historyStackRoot.wrappedValue = false
                             dayRoute = HistoryDayRoute(date: date)
                         }
                     )
@@ -298,7 +312,7 @@ struct MenuWeekView: View {
                                 store.requireLogin()
                                 return
                             }
-                            tabNavState.isHistoryAtRoot = false
+                            historyStackRoot.wrappedValue = false
                             weekRoute = HistoryWeekRoute(referenceDate: monday)
                         }
                     )
@@ -312,6 +326,13 @@ struct MenuWeekView: View {
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showNotificationSheet) {
             SafeEatReminderSettingsSheet()
+        }
+        .sheet(isPresented: $showSearch) {
+            HistorySearchView(dateRange: nil, scopeTitle: nil) { item in
+                // 搜全部历史：点结果 → 跳转到结果所在那天
+                historyStackRoot.wrappedValue = false
+                dayRoute = HistoryDayRoute(date: item.createdAt)
+            }
         }
         .navigationDestination(item: $dayRoute) { route in
             HistoryDayView(date: route.date)
@@ -383,7 +404,10 @@ struct MenuWeekView: View {
     // MARK: - Navigation State
 
     private func updateNavRootState() {
-        tabNavState.isHistoryAtRoot = dayRoute == nil && weekRoute == nil
+        historyStackRoot.wrappedValue = dayRoute == nil && weekRoute == nil
+        #if DEBUG
+        print("[DBG updateNavRootState] dayRoute==nil=\(dayRoute == nil) weekRoute==nil=\(weekRoute == nil) => historyStackRoot=\(historyStackRoot.wrappedValue)")
+        #endif
     }
 
     // MARK: - Top Bar
