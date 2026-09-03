@@ -31,8 +31,11 @@ struct MembershipPurchaseView: View {
     }
 
     private var isNewUser: Bool {
-        // 新用户 = free 档 且 仍有试用资格（未用过/未过期）。
-        // 用过试用或会员过期的老用户即使回到 free 也不再显示「新用户赠送」。
+        // 新用户跟随后端：从未正式付款（体验 ¥0 单不算）→ 正式付款后终身 false。
+        // 优先用后端返回的 isNewUser；旧后端/未返回时回退：free 档且未用过试用。
+        if let serverIsNewUser = store.profile?.isNewUser {
+            return serverIsNewUser
+        }
         guard store.trialAvailable else { return false }
         guard let tier = store.profile?.currentPlanTier else { return true }
         return tier == "free"

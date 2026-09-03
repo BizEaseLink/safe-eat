@@ -26,6 +26,8 @@ struct UserProfile: Codable {
     let lastLoginAt: Date?
     let createdAt: Date?
     let updatedAt: Date?
+    /// 新用户 = 从未正式付款（体验 ¥0 单不算）；正式付款后 false
+    let isNewUser: Bool?
 }
 
 struct MembershipPlan: Decodable, Identifiable {
