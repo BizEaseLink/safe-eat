@@ -985,13 +985,19 @@ struct MembershipPurchaseView: View {
     // MARK: - Campaign Benefits
 
     private func campaignBenefitsForPlan(_ plan: MembershipPlan) -> [CampaignBenefit] {
-        if let applicable = plan.applicableCampaigns, !applicable.isEmpty {
-            return applicable
-        }
-        return store.campaignBenefits.filter { benefit in
+        // 优先使用 store.campaignBenefits（每次 getPlans 全局覆盖、已按 enabled 过滤），
+        // 避免旧的 plan.applicableCampaigns 残留已停用活动。
+        let globalMatch = store.campaignBenefits.filter { benefit in
             guard let targetPlans = benefit.targetPlanIds, !targetPlans.isEmpty else { return true }
             return targetPlans.contains(plan.id)
         }
+        if !globalMatch.isEmpty {
+            return globalMatch
+        }
+        if let applicable = plan.applicableCampaigns, !applicable.isEmpty {
+            return applicable
+        }
+        return []
     }
 
     private func campaignBenefitText(_ benefit: CampaignBenefit) -> String {
