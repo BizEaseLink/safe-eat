@@ -315,8 +315,11 @@ final class SafeEatAPI {
         return try await sendPaginated(request, as: DisclosureItem.self)
     }
 
-    func getPlans() async throws -> PaginatedResult<MembershipPlan> {
-        let request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/membership/plans", method: "GET")
+    func getPlans(accessToken: String? = nil) async throws -> PaginatedResult<MembershipPlan> {
+        var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/membership/plans", method: "GET")
+        if let accessToken {
+            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        }
         return try await sendPaginated(request, as: MembershipPlan.self)
     }
 

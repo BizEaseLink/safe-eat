@@ -47,10 +47,10 @@ struct MembershipPurchaseView: View {
             subtitle: SafeEatL10n.text(L10nKey.Membership.subtitle),
             onRefresh: { await loadPlans(force: true) }
         ) {
-            // 新用户赠送提示
-            if isNewUser {
-                newUserGiftBanner
-            }
+            // 新用户赠送提示（已去掉：后续开活动时再启用）
+            // if isNewUser {
+            //     newUserGiftBanner
+            // }
 
             if loadingPlans {
                 ProgressView()
@@ -991,19 +991,12 @@ struct MembershipPurchaseView: View {
     // MARK: - Campaign Benefits
 
     private func campaignBenefitsForPlan(_ plan: MembershipPlan) -> [CampaignBenefit] {
-        // 优先使用 store.campaignBenefits（每次 getPlans 全局覆盖、已按 enabled 过滤），
-        // 避免旧的 plan.applicableCampaigns 残留已停用活动。
-        let globalMatch = store.campaignBenefits.filter { benefit in
+        // 只用全局 store.campaignBenefits（getPlans 覆盖、已按 enabled 过滤）。
+        // 不再兜底 plan.applicableCampaigns——那是后端内嵌的旧活动，admin 停用后会残留显示。
+        return store.campaignBenefits.filter { benefit in
             guard let targetPlans = benefit.targetPlanIds, !targetPlans.isEmpty else { return true }
             return targetPlans.contains(plan.id)
         }
-        if !globalMatch.isEmpty {
-            return globalMatch
-        }
-        if let applicable = plan.applicableCampaigns, !applicable.isEmpty {
-            return applicable
-        }
-        return []
     }
 
     private func campaignBenefitText(_ benefit: CampaignBenefit) -> String {
