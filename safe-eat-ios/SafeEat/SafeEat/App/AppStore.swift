@@ -395,6 +395,9 @@ final class AppStore: ObservableObject {
             print("[AppStore] loadMembershipStatus failed: \(error)")
             #endif
         }
+        // 同步刷新 plans（含 trialAvailable）：保证「是否有试用资格」跟随最新后端状态，
+        // 已用过试用的用户进任何页面都不会再看到体验入口
+        await loadPlansWithCampaigns()
     }
 
     // MARK: - 服务器历史记录（MOB-2）

@@ -107,7 +107,8 @@ struct MembershipPurchaseView: View {
             }
         }
         .task {
-            await loadPlans()
+            // 每次进入都强制刷新 plans + trialAvailable（避免旧资格导致错弹体验入口）
+            await loadPlans(force: true)
         }
         .alert(SafeEatL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
             get: { successMessage != nil },
