@@ -31,6 +31,9 @@ struct MembershipPurchaseView: View {
     }
 
     private var isNewUser: Bool {
+        // 新用户 = free 档 且 仍有试用资格（未用过/未过期）。
+        // 用过试用或会员过期的老用户即使回到 free 也不再显示「新用户赠送」。
+        guard store.trialAvailable else { return false }
         guard let tier = store.profile?.currentPlanTier else { return true }
         return tier == "free"
     }
