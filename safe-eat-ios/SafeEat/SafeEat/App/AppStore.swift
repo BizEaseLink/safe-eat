@@ -366,7 +366,6 @@ final class AppStore: ObservableObject {
 
     func loadPlansWithCampaigns() async {
         do {
-            print("[BUILD-CHECK] token-fix-v2 loaded")
             // 带 token 拉 plans：后端据此算「当前用户」的 trialAvailable（未带 token 会被判成匿名，恒 true）
             let result: PaginatedResult<MembershipPlan>
             if let token = try? currentAccessToken() {
@@ -381,14 +380,6 @@ final class AppStore: ObservableObject {
                 campaignBenefits = try api.decodeJSON(campaignsJSON, as: [CampaignBenefit].self)
             }
             trialAvailable = result.extra["trialAvailable"] as? Bool ?? false
-            #if DEBUG
-            print("[DBG-trial] apiBase=%@ userId=%@ rawTrialAvailable=%@ finalTrialAvailable=%@ campaigns=%@",
-                  AppConfig.apiBaseURL.absoluteString,
-                  profile?.id ?? "nil",
-                  String(describing: result.extra["trialAvailable"] ?? "missing"),
-                  String(trialAvailable),
-                  (result.extra["campaigns"] as? [[String: Any]])?.count ?? -1)
-            #endif
 
             // 加载 StoreKit 商品后检查试用资格
             await loadMembershipProducts()
