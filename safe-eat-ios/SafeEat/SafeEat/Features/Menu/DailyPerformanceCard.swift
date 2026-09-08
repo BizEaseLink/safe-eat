@@ -212,6 +212,7 @@ struct DailyPerformanceCard: View {
                                 .fill(SafeEatTheme.primarySoft.opacity(0.82))
                         )
                     }
+                    .accessibilityIdentifier("menuDayEntry")
                     .buttonStyle(.plain)
                 }
             }
@@ -461,6 +462,7 @@ struct WeeklySummaryCard: View {
                     .padding(.vertical, 8)
                     .background(Capsule().fill(SafeEatTheme.primarySoft.opacity(0.82)))
                 }
+                .accessibilityIdentifier("menuWeekEntry")
                 .buttonStyle(.plain)
             }
         }

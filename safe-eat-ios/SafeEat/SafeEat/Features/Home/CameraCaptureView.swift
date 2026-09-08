@@ -54,7 +54,7 @@ struct CameraCaptureView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                    cameraBottomBar(bottomInset: proxy.safeAreaInsets.bottom)
+                    cameraBottomBar(bottomInset: proxy.safeAreaInsets.bottom, screenWidth: proxy.size.width)
                 }
             }
         }
@@ -128,7 +128,7 @@ struct CameraCaptureView: View {
         .background(Color.black)
     }
 
-    private func cameraBottomBar(bottomInset: CGFloat) -> some View {
+    private func cameraBottomBar(bottomInset: CGFloat, screenWidth: CGFloat) -> some View {
         VStack(spacing: 18) {
             if let errorMessage = camera.errorMessage {
                 Text(errorMessage)
@@ -146,31 +146,60 @@ struct CameraCaptureView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
 
-            Button {
-                camera.capturePhoto()
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(.white.opacity(0.18))
-                        .frame(width: 94, height: 94)
+            // ZStack 分层定位：captureButton 严格居中（屏宽 1/2），AlbumPicker 中心落在屏宽 1/4
+            // （= 屏幕最左边缘与拍摄按钮中心的正中点）。两者独立定位，互不影响。
+            ZStack {
+                captureButton
+                    .frame(maxWidth: .infinity)
 
-                    Circle()
-                        .stroke(.white, lineWidth: 5)
-                        .frame(width: 82, height: 82)
-
-                    Circle()
-                        .fill(.white)
-                        .frame(width: 66, height: 66)
+                if AppConfig.galleryPickerEnabled {
+                    AlbumPicker(
+                        onPick: { image in
+                            pickFromAlbum(image)
+                        },
+                        tint: .white
+                    )
+                    .frame(width: 56, height: 50)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, screenWidth / 4 - 28)
                 }
             }
-            .buttonStyle(.plain)
-            .disabled(!camera.canCapturePhoto)
-            .opacity(camera.canCapturePhoto ? 1 : 0.62)
         }
         .frame(maxWidth: .infinity)
         .frame(height: bottomBarHeight + bottomInset, alignment: .top)
         .padding(.top, 10)
         .background(Color.black)
+    }
+
+    private var captureButton: some View {
+        Button {
+            camera.capturePhoto()
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(.white.opacity(0.18))
+                    .frame(width: 94, height: 94)
+
+                Circle()
+                    .stroke(.white, lineWidth: 5)
+                    .frame(width: 82, height: 82)
+
+                Circle()
+                    .fill(.white)
+                    .frame(width: 66, height: 66)
+            }
+        }
+        .buttonStyle(.plain)
+        .disabled(!camera.canCapturePhoto)
+        .opacity(camera.canCapturePhoto ? 1 : 0.62)
+    }
+
+    /// 相册选图：相册图不裁剪，cropped 和 raw 同一张。复用 onCapture 通道走识别。
+    private func pickFromAlbum(_ image: UIImage) {
+        guard pendingCapturedImage == nil else { return }
+        pendingCapturedImage = CameraCapturePayload(croppedImage: image, rawImage: image)
+        camera.stopSession()
+        dismiss()
     }
 
     private var permissionPlaceholder: some View {

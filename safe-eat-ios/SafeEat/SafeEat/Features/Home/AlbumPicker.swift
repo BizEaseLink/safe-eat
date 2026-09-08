@@ -4,8 +4,10 @@ import UIKit
 
 /// 相册选图入口。feature flag 默认关（AppConfig.galleryPickerEnabled）。
 /// 相册图是用户已构图好的成品，不裁剪，只扶正到 .up + 压缩，走同一条 recognize 管道。
+/// tint 控制图标和文案颜色，默认 textSecondary；深色背景（如拍摄页）传 .white。
 struct AlbumPicker: View {
     let onPick: (UIImage) -> Void
+    var tint: Color = SafeEatTheme.textSecondary
 
     @State private var selectedItem: PhotosPickerItem?
 
@@ -18,10 +20,10 @@ struct AlbumPicker: View {
             VStack(spacing: 6) {
                 Image(systemName: "photo.on.rectangle")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(SafeEatTheme.textSecondary)
+                    .foregroundColor(tint)
                 Text(SafeEatL10n.text(L10nKey.Tab.album))
                     .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(SafeEatTheme.textSecondary)
+                    .foregroundColor(tint)
             }
             .padding(.top, 8)
             .padding(.bottom, 8)
