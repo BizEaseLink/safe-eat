@@ -10,7 +10,7 @@ struct ContactSupportSheet: View {
     @State private var showCopiedToast = false
 
     private var displayXhs: String {
-        ConfigParamStore.shared.getString("contact_xhs", fallback: "6745295622")
+        ConfigParamStore.shared.getString("contact_xhs", fallback: "食安安SafeEat")
     }
 
     private var displayEmail: String {
