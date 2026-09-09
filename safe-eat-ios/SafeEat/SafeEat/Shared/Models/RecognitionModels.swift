@@ -2,16 +2,40 @@ import Foundation
 
 // MARK: - NutritionMetrics v3 嵌套结构（对齐后端 nutrition-metrics.interface.ts）
 
+/// NRV 计算依据标准（响应顶层）
+struct NrvStandard: Codable {
+    let code: String
+    let version: String
+}
+
 struct NutrientValue: Codable {
     let value: Double
     let unit: String
     let dailyValuePercent: Double?
+    /// v4 值级别：measured(实测，无标识) | estimated(估算，显示「估」) | none(暂无)
+    var source: String? = nil
 
     // 后端返回 "amount"，iOS 属性名为 "value"
     private enum CodingKeys: String, CodingKey {
         case value = "amount"
         case unit
         case dailyValuePercent = "nrv"
+        case source
+    }
+
+    init(value: Double, unit: String, dailyValuePercent: Double? = nil, source: String? = nil) {
+        self.value = value
+        self.unit = unit
+        self.dailyValuePercent = dailyValuePercent
+        self.source = source
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        value = try c.decode(Double.self, forKey: .value)
+        unit = try c.decode(String.self, forKey: .unit)
+        dailyValuePercent = try c.decodeIfPresent(Double.self, forKey: .dailyValuePercent)
+        source = try c.decodeIfPresent(String.self, forKey: .source)
     }
 }
 
@@ -342,6 +366,10 @@ struct RecognitionRecord: Codable, Identifiable {
     let categoryLabelEn: String?
     let ruleVersion: String?
     let nutritionVersion: String?
+    /// v4 食物级来源：predicted=后台推算（整卡显示「推」）；其他=数据库来源
+    let nutritionSource: String?
+    /// NRV 计算依据标准
+    let nrvStandard: NrvStandard?
     let satietyScore: Double?
     let bloodSugarImpact: BloodSugarImpact?
     let drvPercentages: [String: Double]?
@@ -371,6 +399,8 @@ struct RecognitionRecord: Codable, Identifiable {
         case categoryLabelEn
         case ruleVersion
         case nutritionVersion
+        case nutritionSource
+        case nrvStandard
         case satietyScore
         case bloodSugarImpact
         case drvPercentages
@@ -401,6 +431,8 @@ struct RecognitionRecord: Codable, Identifiable {
         categoryLabelEn: String? = nil,
         ruleVersion: String? = nil,
         nutritionVersion: String? = nil,
+        nutritionSource: String? = nil,
+        nrvStandard: NrvStandard? = nil,
         satietyScore: Double? = nil,
         bloodSugarImpact: BloodSugarImpact? = nil,
         drvPercentages: [String: Double]? = nil
@@ -429,6 +461,8 @@ struct RecognitionRecord: Codable, Identifiable {
         self.categoryLabelEn = categoryLabelEn
         self.ruleVersion = ruleVersion
         self.nutritionVersion = nutritionVersion
+        self.nutritionSource = nutritionSource
+        self.nrvStandard = nrvStandard
         self.satietyScore = satietyScore
         self.bloodSugarImpact = bloodSugarImpact
         self.drvPercentages = drvPercentages
@@ -460,6 +494,8 @@ struct RecognitionRecord: Codable, Identifiable {
         categoryLabelEn = try container.decodeIfPresent(String.self, forKey: .categoryLabelEn)
         ruleVersion = try container.decodeIfPresent(String.self, forKey: .ruleVersion)
         nutritionVersion = try container.decodeIfPresent(String.self, forKey: .nutritionVersion)
+        nutritionSource = try container.decodeIfPresent(String.self, forKey: .nutritionSource)
+        nrvStandard = try container.decodeIfPresent(NrvStandard.self, forKey: .nrvStandard)
         satietyScore = try container.decodeIfPresent(Double.self, forKey: .satietyScore)
         bloodSugarImpact = try container.decodeIfPresent(BloodSugarImpact.self, forKey: .bloodSugarImpact)
         drvPercentages = try container.decodeIfPresent([String: Double].self, forKey: .drvPercentages)
@@ -491,6 +527,8 @@ struct RecognitionRecord: Codable, Identifiable {
         try container.encodeIfPresent(categoryLabelEn, forKey: .categoryLabelEn)
         try container.encodeIfPresent(ruleVersion, forKey: .ruleVersion)
         try container.encodeIfPresent(nutritionVersion, forKey: .nutritionVersion)
+        try container.encodeIfPresent(nutritionSource, forKey: .nutritionSource)
+        try container.encodeIfPresent(nrvStandard, forKey: .nrvStandard)
         try container.encodeIfPresent(satietyScore, forKey: .satietyScore)
         try container.encodeIfPresent(bloodSugarImpact, forKey: .bloodSugarImpact)
         try container.encodeIfPresent(drvPercentages, forKey: .drvPercentages)
