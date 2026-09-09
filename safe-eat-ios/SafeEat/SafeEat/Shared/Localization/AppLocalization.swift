@@ -846,6 +846,7 @@ enum L10nKey {
         static let dietNutFree = "result.diet.nut_free"
         static let preparation = "result.preparation"
         static let per100gServing = "result.per_100g_serving"
+        static let nrvBasisFormat = "result.nrv_basis_format"
         // T7: 详细营养素本地化
         static let saturatedFat = "result.nutrient.saturated_fat"
         static let transFat = "result.nutrient.trans_fat"

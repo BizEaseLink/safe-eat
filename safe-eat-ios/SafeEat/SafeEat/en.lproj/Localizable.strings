@@ -884,6 +884,7 @@
 // Per 100g serving label
 "result.per_100g_serving" = "Per 100g serving";
 "result.nutrition.per_serving" = "Per 100g";
+"result.nrv_basis_format" = "NRV%% based on %@";
 "result.action.analysis_detail" = "Analysis Detail";
 "result.empty_data_hint" = "No data collected for this section yet";
 

@@ -16,14 +16,28 @@ struct NutritionFactRowView: View {
     let value: Double?
     let unit: String?
     let nrvPercent: Double?
+    /// 值级别标识：「估」= estimated；nil = 实测（不显示）。推测食物为整卡标识，不在行内
+    var badge: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top) {
-                Text(name)
-                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: 4) {
+                    Text(name)
+                        .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    if let badge {
+                        Text(badge)
+                            .font(SafeEatFont.custom(9, relativeTo: .caption2, weight: .bold))
+                            .foregroundStyle(SafeEatTheme.warning)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 1)
+                            .overlay(
+                                Capsule().stroke(SafeEatTheme.warning.opacity(0.55), lineWidth: 0.8)
+                            )
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 VStack(alignment: .trailing, spacing: 2) {
                     if let value, let unit {

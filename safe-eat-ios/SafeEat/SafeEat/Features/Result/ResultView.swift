@@ -1069,19 +1069,26 @@ struct ResultView: View {
                 let hasData = nutrients.calories.value > 0 || nutrients.protein.value > 0 || nutrients.fat.value > 0 || nutrients.carbohydrates.value > 0 || nutrients.sodium != nil
                 if hasData {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text(SafeEatL10n.text(L10nKey.Result.per100gServing))
-                            .font(SafeEatFont.custom(12, relativeTo: .caption))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                        HStack(spacing: 6) {
+                            Text(SafeEatL10n.text(L10nKey.Result.per100gServing))
+                                .font(SafeEatFont.custom(12, relativeTo: .caption))
+                                .foregroundStyle(SafeEatTheme.textSecondary)                        }
+                        // v4 NRV 计算依据标注
+                        if let std = recognition?.nrvStandard {
+                            Text(String(format: SafeEatL10n.text(L10nKey.Result.nrvBasisFormat), std.version))
+                                .font(SafeEatFont.custom(10, relativeTo: .caption2))
+                                .foregroundStyle(SafeEatTheme.textSecondary)
+                        }
                         sectionCard {
                             VStack(alignment: .leading, spacing: 8) {
-                                NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.metricCalories), value: nutrients.calories.value, unit: nutrients.calories.unit, nrvPercent: nutrients.calories.dailyValuePercent)
-                                NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.metricProtein), value: nutrients.protein.value, unit: nutrients.protein.unit, nrvPercent: nutrients.protein.dailyValuePercent)
-                                NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.metricFat), value: nutrients.fat.value, unit: nutrients.fat.unit, nrvPercent: nutrients.fat.dailyValuePercent)
-                                NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.metricCarbs), value: nutrients.carbohydrates.value, unit: nutrients.carbohydrates.unit, nrvPercent: nutrients.carbohydrates.dailyValuePercent)
-                                NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.sodium), value: nutrients.sodium?.value, unit: nutrients.sodium?.unit, nrvPercent: nutrients.sodium?.dailyValuePercent)
+                                NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.metricCalories), value: nutrients.calories.value, unit: nutrients.calories.unit, nrvPercent: nutrients.calories.dailyValuePercent, badge: nutrients.calories.source == "estimated" ? "估" : (nutrients.calories.source == "predicted" ? "推" : nil))
+                                NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.metricProtein), value: nutrients.protein.value, unit: nutrients.protein.unit, nrvPercent: nutrients.protein.dailyValuePercent, badge: nutrients.protein.source == "estimated" ? "估" : (nutrients.protein.source == "predicted" ? "推" : nil))
+                                NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.metricFat), value: nutrients.fat.value, unit: nutrients.fat.unit, nrvPercent: nutrients.fat.dailyValuePercent, badge: nutrients.fat.source == "estimated" ? "估" : (nutrients.fat.source == "predicted" ? "推" : nil))
+                                NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.metricCarbs), value: nutrients.carbohydrates.value, unit: nutrients.carbohydrates.unit, nrvPercent: nutrients.carbohydrates.dailyValuePercent, badge: nutrients.carbohydrates.source == "estimated" ? "估" : (nutrients.carbohydrates.source == "predicted" ? "推" : nil))
+                                NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.sodium), value: nutrients.sodium?.value, unit: nutrients.sodium?.unit, nrvPercent: nutrients.sodium?.dailyValuePercent, badge: nutrients.sodium?.source == "estimated" ? "估" : (nutrients.sodium?.source == "predicted" ? "推" : nil))
                                 // 膳食纤维：由 S2 迁入，有值才显示，无值整行不渲染
                                 if let fiber = nutrients.dietaryFiber, fiber.value > 0 {
-                                    NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.dietaryFiber), value: fiber.value, unit: fiber.unit, nrvPercent: fiber.dailyValuePercent)
+                                    NutritionFactRowView(name: SafeEatL10n.text(L10nKey.Result.dietaryFiber), value: fiber.value, unit: fiber.unit, nrvPercent: fiber.dailyValuePercent, badge: fiber.source == "estimated" ? "估" : (fiber.source == "predicted" ? "推" : nil))
                                 }
                             }
                         }
@@ -1104,7 +1111,7 @@ struct ResultView: View {
                     sectionCard {
                         VStack(alignment: .leading, spacing: 8) {
                             ForEach(allItems, id: \.0) { item in
-                                NutritionFactRowView(name: item.0, value: item.1.value, unit: item.1.unit, nrvPercent: item.1.dailyValuePercent)
+                                NutritionFactRowView(name: item.0, value: item.1.value, unit: item.1.unit, nrvPercent: item.1.dailyValuePercent, badge: item.1.source == "estimated" ? "估" : (item.1.source == "predicted" ? "推" : nil))
                             }
                         }
                     }
@@ -1131,7 +1138,7 @@ struct ResultView: View {
             sectionCard {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(dvItems, id: \.0) { item in
-                        NutritionFactRowView(name: item.0, value: item.1, unit: item.2, nrvPercent: item.3)
+                        NutritionFactRowView(name: item.0, value: item.1, unit: item.2, nrvPercent: item.3, badge: item.4)
                     }
                 }
             }
@@ -1140,25 +1147,25 @@ struct ResultView: View {
         }
     }
 
-    private var vitaminItems: [(String, Double?, String?, Double?)] {
+    private var vitaminItems: [(String, Double?, String?, Double?, String?)] {
         guard let v = recognition?.effectiveNutrition?.vitamins else { return [] }
         return vitaminItems(v)
     }
 
-    private func vitaminItems(_ v: Vitamins) -> [(String, Double?, String?, Double?)] {
-        var result: [(String, Double?, String?, Double?)] = []
-        if let a = v.a { result.append((SafeEatL10n.text(L10nKey.Result.vitA), a.value, a.unit, a.dailyValuePercent)) }
-        if let b1 = v.b1 { result.append((SafeEatL10n.text(L10nKey.Result.vitB1), b1.value, b1.unit, b1.dailyValuePercent)) }
-        if let b2 = v.b2 { result.append((SafeEatL10n.text(L10nKey.Result.vitB2), b2.value, b2.unit, b2.dailyValuePercent)) }
-        if let b3 = v.b3 { result.append((SafeEatL10n.text(L10nKey.Result.vitB3), b3.value, b3.unit, b3.dailyValuePercent)) }
-        if let b5 = v.b5 { result.append((SafeEatL10n.text(L10nKey.Result.vitB5), b5.value, b5.unit, b5.dailyValuePercent)) }
-        if let b6 = v.b6 { result.append((SafeEatL10n.text(L10nKey.Result.vitB6), b6.value, b6.unit, b6.dailyValuePercent)) }
-        if let b12 = v.b12 { result.append((SafeEatL10n.text(L10nKey.Result.vitB12), b12.value, b12.unit, b12.dailyValuePercent)) }
-        if let c = v.c { result.append((SafeEatL10n.text(L10nKey.Result.vitC), c.value, c.unit, c.dailyValuePercent)) }
-        if let d = v.d { result.append((SafeEatL10n.text(L10nKey.Result.vitD), d.value, d.unit, d.dailyValuePercent)) }
-        if let e = v.e { result.append((SafeEatL10n.text(L10nKey.Result.vitE), e.value, e.unit, e.dailyValuePercent)) }
-        if let k = v.k { result.append((SafeEatL10n.text(L10nKey.Result.vitK), k.value, k.unit, k.dailyValuePercent)) }
-        if let folate = v.folate { result.append((SafeEatL10n.text(L10nKey.Result.vitFolate), folate.value, folate.unit, folate.dailyValuePercent)) }
+    private func vitaminItems(_ v: Vitamins) -> [(String, Double?, String?, Double?, String?)] {
+        var result: [(String, Double?, String?, Double?, String?)] = []
+        if let a = v.a { result.append((SafeEatL10n.text(L10nKey.Result.vitA), a.value, a.unit, a.dailyValuePercent, a.source == "estimated" ? "估" : (a.source == "predicted" ? "推" : nil))) }
+        if let b1 = v.b1 { result.append((SafeEatL10n.text(L10nKey.Result.vitB1), b1.value, b1.unit, b1.dailyValuePercent, b1.source == "estimated" ? "估" : (b1.source == "predicted" ? "推" : nil))) }
+        if let b2 = v.b2 { result.append((SafeEatL10n.text(L10nKey.Result.vitB2), b2.value, b2.unit, b2.dailyValuePercent, b2.source == "estimated" ? "估" : (b2.source == "predicted" ? "推" : nil))) }
+        if let b3 = v.b3 { result.append((SafeEatL10n.text(L10nKey.Result.vitB3), b3.value, b3.unit, b3.dailyValuePercent, b3.source == "estimated" ? "估" : (b3.source == "predicted" ? "推" : nil))) }
+        if let b5 = v.b5 { result.append((SafeEatL10n.text(L10nKey.Result.vitB5), b5.value, b5.unit, b5.dailyValuePercent, b5.source == "estimated" ? "估" : (b5.source == "predicted" ? "推" : nil))) }
+        if let b6 = v.b6 { result.append((SafeEatL10n.text(L10nKey.Result.vitB6), b6.value, b6.unit, b6.dailyValuePercent, b6.source == "estimated" ? "估" : (b6.source == "predicted" ? "推" : nil))) }
+        if let b12 = v.b12 { result.append((SafeEatL10n.text(L10nKey.Result.vitB12), b12.value, b12.unit, b12.dailyValuePercent, b12.source == "estimated" ? "估" : (b12.source == "predicted" ? "推" : nil))) }
+        if let c = v.c { result.append((SafeEatL10n.text(L10nKey.Result.vitC), c.value, c.unit, c.dailyValuePercent, c.source == "estimated" ? "估" : (c.source == "predicted" ? "推" : nil))) }
+        if let d = v.d { result.append((SafeEatL10n.text(L10nKey.Result.vitD), d.value, d.unit, d.dailyValuePercent, d.source == "estimated" ? "估" : (d.source == "predicted" ? "推" : nil))) }
+        if let e = v.e { result.append((SafeEatL10n.text(L10nKey.Result.vitE), e.value, e.unit, e.dailyValuePercent, e.source == "estimated" ? "估" : (e.source == "predicted" ? "推" : nil))) }
+        if let k = v.k { result.append((SafeEatL10n.text(L10nKey.Result.vitK), k.value, k.unit, k.dailyValuePercent, k.source == "estimated" ? "估" : (k.source == "predicted" ? "推" : nil))) }
+        if let folate = v.folate { result.append((SafeEatL10n.text(L10nKey.Result.vitFolate), folate.value, folate.unit, folate.dailyValuePercent, folate.source == "estimated" ? "估" : (folate.source == "predicted" ? "推" : nil))) }
         return result
     }
 
@@ -1171,7 +1178,7 @@ struct ResultView: View {
             sectionCard {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(dvItems, id: \.0) { item in
-                        NutritionFactRowView(name: item.0, value: item.1, unit: item.2, nrvPercent: item.3)
+                        NutritionFactRowView(name: item.0, value: item.1, unit: item.2, nrvPercent: item.3, badge: item.4)
                     }
                 }
             }
@@ -1180,20 +1187,20 @@ struct ResultView: View {
         }
     }
 
-    private var mineralItems: [(String, Double?, String?, Double?)] {
+    private var mineralItems: [(String, Double?, String?, Double?, String?)] {
         guard let m = recognition?.effectiveNutrition?.minerals else { return [] }
         return mineralItems(m)
     }
 
-    private func mineralItems(_ m: Minerals) -> [(String, Double?, String?, Double?)] {
-        var result: [(String, Double?, String?, Double?)] = []
-        if let ca = m.calcium { result.append((SafeEatL10n.text(L10nKey.Result.mineralCalcium), ca.value, ca.unit, ca.dailyValuePercent)) }
-        if let fe = m.iron { result.append((SafeEatL10n.text(L10nKey.Result.mineralIron), fe.value, fe.unit, fe.dailyValuePercent)) }
-        if let mg = m.magnesium { result.append((SafeEatL10n.text(L10nKey.Result.mineralMagnesium), mg.value, mg.unit, mg.dailyValuePercent)) }
-        if let p = m.phosphorus { result.append((SafeEatL10n.text(L10nKey.Result.mineralPhosphorus), p.value, p.unit, p.dailyValuePercent)) }
-        if let k = m.potassium { result.append((SafeEatL10n.text(L10nKey.Result.mineralPotassium), k.value, k.unit, k.dailyValuePercent)) }
-        if let zn = m.zinc { result.append((SafeEatL10n.text(L10nKey.Result.mineralZinc), zn.value, zn.unit, zn.dailyValuePercent)) }
-        if let se = m.selenium { result.append((SafeEatL10n.text(L10nKey.Result.mineralSelenium), se.value, se.unit, se.dailyValuePercent)) }
+    private func mineralItems(_ m: Minerals) -> [(String, Double?, String?, Double?, String?)] {
+        var result: [(String, Double?, String?, Double?, String?)] = []
+        if let ca = m.calcium { result.append((SafeEatL10n.text(L10nKey.Result.mineralCalcium), ca.value, ca.unit, ca.dailyValuePercent, ca.source == "estimated" ? "估" : (ca.source == "predicted" ? "推" : nil))) }
+        if let fe = m.iron { result.append((SafeEatL10n.text(L10nKey.Result.mineralIron), fe.value, fe.unit, fe.dailyValuePercent, fe.source == "estimated" ? "估" : (fe.source == "predicted" ? "推" : nil))) }
+        if let mg = m.magnesium { result.append((SafeEatL10n.text(L10nKey.Result.mineralMagnesium), mg.value, mg.unit, mg.dailyValuePercent, mg.source == "estimated" ? "估" : (mg.source == "predicted" ? "推" : nil))) }
+        if let p = m.phosphorus { result.append((SafeEatL10n.text(L10nKey.Result.mineralPhosphorus), p.value, p.unit, p.dailyValuePercent, p.source == "estimated" ? "估" : (p.source == "predicted" ? "推" : nil))) }
+        if let k = m.potassium { result.append((SafeEatL10n.text(L10nKey.Result.mineralPotassium), k.value, k.unit, k.dailyValuePercent, k.source == "estimated" ? "估" : (k.source == "predicted" ? "推" : nil))) }
+        if let zn = m.zinc { result.append((SafeEatL10n.text(L10nKey.Result.mineralZinc), zn.value, zn.unit, zn.dailyValuePercent, zn.source == "estimated" ? "估" : (zn.source == "predicted" ? "推" : nil))) }
+        if let se = m.selenium { result.append((SafeEatL10n.text(L10nKey.Result.mineralSelenium), se.value, se.unit, se.dailyValuePercent, se.source == "estimated" ? "估" : (se.source == "predicted" ? "推" : nil))) }
         return result
     }
 

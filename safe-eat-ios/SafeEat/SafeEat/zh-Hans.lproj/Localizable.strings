@@ -903,6 +903,7 @@
 // Per 100g serving 标注
 "result.per_100g_serving" = "每 100g";
 "result.nutrition.per_serving" = "每100g";
+"result.nrv_basis_format" = "NRV%% 依据 %@ 计算";
 "result.action.analysis_detail" = "分析详情";
 "result.empty_data_hint" = "暂未收集到这部分数据";
 
