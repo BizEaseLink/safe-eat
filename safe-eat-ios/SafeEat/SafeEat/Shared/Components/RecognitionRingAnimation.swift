@@ -3,7 +3,7 @@ import SwiftUI
 /// 识别阶段枚举
 enum RecognitionPhase: Equatable {
     case identifying
-    case selecting(candidates: [IdentifyCandidate], dbMatches: [DbMatch], sessionId: String)
+    case selecting(groups: [MatchGroup], sessionId: String)
     case evaluating
     case nonFood
 

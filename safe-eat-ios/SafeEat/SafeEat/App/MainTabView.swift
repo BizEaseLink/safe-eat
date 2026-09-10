@@ -400,12 +400,10 @@ struct MainTabView: View {
             let identifyResult = try await identifyTask
             let previewImage = await previewTask
 
-            let aiList = identifyResult.effectiveAiCandidates
-            let dbMatches = identifyResult.effectiveDbMatches
-            let walkAction = identifyResult.effectiveWalkAction
+            let groups = identifyResult.effectiveGroups
 
             // 无候选 → 非食物提示
-            if aiList.isEmpty && dbMatches.isEmpty {
+            if groups.isEmpty {
                 recognitionPhase = .nonFood
                 recognizingPreviewImage = previewImage
                 // 识别结束（未识别到食物）：刷新首页额度，避免返回后额度信息停在旧值
@@ -413,21 +411,20 @@ struct MainTabView: View {
                 return
             }
 
-            // direct:直接 confirm,不展开选择页
-            // DB 命中=1 → 传 foodId;AI=1 且 DB=0 → 传 AI top1 名走草稿
-            if walkAction == "direct" {
+            // 单组 direct:组内 1 条且 100% 等值 → 直接 confirm,不展开选择页
+            let directGroups = groups.filter { $0.mode == "direct" }
+            if groups.count == 1 && directGroups.count == 1 {
                 recognitionPhase = .evaluating
                 recognizingPreviewImage = previewImage
 
-                let directFoodId = dbMatches.first?.foodId
-                let directName = (directFoodId == nil) ? aiList.first?.name : nil
+                let directFoodId = directGroups[0].effectiveMatches.first?.foodId
 
                 do {
                     let record = try await store.authorizedRequest { token in
                         try await store.api.confirm(
                             accessToken: token,
                             selectedFoodId: directFoodId,
-                            selectedName: directName,
+                            selectedName: nil,
                             sessionId: identifyResult.sessionId
                         )
                     }
@@ -436,7 +433,7 @@ struct MainTabView: View {
                         originalImage: croppedImage,
                         previewImage: previewImage,
                         rawImage: rawImage,
-                        alternateNames: aiList.map { $0.name }
+                        alternateNames: groups.map { $0.aiName }
                     )
                     recognitionPhase = nil
                     recognizingPreviewImage = nil
@@ -455,18 +452,16 @@ struct MainTabView: View {
                     }
                 }
             } else {
-                // select:展开选择页(DB≥2 或 AI≥2+DB=0)
+                // select/draft/多组:展开选择页（分组树渲染,组内 mode 决定展开/直进/草稿）
                 identifySession = IdentifySessionData(
-                    candidates: aiList,
-                    dbMatches: dbMatches,
-                    walkAction: walkAction,
+                    groups: groups,
                     sessionId: identifyResult.sessionId,
                     croppedImage: croppedImage,
                     rawImage: rawImage,
                     previewImage: previewImage
                 )
                 recognizingPreviewImage = previewImage
-                recognitionPhase = .selecting(candidates: aiList, dbMatches: dbMatches, sessionId: identifyResult.sessionId)
+                recognitionPhase = .selecting(groups: groups, sessionId: identifyResult.sessionId)
             }
         } catch {
             #if DEBUG
@@ -510,7 +505,7 @@ struct MainTabView: View {
                     originalImage: session.croppedImage,
                     previewImage: session.previewImage,
                     rawImage: session.rawImage,
-                    alternateNames: session.candidates.map { $0.name }
+                    alternateNames: session.groups.map { $0.aiName }
                 )
                 identifySession = nil
                 recognitionPhase = nil
@@ -613,11 +608,9 @@ private struct ResultRoute: Identifiable, Hashable {
     }
 }
 
-// identify 会话数据：候选列表 + DB 匹配 + 走法 + sessionId + 原图/预览图
+// identify 会话数据：分组树 + sessionId + 原图/预览图
 struct IdentifySessionData {
-    let candidates: [IdentifyCandidate]
-    let dbMatches: [DbMatch]
-    let walkAction: String
+    let groups: [MatchGroup]
     let sessionId: String
     let croppedImage: UIImage
     let rawImage: UIImage?

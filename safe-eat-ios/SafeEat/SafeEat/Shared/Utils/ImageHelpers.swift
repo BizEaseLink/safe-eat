@@ -709,12 +709,12 @@ struct SafeEatLoadingOverlay: View {
                 previewStage
             }
 
-        case .selecting(let candidates, let dbMatches, let sessionId):
+        case .selecting(let groups, let sessionId):
             panelContainer {
                 phaseTitle(SafeEatL10n.text(L10nKey.RecognitionPhase.selectTitle))
                 phaseSubtitle(SafeEatL10n.text(L10nKey.RecognitionPhase.selectSubtitle))
                 previewStageCompact
-                candidateList(candidates: candidates, dbMatches: dbMatches, sessionId: sessionId)
+                candidateList(groups: groups, sessionId: sessionId)
             }
 
         case .evaluating:
@@ -864,39 +864,42 @@ struct SafeEatLoadingOverlay: View {
 
     /// 树状:AI 候选作父项,其命中的 DB 作子项按 matchedAiName 分组
     /// 子项=0 或 1 → 父项直进(无箭头);子项≥2 → 展开(有箭头),子项点选传 foodId
-    private func candidateList(candidates: [IdentifyCandidate], dbMatches: [DbMatch], sessionId: String) -> some View {
+    private func candidateList(groups: [MatchGroup], sessionId: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            ForEach(candidates) { candidate in
-                let children = dbMatches.filter { $0.matchedAiName == candidate.name }
-                candidateTreeRow(candidate: candidate, children: children, sessionId: sessionId)
+            ForEach(groups) { group in
+                candidateTreeRow(group: group, sessionId: sessionId)
             }
         }
     }
 
     /// 父项:有≥2 子项才展开+箭头;否则直进(0 子项走草稿传 name,1 子项传 foodId)
-    private func candidateTreeRow(candidate: IdentifyCandidate, children: [DbMatch], sessionId: String) -> some View {
-        let expandable = children.count >= 2
-        let isExpanded = expandedAiNames.contains(candidate.name)
+    private func candidateTreeRow(group: MatchGroup, sessionId: String) -> some View {
+        let children = group.effectiveMatches
+        // mode 驱动（后端判定）：direct=单层直进；draft=单层走草稿；select=展开二级（默认展开）
+        let isDirect = group.mode == "direct"
+        let isDraft = group.mode == "draft"
+        let expandable = group.mode == "select"
+        let isExpanded = !expandedAiNames.contains("collapsed_" + group.aiName)
 
         return VStack(alignment: .leading, spacing: 8) {
             Button {
-                if expandable {
+                if isDirect {
+                    // 组内 1 条且 100% 等值:直进该 foodId
+                    onCandidateSelected?(children[0].foodId, nil, sessionId)
+                } else if isDraft {
+                    // 组内无匹配:走草稿传 AI 名
+                    onCandidateSelected?(nil, group.aiName, sessionId)
+                } else if expandable {
                     withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
                         if isExpanded {
-                            expandedAiNames.remove(candidate.name)
+                            expandedAiNames.insert("collapsed_" + group.aiName)
                         } else {
-                            expandedAiNames.insert(candidate.name)
+                            expandedAiNames.remove("collapsed_" + group.aiName)
                         }
                     }
-                } else if children.count == 1 {
-                    // 单子项直进:传该 foodId
-                    onCandidateSelected?(children[0].foodId, nil, sessionId)
-                } else {
-                    // 无子项直进:走草稿传 AI 名
-                    onCandidateSelected?(nil, candidate.name, sessionId)
                 }
             } label: {
-                aiParentRow(candidate: candidate, expandable: expandable, isExpanded: isExpanded)
+                aiParentRow(candidate: IdentifyCandidate(name: group.aiName, confidence: group.confidence ?? 0, type: group.type, source: group.source), expandable: expandable, isExpanded: isExpanded)
             }
             .buttonStyle(.plain)
 

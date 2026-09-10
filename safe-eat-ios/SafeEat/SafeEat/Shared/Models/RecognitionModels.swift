@@ -285,36 +285,31 @@ struct DbMatch: Codable, Identifiable {
     let matchedAiName: String?
 }
 
+/// 分组树：每个 AI 候选一组，mode 决定渲染方式
+struct MatchGroup: Codable, Identifiable {
+    let aiName: String
+    let confidence: Double?
+    let type: String?
+    let source: String?
+    /// direct=组内 1 条且 100% 等值（单层直通）| select=展开二级选单 | draft=组内无匹配（点击后建草稿）
+    let mode: String
+    let matches: [DbMatch]?
+
+    var id: String { aiName }
+    var effectiveMatches: [DbMatch] { matches ?? [] }
+}
+
 struct IdentifyResponse: Codable {
-    /// 新契约:一级 AI 候选
-    let aiCandidates: [IdentifyCandidate]?
-    /// 新契约:二级 DB 命中(去重排序后)
-    let dbMatches: [DbMatch]?
-    /// 新契约:走法 "direct" | "select"
-    let walkAction: String?
+    /// 分组树：每个 AI 候选一组，按组 mode 渲染
+    let groups: [MatchGroup]?
     let sessionId: String
 
-    /// 旧契约兼容(后端已不返回,保险)
-    private let candidates: [IdentifyCandidate]?
-
-    /// 统一访问 AI 候选:优先 aiCandidates,降级旧 candidates
-    var effectiveAiCandidates: [IdentifyCandidate] {
-        aiCandidates ?? candidates ?? []
-    }
-
-    var effectiveDbMatches: [DbMatch] {
-        dbMatches ?? []
-    }
-
-    /// 统一走法:无 walkAction 时按候选数推断(旧契约降级)
-    var effectiveWalkAction: String {
-        if let action = walkAction { return action }
-        let ai = effectiveAiCandidates.count
-        return ai <= 1 ? "direct" : "select"
+    var effectiveGroups: [MatchGroup] {
+        groups ?? []
     }
 
     private enum CodingKeys: String, CodingKey {
-        case aiCandidates, dbMatches, walkAction, sessionId, candidates
+        case groups, sessionId
     }
 }
 
