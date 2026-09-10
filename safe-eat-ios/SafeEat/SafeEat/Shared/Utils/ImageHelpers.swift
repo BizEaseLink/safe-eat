@@ -879,7 +879,7 @@ struct SafeEatLoadingOverlay: View {
         let isDirect = group.mode == "direct"
         let isDraft = group.mode == "draft"
         let expandable = group.mode == "select"
-        let isExpanded = !expandedAiNames.contains("collapsed_" + group.aiName)
+        let isExpanded = false // 默认折叠，点击展开
 
         return VStack(alignment: .leading, spacing: 8) {
             Button {
@@ -891,10 +891,10 @@ struct SafeEatLoadingOverlay: View {
                     onCandidateSelected?(nil, group.aiName, sessionId)
                 } else if expandable {
                     withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
-                        if isExpanded {
-                            expandedAiNames.insert("collapsed_" + group.aiName)
+                        if expandedAiNames.contains(group.aiName) {
+                            expandedAiNames.remove(group.aiName)
                         } else {
-                            expandedAiNames.remove("collapsed_" + group.aiName)
+                            expandedAiNames.insert(group.aiName)
                         }
                     }
                 }
