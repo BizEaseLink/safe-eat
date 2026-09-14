@@ -31,7 +31,7 @@ struct HistoryServerListView: View {
             // 记录计数
             if totalCount > 0 {
                 Section {
-                    Text(SafeEatL10n.format(L10nKey.History.serverRecordCountFormat, totalCount))
+                    Text(SafeMealL10n.format(L10nKey.History.serverRecordCountFormat, totalCount))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -57,7 +57,7 @@ struct HistoryServerListView: View {
                             if isLoading {
                                 ProgressView()
                             } else {
-                                Text(SafeEatL10n.text(L10nKey.History.serverEmptyMessage))
+                                Text(SafeMealL10n.text(L10nKey.History.serverEmptyMessage))
                                     .font(.subheadline)
                             }
                             Spacer()
@@ -74,16 +74,16 @@ struct HistoryServerListView: View {
                         HStack {
                             Image(systemName: "lock.fill")
                                 .foregroundStyle(.orange)
-                            Text(SafeEatL10n.text(L10nKey.History.upgradePromptTitle))
+                            Text(SafeMealL10n.text(L10nKey.History.upgradePromptTitle))
                                 .font(.subheadline.bold())
                         }
-                        Text(SafeEatL10n.format(L10nKey.History.upgradePromptMessageFormat, limit))
+                        Text(SafeMealL10n.format(L10nKey.History.upgradePromptMessageFormat, limit))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Button {
                             showMembership = true
                         } label: {
-                            Text(SafeEatL10n.text(L10nKey.History.upgradePromptAction))
+                            Text(SafeMealL10n.text(L10nKey.History.upgradePromptAction))
                                 .font(.subheadline.bold())
                         }
                         .buttonStyle(.borderedProminent)
@@ -93,13 +93,13 @@ struct HistoryServerListView: View {
                 }
             }
         }
-        .navigationTitle(SafeEatL10n.text(L10nKey.History.serverNavTitle))
+        .navigationTitle(SafeMealL10n.text(L10nKey.History.serverNavTitle))
         .overlay {
             if records.isEmpty && !isLoading {
                 ContentUnavailableView(
-                    SafeEatL10n.text(L10nKey.History.serverEmptyTitle),
+                    SafeMealL10n.text(L10nKey.History.serverEmptyTitle),
                     systemImage: "clock.arrow.circlepath",
-                    description: Text(SafeEatL10n.text(L10nKey.History.serverEmptyMessage))
+                    description: Text(SafeMealL10n.text(L10nKey.History.serverEmptyMessage))
                 )
             }
         }
@@ -107,7 +107,7 @@ struct HistoryServerListView: View {
             if isLoading && records.isEmpty {
                 VStack(spacing: 12) {
                     ProgressView()
-                    Text(SafeEatL10n.text(L10nKey.History.loadingTitle))
+                    Text(SafeMealL10n.text(L10nKey.History.loadingTitle))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -158,9 +158,9 @@ struct HistoryRecordRow: View {
 
     private var recommendationLabel: String {
         switch record.recommendationLevel {
-        case "recommended": return SafeEatL10n.text(L10nKey.Result.recommendYes)
-        case "moderate": return SafeEatL10n.text(L10nKey.Result.recommendModerate)
-        case "cautious": return SafeEatL10n.text(L10nKey.Result.recommendCautious)
+        case "recommended": return SafeMealL10n.text(L10nKey.Result.recommendYes)
+        case "moderate": return SafeMealL10n.text(L10nKey.Result.recommendModerate)
+        case "cautious": return SafeMealL10n.text(L10nKey.Result.recommendCautious)
         default: return ""
         }
     }

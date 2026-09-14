@@ -11,14 +11,14 @@ final class ConfigParamStore {
     /// 内存缓存：key → 解析后的值（String / Double / Bool）
     private(set) var cache: [String: Any] = [:]
 
-    private let api: SafeEatAPI
-    private static let cacheKey = "safeeat.configParam.cache"
-    private static let cacheTimestampKey = "safeeat.configParam.cacheTimestamp"
+    private let api: SafeMealAPI
+    private static let cacheKey = "safemeal.configParam.cache"
+    private static let cacheTimestampKey = "safemeal.configParam.cacheTimestamp"
 
     /// 缓存有效时长：1 小时（仅初始化请求时判断）
     private let cacheTTL: TimeInterval = 60 * 60
 
-    init(api: SafeEatAPI = SafeEatAPI()) {
+    init(api: SafeMealAPI = SafeMealAPI()) {
         self.api = api
         loadCachedConfig()
     }

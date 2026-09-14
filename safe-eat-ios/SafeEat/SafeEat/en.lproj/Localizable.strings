@@ -20,8 +20,8 @@
 "数据和缓存" = "Data & Cache";
 "反馈问题" = "Report an Issue";
 "检查更新" = "Check for Updates";
-"关于 Safe-Eat" = "About Safe Eat";
-"给 Safe-Eat 一个好评" = "Rate Safe Eat";
+"关于 Safe-Eat" = "About Safe Meal";
+"给 Safe-Eat 一个好评" = "Rate Safe Meal";
 "退出登录" = "Sign Out";
 "从相册选择" = "Choose from Library";
 "基础信息" = "Basic Info";
@@ -40,7 +40,7 @@
 "饮食偏好，多个用逗号分隔" = "Diet preferences, separated by commas";
 "购买提示" = "Purchase Notice";
 "新用户专享" = "New User Offer";
-"升级食安安会员" = "Upgrade to Safe Eat Membership";
+"升级食必安会员" = "Upgrade to Safe Meal Membership";
 "解锁更多识别次数与稳定的长期饮食记录。本阶段会创建真实待支付订单，但不拉起第三方支付。" = "Unlock more recognitions and steadier long-term food tracking. This phase creates a real pending order but does not launch third-party payment.";
 "当前身份" = "Current Tier";
 "推荐方案" = "Recommended Plan";
@@ -66,8 +66,8 @@
 "清理本地图片与贴纸缓存" = "Clear local images and sticker cache";
 "确认清理缓存？" = "Clear cache?";
 "会删除本地历史图片与贴纸缓存，但不会退出登录。" = "This removes local history images and sticker cache, but keeps you signed in.";
-"食安安" = "Safe Eat";
-"Safe-Eat 面向中文用户提供更轻量的食物识别、饮食建议与本地记录能力。" = "Safe Eat offers lightweight food recognition, dietary suggestions, and local history for Chinese-speaking users.";
+"食必安" = "Safe Meal";
+"Safe-Eat 面向中文用户提供更轻量的食物识别、饮食建议与本地记录能力。" = "Safe Meal offers lightweight food recognition, dietary suggestions, and local history for Chinese-speaking users.";
 "我们在做什么" = "What we're building";
 "1. 拍照识别食物\n2. 结合健康方向给出推荐/谨慎/避免建议\n3. 把识别结果沉淀到日/周/月记录里" = "1. Recognize food from photos\n2. Give recommended / caution / avoid advice based on your health direction\n3. Save results into daily / weekly / monthly records";
 "当前登录态采用 accessToken + refreshToken 机制。" = "The current sign-in session uses an accessToken + refreshToken flow.";
@@ -79,7 +79,7 @@
 "当前版本：%@" = "Current Version: %@";
 "已是最新版本。" = "You're on the latest version.";
 "正在识别" = "Recognizing";
-"Safe-Eat 正在分析白框内的主体，请稍候。" = "Safe Eat is analyzing the subject inside the white frame. Please wait.";
+"Safe-Eat 正在分析白框内的主体，请稍候。" = "Safe Meal is analyzing the subject inside the white frame. Please wait.";
 "控糖友好" = "Sugar-control friendly";
 "本地历史" = "Local History";
 "今天这道菜，适不适合你继续吃？" = "Is today's dish still right for you?";
@@ -102,11 +102,11 @@
 "已开启" = "On";
 "系统未授权" = "System Permission Off";
 "已关闭" = "Off";
-"未开启系统通知，请先在系统设置里允许 SafeEat 发送提醒。" = "Notifications are disabled. Please allow Safe Eat notifications in system settings first.";
+"未开启系统通知，请先在系统设置里允许 SafeMeal 发送提醒。" = "Notifications are disabled. Please allow Safe Meal notifications in system settings first.";
 "已开启学习提醒。" = "Reminder enabled.";
 "已关闭学习提醒。" = "Reminder disabled.";
 "今晚记得回看今天的饮食记录" = "Remember to review today's food records tonight";
-"Safe-Eat 已帮你准备好今天的识别历史，随时回来看看。" = "Safe Eat has prepared today's recognition history for you. Come back anytime.";
+"Safe-Eat 已帮你准备好今天的识别历史，随时回来看看。" = "Safe Meal has prepared today's recognition history for you. Come back anytime.";
 "推荐食用" = "Safe";
 "谨慎食用" = "Caution";
 "不建议食用" = "Avoid";
@@ -125,7 +125,7 @@
 "先去首页完成一次识别，菜单历史会按月自动聚合。" = "Finish a recognition from Home first. Menu history will group items by month automatically.";
 "用户信息" = "Profile";
 "头像、会员、偏好与系统设置都收在这里。" = "Avatar, membership, preferences, and system settings are all here.";
-"食安安用户" = "Safe Eat User";
+"食必安用户" = "Safe Meal User";
 "升级安心会员" = "Upgrade Membership";
 "从 %@ 开始，%@ 解锁更多识别次数。" = "Start with %@ and unlock more recognitions at %@.";
 "查看当前可购买套餐与新用户优惠。" = "View available plans and new-user offers.";
@@ -134,7 +134,7 @@
 "登录态、隐私与本地缓存说明" = "Session, privacy, and local cache details";
 "查看反馈说明与设备信息" = "See feedback guidance and device info";
 "当前固定提示为最新版本" = "Currently always shows the latest version";
-"了解食安安在做什么" = "Learn what Safe Eat is building";
+"了解食必安在做什么" = "Learn what Safe Meal is building";
 "如果它帮到了你，欢迎支持我们" = "If it helps you, we'd love your support";
 "高血糖 / 高血压 / 控糖等偏好" = "Blood sugar / blood pressure / sugar control and more";
 "选择一张清晰头像，上传前会自动压缩到 300KB 以内。" = "Choose a clear avatar. It will be compressed to under 300KB before upload.";
@@ -208,20 +208,20 @@
 "reminder.on" = "On";
 "reminder.off" = "Off";
 "reminder.system_denied" = "System Permission Off";
-"reminder.enable_failed" = "Notifications are disabled. Please allow Safe Eat notifications in system settings first.";
+"reminder.enable_failed" = "Notifications are disabled. Please allow Safe Meal notifications in system settings first.";
 "reminder.denied_title" = "Cannot Enable Reminders";
 "reminder.denied_body" = "Push notification permission has been turned off. Please go to Settings to re-enable it to use reminders.";
 "reminder.denied_open_settings" = "Open Settings";
-"brand.app_name" = "Safe Eat";
+"brand.app_name" = "Safe Meal";
 "brand.slogan" = "Every bite, a safer choice.";
 "brand.slogan_en" = "Every bite, a safer choice.";
 
-"reminder.enable_failed" = "Notifications are disabled. Please allow Safe Eat notifications in system settings first.";
+"reminder.enable_failed" = "Notifications are disabled. Please allow Safe Meal notifications in system settings first.";
 "reminder.enabled" = "Reminders enabled.";
 "reminder.disabled" = "Reminders disabled.";
 "reminder.entry_subtitle" = "Daily food record reminders";
 "reminder.sheet.title" = "Reminder Settings";
-"reminder.sheet.subtitle" = "Choose the start day and time. Safe Eat will follow your rhythm with daily review reminders.";
+"reminder.sheet.subtitle" = "Choose the start day and time. Safe Meal will follow your rhythm with daily review reminders.";
 "reminder.sheet.toggle" = "Reminders";
 "reminder.sheet.time_label" = "Reminder time";
 "reminder.sheet.save" = "Save Settings";
@@ -229,7 +229,7 @@
 "reminder.option.tomorrow" = "Tomorrow";
 "reminder.summary.format" = "%@ %@";
 "reminder.notification.title" = "Remember to review today's food records tonight";
-"reminder.notification.body" = "Safe Eat has prepared today's recognition history for you. Come back anytime.";
+"reminder.notification.body" = "Safe Meal has prepared today's recognition history for you. Come back anytime.";
 "reminder.notification.title_today" = "Today's food records await review";
 "reminder.notification.body_today" = "Tap to view today's dietary performance";
 "reminder.notification.title_yesterday" = "Yesterday's food records await review";
@@ -279,14 +279,14 @@
 "profile.system.updates" = "Check for Updates";
 "profile.system.updates.subtitle" = "Currently always shows the latest version";
 "profile.service.group_title" = "About & Support";
-"profile.about.title" = "About Safe Eat";
-"profile.about.subtitle" = "Learn what Safe Eat is building";
-"profile.rate.title" = "Rate Safe Eat";
+"profile.about.title" = "About Safe Meal";
+"profile.about.subtitle" = "Learn what Safe Meal is building";
+"profile.rate.title" = "Rate Safe Meal";
 "profile.rate.subtitle" = "If it helps you, we'd love your support";
 "profile.logout" = "Sign Out";
 "profile.bmi" = "BMI";
 
-"profile.edit.subtitle.long" = "Update your avatar and profile details. Safe Eat will sync them to your account.";
+"profile.edit.subtitle.long" = "Update your avatar and profile details. Safe Meal will sync them to your account.";
 "profile.edit.avatar" = "Avatar";
 "profile.edit.avatar_hint" = "Choose a clear avatar. It will be compressed to under 300KB before upload.";
 "profile.edit.choose_photo" = "Choose from Library";
@@ -307,10 +307,10 @@
 "profile.edit.tdee_label" = "TDEE";
 "profile.edit.tdee_unit" = "kcal/day";
 
-"profile.preference.subtitle.long" = "Tell Safe Eat about your health direction and training goal so the advice fits your routine better.";
+"profile.preference.subtitle.long" = "Tell Safe Meal about your health direction and training goal so the advice fits your routine better.";
 "profile.preference.health_tags" = "Health Tags";
 "profile.preference.fitness_goal" = "Fitness Goal";
-"profile.preference.health_tags_hint" = "Choose multiple tags. Safe Eat will prioritize these directions when reading food risks.";
+"profile.preference.health_tags_hint" = "Choose multiple tags. Safe Meal will prioritize these directions when reading food risks.";
 "profile.preference.fitness_goal_hint" = "Pick the goal you care about most right now for more relevant suggestions.";
 
 "profile.language.title" = "Language";
@@ -390,10 +390,10 @@
 "profile.update.latest" = "You're on the latest version.";
 "profile.update.check_action" = "Open App Store to check for updates";
 
-"profile.about.page_title" = "About Safe Eat";
-"profile.about.page_subtitle" = "Safe Eat provides lightweight food recognition, dietary suggestions, and local history for Chinese-speaking users.";
-"profile.about.app_name" = "Safe Eat";
-"profile.about.intro" = "Safe Eat provides lightweight food recognition, dietary suggestions, and local history for Chinese-speaking users.";
+"profile.about.page_title" = "About Safe Meal";
+"profile.about.page_subtitle" = "Safe Meal provides lightweight food recognition, dietary suggestions, and local history for Chinese-speaking users.";
+"profile.about.app_name" = "Safe Meal";
+"profile.about.intro" = "Safe Meal provides lightweight food recognition, dietary suggestions, and local history for Chinese-speaking users.";
 "profile.about.section_title" = "What we're building";
 "profile.about.section_body" = "1. Recognize food from photos\n2. Give safe / caution / avoid advice based on your health direction\n3. Save results into daily / weekly / monthly records";
 "profile.about.disclosure_section" = "Agreements & Certificates";
@@ -401,7 +401,7 @@
 "profile.about.privacy_policy" = "Privacy Policy";
 "profile.about.value_added" = "Value-Added Service Agreement";
 "profile.about.certificate" = "Certificates";
-"profile.about.copyright" = "© 2026 Liao Caixia";
+"profile.about.copyright" = "© 2026 Zheng Haijun";
 "profile.about.icp_record" = "粤ICP备2026115172号-2A";
 
 "order.history.title" = "Order History";
@@ -435,7 +435,7 @@
 "membership.purchase.subtitle" = "Browse plans, choose a payment channel, and create a pending order.";
 "membership.purchase.notice_title" = "Purchase Notice";
 "membership.purchase.promo" = "New User Offer";
-"membership.purchase.hero_title" = "Upgrade to Safe Eat Membership";
+"membership.purchase.hero_title" = "Upgrade to Safe Meal Membership";
 "membership.purchase.hero_body" = "Unlock more recognitions and steadier long-term food tracking. This phase creates a real pending order but does not launch third-party payment.";
 "membership.purchase.current_tier" = "Current Tier";
 "membership.purchase.recommended_plan" = "Recommended Plan";
@@ -608,7 +608,7 @@
 "user.payment.apple_iap" = "Apple In-App Purchase";
 
 "home.title" = "Home";
-"home.brand_pill" = "Safe Eat";
+"home.brand_pill" = "Safe Meal";
 "home.promo.tag" = "New User Offer";
 "home.promo.value" = "¥29 down to ¥20";
 "home.hero.tag.health" = "Health Alerts";
@@ -621,12 +621,12 @@
 "home.recent.empty_title" = "No local records yet";
 "home.recent.empty_message" = "Start a scan first. The result will be saved automatically into local menu history.";
 "home.loading.title" = "Recognizing";
-"home.loading.subtitle" = "Safe Eat is analyzing the subject inside the white frame. Please wait.";
+"home.loading.subtitle" = "Safe Meal is analyzing the subject inside the white frame. Please wait.";
 "home.camera.permission_title" = "Camera permission is required to scan food directly";
 "home.camera.permission_body" = "Please enable camera access in Settings and try again.";
 "home.camera.open_settings" = "Open Settings";
 "home.camera.guide" = "Place the subject inside the guide frame";
-"home.camera.title" = "Safe Eat AI Camera";
+"home.camera.title" = "Safe Meal AI Camera";
 "home.camera.bottom_hint" = "Point at the food to scan";
 "home.camera.flash_on" = "Flash on";
 "home.camera.flash_off" = "Flash off";
@@ -733,7 +733,7 @@
 "result.score.logic_title" = "Score Logic";
 "result.score.logic_format" = "Health Score %d";
 "result.score.logic_hint" = "Tap to view how the score is calculated";
-"result.medical_disclaimer" = "Safe Eat offers everyday dietary guidance only. It does not replace clinical diagnosis, prescriptions, or professional nutrition intervention. If you have hypertension, hyperlipidemia, high blood sugar, kidney disease, pregnancy, or other special conditions, follow advice from qualified medical professionals.";
+"result.medical_disclaimer" = "Safe Meal offers everyday dietary guidance only. It does not replace clinical diagnosis, prescriptions, or professional nutrition intervention. If you have hypertension, hyperlipidemia, high blood sugar, kidney disease, pregnancy, or other special conditions, follow advice from qualified medical professionals.";
 "result.ai_disclaimer.link" = "Read the AI Disclaimer";
 "result.metric.calories" = "Calories";
 "result.metric.protein" = "Protein";
@@ -1024,9 +1024,9 @@
 "common.continue" = "Continue";
 "common.back" = "Back";
 
-"auth.onboarding.eyebrow" = "Safe Eat";
+"auth.onboarding.eyebrow" = "Safe Meal";
 "auth.onboarding.title" = "Take one photo and know sooner if this meal fits you.";
-"auth.onboarding.body" = "For sugar control, blood pressure, blood lipids, and fitness routines, Safe Eat helps you spot risks faster and choose a steadier way to eat.";
+"auth.onboarding.body" = "For sugar control, blood pressure, blood lipids, and fitness routines, Safe Meal helps you spot risks faster and choose a steadier way to eat.";
 "auth.onboarding.card.one" = "Snap common meals and get the key answer first.";
 "auth.onboarding.card.two" = "See nutrition and risk analysis in one place.";
 "auth.onboarding.card.three" = "Keep local history and build your own food habits over time.";
@@ -1039,7 +1039,7 @@
 "auth.code.title" = "Verification code sign in";
 "auth.code.subtitle" = "Use a text code for a quicker sign in when you're new or switching devices.";
 "auth.register.title" = "Create your account";
-"auth.register.subtitle" = "Set a password with your phone number so you can enter Safe Eat faster next time.";
+"auth.register.subtitle" = "Set a password with your phone number so you can enter Safe Meal faster next time.";
 "auth.bind.title" = "Bind your phone number";
 "auth.bind.subtitle" = "Apple sign in is ready. Bind a phone number now so future sign in and recovery stay connected.";
 "auth.field.phone" = "Phone number";
@@ -1063,7 +1063,7 @@
 "auth.login_prompt.feature_format" = "\"%@\" requires you to sign in";
 "auth.login_prompt.later" = "Later";
 "auth.or_divider" = "or";
-"auth.new_user.welcome_title" = "Welcome to SafeEat!";
+"auth.new_user.welcome_title" = "Welcome to SafeMeal!";
 "auth.new_user.welcome_message" = "Please set a password to secure your account";
 "auth.new_user.set_password" = "Set Password";
 "auth.password_login.error_title" = "Login Failed";
@@ -1091,7 +1091,7 @@
 "home.trial_prompt.later_action" = "Maybe Later";
 "home.trial_prompt.success_message" = "Trial activated! Enjoy 3 days of Premium.";
 
-"home.welcome.title" = "Welcome to SafeEat";
+"home.welcome.title" = "Welcome to SafeMeal";
 "home.welcome.subtitle" = "Eat with peace of mind";
 "home.welcome.app_name" = "Food Safety Assistant";
 "home.welcome.app_tagline" = "Snap a photo to check food ingredient safety";
@@ -1134,7 +1134,7 @@
 "recognition_phase.select_title" = "Select";
 "recognition_phase.select_subtitle" = "Choose the best match from the results";
 "recognition_phase.evaluating" = "Evaluating";
-"recognition_phase.evaluating_subtitle" = "Safe Eat is analyzing nutrition and safety risks";
+"recognition_phase.evaluating_subtitle" = "Safe Meal is analyzing nutrition and safety risks";
 "recognition_phase.tag_identify" = "Smart Identify";
 "recognition_phase.tag_identify_detail" = "Precise food detection";
 "recognition_phase.tag_nutrition" = "Nutrition Analysis";
@@ -1246,7 +1246,7 @@
 "auth.contact.email" = "Support Email";
 "auth.contact_support.subtitle" = "Tap to copy contact info to clipboard";
 "auth.contact.copied" = "Copied to clipboard";
-"auth.contact.default_email" = "bizeaselink_SE@163.com";
+"auth.contact.default_email" = "bel_safemeal@163.com";
 "auth.terms.not_agreed" = "Please agree to the User Agreement and Privacy Policy first";
 "auth.set_password.title" = "Set Password";
 "auth.set_password.subtitle" = "Set a password to secure your account";

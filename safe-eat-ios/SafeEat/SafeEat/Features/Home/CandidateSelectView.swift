@@ -36,7 +36,7 @@ struct CandidateSelectView: View {
                 .padding(.bottom, 100)
             }
         }
-        .background { SafeEatMainGradientBackground() }
+        .background { SafeMealMainGradientBackground() }
         .navigationBarHidden(true)
     }
 
@@ -49,14 +49,14 @@ struct CandidateSelectView: View {
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 28))
-                    .foregroundColor(SafeEatTheme.textSecondary)
+                    .foregroundColor(SafeMealTheme.textSecondary)
             }
 
             Spacer()
 
-            Text(SafeEatL10n.text(L10nKey.Candidate.title))
-                .font(SafeEatFont.textStyle(.headline))
-                .foregroundColor(SafeEatTheme.textPrimary)
+            Text(SafeMealL10n.text(L10nKey.Candidate.title))
+                .font(SafeMealFont.textStyle(.headline))
+                .foregroundColor(SafeMealTheme.textPrimary)
 
             Spacer()
 
@@ -71,9 +71,9 @@ struct CandidateSelectView: View {
 
     private var candidateSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(SafeEatL10n.text(L10nKey.Candidate.aiResult))
-                .font(SafeEatFont.textStyle(.subheadline))
-                .foregroundColor(SafeEatTheme.textSecondary)
+            Text(SafeMealL10n.text(L10nKey.Candidate.aiResult))
+                .font(SafeMealFont.textStyle(.subheadline))
+                .foregroundColor(SafeMealTheme.textSecondary)
 
             ForEach(candidates) { candidate in
                 candidateRow(candidate)
@@ -93,7 +93,7 @@ struct CandidateSelectView: View {
                 // 置信度圆环
                 ZStack {
                     Circle()
-                        .stroke(SafeEatTheme.line, lineWidth: 3)
+                        .stroke(SafeMealTheme.line, lineWidth: 3)
                         .frame(width: 44, height: 44)
                     Circle()
                         .trim(from: 0, to: candidate.confidence)
@@ -104,34 +104,34 @@ struct CandidateSelectView: View {
                         .frame(width: 44, height: 44)
                         .rotationEffect(.degrees(-90))
                     Text("\(percent)%")
-                        .font(SafeEatFont.custom(11, relativeTo: .caption2, weight: .semibold))
-                        .foregroundColor(SafeEatTheme.textPrimary)
+                        .font(SafeMealFont.custom(11, relativeTo: .caption2, weight: .semibold))
+                        .foregroundColor(SafeMealTheme.textPrimary)
                 }
 
                 Text(candidate.name)
-                    .font(SafeEatFont.textStyle(.body))
-                    .foregroundColor(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.textStyle(.body))
+                    .foregroundColor(SafeMealTheme.textPrimary)
 
                 Spacer()
 
                 if isSelected && isConfirming {
                     ProgressView()
-                        .tint(SafeEatTheme.primary)
+                        .tint(SafeMealTheme.primary)
                 } else {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(SafeEatTheme.textSecondary)
+                        .foregroundColor(SafeMealTheme.textSecondary)
                 }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(isSelected ? SafeEatTheme.primary.opacity(0.08) : colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.72))
+                    .fill(isSelected ? SafeMealTheme.primary.opacity(0.08) : colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.72))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isSelected ? SafeEatTheme.primary.opacity(0.3) : SafeEatTheme.line, lineWidth: 1)
+                    .stroke(isSelected ? SafeMealTheme.primary.opacity(0.3) : SafeMealTheme.line, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -142,18 +142,18 @@ struct CandidateSelectView: View {
 
     private var searchSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(SafeEatL10n.text(L10nKey.Candidate.searchHint))
-                .font(SafeEatFont.textStyle(.subheadline))
-                .foregroundColor(SafeEatTheme.textSecondary)
+            Text(SafeMealL10n.text(L10nKey.Candidate.searchHint))
+                .font(SafeMealFont.textStyle(.subheadline))
+                .foregroundColor(SafeMealTheme.textSecondary)
 
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 16))
-                    .foregroundColor(SafeEatTheme.textSecondary)
+                    .foregroundColor(SafeMealTheme.textSecondary)
 
-                TextField(SafeEatL10n.text(L10nKey.Candidate.searchPlaceholder), text: $searchText)
-                    .font(SafeEatFont.textStyle(.body))
-                    .foregroundColor(SafeEatTheme.textPrimary)
+                TextField(SafeMealL10n.text(L10nKey.Candidate.searchPlaceholder), text: $searchText)
+                    .font(SafeMealFont.textStyle(.body))
+                    .foregroundColor(SafeMealTheme.textPrimary)
                     .onChange(of: searchText) { _, newValue in
                         performSearch(newValue)
                     }
@@ -165,7 +165,7 @@ struct CandidateSelectView: View {
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 16))
-                            .foregroundColor(SafeEatTheme.textSecondary)
+                            .foregroundColor(SafeMealTheme.textSecondary)
                     }
                 }
             }
@@ -177,14 +177,14 @@ struct CandidateSelectView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(SafeEatTheme.line, lineWidth: 1)
+                    .stroke(SafeMealTheme.line, lineWidth: 1)
             )
 
             if isSearching {
                 HStack {
                     Spacer()
                     ProgressView()
-                        .tint(SafeEatTheme.primary)
+                        .tint(SafeMealTheme.primary)
                     Spacer()
                 }
                 .padding(.vertical, 12)
@@ -193,9 +193,9 @@ struct CandidateSelectView: View {
                     searchResultRow(item)
                 }
             } else if searchText.count >= 2 {
-                Text(SafeEatL10n.text(L10nKey.Candidate.noResult))
-                    .font(SafeEatFont.textStyle(.subheadline))
-                    .foregroundColor(SafeEatTheme.textSecondary)
+                Text(SafeMealL10n.text(L10nKey.Candidate.noResult))
+                    .font(SafeMealFont.textStyle(.subheadline))
+                    .foregroundColor(SafeMealTheme.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 12)
             }
@@ -212,32 +212,32 @@ struct CandidateSelectView: View {
             HStack(spacing: 12) {
                 Image(systemName: "fork.knife")
                     .font(.system(size: 14))
-                    .foregroundColor(SafeEatTheme.primary)
+                    .foregroundColor(SafeMealTheme.primary)
 
                 Text(item.name)
-                    .font(SafeEatFont.textStyle(.body))
-                    .foregroundColor(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.textStyle(.body))
+                    .foregroundColor(SafeMealTheme.textPrimary)
 
                 Spacer()
 
                 if isSelected && isConfirming {
                     ProgressView()
-                        .tint(SafeEatTheme.primary)
+                        .tint(SafeMealTheme.primary)
                 } else {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(SafeEatTheme.textSecondary)
+                        .foregroundColor(SafeMealTheme.textSecondary)
                 }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(isSelected ? SafeEatTheme.primary.opacity(0.08) : colorScheme == .dark ? Color.white.opacity(0.04) : Color.white.opacity(0.5))
+                    .fill(isSelected ? SafeMealTheme.primary.opacity(0.08) : colorScheme == .dark ? Color.white.opacity(0.04) : Color.white.opacity(0.5))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(isSelected ? SafeEatTheme.primary.opacity(0.3) : SafeEatTheme.line, lineWidth: 1)
+                    .stroke(isSelected ? SafeMealTheme.primary.opacity(0.3) : SafeMealTheme.line, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -250,10 +250,10 @@ struct CandidateSelectView: View {
         VStack(spacing: 12) {
             Image(systemName: "questionmark.folder")
                 .font(.system(size: 36))
-                .foregroundColor(SafeEatTheme.textSecondary)
-            Text(SafeEatL10n.text(L10nKey.Candidate.emptyHint))
-                .font(SafeEatFont.textStyle(.subheadline))
-                .foregroundColor(SafeEatTheme.textSecondary)
+                .foregroundColor(SafeMealTheme.textSecondary)
+            Text(SafeMealL10n.text(L10nKey.Candidate.emptyHint))
+                .font(SafeMealFont.textStyle(.subheadline))
+                .foregroundColor(SafeMealTheme.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 32)
@@ -262,9 +262,9 @@ struct CandidateSelectView: View {
     // MARK: - 方法
 
     private func confidenceColor(_ confidence: Double) -> Color {
-        if confidence >= 0.8 { return SafeEatTheme.success }
-        if confidence >= 0.5 { return SafeEatTheme.warning }
-        return SafeEatTheme.danger
+        if confidence >= 0.8 { return SafeMealTheme.success }
+        if confidence >= 0.5 { return SafeMealTheme.warning }
+        return SafeMealTheme.danger
     }
 
     private func confirmSelection(_ name: String) {

@@ -5,31 +5,31 @@ struct HelpCenterView: View {
 
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.Profile.Help.title),
-            subtitle: SafeEatL10n.text(L10nKey.Profile.Help.subtitle)
+            title: SafeMealL10n.text(L10nKey.Profile.Help.title),
+            subtitle: SafeMealL10n.text(L10nKey.Profile.Help.subtitle)
         ) {
             ForEach(faqSections) { section in
                 ProfileSectionBlock(title: section.title) {
                     ForEach(Array(section.items.enumerated()), id: \.offset) { index, item in
                         FAQRow(question: item.question, answer: item.answer)
                         if index < section.items.count - 1 {
-                            Divider().overlay(SafeEatTheme.line)
+                            Divider().overlay(SafeMealTheme.line)
                         }
                     }
                 }
             }
 
-            ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.Help.contactSection)) {
+            ProfileSectionBlock(title: SafeMealL10n.text(L10nKey.Profile.Help.contactSection)) {
                 HStack(spacing: 12) {
                     Image(systemName: "envelope.fill")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.primary)
-                    Text("bizeaselink_SE@163.com")
-                        .font(SafeEatFont.textStyle(.body))
-                        .foregroundStyle(SafeEatTheme.primary)
+                        .foregroundStyle(SafeMealTheme.primary)
+                    Text("bel_safemeal@163.com")
+                        .font(SafeMealFont.textStyle(.body))
+                        .foregroundStyle(SafeMealTheme.primary)
                 }
                 .onTapGesture {
-                    if let url = URL(string: "mailto:bizeaselink_SE@163.com") {
+                    if let url = URL(string: "mailto:bel_safemeal@163.com") {
                         UIApplication.shared.open(url)
                     }
                 }
@@ -54,18 +54,18 @@ private struct FAQRow: View {
             } label: {
                 HStack(alignment: .top, spacing: 10) {
                     Text("Q")
-                        .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
+                        .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(width: 22, height: 22)
-                        .background(Circle().fill(SafeEatTheme.primary))
+                        .background(Circle().fill(SafeMealTheme.primary))
                     Text(question)
-                        .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .semibold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer()
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
             }
             .buttonStyle(.plain)
@@ -73,14 +73,14 @@ private struct FAQRow: View {
             if isExpanded {
                 HStack(alignment: .top, spacing: 10) {
                     Text("A")
-                        .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
+                        .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(width: 22, height: 22)
-                        .background(Circle().fill(SafeEatTheme.primarySoft))
-                        .overlay(Circle().stroke(SafeEatTheme.primary, lineWidth: 1.5))
+                        .background(Circle().fill(SafeMealTheme.primarySoft))
+                        .overlay(Circle().stroke(SafeMealTheme.primary, lineWidth: 1.5))
                     Text(answer)
-                        .font(SafeEatFont.custom(13, relativeTo: .caption))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.custom(13, relativeTo: .caption))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.top, 8)
@@ -104,7 +104,7 @@ private struct FAQItem {
 }
 
 private var faqSections: [FAQSection] {
-    SafeEatL10n.isZh ? faqSectionsZh : faqSectionsEn
+    SafeMealL10n.isZh ? faqSectionsZh : faqSectionsEn
 }
 
 // MARK: - 中文 FAQ
@@ -118,8 +118,8 @@ private let faqSectionsZh: [FAQSection] = [
     ]),
     FAQSection(title: "会员与订阅", items: [
         FAQItem(question: "会员有哪些等级？", answer: "共三个付费等级：轻享版（Lite）适合日常管理入门，专业版（Pro）提供深度营养分析，至尊版（Premium）全功能解锁且无广告。"),
-        FAQItem(question: "如何取消自动续费？", answer: "iOS：设置 → Apple ID → 订阅 → 选择食安安 → 取消订阅。鸿蒙/华为：华为应用市场 → 订阅管理 → 取消。微信/支付宝：在对应支付平台的自动扣款管理中关闭。取消后当前周期权益不受影响。"),
-        FAQItem(question: "如何申请退款？", answer: "iOS/Apple 内购：访问 reportaproblem.apple.com 申请退款，由 Apple 审核。鸿蒙/华为：在应用市场订单管理中申请。微信/支付宝代扣：联系 bizeaselink_SE@163.com 处理。"),
+        FAQItem(question: "如何取消自动续费？", answer: "iOS：设置 → Apple ID → 订阅 → 选择食必安 → 取消订阅。鸿蒙/华为：华为应用市场 → 订阅管理 → 取消。微信/支付宝：在对应支付平台的自动扣款管理中关闭。取消后当前周期权益不受影响。"),
+        FAQItem(question: "如何申请退款？", answer: "iOS/Apple 内购：访问 reportaproblem.apple.com 申请退款，由 Apple 审核。鸿蒙/华为：在应用市场订单管理中申请。微信/支付宝代扣：联系 bel_safemeal@163.com 处理。"),
         FAQItem(question: "免费试用到期会自动扣费吗？", answer: "是的，3天免费试用到期后会自动转为付费订阅并扣款。如不想继续，请在试用期内取消订阅。"),
     ]),
     FAQSection(title: "账号与数据", items: [
@@ -128,7 +128,7 @@ private let faqSectionsZh: [FAQSection] = [
         FAQItem(question: "食物照片会被用于其他用途吗？", answer: "不会。照片仅用于食物识别分析，不会用于人脸识别或其他非声明用途。您可随时在历史记录中删除照片数据。"),
     ]),
     FAQSection(title: "其他", items: [
-        FAQItem(question: "食安安可以替代医生建议吗？", answer: "不可以。食安安仅为日常饮食辅助参考工具，所有分析结果不构成医疗诊断、诊疗建议或专业营养指导。患有基础疾病请务必遵从执业医师意见。"),
+        FAQItem(question: "食必安可以替代医生建议吗？", answer: "不可以。食必安仅为日常饮食辅助参考工具，所有分析结果不构成医疗诊断、诊疗建议或专业营养指导。患有基础疾病请务必遵从执业医师意见。"),
         FAQItem(question: "如何切换应用语言？", answer: "个人中心 → 语言设置，支持中文和英文切换。"),
     ]),
 ]
@@ -144,8 +144,8 @@ private let faqSectionsEn: [FAQSection] = [
     ]),
     FAQSection(title: "Membership & Subscription", items: [
         FAQItem(question: "What membership tiers are available?", answer: "Three paid tiers: Lite for everyday management basics, Pro for in-depth nutritional analysis, and Premium for full access with no ads."),
-        FAQItem(question: "How do I cancel auto-renewal?", answer: "iOS: Settings → Apple ID → Subscriptions → select SafeEat → Cancel Subscription. HarmonyOS/Huawei: Huawei AppMarket → Subscription Management → Cancel. WeChat/Alipay: Disable auto-deduction in the respective payment platform. Your current period benefits remain unaffected after cancellation."),
-        FAQItem(question: "How do I request a refund?", answer: "iOS/Apple in-app purchase: Visit reportaproblem.apple.com to request a refund, reviewed by Apple. HarmonyOS/Huawei: Apply through the app store order management. WeChat/Alipay: Contact bizeaselink_SE@163.com."),
+        FAQItem(question: "How do I cancel auto-renewal?", answer: "iOS: Settings → Apple ID → Subscriptions → select SafeMeal → Cancel Subscription. HarmonyOS/Huawei: Huawei AppMarket → Subscription Management → Cancel. WeChat/Alipay: Disable auto-deduction in the respective payment platform. Your current period benefits remain unaffected after cancellation."),
+        FAQItem(question: "How do I request a refund?", answer: "iOS/Apple in-app purchase: Visit reportaproblem.apple.com to request a refund, reviewed by Apple. HarmonyOS/Huawei: Apply through the app store order management. WeChat/Alipay: Contact bel_safemeal@163.com."),
         FAQItem(question: "Will I be charged automatically after the free trial ends?", answer: "Yes, after the 3-day free trial ends, it will automatically convert to a paid subscription and be charged. If you don't wish to continue, please cancel before the trial expires."),
     ]),
     FAQSection(title: "Account & Data", items: [
@@ -154,7 +154,7 @@ private let faqSectionsEn: [FAQSection] = [
         FAQItem(question: "Will my food photos be used for other purposes?", answer: "No. Photos are used solely for food recognition analysis and will not be used for facial recognition or any undeclared purposes. You can delete photo data from your history at any time."),
     ]),
     FAQSection(title: "Other", items: [
-        FAQItem(question: "Can SafeEat replace a doctor's advice?", answer: "No. SafeEat is a daily dietary reference tool only. All analysis results do not constitute medical diagnosis, treatment advice, or professional nutritional guidance. If you have underlying health conditions, please follow your physician's advice."),
+        FAQItem(question: "Can SafeMeal replace a doctor's advice?", answer: "No. SafeMeal is a daily dietary reference tool only. All analysis results do not constitute medical diagnosis, treatment advice, or professional nutritional guidance. If you have underlying health conditions, please follow your physician's advice."),
         FAQItem(question: "How do I switch the app language?", answer: "Profile → Language Settings, supports Chinese and English."),
     ]),
 ]

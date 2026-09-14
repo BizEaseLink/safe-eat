@@ -3,44 +3,44 @@ import SwiftUI
 struct SecuritySettingsView: View {
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.Profile.Security.title),
-            subtitle: SafeEatL10n.text(L10nKey.Profile.Security.subtitle)
+            title: SafeMealL10n.text(L10nKey.Profile.Security.title),
+            subtitle: SafeMealL10n.text(L10nKey.Profile.Security.subtitle)
         ) {
             ProfileSurfaceCard {
                 NavigationLink(value: ProfileRoute.changePhone) {
                     ProfileNavigationRow(
                         icon: "phone.fill",
-                        title: SafeEatL10n.text(L10nKey.Profile.Security.changePhone)
+                        title: SafeMealL10n.text(L10nKey.Profile.Security.changePhone)
                     )
                 }
                 .buttonStyle(.plain)
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
                 NavigationLink(value: ProfileRoute.changePassword) {
                     ProfileNavigationRow(
                         icon: "lock.fill",
-                        title: SafeEatL10n.text(L10nKey.Profile.Security.changePassword)
+                        title: SafeMealL10n.text(L10nKey.Profile.Security.changePassword)
                     )
                 }
                 .buttonStyle(.plain)
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
                 NavigationLink(value: ProfileRoute.restorePurchases) {
                     ProfileNavigationRow(
                         icon: "arrow.clockwise.icloud.fill",
-                        title: SafeEatL10n.text(L10nKey.Profile.Security.restorePurchases)
+                        title: SafeMealL10n.text(L10nKey.Profile.Security.restorePurchases)
                     )
                 }
                 .buttonStyle(.plain)
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
                 NavigationLink(value: ProfileRoute.deleteAccount) {
                     ProfileNavigationRow(
                         icon: "person.crop.circle.badge.xmark",
-                        title: SafeEatL10n.text(L10nKey.Profile.Security.deleteAccount)
+                        title: SafeMealL10n.text(L10nKey.Profile.Security.deleteAccount)
                     )
                 }
                 .buttonStyle(.plain)

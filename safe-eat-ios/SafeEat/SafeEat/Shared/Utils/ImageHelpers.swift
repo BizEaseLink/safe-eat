@@ -380,43 +380,43 @@ enum AdviceLevelMapper {
     static func title(_ level: String?) -> String {
         switch level {
         case "recommended":
-            return SafeEatL10n.text(L10nKey.Advice.titleRecommended)
+            return SafeMealL10n.text(L10nKey.Advice.titleRecommended)
         case "moderate":
-            return SafeEatL10n.text(L10nKey.Advice.titleModerate)
+            return SafeMealL10n.text(L10nKey.Advice.titleModerate)
         case "caution":
-            return SafeEatL10n.text(L10nKey.Advice.titleCaution)
+            return SafeMealL10n.text(L10nKey.Advice.titleCaution)
         case "avoid":
-            return SafeEatL10n.text(L10nKey.Advice.titleAvoid)
+            return SafeMealL10n.text(L10nKey.Advice.titleAvoid)
         default:
-            return SafeEatL10n.text(L10nKey.Advice.titleEvaluate)
+            return SafeMealL10n.text(L10nKey.Advice.titleEvaluate)
         }
     }
 
     static func color(_ level: String?) -> Color {
         switch level {
         case "recommended":
-            return SafeEatTheme.success
+            return SafeMealTheme.success
         case "moderate":
-            return SafeEatTheme.primary
+            return SafeMealTheme.primary
         case "caution":
-            return SafeEatTheme.warning
+            return SafeMealTheme.warning
         case "avoid":
-            return SafeEatTheme.danger
+            return SafeMealTheme.danger
         default:
-            return SafeEatTheme.textSecondary
+            return SafeMealTheme.textSecondary
         }
     }
 
     static func haloUIColor(_ level: String?) -> UIColor {
         switch level {
         case "recommended":
-            return SafeEatTheme.successUIColor
+            return SafeMealTheme.successUIColor
         case "moderate":
-            return SafeEatTheme.primaryUIColor
+            return SafeMealTheme.primaryUIColor
         case "caution":
-            return SafeEatTheme.warningUIColor
+            return SafeMealTheme.warningUIColor
         case "avoid":
-            return SafeEatTheme.dangerUIColor
+            return SafeMealTheme.dangerUIColor
         default:
             return .white
         }
@@ -425,15 +425,15 @@ enum AdviceLevelMapper {
     static func compactTitle(_ level: String?) -> String {
         switch level {
         case "recommended":
-            return SafeEatL10n.text(L10nKey.Advice.compactRecommended)
+            return SafeMealL10n.text(L10nKey.Advice.compactRecommended)
         case "moderate":
-            return SafeEatL10n.text(L10nKey.Advice.compactModerate)
+            return SafeMealL10n.text(L10nKey.Advice.compactModerate)
         case "caution":
-            return SafeEatL10n.text(L10nKey.Advice.compactCaution)
+            return SafeMealL10n.text(L10nKey.Advice.compactCaution)
         case "avoid":
-            return SafeEatL10n.text(L10nKey.Advice.compactAvoid)
+            return SafeMealL10n.text(L10nKey.Advice.compactAvoid)
         default:
-            return SafeEatL10n.text(L10nKey.Advice.compactEvaluate)
+            return SafeMealL10n.text(L10nKey.Advice.compactEvaluate)
         }
     }
 
@@ -444,26 +444,26 @@ enum AdviceLevelMapper {
 
         switch level {
         case "recommended":
-            return SafeEatL10n.text(L10nKey.Advice.summaryRecommended)
+            return SafeMealL10n.text(L10nKey.Advice.summaryRecommended)
         case "moderate":
-            return SafeEatL10n.text(L10nKey.Advice.summaryModerate)
+            return SafeMealL10n.text(L10nKey.Advice.summaryModerate)
         case "caution":
-            return SafeEatL10n.text(L10nKey.Advice.summaryCaution)
+            return SafeMealL10n.text(L10nKey.Advice.summaryCaution)
         case "avoid":
-            return SafeEatL10n.text(L10nKey.Advice.summaryAvoid)
+            return SafeMealL10n.text(L10nKey.Advice.summaryAvoid)
         default:
-            return SafeEatL10n.text(L10nKey.Advice.summaryEvaluate)
+            return SafeMealL10n.text(L10nKey.Advice.summaryEvaluate)
         }
     }
 }
 
 enum StickerTextFormatter {
     static func score(_ value: Int) -> String {
-        SafeEatL10n.format(L10nKey.Common.scoreUnitFormat, value)
+        SafeMealL10n.format(L10nKey.Common.scoreUnitFormat, value)
     }
 
     static func adviceScore(level: String?, score: Int) -> String {
-        SafeEatL10n.format(
+        SafeMealL10n.format(
             L10nKey.Common.adviceScoreFormat,
             AdviceLevelMapper.compactTitle(level),
             score
@@ -486,10 +486,10 @@ private enum StickerPalette {
     static let paperIconLight = Color(red: 228.0 / 255.0, green: 228.0 / 255.0, blue: 228.0 / 255.0)
     static let paperBackgroundDark = Color(red: 30.0 / 255.0, green: 30.0 / 255.0, blue: 30.0 / 255.0)
     static let paperIconDark = Color(red: 68.0 / 255.0, green: 68.0 / 255.0, blue: 68.0 / 255.0)
-    static let loaderIconLight = SafeEatTheme.primary
-    static let loaderIconDark = SafeEatTheme.accent
-    static let labelText = SafeEatTheme.textPrimary
-    static let subtleText = SafeEatTheme.textSecondary
+    static let loaderIconLight = SafeMealTheme.primary
+    static let loaderIconDark = SafeMealTheme.accent
+    static let labelText = SafeMealTheme.textPrimary
+    static let subtleText = SafeMealTheme.textSecondary
 }
 
 struct StickerPaperBackground: View {
@@ -536,7 +536,7 @@ struct StickerPaperBackground: View {
     }
 }
 
-struct SafeEatDottedRecordBackground: View {
+struct SafeMealDottedRecordBackground: View {
     @Environment(\.colorScheme) private var colorScheme
 
     private let dotSpacing: CGFloat = 18
@@ -560,7 +560,7 @@ struct SafeEatDottedRecordBackground: View {
 
             RadialGradient(
                 colors: [
-                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.16 : 0.42),
+                    SafeMealTheme.primarySoft.opacity(colorScheme == .dark ? 0.16 : 0.42),
                     Color.clear,
                 ],
                 center: .topLeading,
@@ -591,7 +591,7 @@ struct SafeEatDottedRecordBackground: View {
     }
 }
 
-struct SafeEatLoadingOverlay: View {
+struct SafeMealLoadingOverlay: View {
     @Environment(\.colorScheme) private var colorScheme
 
     let phase: RecognitionPhase
@@ -604,10 +604,10 @@ struct SafeEatLoadingOverlay: View {
     @State private var tipIndex: Int = 0
 
     private let tips: [(title: String, content: String)] = [
-        (SafeEatL10n.text(L10nKey.RecognitionPhase.tip), SafeEatL10n.text(L10nKey.RecognitionPhase.tipContent1)),
-        (SafeEatL10n.text(L10nKey.RecognitionPhase.tip), SafeEatL10n.text(L10nKey.RecognitionPhase.tipContent2)),
-        (SafeEatL10n.text(L10nKey.RecognitionPhase.tip), SafeEatL10n.text(L10nKey.RecognitionPhase.tipContent3)),
-        (SafeEatL10n.text(L10nKey.RecognitionPhase.tip), SafeEatL10n.text(L10nKey.RecognitionPhase.tipContent4)),
+        (SafeMealL10n.text(L10nKey.RecognitionPhase.tip), SafeMealL10n.text(L10nKey.RecognitionPhase.tipContent1)),
+        (SafeMealL10n.text(L10nKey.RecognitionPhase.tip), SafeMealL10n.text(L10nKey.RecognitionPhase.tipContent2)),
+        (SafeMealL10n.text(L10nKey.RecognitionPhase.tip), SafeMealL10n.text(L10nKey.RecognitionPhase.tipContent3)),
+        (SafeMealL10n.text(L10nKey.RecognitionPhase.tip), SafeMealL10n.text(L10nKey.RecognitionPhase.tipContent4)),
     ]
 
     // 标题跑马灯
@@ -620,7 +620,7 @@ struct SafeEatLoadingOverlay: View {
     @State private var expandedAiNames: Set<String> = []
 
     private var brandLabelColor: Color {
-        colorScheme == .dark ? Color(red: 0.67, green: 0.86, blue: 0.73) : SafeEatTheme.primaryDeep
+        colorScheme == .dark ? Color(red: 0.67, green: 0.86, blue: 0.73) : SafeMealTheme.primaryDeep
     }
 
     private var topPillFill: Color {
@@ -658,7 +658,7 @@ struct SafeEatLoadingOverlay: View {
     }
 
     private var panelStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.line
+        colorScheme == .dark ? Color.white.opacity(0.10) : SafeMealTheme.line
     }
 
     var body: some View {
@@ -681,8 +681,8 @@ struct SafeEatLoadingOverlay: View {
 
                 // 底部标签
                 HStack(spacing: 10) {
-                    footerPill(SafeEatL10n.text(L10nKey.Home.heroTagHealth))
-                    footerPill(SafeEatL10n.text(L10nKey.Home.heroTagHistory))
+                    footerPill(SafeMealL10n.text(L10nKey.Home.heroTagHealth))
+                    footerPill(SafeMealL10n.text(L10nKey.Home.heroTagHistory))
                 }
                 .padding(.top, 24)
                 .padding(.bottom, 60)
@@ -705,42 +705,42 @@ struct SafeEatLoadingOverlay: View {
         switch phase {
         case .identifying:
             panelContainer {
-                phaseTitle(SafeEatL10n.text(L10nKey.RecognitionPhase.identifying))
+                phaseTitle(SafeMealL10n.text(L10nKey.RecognitionPhase.identifying))
                 previewStage
             }
 
         case .selecting(let groups, let sessionId):
             panelContainer {
-                phaseTitle(SafeEatL10n.text(L10nKey.RecognitionPhase.selectTitle))
-                phaseSubtitle(SafeEatL10n.text(L10nKey.RecognitionPhase.selectSubtitle))
+                phaseTitle(SafeMealL10n.text(L10nKey.RecognitionPhase.selectTitle))
+                phaseSubtitle(SafeMealL10n.text(L10nKey.RecognitionPhase.selectSubtitle))
                 previewStageCompact
                 candidateList(groups: groups, sessionId: sessionId)
             }
 
         case .evaluating:
             panelContainer {
-                phaseTitle(SafeEatL10n.text(L10nKey.RecognitionPhase.evaluating))
-                phaseSubtitle(SafeEatL10n.text(L10nKey.RecognitionPhase.evaluatingSubtitle))
+                phaseTitle(SafeMealL10n.text(L10nKey.RecognitionPhase.evaluating))
+                phaseSubtitle(SafeMealL10n.text(L10nKey.RecognitionPhase.evaluatingSubtitle))
                 RecognitionRingAnimation()
             }
 
         case .nonFood:
             panelContainer {
-                phaseTitle(SafeEatL10n.text(L10nKey.RecognitionPhase.nonFoodTitle))
-                phaseSubtitle(SafeEatL10n.text(L10nKey.RecognitionPhase.nonFoodSubtitle))
+                phaseTitle(SafeMealL10n.text(L10nKey.RecognitionPhase.nonFoodTitle))
+                phaseSubtitle(SafeMealL10n.text(L10nKey.RecognitionPhase.nonFoodSubtitle))
                 previewStageCompact
                 Button {
                     onDismiss?()
                 } label: {
-                    Text(SafeEatL10n.text(L10nKey.Common.ok))
-                        .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
+                    Text(SafeMealL10n.text(L10nKey.Common.ok))
+                        .font(SafeMealFont.custom(16, relativeTo: .body, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(
                             RoundedRectangle(cornerRadius: 20, style: .continuous)
                                 .fill(LinearGradient(
-                                    colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                    colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 ))
@@ -779,7 +779,7 @@ struct SafeEatLoadingOverlay: View {
             RoundedRectangle(cornerRadius: 32, style: .continuous)
                 .stroke(panelStroke, lineWidth: 1)
         )
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.22 : 0.12), radius: 24, y: 16)
+        .shadow(color: SafeMealTheme.primaryDeep.opacity(colorScheme == .dark ? 0.22 : 0.12), radius: 24, y: 16)
         .padding(.horizontal, 20)
     }
 
@@ -792,8 +792,8 @@ struct SafeEatLoadingOverlay: View {
             loadingDot(index: 1)
 
             Text(text)
-                .font(SafeEatFont.custom(26, relativeTo: .title2, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(26, relativeTo: .title2, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
 
             // 右侧加载指示点
             loadingDot(index: 0)
@@ -803,7 +803,7 @@ struct SafeEatLoadingOverlay: View {
 
     private func loadingDot(index: Int) -> some View {
         Circle()
-            .fill(SafeEatTheme.primary)
+            .fill(SafeMealTheme.primary)
             .frame(width: 4, height: 4)
             .opacity(dotPhase == index ? 1.0 : 0.25)
             .animation(.easeInOut(duration: 0.3), value: dotPhase)
@@ -811,8 +811,8 @@ struct SafeEatLoadingOverlay: View {
 
     private func phaseSubtitle(_ text: String) -> some View {
         Text(text)
-            .font(SafeEatFont.textStyle(.subheadline))
-            .foregroundStyle(SafeEatTheme.textSecondary)
+            .font(SafeMealFont.textStyle(.subheadline))
+            .foregroundStyle(SafeMealTheme.textSecondary)
             .multilineTextAlignment(.center)
             .lineSpacing(2)
     }
@@ -826,13 +826,13 @@ struct SafeEatLoadingOverlay: View {
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: 220, maxHeight: 260)
-                    .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.24 : 0.12), radius: 18, y: 10)
+                    .shadow(color: SafeMealTheme.primaryDeep.opacity(colorScheme == .dark ? 0.24 : 0.12), radius: 18, y: 10)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 12)
             } else {
                 Image(systemName: "camera.viewfinder")
                     .font(.system(size: 54, weight: .medium))
-                    .foregroundStyle(SafeEatTheme.primary.opacity(0.68))
+                    .foregroundStyle(SafeMealTheme.primary.opacity(0.68))
             }
         }
         .frame(maxWidth: .infinity)
@@ -847,13 +847,13 @@ struct SafeEatLoadingOverlay: View {
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: 120, maxHeight: 120)
-                    .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.24 : 0.12), radius: 10, y: 6)
+                    .shadow(color: SafeMealTheme.primaryDeep.opacity(colorScheme == .dark ? 0.24 : 0.12), radius: 10, y: 6)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 6)
             } else {
                 Image(systemName: "camera.viewfinder")
                     .font(.system(size: 32, weight: .medium))
-                    .foregroundStyle(SafeEatTheme.primary.opacity(0.68))
+                    .foregroundStyle(SafeMealTheme.primary.opacity(0.68))
             }
         }
         .frame(maxWidth: .infinity)
@@ -927,7 +927,7 @@ struct SafeEatLoadingOverlay: View {
         return HStack(spacing: 14) {
             ZStack {
                 Circle()
-                    .stroke(SafeEatTheme.line, lineWidth: 3)
+                    .stroke(SafeMealTheme.line, lineWidth: 3)
                     .frame(width: 40, height: 40)
                 Circle()
                     .trim(from: 0, to: candidate.confidence)
@@ -938,20 +938,20 @@ struct SafeEatLoadingOverlay: View {
                     .frame(width: 40, height: 40)
                     .rotationEffect(.degrees(-90))
                 Text("\(percent)%")
-                    .font(SafeEatFont.custom(11, relativeTo: .caption2, weight: .semibold))
-                    .foregroundColor(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(11, relativeTo: .caption2, weight: .semibold))
+                    .foregroundColor(SafeMealTheme.textPrimary)
             }
 
             Text(candidate.name)
-                .font(SafeEatFont.textStyle(.body))
-                .foregroundColor(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.textStyle(.body))
+                .foregroundColor(SafeMealTheme.textPrimary)
 
             Spacer()
 
             if expandable {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(SafeEatTheme.textSecondary)
+                    .foregroundColor(SafeMealTheme.textSecondary)
                     .rotationEffect(.degrees(isExpanded ? 90 : 0))
             }
         }
@@ -963,7 +963,7 @@ struct SafeEatLoadingOverlay: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(SafeEatTheme.line, lineWidth: 1)
+                .stroke(SafeMealTheme.line, lineWidth: 1)
         )
     }
 
@@ -974,18 +974,18 @@ struct SafeEatLoadingOverlay: View {
             HStack(spacing: 14) {
                 Image(systemName: "fork.knife")
                     .font(.system(size: 16))
-                    .foregroundColor(SafeEatTheme.primary)
+                    .foregroundColor(SafeMealTheme.primary)
                     .frame(width: 40, height: 40)
 
                 Text(match.canonicalName)
-                    .font(SafeEatFont.textStyle(.body))
-                    .foregroundColor(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.textStyle(.body))
+                    .foregroundColor(SafeMealTheme.textPrimary)
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(SafeEatTheme.textSecondary)
+                    .foregroundColor(SafeMealTheme.textSecondary)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
@@ -995,16 +995,16 @@ struct SafeEatLoadingOverlay: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(SafeEatTheme.line, lineWidth: 1)
+                    .stroke(SafeMealTheme.line, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
     }
 
     private func confidenceColor(_ confidence: Double) -> Color {
-        if confidence >= 0.8 { return SafeEatTheme.success }
-        if confidence >= 0.5 { return SafeEatTheme.warning }
-        return SafeEatTheme.danger
+        if confidence >= 0.8 { return SafeMealTheme.success }
+        if confidence >= 0.5 { return SafeMealTheme.warning }
+        return SafeMealTheme.danger
     }
 
     // MARK: - 识别小贴士
@@ -1020,15 +1020,15 @@ struct SafeEatLoadingOverlay: View {
             HStack(spacing: 10) {
                 Image(systemName: "lightbulb.fill")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.warning)
+                    .foregroundStyle(SafeMealTheme.warning)
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(current.title)
-                        .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
                     Text(current.content)
-                        .font(SafeEatFont.custom(13, relativeTo: .caption))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.custom(13, relativeTo: .caption))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                         .id(tipIndex)
                         .transition(.opacity)
                 }
@@ -1037,17 +1037,17 @@ struct SafeEatLoadingOverlay: View {
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.5))
+                    .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.5))
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(SafeEatTheme.warning.opacity(colorScheme == .dark ? 0.08 : 0.06))
+                    .fill(SafeMealTheme.warning.opacity(colorScheme == .dark ? 0.08 : 0.06))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(SafeEatTheme.warning.opacity(0.2), lineWidth: 1)
+                    .stroke(SafeMealTheme.warning.opacity(0.2), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -1057,11 +1057,11 @@ struct SafeEatLoadingOverlay: View {
 
     private var loadingBackground: some View {
         ZStack {
-            SafeEatMainGradientBackground()
+            SafeMealMainGradientBackground()
 
             RadialGradient(
                 colors: [
-                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.16 : 0.34),
+                    SafeMealTheme.primarySoft.opacity(colorScheme == .dark ? 0.16 : 0.34),
                     Color.clear,
                 ],
                 center: .topLeading,
@@ -1069,7 +1069,7 @@ struct SafeEatLoadingOverlay: View {
                 endRadius: 360
             )
 
-            SafeEatDottedRecordBackground()
+            SafeMealDottedRecordBackground()
                 .opacity(colorScheme == .dark ? 0.26 : 0.38)
 
             LinearGradient(
@@ -1087,16 +1087,16 @@ struct SafeEatLoadingOverlay: View {
     private var brandPill: some View {
         HStack(spacing: 8) {
             Circle()
-                .fill(SafeEatTheme.primary.opacity(0.22))
+                .fill(SafeMealTheme.primary.opacity(0.22))
                 .frame(width: 22, height: 22)
                 .overlay(
                     Circle()
-                        .fill(SafeEatTheme.primary)
+                        .fill(SafeMealTheme.primary)
                         .frame(width: 8, height: 8)
                 )
 
-            Text(SafeEatL10n.text(L10nKey.Home.brandPill))
-                .font(SafeEatFont.custom(16, relativeTo: .headline))
+            Text(SafeMealL10n.text(L10nKey.Home.brandPill))
+                .font(SafeMealFont.custom(16, relativeTo: .headline))
                 .foregroundStyle(brandLabelColor)
         }
         .padding(.horizontal, 14)
@@ -1113,7 +1113,7 @@ struct SafeEatLoadingOverlay: View {
 
     private func footerPill(_ text: String) -> some View {
         Text(text)
-            .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+            .font(SafeMealFont.custom(15, relativeTo: .subheadline))
             .foregroundStyle(brandLabelColor)
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
@@ -1243,8 +1243,8 @@ struct RecognitionStickerThumbnailView: View {
 
             VStack(spacing: 7) {
                 Text(displayTitle)
-                    .font(SafeEatFont.custom(17, relativeTo: .headline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(17, relativeTo: .headline, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .frame(maxWidth: labelMaxWidth)
@@ -1252,7 +1252,7 @@ struct RecognitionStickerThumbnailView: View {
                 HStack(spacing: 8) {
                     ForEach(Array(metaTags.prefix(2).enumerated()), id: \.offset) { index, tag in
                         Text(tag)
-                            .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                            .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
                             .foregroundStyle(metaTextColor(for: index, text: tag))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
@@ -1275,10 +1275,10 @@ struct RecognitionStickerThumbnailView: View {
             VStack(spacing: 6) {
                 StickerTextBubble(
                     text: displayTitle,
-                    font: SafeEatFont.custom(17, relativeTo: .headline, weight: .bold),
+                    font: SafeMealFont.custom(17, relativeTo: .headline, weight: .bold),
                     maxWidth: labelMaxWidth,
                     lineLimit: 2,
-                    textColor: SafeEatTheme.primaryDeep,
+                    textColor: SafeMealTheme.primaryDeep,
                     horizontalPadding: 12,
                     verticalPadding: 5
                 )
@@ -1288,7 +1288,7 @@ struct RecognitionStickerThumbnailView: View {
                         ForEach(Array(metaTags.prefix(2).enumerated()), id: \.offset) { index, tag in
                             StickerTextBubble(
                                 text: tag,
-                                font: SafeEatFont.custom(12, relativeTo: .caption, weight: .bold),
+                                font: SafeMealFont.custom(12, relativeTo: .caption, weight: .bold),
                                 maxWidth: nil,
                                 lineLimit: 1,
                                 textColor: metaBubbleTextColor(for: index, text: tag),
@@ -1327,7 +1327,7 @@ struct RecognitionStickerThumbnailView: View {
 
     private var displayTitle: String {
         let trimmed = titleText.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? SafeEatL10n.text(L10nKey.Common.unnamed) : trimmed
+        return trimmed.isEmpty ? SafeMealL10n.text(L10nKey.Common.unnamed) : trimmed
     }
 
     private var metaTags: [String] {
@@ -1359,31 +1359,31 @@ struct RecognitionStickerThumbnailView: View {
     }
 
     private var cardStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line
     }
 
     private func metaTextColor(for index: Int, text: String) -> Color {
         if StickerTextFormatter.isScoreTag(text) {
-            return SafeEatTheme.warning
+            return SafeMealTheme.warning
         }
-        return index == 0 ? SafeEatTheme.primaryDeep : SafeEatTheme.textSecondary
+        return index == 0 ? SafeMealTheme.primaryDeep : SafeMealTheme.textSecondary
     }
 
     private func metaBackgroundColor(for index: Int, text: String) -> Color {
         if StickerTextFormatter.isScoreTag(text) {
-            return SafeEatTheme.warning.opacity(colorScheme == .dark ? 0.20 : 0.14)
+            return SafeMealTheme.warning.opacity(colorScheme == .dark ? 0.20 : 0.14)
         }
         if index == 0 {
-            return SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.22 : 0.78)
+            return SafeMealTheme.primarySoft.opacity(colorScheme == .dark ? 0.22 : 0.78)
         }
         return colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05)
     }
 
     private func metaBubbleTextColor(for index: Int, text: String) -> Color {
         if StickerTextFormatter.isScoreTag(text) {
-            return SafeEatTheme.warning
+            return SafeMealTheme.warning
         }
-        return index == 0 ? SafeEatTheme.primaryDeep : SafeEatTheme.textSecondary
+        return index == 0 ? SafeMealTheme.primaryDeep : SafeMealTheme.textSecondary
     }
 }
 
@@ -1419,8 +1419,8 @@ struct RecognitionStickerExpandedView: View {
             )
 
             StickerTextBubble(
-                text: SafeEatL10n.text(L10nKey.Sticker.swipeHint),
-                font: SafeEatFont.custom(12, relativeTo: .caption),
+                text: SafeMealL10n.text(L10nKey.Sticker.swipeHint),
+                font: SafeMealFont.custom(12, relativeTo: .caption),
                 maxWidth: width * 0.58,
                 lineLimit: 1,
                 textColor: StickerPalette.subtleText
@@ -1432,15 +1432,15 @@ struct RecognitionStickerExpandedView: View {
     private func backSide(width: CGFloat, height: CGFloat) -> some View {
         VStack(spacing: 10) {
             StickerTextBubble(
-                text: SafeEatL10n.text(L10nKey.Sticker.resultTitle),
-                font: SafeEatFont.custom(13, relativeTo: .footnote),
+                text: SafeMealL10n.text(L10nKey.Sticker.resultTitle),
+                font: SafeMealFont.custom(13, relativeTo: .footnote),
                 maxWidth: width * 0.44,
                 lineLimit: 1
             )
 
             StickerTextBubble(
                 text: item.recognizedName,
-                font: SafeEatFont.custom(20, relativeTo: .title3),
+                font: SafeMealFont.custom(20, relativeTo: .title3),
                 maxWidth: width * 0.82,
                 lineLimit: 3
             )
@@ -1448,7 +1448,7 @@ struct RecognitionStickerExpandedView: View {
             HStack(spacing: 10) {
                 StickerTextBubble(
                     text: StickerTextFormatter.score(item.foodScore),
-                    font: SafeEatFont.custom(12, relativeTo: .caption),
+                    font: SafeMealFont.custom(12, relativeTo: .caption),
                     maxWidth: width * 0.28,
                     lineLimit: 1,
                     textColor: StickerPalette.subtleText
@@ -1456,7 +1456,7 @@ struct RecognitionStickerExpandedView: View {
 
                 StickerTextBubble(
                     text: AdviceLevelMapper.compactTitle(item.adviceLevel),
-                    font: SafeEatFont.custom(12, relativeTo: .caption),
+                    font: SafeMealFont.custom(12, relativeTo: .caption),
                     maxWidth: width * 0.32,
                     lineLimit: 1,
                     textColor: StickerPalette.subtleText
@@ -1465,7 +1465,7 @@ struct RecognitionStickerExpandedView: View {
 
             StickerTextBubble(
                 text: item.createdAt.historyTimestampText,
-                font: SafeEatFont.custom(11, relativeTo: .caption2),
+                font: SafeMealFont.custom(11, relativeTo: .caption2),
                 maxWidth: width * 0.72,
                 lineLimit: 1,
                 textColor: StickerPalette.subtleText
@@ -1473,7 +1473,7 @@ struct RecognitionStickerExpandedView: View {
 
             StickerTextBubble(
                 text: AdviceLevelMapper.menuSummary(level: item.adviceLevel, adviceText: item.adviceText),
-                font: SafeEatFont.custom(12, relativeTo: .caption),
+                font: SafeMealFont.custom(12, relativeTo: .caption),
                 maxWidth: width * 0.84,
                 lineLimit: 5
             )

@@ -1,4 +1,4 @@
-"brand.app_name" = "食安安";
+"brand.app_name" = "食必安";
 "brand.slogan" = "每一口，都更安心";
 "brand.slogan_en" = "Every bite, a safer choice.";
 
@@ -44,15 +44,15 @@
 "reminder.on" = "已开启";
 "reminder.off" = "已关闭";
 "reminder.system_denied" = "系统未授权";
-"reminder.enable_failed" = "未开启系统通知，请先在系统设置里允许食安安发送提醒。";
+"reminder.enable_failed" = "未开启系统通知，请先在系统设置里允许食必安发送提醒。";
 "reminder.denied_title" = "无法开启提醒";
 "reminder.denied_body" = "推送通知权限已被关闭，需要前往「设置」中重新开启才能使用提醒功能。";
 "reminder.denied_open_settings" = "去设置";
 "reminder.enabled" = "已开启提醒。";
 "reminder.disabled" = "已关闭提醒。";
-"reminder.entry_subtitle" = "把每天的回看时间交给食安安来提醒。";
+"reminder.entry_subtitle" = "把每天的回看时间交给食必安来提醒。";
 "reminder.sheet.title" = "提醒设置";
-"reminder.sheet.subtitle" = "设置提醒开始日期和时间，食安安会按你的节奏推送每日回看提醒。";
+"reminder.sheet.subtitle" = "设置提醒开始日期和时间，食必安会按你的节奏推送每日回看提醒。";
 "reminder.sheet.toggle" = "开启通知提醒";
 "reminder.sheet.time_label" = "提醒时间";
 "reminder.sheet.save" = "保存设置";
@@ -60,7 +60,7 @@
 "reminder.option.tomorrow" = "明天";
 "reminder.summary.format" = "%@ %@";
 "reminder.notification.title" = "今晚记得回看今天的饮食记录";
-"reminder.notification.body" = "食安安已经整理好今天的识别记录，回来看看吧。";
+"reminder.notification.body" = "食必安已经整理好今天的识别记录，回来看看吧。";
 "reminder.notification.title_today" = "今天的饮食记录待回看";
 "reminder.notification.body_today" = "点击查看今日食用表现详情";
 "reminder.notification.title_yesterday" = "昨天的饮食记录待回看";
@@ -126,14 +126,14 @@
 "profile.system.updates" = "检查更新";
 "profile.system.updates.subtitle" = "当前固定提示为最新版本";
 "profile.service.group_title" = "关于与支持";
-"profile.about.title" = "关于食安安";
-"profile.about.subtitle" = "了解食安安在做什么";
-"profile.rate.title" = "给食安安一个好评";
+"profile.about.title" = "关于食必安";
+"profile.about.subtitle" = "了解食必安在做什么";
+"profile.rate.title" = "给食必安一个好评";
 "profile.rate.subtitle" = "如果它帮到了你，欢迎支持我们";
 "profile.logout" = "退出登录";
 "profile.bmi" = "BMI";
 
-"profile.edit.subtitle.long" = "完善头像与基础资料，食安安会同步更新你的个人信息。";
+"profile.edit.subtitle.long" = "完善头像与基础资料，食必安会同步更新你的个人信息。";
 "profile.edit.avatar" = "头像";
 "profile.edit.avatar_hint" = "选择一张清晰头像，上传前会自动压缩到 300KB 以内。";
 "profile.edit.choose_photo" = "从相册选择";
@@ -154,10 +154,10 @@
 "profile.edit.tdee_label" = "TDEE";
 "profile.edit.tdee_unit" = "kcal/天";
 
-"profile.preference.subtitle.long" = "告诉食安安你的健康方向和训练目标，让建议更贴近你的日常习惯。";
+"profile.preference.subtitle.long" = "告诉食必安你的健康方向和训练目标，让建议更贴近你的日常习惯。";
 "profile.preference.health_tags" = "健康标签";
 "profile.preference.fitness_goal" = "健身目标";
-"profile.preference.health_tags_hint" = "可多选，食安安会优先按这些方向理解饮食风险。";
+"profile.preference.health_tags_hint" = "可多选，食必安会优先按这些方向理解饮食风险。";
 "profile.preference.fitness_goal_hint" = "选择一个当前最关注的目标，便于给出更贴近的建议。";
 
 "profile.language.title" = "系统语言";
@@ -237,10 +237,10 @@
 "profile.update.latest" = "已是最新版本。";
 "profile.update.check_action" = "前往 App Store 检查更新";
 
-"profile.about.page_title" = "关于食安安";
-"profile.about.page_subtitle" = "食安安面向中文用户提供更轻量的食物识别、饮食建议与本地记录能力。";
-"profile.about.app_name" = "食安安";
-"profile.about.intro" = "食安安面向中文用户提供更轻量的食物识别、饮食建议与本地记录能力。";
+"profile.about.page_title" = "关于食必安";
+"profile.about.page_subtitle" = "食必安面向中文用户提供更轻量的食物识别、饮食建议与本地记录能力。";
+"profile.about.app_name" = "食必安";
+"profile.about.intro" = "食必安面向中文用户提供更轻量的食物识别、饮食建议与本地记录能力。";
 "profile.about.section_title" = "我们在做什么";
 "profile.about.section_body" = "1. 拍照识别食物\n2. 结合健康方向给出推荐 / 谨慎 / 避免建议\n3. 把识别结果沉淀到日 / 周 / 月记录里";
 "profile.about.disclosure_section" = "协议与证照";
@@ -248,7 +248,7 @@
 "profile.about.privacy_policy" = "隐私政策";
 "profile.about.value_added" = "增值服务协议";
 "profile.about.certificate" = "证照展示";
-"profile.about.copyright" = "© 2026 廖彩霞";
+"profile.about.copyright" = "© 2026 郑海军";
 "profile.about.icp_record" = "粤ICP备2026115172号-2A";
 
 "profile.not_logged_in.title" = "需要登录";
@@ -286,7 +286,7 @@
 "membership.purchase.subtitle" = "查看套餐、选择支付方式，并创建待支付订单。";
 "membership.purchase.notice_title" = "购买提示";
 "membership.purchase.promo" = "新用户专享";
-"membership.purchase.hero_title" = "升级食安安会员";
+"membership.purchase.hero_title" = "升级食必安会员";
 "membership.purchase.hero_body" = "解锁更多识别次数与稳定的长期饮食记录。本阶段会创建真实待支付订单，但不拉起第三方支付。";
 "membership.purchase.current_tier" = "当前身份";
 "membership.purchase.recommended_plan" = "推荐方案";
@@ -393,7 +393,7 @@
 "membership.purchase.bonus.separator" = "，";
 
 "home.title" = "主页";
-"home.brand_pill" = "食安安";
+"home.brand_pill" = "食必安";
 "home.promo.tag" = "新用户专享";
 "home.promo.value" = "29 元立减至 20 元";
 "home.hero.tag.health" = "三高预警";
@@ -406,12 +406,12 @@
 "home.recent.empty_title" = "还没有本地记录";
 "home.recent.empty_message" = "先开始一次扫描，识别结果会自动保存在本地菜单历史里。";
 "home.loading.title" = "正在识别";
-"home.loading.subtitle" = "食安安正在分析白框内的主体，请稍候。";
+"home.loading.subtitle" = "食必安正在分析白框内的主体，请稍候。";
 "home.camera.permission_title" = "需要相机权限才能直接拍照识别";
 "home.camera.permission_body" = "请在系统设置中打开相机权限后再试。";
 "home.camera.open_settings" = "打开设置";
 "home.camera.guide" = "请将主体放置于框线内";
-"home.camera.title" = "食安安 AI 相机";
+"home.camera.title" = "食必安 AI 相机";
 "home.camera.bottom_hint" = "对准食物拍照识别";
 "home.camera.flash_on" = "闪光灯已开启";
 "home.camera.flash_off" = "闪光灯已关闭";
@@ -592,7 +592,7 @@
 "result.score.logic_title" = "分数逻辑";
 "result.score.logic_format" = "健康评分 %d";
 "result.score.logic_hint" = "点击查看评分说明与计算逻辑";
-"result.medical_disclaimer" = "食安安提供的是日常饮食辅助建议，不替代医院诊断、医生处方或专业营养干预。若你有高血压、高血脂、高血糖、肾病、妊娠或其他特殊健康情况，请以正规医院和专业医生建议为准。";
+"result.medical_disclaimer" = "食必安提供的是日常饮食辅助建议，不替代医院诊断、医生处方或专业营养干预。若你有高血压、高血脂、高血糖、肾病、妊娠或其他特殊健康情况，请以正规医院和专业医生建议为准。";
 "result.ai_disclaimer.link" = "阅读《AI免责声明》";
 "result.metric.calories" = "热量";
 "result.metric.protein" = "蛋白质";
@@ -754,9 +754,9 @@
 "common.continue" = "继续";
 "common.back" = "返回";
 
-"auth.onboarding.eyebrow" = "食安安";
+"auth.onboarding.eyebrow" = "食必安";
 "auth.onboarding.title" = "拍一张，更快判断这顿适不适合你。";
-"auth.onboarding.body" = "围绕控糖、控压、控脂和健身饮食管理，食安安会在更短时间里帮你看清风险、给出更稳妥的吃法。";
+"auth.onboarding.body" = "围绕控糖、控压、控脂和健身饮食管理，食必安会在更短时间里帮你看清风险、给出更稳妥的吃法。";
 "auth.onboarding.card.one" = "拍照识别常见餐食，先看结论。";
 "auth.onboarding.card.two" = "风险和营养分析一次看明白。";
 "auth.onboarding.card.three" = "记录历史，持续建立自己的饮食偏好。";
@@ -769,7 +769,7 @@
 "auth.code.title" = "验证码登录";
 "auth.code.subtitle" = "收一条验证码就能快速登录，适合首次使用或临时换机。";
 "auth.register.title" = "创建账号";
-"auth.register.subtitle" = "用手机号设置登录密码，后续就能更快进入食安安。";
+"auth.register.subtitle" = "用手机号设置登录密码，后续就能更快进入食必安。";
 "auth.bind.title" = "绑定手机号";
 "auth.bind.subtitle" = "Apple 登录已完成，还需要绑定手机号，后续登录和找回都会更方便。";
 "auth.field.phone" = "手机号";
@@ -793,7 +793,7 @@
 "auth.login_prompt.feature_format" = "「%@」需要登录后才能使用";
 "auth.login_prompt.later" = "稍后再说";
 "auth.or_divider" = "或";
-"auth.new_user.welcome_title" = "欢迎加入食安安！";
+"auth.new_user.welcome_title" = "欢迎加入食必安！";
 "auth.new_user.welcome_message" = "请设置密码以保护您的账户安全";
 "auth.new_user.set_password" = "去设置密码";
 "auth.password_login.error_title" = "登录失败";
@@ -821,7 +821,7 @@
 "home.trial_prompt.later_action" = "稍后再说";
 "home.trial_prompt.success_message" = "体验会员已激活，畅享3天 Premium！";
 
-"home.welcome.title" = "欢迎使用 SafeEat";
+"home.welcome.title" = "欢迎使用 SafeMeal";
 "home.welcome.subtitle" = "让每一口都安心";
 "home.welcome.app_name" = "食品安全助手";
 "home.welcome.app_tagline" = "拍照即可检测食品成分安全性";
@@ -1006,7 +1006,7 @@
 "recognition_phase.select_title" = "请选择";
 "recognition_phase.select_subtitle" = "请选择最匹配的识别结果";
 "recognition_phase.evaluating" = "正在智评";
-"recognition_phase.evaluating_subtitle" = "食安安正在综合评估营养与安全风险";
+"recognition_phase.evaluating_subtitle" = "食必安正在综合评估营养与安全风险";
 "recognition_phase.tag_identify" = "智能识别";
 "recognition_phase.tag_identify_detail" = "精准检测食物主体";
 "recognition_phase.tag_nutrition" = "营养分析";
@@ -1100,7 +1100,7 @@
 "auth.contact.email" = "客服邮箱";
 "auth.contact_support.subtitle" = "点击联系方式可复制到剪贴板";
 "auth.contact.copied" = "已复制到剪贴板";
-"auth.contact.default_email" = "bizeaselink_SE@163.com";
+"auth.contact.default_email" = "bel_safemeal@163.com";
 "auth.terms.not_agreed" = "请先同意用户协议和隐私政策";
 "auth.set_password.title" = "设置密码";
 "auth.set_password.subtitle" = "设置密码以保护您的账户安全";

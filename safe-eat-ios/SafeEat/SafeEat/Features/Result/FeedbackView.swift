@@ -24,12 +24,12 @@ struct FeedbackView: View {
     @State private var showSuccess = false
     @State private var submitError: String?
     @State private var nutritionRows: [NutritionEditRow] = []
-    @State private var feedbackMeta: SafeEatAPI.FeedbackMeta?
+    @State private var feedbackMeta: SafeMealAPI.FeedbackMeta?
 
     private var displayName: String {
         let rawName = recognition.recognizedName.trimmingCharacters(in: .whitespacesAndNewlines)
         if rawName.isEmpty || rawName == "未知食物" {
-            return SafeEatL10n.text(L10nKey.Common.unknownFood)
+            return SafeMealL10n.text(L10nKey.Common.unknownFood)
         }
         return rawName
     }
@@ -55,7 +55,7 @@ struct FeedbackView: View {
             return !trimmed.isEmpty
                 && trimmed != displayName
                 && trimmed != trimmedProposedName
-                && trimmed != SafeEatL10n.text(L10nKey.Common.unknownFood)
+                && trimmed != SafeMealL10n.text(L10nKey.Common.unknownFood)
         }
         return Array(filtered.prefix(3))
     }
@@ -67,7 +67,7 @@ struct FeedbackView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 22) {
-                        SafeEatGlobalScrollOffsetReader(
+                        SafeMealGlobalScrollOffsetReader(
                             scrollOffset: $scrollOffset
                         )
                         .id(recognition.id)
@@ -91,8 +91,8 @@ struct FeedbackView: View {
 
                         if let submitError {
                             Text(submitError)
-                                .font(SafeEatFont.custom(14, relativeTo: .footnote))
-                                .foregroundStyle(SafeEatTheme.danger)
+                                .font(SafeMealFont.custom(14, relativeTo: .footnote))
+                                .foregroundStyle(SafeMealTheme.danger)
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .transition(.opacity)
                         }
@@ -106,8 +106,8 @@ struct FeedbackView: View {
                     .padding(.bottom, 12)
                 }
 
-                SafeEatTopBackChrome(
-                    title: SafeEatL10n.text(L10nKey.Feedback.title),
+                SafeMealTopBackChrome(
+                    title: SafeMealL10n.text(L10nKey.Feedback.title),
                     scrollOffset: scrollOffset,
                     topInset: proxy.safeAreaInsets.top,
                     onBack: { dismiss() }
@@ -159,20 +159,20 @@ struct FeedbackView: View {
                 comment = String(newValue.prefix(200))
             }
         }
-        .confirmationDialog(SafeEatL10n.text(L10nKey.Feedback.replaceEvidenceTitle), isPresented: $showSourceDialog, titleVisibility: .visible) {
+        .confirmationDialog(SafeMealL10n.text(L10nKey.Feedback.replaceEvidenceTitle), isPresented: $showSourceDialog, titleVisibility: .visible) {
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                Button(SafeEatL10n.text(L10nKey.Feedback.sourceCamera)) {
+                Button(SafeMealL10n.text(L10nKey.Feedback.sourceCamera)) {
                     pickerSource = .camera
                     showImagePicker = true
                 }
             }
 
-            Button(SafeEatL10n.text(L10nKey.Feedback.sourceLibrary)) {
+            Button(SafeMealL10n.text(L10nKey.Feedback.sourceLibrary)) {
                 pickerSource = .photoLibrary
                 showImagePicker = true
             }
 
-            Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+            Button(SafeMealL10n.text(L10nKey.Common.cancel), role: .cancel) {}
         }
         .sheet(isPresented: $showImagePicker) {
             ImagePicker(sourceType: pickerSource) { image in
@@ -199,7 +199,7 @@ struct FeedbackView: View {
 
             RadialGradient(
                 colors: [
-                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.15 : 0.52),
+                    SafeMealTheme.primarySoft.opacity(colorScheme == .dark ? 0.15 : 0.52),
                     Color.clear,
                 ],
                 center: .topLeading,
@@ -220,26 +220,26 @@ struct FeedbackView: View {
     }
 
     private var statusTag: some View {
-        Text(SafeEatL10n.text(L10nKey.Feedback.status))
-            .font(SafeEatFont.custom(14, relativeTo: .footnote, weight: .bold))
-            .foregroundStyle(SafeEatTheme.warning)
+        Text(SafeMealL10n.text(L10nKey.Feedback.status))
+            .font(SafeMealFont.custom(14, relativeTo: .footnote, weight: .bold))
+            .foregroundStyle(SafeMealTheme.warning)
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
             .background(
                 Capsule()
-                    .fill(SafeEatTheme.warning.opacity(colorScheme == .dark ? 0.18 : 0.12))
+                    .fill(SafeMealTheme.warning.opacity(colorScheme == .dark ? 0.18 : 0.12))
             )
             .overlay(
                 Capsule()
-                    .stroke(SafeEatTheme.warning.opacity(colorScheme == .dark ? 0.26 : 0.18), lineWidth: 1)
+                    .stroke(SafeMealTheme.warning.opacity(colorScheme == .dark ? 0.26 : 0.18), lineWidth: 1)
             )
     }
 
     private var feedbackTypeSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(SafeEatL10n.text(L10nKey.Feedback.typeTitle))
-                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+            Text(SafeMealL10n.text(L10nKey.Feedback.typeTitle))
+                .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textSecondary)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
@@ -253,20 +253,20 @@ struct FeedbackView: View {
                             }
                         } label: {
                             Text(type.displayName)
-                                .font(SafeEatFont.custom(14, relativeTo: .footnote, weight: .bold))
-                                .foregroundStyle(isSelected ? .white : SafeEatTheme.primaryDeep)
+                                .font(SafeMealFont.custom(14, relativeTo: .footnote, weight: .bold))
+                                .foregroundStyle(isSelected ? .white : SafeMealTheme.primaryDeep)
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 10)
                                 .background(
                                     Capsule()
                                         .fill(isSelected
                                              ? AnyShapeStyle(LinearGradient(
-                                                colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                                colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                                                 startPoint: .leading,
                                                 endPoint: .trailing))
                                              : AnyShapeStyle(colorScheme == .dark
                                                 ? Color.white.opacity(0.08)
-                                                : SafeEatTheme.primarySoft.opacity(0.72)))
+                                                : SafeMealTheme.primarySoft.opacity(0.72)))
                                 )
                         }
                         .buttonStyle(.plain)
@@ -274,25 +274,25 @@ struct FeedbackView: View {
                 }
             }
 
-            Text(SafeEatL10n.text(L10nKey.Feedback.typeHint))
-                .font(SafeEatFont.custom(13, relativeTo: .caption))
-                .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.7))
+            Text(SafeMealL10n.text(L10nKey.Feedback.typeHint))
+                .font(SafeMealFont.custom(13, relativeTo: .caption))
+                .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.7))
         }
     }
 
     private var heroSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(SafeEatL10n.text(L10nKey.Feedback.heroTitle))
-                .font(SafeEatFont.custom(36, relativeTo: .largeTitle, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+            Text(SafeMealL10n.text(L10nKey.Feedback.heroTitle))
+                .font(SafeMealFont.custom(36, relativeTo: .largeTitle, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
 
-            Text(SafeEatL10n.text(L10nKey.Feedback.heroSubtitle))
-                .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
-                .foregroundStyle(SafeEatTheme.primary)
+            Text(SafeMealL10n.text(L10nKey.Feedback.heroSubtitle))
+                .font(SafeMealFont.custom(34, relativeTo: .largeTitle, weight: .bold))
+                .foregroundStyle(SafeMealTheme.primary)
 
-            Text(SafeEatL10n.text(L10nKey.Feedback.heroBody))
-                .font(SafeEatFont.custom(17, relativeTo: .body))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+            Text(SafeMealL10n.text(L10nKey.Feedback.heroBody))
+                .font(SafeMealFont.custom(17, relativeTo: .body))
+                .foregroundStyle(SafeMealTheme.textSecondary)
         }
     }
 
@@ -304,7 +304,7 @@ struct FeedbackView: View {
                 Spacer()
                 Image(systemName: "arrow.down")
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .foregroundStyle(SafeMealTheme.textSecondary)
                     .frame(width: 36, height: 36)
                     .background(
                         Circle()
@@ -354,42 +354,42 @@ struct FeedbackView: View {
     private func localizedLabel(for key: String) -> String {
         let L = L10nKey.Feedback.self
         switch key {
-        case "calories": return SafeEatL10n.text(L.nutritionCalories)
-        case "protein": return SafeEatL10n.text(L.nutritionProtein)
-        case "fat": return SafeEatL10n.text(L.nutritionFat)
-        case "saturatedFat": return SafeEatL10n.text(L.nutritionSaturatedFat)
-        case "transFat": return SafeEatL10n.text(L.nutritionTransFat)
-        case "carbohydrates": return SafeEatL10n.text(L.nutritionCarbohydrates)
-        case "dietaryFiber": return SafeEatL10n.text(L.nutritionDietaryFiber)
-        case "cholesterol": return SafeEatL10n.text(L.nutritionCholesterol)
-        case "sodium": return SafeEatL10n.text(L.nutritionSodium)
-        case "vitaminA": return SafeEatL10n.text(L.nutritionVitaminA)
-        case "thiamin": return SafeEatL10n.text(L.nutritionThiamin)
-        case "riboflavin": return SafeEatL10n.text(L.nutritionRiboflavin)
-        case "niacin": return SafeEatL10n.text(L.nutritionNiacin)
-        case "pantothenicAcid": return SafeEatL10n.text(L.nutritionPantothenicAcid)
-        case "vitaminB6": return SafeEatL10n.text(L.nutritionVitaminB6)
-        case "vitaminB12": return SafeEatL10n.text(L.nutritionVitaminB12)
-        case "vitaminC": return SafeEatL10n.text(L.nutritionVitaminC)
-        case "vitaminD": return SafeEatL10n.text(L.nutritionVitaminD)
-        case "vitaminE": return SafeEatL10n.text(L.nutritionVitaminE)
-        case "vitaminK": return SafeEatL10n.text(L.nutritionVitaminK)
-        case "folate": return SafeEatL10n.text(L.nutritionFolate)
-        case "biotin": return SafeEatL10n.text(L.nutritionBiotin)
-        case "choline": return SafeEatL10n.text(L.nutritionCholine)
-        case "calcium": return SafeEatL10n.text(L.nutritionCalcium)
-        case "iron": return SafeEatL10n.text(L.nutritionIron)
-        case "magnesium": return SafeEatL10n.text(L.nutritionMagnesium)
-        case "phosphorus": return SafeEatL10n.text(L.nutritionPhosphorus)
-        case "potassium": return SafeEatL10n.text(L.nutritionPotassium)
-        case "zinc": return SafeEatL10n.text(L.nutritionZinc)
-        case "selenium": return SafeEatL10n.text(L.nutritionSelenium)
-        case "iodine": return SafeEatL10n.text(L.nutritionIodine)
-        case "copper": return SafeEatL10n.text(L.nutritionCopper)
-        case "manganese": return SafeEatL10n.text(L.nutritionManganese)
-        case "glycemicIndex": return SafeEatL10n.text(L.nutritionGlycemicIndex)
-        case "glycemicLoad": return SafeEatL10n.text(L.nutritionGlycemicLoad)
-        case "contains": return SafeEatL10n.text(L.nutritionAllergens)
+        case "calories": return SafeMealL10n.text(L.nutritionCalories)
+        case "protein": return SafeMealL10n.text(L.nutritionProtein)
+        case "fat": return SafeMealL10n.text(L.nutritionFat)
+        case "saturatedFat": return SafeMealL10n.text(L.nutritionSaturatedFat)
+        case "transFat": return SafeMealL10n.text(L.nutritionTransFat)
+        case "carbohydrates": return SafeMealL10n.text(L.nutritionCarbohydrates)
+        case "dietaryFiber": return SafeMealL10n.text(L.nutritionDietaryFiber)
+        case "cholesterol": return SafeMealL10n.text(L.nutritionCholesterol)
+        case "sodium": return SafeMealL10n.text(L.nutritionSodium)
+        case "vitaminA": return SafeMealL10n.text(L.nutritionVitaminA)
+        case "thiamin": return SafeMealL10n.text(L.nutritionThiamin)
+        case "riboflavin": return SafeMealL10n.text(L.nutritionRiboflavin)
+        case "niacin": return SafeMealL10n.text(L.nutritionNiacin)
+        case "pantothenicAcid": return SafeMealL10n.text(L.nutritionPantothenicAcid)
+        case "vitaminB6": return SafeMealL10n.text(L.nutritionVitaminB6)
+        case "vitaminB12": return SafeMealL10n.text(L.nutritionVitaminB12)
+        case "vitaminC": return SafeMealL10n.text(L.nutritionVitaminC)
+        case "vitaminD": return SafeMealL10n.text(L.nutritionVitaminD)
+        case "vitaminE": return SafeMealL10n.text(L.nutritionVitaminE)
+        case "vitaminK": return SafeMealL10n.text(L.nutritionVitaminK)
+        case "folate": return SafeMealL10n.text(L.nutritionFolate)
+        case "biotin": return SafeMealL10n.text(L.nutritionBiotin)
+        case "choline": return SafeMealL10n.text(L.nutritionCholine)
+        case "calcium": return SafeMealL10n.text(L.nutritionCalcium)
+        case "iron": return SafeMealL10n.text(L.nutritionIron)
+        case "magnesium": return SafeMealL10n.text(L.nutritionMagnesium)
+        case "phosphorus": return SafeMealL10n.text(L.nutritionPhosphorus)
+        case "potassium": return SafeMealL10n.text(L.nutritionPotassium)
+        case "zinc": return SafeMealL10n.text(L.nutritionZinc)
+        case "selenium": return SafeMealL10n.text(L.nutritionSelenium)
+        case "iodine": return SafeMealL10n.text(L.nutritionIodine)
+        case "copper": return SafeMealL10n.text(L.nutritionCopper)
+        case "manganese": return SafeMealL10n.text(L.nutritionManganese)
+        case "glycemicIndex": return SafeMealL10n.text(L.nutritionGlycemicIndex)
+        case "glycemicLoad": return SafeMealL10n.text(L.nutritionGlycemicLoad)
+        case "contains": return SafeMealL10n.text(L.nutritionAllergens)
         default: return key
         }
     }
@@ -398,13 +398,13 @@ struct FeedbackView: View {
     private func sectionTitle(for section: String) -> String {
         let R = L10nKey.Result.self
         switch section {
-        case "s1": return SafeEatL10n.text(R.sectionMacronutrients)
-        case "s2": return SafeEatL10n.text(R.sectionDetailedNutrients)
-        case "s3": return SafeEatL10n.text(R.sectionVitamins)
-        case "s4": return SafeEatL10n.text(R.sectionMinerals)
-        case "s6": return SafeEatL10n.text(R.sectionGlycemic)
-        case "s7": return SafeEatL10n.text(R.allergenTitle)
-        case "s8": return SafeEatL10n.text(R.sectionDietary)
+        case "s1": return SafeMealL10n.text(R.sectionMacronutrients)
+        case "s2": return SafeMealL10n.text(R.sectionDetailedNutrients)
+        case "s3": return SafeMealL10n.text(R.sectionVitamins)
+        case "s4": return SafeMealL10n.text(R.sectionMinerals)
+        case "s6": return SafeMealL10n.text(R.sectionGlycemic)
+        case "s7": return SafeMealL10n.text(R.allergenTitle)
+        case "s8": return SafeMealL10n.text(R.sectionDietary)
         default: return section
         }
     }
@@ -473,7 +473,7 @@ struct FeedbackView: View {
                     let joined = arr.map { "\($0)" }.joined(separator: "、")
                     out.append(NutritionFieldItem(section: sectionKey(forPath: newPath), path: newPath, label: displayLabel(forPath: newPath, leafKey: key), before: joined, kind: .text, unit: nil))
                 } else if let flag = value as? Bool {
-                    out.append(NutritionFieldItem(section: sectionKey(forPath: newPath), path: newPath, label: displayLabel(forPath: newPath, leafKey: key), before: flag ? SafeEatL10n.text(L10nKey.Feedback.nutritionYes) : SafeEatL10n.text(L10nKey.Feedback.nutritionNo), kind: .boolean, unit: nil))
+                    out.append(NutritionFieldItem(section: sectionKey(forPath: newPath), path: newPath, label: displayLabel(forPath: newPath, leafKey: key), before: flag ? SafeMealL10n.text(L10nKey.Feedback.nutritionYes) : SafeMealL10n.text(L10nKey.Feedback.nutritionNo), kind: .boolean, unit: nil))
                 } else if let num = value as? Double {
                     // 值字段：带单位（读兄弟 unit）
                     let unit = obj["unit"] as? String ?? ""
@@ -498,21 +498,21 @@ struct FeedbackView: View {
             let dietaryInfo = tree["dietaryInfo"] as? [String: Any] ?? [:]
             for item in dietaryTags {
                 let cur = dietaryInfo[item.key] as? Bool
-                let beforeText = cur.map { $0 ? SafeEatL10n.text(L10nKey.Feedback.nutritionYes) : SafeEatL10n.text(L10nKey.Feedback.nutritionNo) } ?? "—"
+                let beforeText = cur.map { $0 ? SafeMealL10n.text(L10nKey.Feedback.nutritionYes) : SafeMealL10n.text(L10nKey.Feedback.nutritionNo) } ?? "—"
                 out.append(NutritionFieldItem(section: "s8", path: ["dietaryInfo", item.key], label: metaLabel(item), before: beforeText, kind: .boolean, unit: nil))
             }
         }
         if !allergenItems.isEmpty {
             let contains = (tree["allergens"] as? [String: Any])?["contains"] as? [Any] ?? []
             let beforeJoined = contains.map { "\($0)" }.joined(separator: "、")
-            out.append(NutritionFieldItem(section: "s7", path: ["allergens", "contains"], label: SafeEatL10n.text(L10nKey.Feedback.nutritionAllergens), before: beforeJoined, kind: .text, unit: nil))
+            out.append(NutritionFieldItem(section: "s7", path: ["allergens", "contains"], label: SafeMealL10n.text(L10nKey.Feedback.nutritionAllergens), before: beforeJoined, kind: .text, unit: nil))
         }
         return out
     }
 
     /// meta 项的双语标签（zh/en 按当前语言）
-    private func metaLabel(_ item: SafeEatAPI.FeedbackMetaItem) -> String {
-        let storedLang = UserDefaults.standard.string(forKey: "safeeat.settings.language")
+    private func metaLabel(_ item: SafeMealAPI.FeedbackMetaItem) -> String {
+        let storedLang = UserDefaults.standard.string(forKey: "safemeal.settings.language")
         switch storedLang {
         case "en": return item.en
         default: return item.zh
@@ -546,7 +546,7 @@ struct FeedbackView: View {
     }
 
     /// 兜底过敏原（与 ingredient_allergen_rules 标准 key 一致；双语标签）
-    private var fallbackAllergens: [SafeEatAPI.FeedbackMetaItem] {
+    private var fallbackAllergens: [SafeMealAPI.FeedbackMetaItem] {
         let pairs: [(String, String, String)] = [
             ("milk", "Milk", "牛奶"), ("eggs", "Eggs", "鸡蛋"), ("fish", "Fish", "鱼"),
             ("crustaceans", "Crustaceans", "甲壳类"), ("molluscs", "Molluscs", "贝类"),
@@ -554,24 +554,24 @@ struct FeedbackView: View {
             ("soybeans", "Soybeans", "大豆"), ("wheat", "Wheat/Gluten", "含小麦/麸质"),
             ("gluten", "Gluten", "麸质"), ("sesame", "Sesame", "芝麻"),
         ]
-        return pairs.map { SafeEatAPI.FeedbackMetaItem(key: $0.0, en: $0.1, zh: $0.2) }
+        return pairs.map { SafeMealAPI.FeedbackMetaItem(key: $0.0, en: $0.1, zh: $0.2) }
     }
 
     /// 兜底饮食标签（与 ingredient_dietary_rules 标准 key 一致；双语标签）
-    private var fallbackDietaryTags: [SafeEatAPI.FeedbackMetaItem] {
+    private var fallbackDietaryTags: [SafeMealAPI.FeedbackMetaItem] {
         let L = L10nKey.Feedback.self
         let keys: [(String, String, String)] = [
-            ("isVegetarian", "Vegetarian", SafeEatL10n.text(L.nutritionDietVegetarian)),
-            ("isVegan", "Vegan", SafeEatL10n.text(L.nutritionDietVegan)),
-            ("isGlutenFree", "Gluten-Free", SafeEatL10n.text(L.nutritionDietGlutenFree)),
-            ("isLactoseFree", "Lactose-Free", SafeEatL10n.text(L.nutritionDietLactoseFree)),
-            ("isHalal", "Halal", SafeEatL10n.text(L.nutritionDietHalal)),
-            ("isBuddhistStrict", "Buddhist", SafeEatL10n.text(L.nutritionDietBuddhist)),
-            ("isDairyFree", "Dairy-Free", SafeEatL10n.text(L.nutritionDietDairyFree)),
-            ("isNutFree", "Nut-Free", SafeEatL10n.text(L.nutritionDietNutFree)),
-            ("isLowFodmap", "Low-FODMAP", SafeEatL10n.text(L.nutritionDietLowFodmap)),
+            ("isVegetarian", "Vegetarian", SafeMealL10n.text(L.nutritionDietVegetarian)),
+            ("isVegan", "Vegan", SafeMealL10n.text(L.nutritionDietVegan)),
+            ("isGlutenFree", "Gluten-Free", SafeMealL10n.text(L.nutritionDietGlutenFree)),
+            ("isLactoseFree", "Lactose-Free", SafeMealL10n.text(L.nutritionDietLactoseFree)),
+            ("isHalal", "Halal", SafeMealL10n.text(L.nutritionDietHalal)),
+            ("isBuddhistStrict", "Buddhist", SafeMealL10n.text(L.nutritionDietBuddhist)),
+            ("isDairyFree", "Dairy-Free", SafeMealL10n.text(L.nutritionDietDairyFree)),
+            ("isNutFree", "Nut-Free", SafeMealL10n.text(L.nutritionDietNutFree)),
+            ("isLowFodmap", "Low-FODMAP", SafeMealL10n.text(L.nutritionDietLowFodmap)),
         ]
-        return keys.map { SafeEatAPI.FeedbackMetaItem(key: $0.0, en: $0.1, zh: $0.2) }
+        return keys.map { SafeMealAPI.FeedbackMetaItem(key: $0.0, en: $0.1, zh: $0.2) }
     }
 
     private func isAllergenEditRow(_ row: NutritionEditRow) -> Bool {
@@ -622,35 +622,35 @@ struct FeedbackView: View {
                     Image(systemName: "plus.circle.fill")
                     Text("选择要修改的营养项")
                 }
-                .font(SafeEatFont.custom(14, relativeTo: .footnote, weight: .bold))
-                .foregroundStyle(SafeEatTheme.primaryDeep)
+                .font(SafeMealFont.custom(14, relativeTo: .footnote, weight: .bold))
+                .foregroundStyle(SafeMealTheme.primaryDeep)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(
                     Capsule()
-                        .fill(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.primarySoft.opacity(0.72))
+                        .fill(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.primarySoft.opacity(0.72))
                 )
             }
 
             if nutritionRows.isEmpty {
                 Text("尚未选择修改项；选择后在下方填写修改后内容，可多选一起提交。")
-                    .font(SafeEatFont.custom(14, relativeTo: .footnote))
-                    .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.75))
+                    .font(SafeMealFont.custom(14, relativeTo: .footnote))
+                    .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.75))
             }
 
             ForEach($nutritionRows) { $row in
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text(row.label)
-                            .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
+                            .font(SafeMealFont.custom(16, relativeTo: .body, weight: .bold))
+                            .foregroundStyle(SafeMealTheme.textPrimary)
                         Spacer()
                         Button {
                             nutritionRows.removeAll { $0.id == row.id }
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 18))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                         .buttonStyle(.plain)
                     }
@@ -659,16 +659,16 @@ struct FeedbackView: View {
                     HStack(alignment: .top, spacing: 10) {
                         // 改前胶囊（只读，删除线原值）
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(SafeEatL10n.text(L10nKey.Feedback.nutritionBefore))
-                                .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                            Text(SafeMealL10n.text(L10nKey.Feedback.nutritionBefore))
+                                .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                             Text(isAllergenEditRow(row)
                                  ? row.beforeText.split(separator: "、").map { allergenLabel(for: String($0)) }.joined(separator: "、")
                                  : row.beforeText)
-                                .font(SafeEatFont.custom(14, relativeTo: .footnote, weight: .semibold))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                                .font(SafeMealFont.custom(14, relativeTo: .footnote, weight: .semibold))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                                 .lineLimit(2)
-                                .strikethrough(true, color: SafeEatTheme.textSecondary)
+                                .strikethrough(true, color: SafeMealTheme.textSecondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .padding(.horizontal, 12)
@@ -677,22 +677,22 @@ struct FeedbackView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(colorScheme == .dark ? Color.white.opacity(0.05) : SafeEatTheme.primarySoft.opacity(0.5))
+                                .fill(colorScheme == .dark ? Color.white.opacity(0.05) : SafeMealTheme.primarySoft.opacity(0.5))
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .stroke(SafeEatTheme.line, lineWidth: 1)
+                                .stroke(SafeMealTheme.line, lineWidth: 1)
                         )
 
                         // 改后胶囊（可输入）
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(SafeEatL10n.text(L10nKey.Feedback.nutritionAfter))
-                                .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                            Text(SafeMealL10n.text(L10nKey.Feedback.nutritionAfter))
+                                .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                             if row.kind == .boolean {
                                 Picker("", selection: $row.afterText) {
-                                    Text(SafeEatL10n.text(L10nKey.Feedback.nutritionYes)).tag("true")
-                                    Text(SafeEatL10n.text(L10nKey.Feedback.nutritionNo)).tag("false")
+                                    Text(SafeMealL10n.text(L10nKey.Feedback.nutritionYes)).tag("true")
+                                    Text(SafeMealL10n.text(L10nKey.Feedback.nutritionNo)).tag("false")
                                 }
                                 .pickerStyle(.segmented)
                                 .frame(maxWidth: .infinity)
@@ -705,21 +705,21 @@ struct FeedbackView: View {
                                             toggleAllergen($row, key: key)
                                         } label: {
                                             Text(allergenLabel(for: key))
-                                                .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .semibold))
+                                                .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .semibold))
                                                 .lineLimit(1)
-                                                .foregroundStyle(isSelected ? .white : SafeEatTheme.primaryDeep)
+                                                .foregroundStyle(isSelected ? .white : SafeMealTheme.primaryDeep)
                                                 .padding(.horizontal, 10)
                                                 .padding(.vertical, 6)
                                                 .frame(maxWidth: .infinity)
                                                 .background(
                                                     Capsule()
                                                         .fill(isSelected
-                                                              ? AnyShapeStyle(SafeEatTheme.primary)
-                                                              : AnyShapeStyle(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.primarySoft.opacity(0.72)))
+                                                              ? AnyShapeStyle(SafeMealTheme.primary)
+                                                              : AnyShapeStyle(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.primarySoft.opacity(0.72)))
                                                 )
                                                 .overlay(
                                                     Capsule()
-                                                        .stroke(isSelected ? AnyShapeStyle(SafeEatTheme.primary) : AnyShapeStyle(SafeEatTheme.line), lineWidth: 1)
+                                                        .stroke(isSelected ? AnyShapeStyle(SafeMealTheme.primary) : AnyShapeStyle(SafeMealTheme.line), lineWidth: 1)
                                                 )
                                         }
                                         .buttonStyle(.plain)
@@ -728,21 +728,21 @@ struct FeedbackView: View {
                             } else if row.kind == .number {
                                 // 数值项：只输数字，单位固定右侧只读（跟随原值）
                                 HStack(spacing: 6) {
-                                    TextField(SafeEatL10n.text(L10nKey.Feedback.nutritionAfterNumberPlaceholder), text: $row.afterText)
+                                    TextField(SafeMealL10n.text(L10nKey.Feedback.nutritionAfterNumberPlaceholder), text: $row.afterText)
                                         .keyboardType(.decimalPad)
-                                        .font(SafeEatFont.custom(16, relativeTo: .body, weight: .semibold))
-                                        .foregroundStyle(SafeEatTheme.textPrimary)
+                                        .font(SafeMealFont.custom(16, relativeTo: .body, weight: .semibold))
+                                        .foregroundStyle(SafeMealTheme.textPrimary)
                                     if let unit = row.unit, !unit.isEmpty {
                                         Text(unit)
-                                            .font(SafeEatFont.custom(13, relativeTo: .footnote))
-                                            .foregroundStyle(SafeEatTheme.textSecondary)
+                                            .font(SafeMealFont.custom(13, relativeTo: .footnote))
+                                            .foregroundStyle(SafeMealTheme.textSecondary)
                                             .fixedSize()
                                     }
                                 }
                             } else {
-                                TextField(SafeEatL10n.text(L10nKey.Feedback.nutritionAfterTextPlaceholder), text: $row.afterText)
-                                    .font(SafeEatFont.custom(16, relativeTo: .body, weight: .semibold))
-                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                                TextField(SafeMealL10n.text(L10nKey.Feedback.nutritionAfterTextPlaceholder), text: $row.afterText)
+                                    .font(SafeMealFont.custom(16, relativeTo: .body, weight: .semibold))
+                                    .foregroundStyle(SafeMealTheme.textPrimary)
                             }
                         }
                         .padding(.horizontal, 12)
@@ -755,7 +755,7 @@ struct FeedbackView: View {
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .stroke(SafeEatTheme.line, lineWidth: 1)
+                                .stroke(SafeMealTheme.line, lineWidth: 1)
                         )
                     }
                 }
@@ -763,7 +763,7 @@ struct FeedbackView: View {
                 .background(fieldFill)
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.line, lineWidth: 1)
+                        .stroke(colorScheme == .dark ? Color.white.opacity(0.10) : SafeMealTheme.line, lineWidth: 1)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
@@ -778,7 +778,7 @@ struct FeedbackView: View {
     private var currentRecognitionCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                badge(title: SafeEatL10n.text(L10nKey.Feedback.badgeCurrent), emphasized: false)
+                badge(title: SafeMealL10n.text(L10nKey.Feedback.badgeCurrent), emphasized: false)
                 Spacer()
 
                 Button {
@@ -786,7 +786,7 @@ struct FeedbackView: View {
                 } label: {
                     Image(systemName: "photo.on.rectangle.angled")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                         .frame(width: 28, height: 28)
                         .background(
                             Circle()
@@ -808,7 +808,7 @@ struct FeedbackView: View {
                         .overlay {
                             Image(systemName: "photo")
                                 .font(.system(size: 26))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                 }
             }
@@ -816,8 +816,8 @@ struct FeedbackView: View {
             .frame(height: 120)
 
             Text(displayName)
-                .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -835,7 +835,7 @@ struct FeedbackView: View {
 
     private var correctionCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            badge(title: SafeEatL10n.text(L10nKey.Feedback.badgeCorrect), emphasized: true)
+            badge(title: SafeMealL10n.text(L10nKey.Feedback.badgeCorrect), emphasized: true)
 
             HStack(spacing: 10) {
                 // 当前识别名称（固定位第一个，可点选回填）
@@ -848,15 +848,15 @@ struct FeedbackView: View {
                         Image(systemName: "clock.arrow.circlepath")
                             .font(.system(size: 13, weight: .semibold))
                         Text(displayName)
-                            .font(SafeEatFont.custom(14, relativeTo: .footnote, weight: .bold))
+                            .font(SafeMealFont.custom(14, relativeTo: .footnote, weight: .bold))
                             .lineLimit(1)
                     }
-                    .foregroundStyle(SafeEatTheme.primaryDeep)
+                    .foregroundStyle(SafeMealTheme.primaryDeep)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
                     .background(
                         Capsule()
-                            .fill(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.primarySoft.opacity(0.72))
+                            .fill(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.primarySoft.opacity(0.72))
                     )
                 }
                 .buttonStyle(.plain)
@@ -883,7 +883,7 @@ struct FeedbackView: View {
                         .background(
                             Circle()
                                 .fill(LinearGradient(
-                                    colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                    colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 ))
@@ -896,10 +896,10 @@ struct FeedbackView: View {
             }
 
             HStack(spacing: 10) {
-                TextField(SafeEatL10n.text(L10nKey.Feedback.inputPlaceholder), text: $proposedName)
+                TextField(SafeMealL10n.text(L10nKey.Feedback.inputPlaceholder), text: $proposedName)
                     .focused($isNameFieldFocused)
-                    .font(SafeEatFont.custom(18, relativeTo: .body, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(18, relativeTo: .body, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .onChange(of: proposedName) { _, _ in
@@ -913,7 +913,7 @@ struct FeedbackView: View {
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 18))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                     }
                     .buttonStyle(.plain)
                 }
@@ -923,15 +923,15 @@ struct FeedbackView: View {
             .background(fieldFill)
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.line, lineWidth: 1)
+                    .stroke(colorScheme == .dark ? Color.white.opacity(0.10) : SafeMealTheme.line, lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
             // 搜索结果（别名类型不显示：只能手动输入）
             if showNameSearch && !suggestionCandidates.isEmpty {
-                Text(SafeEatL10n.text(L10nKey.Feedback.suggestionsTitle))
-                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                Text(SafeMealL10n.text(L10nKey.Feedback.suggestionsTitle))
+                    .font(SafeMealFont.custom(15, relativeTo: .subheadline))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
 
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 10) {
                     ForEach(suggestionCandidates, id: \.self) { suggestion in
@@ -941,14 +941,14 @@ struct FeedbackView: View {
                             isNameFieldFocused = false
                         } label: {
                             Text(suggestion)
-                                .font(SafeEatFont.custom(14, relativeTo: .footnote, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.primaryDeep)
+                                .font(SafeMealFont.custom(14, relativeTo: .footnote, weight: .bold))
+                                .foregroundStyle(SafeMealTheme.primaryDeep)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 10)
                                 .background(
                                     Capsule()
-                                        .fill(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.primarySoft.opacity(0.72))
+                                        .fill(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.primarySoft.opacity(0.72))
                                 )
                         }
                         .buttonStyle(.plain)
@@ -983,9 +983,9 @@ struct FeedbackView: View {
 
     private var commentSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(SafeEatL10n.text(L10nKey.Feedback.noteTitle))
-                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+            Text(SafeMealL10n.text(L10nKey.Feedback.noteTitle))
+                .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textSecondary)
 
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
@@ -993,9 +993,9 @@ struct FeedbackView: View {
                     .overlay(cardStroke(cornerRadius: 24))
 
                 if comment.isEmpty {
-                    Text(SafeEatL10n.text(L10nKey.Feedback.notePlaceholder))
-                        .font(SafeEatFont.custom(16, relativeTo: .body))
-                        .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.6))
+                    Text(SafeMealL10n.text(L10nKey.Feedback.notePlaceholder))
+                        .font(SafeMealFont.custom(16, relativeTo: .body))
+                        .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.6))
                         .padding(.horizontal, 16)
                         .padding(.top, 14)
                         .allowsHitTesting(false)
@@ -1003,8 +1003,8 @@ struct FeedbackView: View {
 
                 TextEditor(text: $comment)
                     .focused($isCommentFocused)
-                    .font(SafeEatFont.custom(18, relativeTo: .body))
-                    .foregroundColor(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(18, relativeTo: .body))
+                    .foregroundColor(SafeMealTheme.textPrimary)
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 132)
                     .padding(.horizontal, 10)
@@ -1015,8 +1015,8 @@ struct FeedbackView: View {
                     HStack {
                         Spacer()
                         Text("\(comment.count)/200")
-                            .font(SafeEatFont.custom(12, relativeTo: .caption))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .font(SafeMealFont.custom(12, relativeTo: .caption))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                             .padding(.trailing, 16)
                             .padding(.bottom, 14)
                     }
@@ -1030,14 +1030,14 @@ struct FeedbackView: View {
         HStack(spacing: 10) {
             Image(systemName: "shield.checkmark")
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(SafeEatTheme.primary)
+                .foregroundStyle(SafeMealTheme.primary)
             VStack(alignment: .leading, spacing: 2) {
-                Text(SafeEatL10n.text(L10nKey.Feedback.auditTitle))
-                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-                Text(SafeEatL10n.text(L10nKey.Feedback.auditBody))
-                    .font(SafeEatFont.custom(13, relativeTo: .caption))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                Text(SafeMealL10n.text(L10nKey.Feedback.auditTitle))
+                    .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
+                Text(SafeMealL10n.text(L10nKey.Feedback.auditBody))
+                    .font(SafeMealFont.custom(13, relativeTo: .caption))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
         }
         .padding(14)
@@ -1059,8 +1059,8 @@ struct FeedbackView: View {
                         .tint(.white)
                         .frame(maxWidth: .infinity)
                 } else {
-                    Text(SafeEatL10n.text(L10nKey.Feedback.submit))
-                        .font(SafeEatFont.custom(22, relativeTo: .headline, weight: .bold))
+                    Text(SafeMealL10n.text(L10nKey.Feedback.submit))
+                        .font(SafeMealFont.custom(22, relativeTo: .headline, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                 }
@@ -1070,13 +1070,13 @@ struct FeedbackView: View {
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                            colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
                     )
             )
-            .shadow(color: SafeEatTheme.primaryDeep.opacity(0.16), radius: 16, y: 10)
+            .shadow(color: SafeMealTheme.primaryDeep.opacity(0.16), radius: 16, y: 10)
         }
         .buttonStyle(.plain)
         .disabled(!canSubmit)
@@ -1087,18 +1087,18 @@ struct FeedbackView: View {
         HStack(spacing: 8) {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: 18, weight: .semibold))
-            Text(SafeEatL10n.text(L10nKey.Feedback.thanks))
-                .font(SafeEatFont.custom(16, relativeTo: .footnote))
+            Text(SafeMealL10n.text(L10nKey.Feedback.thanks))
+                .font(SafeMealFont.custom(16, relativeTo: .footnote))
         }
-        .foregroundStyle(colorScheme == .dark ? Color(red: 0.73, green: 0.90, blue: 0.78) : SafeEatTheme.primary)
+        .foregroundStyle(colorScheme == .dark ? Color(red: 0.73, green: 0.90, blue: 0.78) : SafeMealTheme.primary)
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.top, 2)
     }
 
     private func badge(title: String, emphasized: Bool) -> some View {
         Text(title)
-            .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-            .foregroundStyle(emphasized ? Color.white : SafeEatTheme.primaryDeep)
+            .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: .bold))
+            .foregroundStyle(emphasized ? Color.white : SafeMealTheme.primaryDeep)
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
             .background(
@@ -1107,11 +1107,11 @@ struct FeedbackView: View {
                         emphasized
                             ? AnyShapeStyle(
                                 LinearGradient(
-                                    colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                    colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 ))
-                              : AnyShapeStyle(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.primarySoft.opacity(0.72))
+                              : AnyShapeStyle(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.primarySoft.opacity(0.72))
                     )
             )
     }
@@ -1126,7 +1126,7 @@ struct FeedbackView: View {
 
     private func cardStroke(cornerRadius: CGFloat) -> some View {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .stroke(colorScheme == .dark ? Color.white.opacity(0.10) : SafeEatTheme.line, lineWidth: 1)
+            .stroke(colorScheme == .dark ? Color.white.opacity(0.10) : SafeMealTheme.line, lineWidth: 1)
     }
 
     private func keyboardBottomSpacing(bottomInset: CGFloat) -> CGFloat {
@@ -1232,23 +1232,23 @@ struct FeedbackView: View {
             VStack(spacing: 18) {
                 ZStack {
                     Circle()
-                        .fill(SafeEatTheme.success.opacity(colorScheme == .dark ? 0.22 : 0.14))
+                        .fill(SafeMealTheme.success.opacity(colorScheme == .dark ? 0.22 : 0.14))
                         .frame(width: 108, height: 108)
                     Circle()
-                        .fill(SafeEatTheme.success)
+                        .fill(SafeMealTheme.success)
                         .frame(width: 78, height: 78)
                     Image(systemName: "checkmark")
                         .font(.system(size: 38, weight: .bold))
                         .foregroundStyle(.white)
                 }
 
-                Text(SafeEatL10n.text(L10nKey.Feedback.successTitle))
-                    .font(SafeEatFont.custom(24, relativeTo: .title2, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                Text(SafeMealL10n.text(L10nKey.Feedback.successTitle))
+                    .font(SafeMealFont.custom(24, relativeTo: .title2, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
 
-                Text(SafeEatL10n.text(L10nKey.Feedback.successSubtitle))
-                    .font(SafeEatFont.custom(15, relativeTo: .callout))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                Text(SafeMealL10n.text(L10nKey.Feedback.successSubtitle))
+                    .font(SafeMealFont.custom(15, relativeTo: .callout))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
             }
@@ -1289,7 +1289,7 @@ struct FeedbackView: View {
             print("[Feedback] 后端请求失败: \(error)")
             #endif
             // 提交失败留在本页并给内联错误，用户可直接重试
-            submitError = SafeEatL10n.text(L10nKey.Feedback.submitFailed)
+            submitError = SafeMealL10n.text(L10nKey.Feedback.submitFailed)
         }
     }
 }

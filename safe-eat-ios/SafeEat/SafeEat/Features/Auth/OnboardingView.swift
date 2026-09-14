@@ -22,7 +22,7 @@ struct OnboardingView: View {
                         Spacer()
                         skipButton
                     }
-                    .padding(.top, SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
+                    .padding(.top, SafeMealSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
                     .padding(.horizontal, 22)
 
                     TabView(selection: $currentPage) {
@@ -60,9 +60,9 @@ struct OnboardingView: View {
         Button {
             store.completeOnboarding(allowsGuestHome: true)
         } label: {
-            Text(SafeEatL10n.text(L10nKey.Onboarding.skip))
-                .font(SafeEatFont.custom(14, relativeTo: .body, weight: .semibold))
-                .foregroundStyle(SafeEatTheme.primaryDeep)
+            Text(SafeMealL10n.text(L10nKey.Onboarding.skip))
+                .font(SafeMealFont.custom(14, relativeTo: .body, weight: .semibold))
+                .foregroundStyle(SafeMealTheme.primaryDeep)
                 .frame(minWidth: 72)
                 .padding(.horizontal, 18)
                 .padding(.vertical, 10)
@@ -76,7 +76,7 @@ struct OnboardingView: View {
                 )
                 .overlay(
                     Capsule()
-                        .stroke(SafeEatTheme.line.opacity(0.95), lineWidth: 1)
+                        .stroke(SafeMealTheme.line.opacity(0.95), lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -115,16 +115,16 @@ struct OnboardingView: View {
             )
 
             VStack(spacing: 14) {
-                Text(SafeEatL10n.text(page.titleKey))
-                    .font(SafeEatFont.custom(28, relativeTo: .largeTitle, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.primaryDeep)
+                Text(SafeMealL10n.text(page.titleKey))
+                    .font(SafeMealFont.custom(28, relativeTo: .largeTitle, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.primaryDeep)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 28)
 
-                Text(SafeEatL10n.text(page.bodyKey))
-                    .font(SafeEatFont.custom(16, relativeTo: .body, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                Text(SafeMealL10n.text(page.bodyKey))
+                    .font(SafeMealFont.custom(16, relativeTo: .body, weight: .semibold))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(5)
                     .fixedSize(horizontal: false, vertical: true)
@@ -139,7 +139,7 @@ struct OnboardingView: View {
         HStack(spacing: 10) {
             ForEach(0..<pages.count, id: \.self) { index in
                 Capsule()
-                    .fill(currentPage == index ? SafeEatTheme.primary : SafeEatTheme.textSecondary.opacity(0.18))
+                    .fill(currentPage == index ? SafeMealTheme.primary : SafeMealTheme.textSecondary.opacity(0.18))
                     .frame(width: currentPage == index ? 30 : 10, height: 10)
             }
         }
@@ -149,8 +149,8 @@ struct OnboardingView: View {
         Button {
             store.completeOnboarding(allowsGuestHome: true)
         } label: {
-            Text(SafeEatL10n.text(L10nKey.Onboarding.start))
-                .font(SafeEatFont.custom(19, relativeTo: .headline, weight: .bold))
+            Text(SafeMealL10n.text(L10nKey.Onboarding.start))
+                .font(SafeMealFont.custom(19, relativeTo: .headline, weight: .bold))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 58)
@@ -158,7 +158,7 @@ struct OnboardingView: View {
                     RoundedRectangle(cornerRadius: 28, style: .continuous)
                         .fill(
                             LinearGradient(
-                                colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -168,7 +168,7 @@ struct OnboardingView: View {
                     RoundedRectangle(cornerRadius: 28, style: .continuous)
                         .stroke(Color.white.opacity(0.28), lineWidth: 1)
                 )
-                .shadow(color: SafeEatTheme.primaryDeep.opacity(0.20), radius: 22, y: 12)
+                .shadow(color: SafeMealTheme.primaryDeep.opacity(0.20), radius: 22, y: 12)
         }
         .buttonStyle(.plain)
         .transition(.move(edge: .bottom).combined(with: .opacity))

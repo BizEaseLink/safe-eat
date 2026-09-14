@@ -187,7 +187,7 @@ enum L10nKey {
         static let contactEmail = "auth.contact.email"
         static let contactSupportSubtitle = "auth.contact_support.subtitle"
         static let contactCopied = "auth.contact.copied"
-        static let contactDefaultEmail = "bizeaselink_SE@163.com"
+        static let contactDefaultEmail = "bel_safemeal@163.com"
         static let termsNotAgreed = "auth.terms.not_agreed"
         static let setPasswordTitle = "auth.set_password.title"
         static let setPasswordSubtitle = "auth.set_password.subtitle"
@@ -1178,9 +1178,9 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var displayName: String {
         switch self {
         case .zhHans:
-            return SafeEatL10n.text(L10nKey.Language.optionChinese)
+            return SafeMealL10n.text(L10nKey.Language.optionChinese)
         case .en:
-            return SafeEatL10n.text(L10nKey.Language.optionEnglish)
+            return SafeMealL10n.text(L10nKey.Language.optionEnglish)
         }
     }
 
@@ -1198,15 +1198,15 @@ enum ReminderStartDay: Int, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .today:
-            return SafeEatL10n.text(L10nKey.Reminder.optionToday)
+            return SafeMealL10n.text(L10nKey.Reminder.optionToday)
         case .tomorrow:
-            return SafeEatL10n.text(L10nKey.Reminder.optionTomorrow)
+            return SafeMealL10n.text(L10nKey.Reminder.optionTomorrow)
         }
     }
 }
 
-enum SafeEatL10n {
-    private static let languageKey = "safeeat.settings.language"
+enum SafeMealL10n {
+    private static let languageKey = "safemeal.settings.language"
 
     static var isZh: Bool { currentLanguage == .zhHans }
 
@@ -1239,12 +1239,12 @@ enum SafeEatL10n {
     }
 }
 
-enum SafeEatHistoryL10n {
+enum SafeMealHistoryL10n {
     private static var currentDisplayLocale: Locale {
         currentLanguage.locale
     }
 
-    private static let languageKey = "safeeat.settings.language"
+    private static let languageKey = "safemeal.settings.language"
 
     private static var currentLanguage: AppLanguage {
         if let rawValue = UserDefaults.standard.string(forKey: languageKey),
@@ -1257,12 +1257,12 @@ enum SafeEatHistoryL10n {
     static func shortDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = currentDisplayLocale
-        formatter.dateFormat = SafeEatL10n.text(L10nKey.History.dateShortFormat)
+        formatter.dateFormat = SafeMealL10n.text(L10nKey.History.dateShortFormat)
         return formatter.string(from: date)
     }
 
     static func weekRange(start: Date, end: Date) -> String {
-        SafeEatL10n.format(
+        SafeMealL10n.format(
             L10nKey.History.weekRangeFormat,
             shortDate(start),
             shortDate(end)
@@ -1270,14 +1270,14 @@ enum SafeEatHistoryL10n {
     }
 
     static func recordCount(_ count: Int) -> String {
-        SafeEatL10n.format(
+        SafeMealL10n.format(
             count == 1 ? L10nKey.History.recordCountOne : L10nKey.History.recordCountOther,
             count
         )
     }
 
     static func dayCount(_ count: Int) -> String {
-        SafeEatL10n.format(
+        SafeMealL10n.format(
             count == 1 ? L10nKey.History.dayCountOne : L10nKey.History.dayCountOther,
             count
         )
@@ -1286,19 +1286,19 @@ enum SafeEatHistoryL10n {
     static func weekday(_ date: Date) -> String {
         switch Calendar.current.component(.weekday, from: date) {
         case 1:
-            return SafeEatL10n.text(L10nKey.History.weekdaySunday)
+            return SafeMealL10n.text(L10nKey.History.weekdaySunday)
         case 2:
-            return SafeEatL10n.text(L10nKey.History.weekdayMonday)
+            return SafeMealL10n.text(L10nKey.History.weekdayMonday)
         case 3:
-            return SafeEatL10n.text(L10nKey.History.weekdayTuesday)
+            return SafeMealL10n.text(L10nKey.History.weekdayTuesday)
         case 4:
-            return SafeEatL10n.text(L10nKey.History.weekdayWednesday)
+            return SafeMealL10n.text(L10nKey.History.weekdayWednesday)
         case 5:
-            return SafeEatL10n.text(L10nKey.History.weekdayThursday)
+            return SafeMealL10n.text(L10nKey.History.weekdayThursday)
         case 6:
-            return SafeEatL10n.text(L10nKey.History.weekdayFriday)
+            return SafeMealL10n.text(L10nKey.History.weekdayFriday)
         default:
-            return SafeEatL10n.text(L10nKey.History.weekdaySaturday)
+            return SafeMealL10n.text(L10nKey.History.weekdaySaturday)
         }
     }
 }
@@ -1340,11 +1340,11 @@ final class AppSettingsStore: ObservableObject {
     @Published var notificationMessage: String?
     @Published var showNotificationDenied = false
 
-    private static let languageKey = "safeeat.settings.language"
-    private static let reminderKey = "safeeat.settings.reminderEnabled"
-    private static let reminderStartDayKey = "safeeat.settings.reminderStartDayOffset"
-    private static let reminderTimeKey = "safeeat.settings.reminderTimeMinutes"
-    private static let reminderIdentifierPrefix = "safeeat.daily.reminder"
+    private static let languageKey = "safemeal.settings.language"
+    private static let reminderKey = "safemeal.settings.reminderEnabled"
+    private static let reminderStartDayKey = "safemeal.settings.reminderStartDayOffset"
+    private static let reminderTimeKey = "safemeal.settings.reminderTimeMinutes"
+    private static let reminderIdentifierPrefix = "safemeal.daily.reminder"
     private static let reminderHorizonDays = 45
 
     private init() {
@@ -1370,7 +1370,7 @@ final class AppSettingsStore: ObservableObject {
 
     var reminderSummary: String {
         if reminderEnabled {
-            return SafeEatL10n.format(
+            return SafeMealL10n.format(
                 L10nKey.Reminder.summaryFormat,
                 reminderStartDayTitle,
                 reminderTimeText
@@ -1379,9 +1379,9 @@ final class AppSettingsStore: ObservableObject {
 
         switch notificationStatus {
         case .denied:
-            return SafeEatL10n.text(L10nKey.Reminder.systemDenied)
+            return SafeMealL10n.text(L10nKey.Reminder.systemDenied)
         default:
-            return SafeEatL10n.text(L10nKey.Reminder.off)
+            return SafeMealL10n.text(L10nKey.Reminder.off)
         }
     }
 
@@ -1391,7 +1391,7 @@ final class AppSettingsStore: ObservableObject {
 
     var reminderStartDayTitle: String {
         ReminderStartDay(rawValue: reminderStartDayOffset)?.title
-            ?? SafeEatL10n.text(L10nKey.Reminder.optionToday)
+            ?? SafeMealL10n.text(L10nKey.Reminder.optionToday)
     }
 
     func refreshNotificationStatus() async {
@@ -1440,7 +1440,7 @@ final class AppSettingsStore: ObservableObject {
 
                 guard granted == true || notificationStatus == .authorized || notificationStatus == .provisional else {
                     reminderEnabled = false
-                    notificationMessage = SafeEatL10n.text(L10nKey.Reminder.enableFailed)
+                    notificationMessage = SafeMealL10n.text(L10nKey.Reminder.enableFailed)
                     return false
                 }
             }
@@ -1448,13 +1448,13 @@ final class AppSettingsStore: ObservableObject {
             // 已授权或临时授权
             reminderEnabled = true
             await scheduleReminder()
-            notificationMessage = SafeEatL10n.text(L10nKey.Reminder.enabled)
+            notificationMessage = SafeMealL10n.text(L10nKey.Reminder.enabled)
             return true
         }
 
         reminderEnabled = false
         await removeReminder()
-        notificationMessage = SafeEatL10n.text(L10nKey.Reminder.disabled)
+        notificationMessage = SafeMealL10n.text(L10nKey.Reminder.disabled)
         return true
     }
 
@@ -1506,16 +1506,16 @@ final class AppSettingsStore: ObservableObject {
 
         if calendar.isDate(target, inSameDayAs: today) {
             return (
-                SafeEatL10n.text(L10nKey.Reminder.titleToday),
-                SafeEatL10n.text(L10nKey.Reminder.bodyToday)
+                SafeMealL10n.text(L10nKey.Reminder.titleToday),
+                SafeMealL10n.text(L10nKey.Reminder.bodyToday)
             )
         }
 
         // 目标日期是昨天（选择"明天"时，通知在明天触发，指向昨天的总结）
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: today), calendar.isDate(target, inSameDayAs: yesterday) {
             return (
-                SafeEatL10n.text(L10nKey.Reminder.titleYesterday),
-                SafeEatL10n.text(L10nKey.Reminder.bodyYesterday)
+                SafeMealL10n.text(L10nKey.Reminder.titleYesterday),
+                SafeMealL10n.text(L10nKey.Reminder.bodyYesterday)
             )
         }
 
@@ -1525,8 +1525,8 @@ final class AppSettingsStore: ObservableObject {
         formatter.dateFormat = AppSettingsStore.shared.language == .en ? "MMM d" : "M月d日"
         let dateStr = formatter.string(from: target)
         return (
-            SafeEatL10n.format(L10nKey.Reminder.titleDate, dateStr),
-            SafeEatL10n.format(L10nKey.Reminder.bodyDate, dateStr)
+            SafeMealL10n.format(L10nKey.Reminder.titleDate, dateStr),
+            SafeMealL10n.format(L10nKey.Reminder.bodyDate, dateStr)
         )
     }
 

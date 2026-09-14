@@ -3,7 +3,7 @@ import Foundation
 import SwiftUI
 import UIKit
 
-enum SafeEatFont {
+enum SafeMealFont {
     private static let fallbackRegularFontName = "ChillRoundFRegular"
     private static let fallbackSemiboldFontName = "ChillRoundFSemibold"
     private static let fallbackBoldFontName = "ChillRoundFBold"
@@ -34,9 +34,9 @@ enum SafeEatFont {
         activeBoldFontName = boldResult.fontName ?? fallbackBoldFontName
 
         #if DEBUG
-        print("[SafeEatFont] regular=\(activeRegularFontName) source=\(regularResult.source)")
-        print("[SafeEatFont] semibold=\(activeSemiboldFontName) source=\(semiboldResult.source)")
-        print("[SafeEatFont] bold=\(activeBoldFontName) source=\(boldResult.source)")
+        print("[SafeMealFont] regular=\(activeRegularFontName) source=\(regularResult.source)")
+        print("[SafeMealFont] semibold=\(activeSemiboldFontName) source=\(semiboldResult.source)")
+        print("[SafeMealFont] bold=\(activeBoldFontName) source=\(boldResult.source)")
         #endif
     }
 
@@ -70,7 +70,7 @@ enum SafeEatFont {
     static func custom(
         _ size: CGFloat,
         relativeTo style: Font.TextStyle = .body,
-        weight: SafeEatFontWeight? = nil
+        weight: SafeMealFontWeight? = nil
     ) -> Font {
         .custom(fontName(for: style, explicitWeight: weight), size: size, relativeTo: style)
     }
@@ -78,7 +78,7 @@ enum SafeEatFont {
     static func uiFont(
         size: CGFloat,
         relativeTo style: Font.TextStyle = .body,
-        weight: SafeEatFontWeight? = nil
+        weight: SafeMealFontWeight? = nil
     ) -> UIFont {
         let name = fontName(for: style, explicitWeight: weight)
         return UIFont(name: name, size: size) ?? .systemFont(ofSize: size)
@@ -155,7 +155,7 @@ enum SafeEatFont {
         return Array(NSOrderedSet(array: names + descriptorNames)) as? [String] ?? (names + descriptorNames)
     }
 
-    private static func fontName(for style: Font.TextStyle, explicitWeight: SafeEatFontWeight?) -> String {
+    private static func fontName(for style: Font.TextStyle, explicitWeight: SafeMealFontWeight?) -> String {
         switch explicitWeight ?? inferredWeight(for: style) {
         case .regular:
             return activeRegularFontName
@@ -166,7 +166,7 @@ enum SafeEatFont {
         }
     }
 
-    private static func inferredWeight(for style: Font.TextStyle) -> SafeEatFontWeight {
+    private static func inferredWeight(for style: Font.TextStyle) -> SafeMealFontWeight {
         switch style {
         case .largeTitle, .title, .title2, .title3, .headline:
             return .bold
@@ -176,14 +176,14 @@ enum SafeEatFont {
     }
 }
 
-enum SafeEatFontWeight {
+enum SafeMealFontWeight {
     case regular
     case semibold
     case bold
 }
 
 extension View {
-    func safeEatBaseFont() -> some View {
-        font(SafeEatFont.textStyle(.body))
+    func safeMealBaseFont() -> some View {
+        font(SafeMealFont.textStyle(.body))
     }
 }

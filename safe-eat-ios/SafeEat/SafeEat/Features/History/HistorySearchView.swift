@@ -22,7 +22,7 @@ struct HistorySearchMagnifier: View {
         Button(action: onTap) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: 44, height: 44)
                 .background(
                     Circle()
@@ -30,11 +30,11 @@ struct HistorySearchMagnifier: View {
                 )
                 .overlay(
                     Circle()
-                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(SafeEatL10n.text(L10nKey.History.searchTitle))
+        .accessibilityLabel(SafeMealL10n.text(L10nKey.History.searchTitle))
     }
 }
 
@@ -142,9 +142,9 @@ struct HistorySearchView: View {
             if scopeTitle != nil {
                 scopeSegmentedControl
             } else {
-                Text(SafeEatL10n.text(L10nKey.History.searchTitle))
-                    .font(SafeEatFont.custom(20, relativeTo: .title3, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                Text(SafeMealL10n.text(L10nKey.History.searchTitle))
+                    .font(SafeMealFont.custom(20, relativeTo: .title3, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
             }
 
             Spacer(minLength: 0)
@@ -163,7 +163,7 @@ struct HistorySearchView: View {
         } label: {
             Image(systemName: "xmark")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: 44, height: 44)
                 .background(
                     Circle()
@@ -171,11 +171,11 @@ struct HistorySearchView: View {
                 )
                 .overlay(
                     Circle()
-                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(SafeEatL10n.text(L10nKey.Common.close))
+        .accessibilityLabel(SafeMealL10n.text(L10nKey.Common.close))
     }
 
     /// 胶囊分段：当前范围 | 全部
@@ -187,7 +187,7 @@ struct HistorySearchView: View {
             ) { scope = .current }
 
             scopeTab(
-                title: SafeEatL10n.text(L10nKey.History.searchScopeAll),
+                title: SafeMealL10n.text(L10nKey.History.searchScopeAll),
                 selected: scope == .all,
             ) { scope = .all }
         }
@@ -201,8 +201,8 @@ struct HistorySearchView: View {
     private func scopeTab(title: String, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: selected ? .semibold : .regular))
-                .foregroundStyle(selected ? SafeEatTheme.textPrimary : SafeEatTheme.textSecondary)
+                .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: selected ? .semibold : .regular))
+                .foregroundStyle(selected ? SafeMealTheme.textPrimary : SafeMealTheme.textSecondary)
                 .padding(.horizontal, 18)
                 .padding(.vertical, 8)
                 .background(
@@ -223,14 +223,14 @@ struct HistorySearchView: View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .foregroundStyle(SafeMealTheme.textSecondary)
 
             TextField(
-                SafeEatL10n.text(L10nKey.History.searchPlaceholder),
+                SafeMealL10n.text(L10nKey.History.searchPlaceholder),
                 text: $query
             )
-            .font(SafeEatFont.textStyle(.body))
-            .foregroundStyle(SafeEatTheme.textPrimary)
+            .font(SafeMealFont.textStyle(.body))
+            .foregroundStyle(SafeMealTheme.textPrimary)
             .autocorrectionDisabled()
 
             if !query.isEmpty {
@@ -239,7 +239,7 @@ struct HistorySearchView: View {
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 16))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
             }
         }
@@ -251,7 +251,7 @@ struct HistorySearchView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
         )
     }
 
@@ -261,11 +261,11 @@ struct HistorySearchView: View {
         VStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 28, weight: .light))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .foregroundStyle(SafeMealTheme.textSecondary)
 
             Text(scopeHintText)
-                .font(SafeEatFont.textStyle(.subheadline))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .font(SafeMealFont.textStyle(.subheadline))
+                .foregroundStyle(SafeMealTheme.textSecondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -275,17 +275,17 @@ struct HistorySearchView: View {
 
     private var scopeHintText: String {
         if effectiveScope == .current, let scopeTitle {
-            return SafeEatL10n.format(L10nKey.History.searchScopeFormat, scopeTitle)
+            return SafeMealL10n.format(L10nKey.History.searchScopeFormat, scopeTitle)
         }
-        return SafeEatL10n.text(L10nKey.History.searchAllHint)
+        return SafeMealL10n.text(L10nKey.History.searchAllHint)
     }
 
     // MARK: - 空结果
 
     private var emptyResults: some View {
-        SafeEatEmptyState(
-            title: SafeEatL10n.text(L10nKey.History.searchEmptyTitle),
-            message: SafeEatL10n.text(L10nKey.History.searchEmptyMessage),
+        SafeMealEmptyState(
+            title: SafeMealL10n.text(L10nKey.History.searchEmptyTitle),
+            message: SafeMealL10n.text(L10nKey.History.searchEmptyMessage),
             systemImage: "magnifyingglass"
         )
         .padding(.top, 40)

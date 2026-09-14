@@ -649,16 +649,16 @@ enum FeedbackType: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .wrongFood: return SafeEatL10n.text(L10nKey.Feedback.typeWrongFood)
-        case .wrongName: return SafeEatL10n.text(L10nKey.Feedback.typeWrongName)
-        case .wrongNutrition: return SafeEatL10n.text(L10nKey.Feedback.typeWrongNutrition)
-        case .wrongCategory: return SafeEatL10n.text(L10nKey.Feedback.typeWrongCategory)
-        case .addAlias: return SafeEatL10n.text(L10nKey.Feedback.typeAddAlias)
-        case .removeAlias: return SafeEatL10n.text(L10nKey.Feedback.typeRemoveAlias)
-        case .translationError: return SafeEatL10n.text(L10nKey.Feedback.typeTranslationError)
-        case .wrongTags: return SafeEatL10n.text(L10nKey.Feedback.typeWrongTags)
-        case .newFood: return SafeEatL10n.text(L10nKey.Feedback.typeNewFood)
-        case .other: return SafeEatL10n.text(L10nKey.Feedback.typeOther)
+        case .wrongFood: return SafeMealL10n.text(L10nKey.Feedback.typeWrongFood)
+        case .wrongName: return SafeMealL10n.text(L10nKey.Feedback.typeWrongName)
+        case .wrongNutrition: return SafeMealL10n.text(L10nKey.Feedback.typeWrongNutrition)
+        case .wrongCategory: return SafeMealL10n.text(L10nKey.Feedback.typeWrongCategory)
+        case .addAlias: return SafeMealL10n.text(L10nKey.Feedback.typeAddAlias)
+        case .removeAlias: return SafeMealL10n.text(L10nKey.Feedback.typeRemoveAlias)
+        case .translationError: return SafeMealL10n.text(L10nKey.Feedback.typeTranslationError)
+        case .wrongTags: return SafeMealL10n.text(L10nKey.Feedback.typeWrongTags)
+        case .newFood: return SafeMealL10n.text(L10nKey.Feedback.typeNewFood)
+        case .other: return SafeMealL10n.text(L10nKey.Feedback.typeOther)
         }
     }
 

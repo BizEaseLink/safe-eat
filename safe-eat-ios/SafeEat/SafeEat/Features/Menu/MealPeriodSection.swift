@@ -13,13 +13,13 @@ enum MealPeriod: String, CaseIterable, Identifiable {
     var displayName: String {
         switch self {
         case .breakfast:
-            return SafeEatL10n.text(L10nKey.Menu.mealBreakfast)
+            return SafeMealL10n.text(L10nKey.Menu.mealBreakfast)
         case .lunch:
-            return SafeEatL10n.text(L10nKey.Menu.mealLunch)
+            return SafeMealL10n.text(L10nKey.Menu.mealLunch)
         case .dinner:
-            return SafeEatL10n.text(L10nKey.Menu.mealDinner)
+            return SafeMealL10n.text(L10nKey.Menu.mealDinner)
         case .lateNight:
-            return SafeEatL10n.text(L10nKey.Menu.mealLateNight)
+            return SafeMealL10n.text(L10nKey.Menu.mealLateNight)
         }
     }
 
@@ -55,9 +55,9 @@ struct MealPeriodSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // 饮食报告标题
-            Text(SafeEatL10n.text(L10nKey.Menu.mealSectionTitle))
-                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+            Text(SafeMealL10n.text(L10nKey.Menu.mealSectionTitle))
+                .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
 
             mealPeriodPicker
 
@@ -96,8 +96,8 @@ struct MealPeriodSection: View {
             }
         }) {
             Text(period.displayName)
-                .font(SafeEatFont.custom(13, relativeTo: .subheadline, weight: isSelected ? .bold : .regular))
-                .foregroundStyle(isSelected ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
+                .font(SafeMealFont.custom(13, relativeTo: .subheadline, weight: isSelected ? .bold : .regular))
+                .foregroundStyle(isSelected ? SafeMealTheme.primary : SafeMealTheme.textSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
                 .background(
@@ -184,18 +184,18 @@ struct MealPeriodSection: View {
         VStack(spacing: 10) {
             Image(systemName: "fork.knife")
                 .font(.system(size: 28))
-                .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.5))
+                .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.5))
 
-            Text(SafeEatL10n.format(L10nKey.Menu.mealEmptyFormat, selectedPeriod.displayName))
-                .font(SafeEatFont.textStyle(.caption))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+            Text(SafeMealL10n.format(L10nKey.Menu.mealEmptyFormat, selectedPeriod.displayName))
+                .font(SafeMealFont.textStyle(.caption))
+                .foregroundStyle(SafeMealTheme.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .stroke(style: StrokeStyle(lineWidth: 1, dash: [6]))
-                .foregroundStyle(SafeEatTheme.line.opacity(0.4))
+                .foregroundStyle(SafeMealTheme.line.opacity(0.4))
         )
     }
 }
@@ -213,7 +213,7 @@ struct NotificationBellButton: View {
             ZStack(alignment: .topTrailing) {
                 Image(systemName: isEnabled ? "bell.fill" : "bell")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(isEnabled ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
+                    .foregroundStyle(isEnabled ? SafeMealTheme.primary : SafeMealTheme.textSecondary)
                     .frame(width: 40, height: 40)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
@@ -226,7 +226,7 @@ struct NotificationBellButton: View {
 
                 if isEnabled {
                     Circle()
-                        .fill(SafeEatTheme.primary)
+                        .fill(SafeMealTheme.primary)
                         .frame(width: 8, height: 8)
                         .offset(x: 2, y: -2)
                 }
@@ -236,7 +236,7 @@ struct NotificationBellButton: View {
     }
 
     private var bellActiveFill: Color {
-        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.18) : SafeEatTheme.primarySoft
+        colorScheme == .dark ? SafeMealTheme.primary.opacity(0.18) : SafeMealTheme.primarySoft
     }
 
     private var bellBackground: Color {
@@ -244,7 +244,7 @@ struct NotificationBellButton: View {
     }
 
     private var bellBorder: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line
     }
 }
 
@@ -269,20 +269,20 @@ struct RecordShortcutButton: View {
 
                     Image(systemName: icon)
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.primary)
+                        .foregroundStyle(SafeMealTheme.primary)
                 }
                 .padding(.top, 16)
 
                 // 标题
                 Text(title)
-                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
                     .padding(.top, 10)
 
                 // 计数标签
                 Text("\(count)")
-                    .font(SafeEatFont.custom(24, relativeTo: .title2, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .font(SafeMealFont.custom(24, relativeTo: .title2, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.primary)
                     .padding(.top, 4)
                     .padding(.bottom, 14)
             }
@@ -300,7 +300,7 @@ struct RecordShortcutButton: View {
     }
 
     private var iconCircleFill: Color {
-        colorScheme == .dark ? SafeEatTheme.primary.opacity(0.18) : SafeEatTheme.primarySoft
+        colorScheme == .dark ? SafeMealTheme.primary.opacity(0.18) : SafeMealTheme.primarySoft
     }
 
     private var cardGradient: some ShapeStyle {
@@ -314,7 +314,7 @@ struct RecordShortcutButton: View {
     }
 
     private var cardStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line
     }
 }
 

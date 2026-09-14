@@ -10,13 +10,13 @@ struct NewUserWelcomeSheet: View {
     let onDismiss: () -> Void
 
     var body: some View {
-        SafeEatSettingsSheetContainer(
-            title: SafeEatL10n.text(L10nKey.Home.welcomeTitle),
-            subtitle: SafeEatL10n.text(L10nKey.Home.welcomeSubtitle),
+        SafeMealSettingsSheetContainer(
+            title: SafeMealL10n.text(L10nKey.Home.welcomeTitle),
+            subtitle: SafeMealL10n.text(L10nKey.Home.welcomeSubtitle),
             contentHeight: contentHeight,
             primaryButton: primaryButton,
             secondaryButton: store.trialAvailable
-                ? SheetButton(title: SafeEatL10n.text(L10nKey.Home.trialPromptLaterAction)) {
+                ? SheetButton(title: SafeMealL10n.text(L10nKey.Home.trialPromptLaterAction)) {
                     onDismiss()
                 }
                 : nil
@@ -25,22 +25,22 @@ struct NewUserWelcomeSheet: View {
                 HStack(spacing: 14) {
                     ZStack {
                         Circle()
-                            .fill(SafeEatTheme.primary.opacity(0.12))
+                            .fill(SafeMealTheme.primary.opacity(0.12))
                             .frame(width: 46, height: 46)
 
                         Image(systemName: "leaf.fill")
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(SafeEatTheme.primary)
+                            .foregroundStyle(SafeMealTheme.primary)
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(SafeEatL10n.text(L10nKey.Home.welcomeAppName))
-                            .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
+                        Text(SafeMealL10n.text(L10nKey.Home.welcomeAppName))
+                            .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
+                            .foregroundStyle(SafeMealTheme.textPrimary)
 
-                        Text(SafeEatL10n.text(L10nKey.Home.welcomeAppTagline))
-                            .font(SafeEatFont.textStyle(.footnote))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                        Text(SafeMealL10n.text(L10nKey.Home.welcomeAppTagline))
+                            .font(SafeMealFont.textStyle(.footnote))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                     }
                 }
             }
@@ -49,18 +49,18 @@ struct NewUserWelcomeSheet: View {
                 VStack(alignment: .leading, spacing: 10) {
                     featureRow(
                         icon: "camera.fill",
-                        title: SafeEatL10n.text(L10nKey.Home.welcomeFeatureScanTitle),
-                        detail: SafeEatL10n.text(L10nKey.Home.welcomeFeatureScanDetail)
+                        title: SafeMealL10n.text(L10nKey.Home.welcomeFeatureScanTitle),
+                        detail: SafeMealL10n.text(L10nKey.Home.welcomeFeatureScanDetail)
                     )
                     featureRow(
                         icon: "chart.bar.fill",
-                        title: SafeEatL10n.text(L10nKey.Home.welcomeFeatureScoreTitle),
-                        detail: SafeEatL10n.text(L10nKey.Home.welcomeFeatureScoreDetail)
+                        title: SafeMealL10n.text(L10nKey.Home.welcomeFeatureScoreTitle),
+                        detail: SafeMealL10n.text(L10nKey.Home.welcomeFeatureScoreDetail)
                     )
                     featureRow(
                         icon: "bell.fill",
-                        title: SafeEatL10n.text(L10nKey.Home.welcomeFeatureReminderTitle),
-                        detail: SafeEatL10n.text(L10nKey.Home.welcomeFeatureReminderDetail)
+                        title: SafeMealL10n.text(L10nKey.Home.welcomeFeatureReminderTitle),
+                        detail: SafeMealL10n.text(L10nKey.Home.welcomeFeatureReminderDetail)
                     )
                 }
             }
@@ -69,11 +69,11 @@ struct NewUserWelcomeSheet: View {
                 trialCard
             }
         }
-        .alert(SafeEatL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
+        .alert(SafeMealL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
             get: { successMessage != nil },
             set: { if !$0 { successMessage = nil } }
         )) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok)) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok)) {
                 successMessage = nil
                 onDismiss()
             }
@@ -81,11 +81,11 @@ struct NewUserWelcomeSheet: View {
             Text(successMessage ?? "")
         }
         // 试用激活失败：走 store.errorMessage 通道，sheet 不关，让用户重试或点"稍后再说"
-        .alert(SafeEatL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
+        .alert(SafeMealL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
             get: { store.errorMessage != nil },
             set: { if !$0 { store.errorMessage = nil } }
         )) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok)) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok)) {
                 store.errorMessage = nil
             }
         } message: {
@@ -101,13 +101,13 @@ struct NewUserWelcomeSheet: View {
     private var primaryButton: SheetButton {
         if store.trialAvailable {
             return SheetButton(
-                title: SafeEatL10n.text(L10nKey.Home.trialPromptClaimAction),
+                title: SafeMealL10n.text(L10nKey.Home.trialPromptClaimAction),
                 isLoading: isActivatingTrial
             ) {
                 Task { await activateTrial() }
             }
         } else {
-            return SheetButton(title: SafeEatL10n.text(L10nKey.Home.welcomeStartAction)) { onDismiss() }
+            return SheetButton(title: SafeMealL10n.text(L10nKey.Home.welcomeStartAction)) { onDismiss() }
         }
     }
 
@@ -117,28 +117,28 @@ struct NewUserWelcomeSheet: View {
                 HStack(spacing: 14) {
                     ZStack {
                         Circle()
-                            .fill(SafeEatTheme.primary.opacity(0.12))
+                            .fill(SafeMealTheme.primary.opacity(0.12))
                             .frame(width: 46, height: 46)
 
                         Image(systemName: "crown.fill")
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(SafeEatTheme.warning)
+                            .foregroundStyle(SafeMealTheme.warning)
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(SafeEatL10n.text(L10nKey.Home.trialPromptBadgeTitle))
-                            .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
+                        Text(SafeMealL10n.text(L10nKey.Home.trialPromptBadgeTitle))
+                            .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
+                            .foregroundStyle(SafeMealTheme.textPrimary)
 
-                        Text(SafeEatL10n.text(L10nKey.Home.trialPromptBadgeSubtitle))
-                            .font(SafeEatFont.textStyle(.footnote))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                        Text(SafeMealL10n.text(L10nKey.Home.trialPromptBadgeSubtitle))
+                            .font(SafeMealFont.textStyle(.footnote))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                     }
                 }
 
-                Text(SafeEatL10n.text(L10nKey.Home.trialPromptFootnote))
-                    .font(SafeEatFont.textStyle(.caption))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                Text(SafeMealL10n.text(L10nKey.Home.trialPromptFootnote))
+                    .font(SafeMealFont.textStyle(.caption))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
         }
     }
@@ -150,7 +150,7 @@ struct NewUserWelcomeSheet: View {
         let ok = await store.activateTrialAndRefresh()
         if ok {
             // 成功：弹统一成功提示，用户点 OK 后再关 sheet（先关 sheet alert 会消失）
-            successMessage = SafeEatL10n.text(L10nKey.Home.trialPromptSuccessMessage)
+            successMessage = SafeMealL10n.text(L10nKey.Home.trialPromptSuccessMessage)
         }
         // 失败：store.errorMessage 已设置，sheet 不关，让用户重试或点"稍后再说"
     }
@@ -159,18 +159,18 @@ struct NewUserWelcomeSheet: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(SafeEatTheme.primary)
+                .foregroundStyle(SafeMealTheme.primary)
                 .frame(width: 24)
 
             Text(title)
-                .font(SafeEatFont.textStyle(.subheadline))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.textStyle(.subheadline))
+                .foregroundStyle(SafeMealTheme.textPrimary)
 
             Spacer()
 
             Text(detail)
-                .font(SafeEatFont.textStyle(.caption))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .font(SafeMealFont.textStyle(.caption))
+                .foregroundStyle(SafeMealTheme.textSecondary)
         }
     }
 }

@@ -22,17 +22,17 @@ struct EmptyStateView: View {
         VStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 36))
-                .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.5))
+                .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.5))
 
             VStack(spacing: 8) {
                 Text(title)
-                    .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
 
                 if let message {
                     Text(message)
-                        .font(SafeEatFont.custom(14, relativeTo: .body))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.custom(14, relativeTo: .body))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                         .multilineTextAlignment(.center)
                 }
             }
@@ -40,7 +40,7 @@ struct EmptyStateView: View {
             if let actionTitle, let action {
                 Button(action: action) {
                     Text(actionTitle)
-                        .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
+                        .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 32)
                         .padding(.vertical, 14)
@@ -48,7 +48,7 @@ struct EmptyStateView: View {
                             RoundedRectangle(cornerRadius: 20, style: .continuous)
                                 .fill(
                                     LinearGradient(
-                                        colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                        colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )

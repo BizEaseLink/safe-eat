@@ -15,16 +15,16 @@ struct MembershipBannerView: View {
         switch tier {
         case .free:
             return isFront
-                ? SafeEatL10n.text(L10nKey.Result.membershipBannerTitleFree)
-                : SafeEatL10n.text(L10nKey.Result.membershipBannerSubtitleFree)
+                ? SafeMealL10n.text(L10nKey.Result.membershipBannerTitleFree)
+                : SafeMealL10n.text(L10nKey.Result.membershipBannerSubtitleFree)
         case .lite:
             return isFront
-                ? SafeEatL10n.text(L10nKey.Result.membershipBannerTitleLite)
-                : SafeEatL10n.text(L10nKey.Result.membershipBannerSubtitleLite)
+                ? SafeMealL10n.text(L10nKey.Result.membershipBannerTitleLite)
+                : SafeMealL10n.text(L10nKey.Result.membershipBannerSubtitleLite)
         case .pro:
             return isFront
-                ? SafeEatL10n.text(L10nKey.Result.membershipBannerTitlePro)
-                : SafeEatL10n.text(L10nKey.Result.membershipBannerSubtitlePro)
+                ? SafeMealL10n.text(L10nKey.Result.membershipBannerTitlePro)
+                : SafeMealL10n.text(L10nKey.Result.membershipBannerSubtitlePro)
         case .premium:
             return ""
         }
@@ -33,11 +33,11 @@ struct MembershipBannerView: View {
     private var subtitleText: String {
         switch tier {
         case .free:
-            return SafeEatL10n.text(L10nKey.Result.membershipBannerDescFree)
+            return SafeMealL10n.text(L10nKey.Result.membershipBannerDescFree)
         case .lite:
-            return SafeEatL10n.text(L10nKey.Result.membershipBannerDescLite)
+            return SafeMealL10n.text(L10nKey.Result.membershipBannerDescLite)
         case .pro:
-            return SafeEatL10n.text(L10nKey.Result.membershipBannerDescPro)
+            return SafeMealL10n.text(L10nKey.Result.membershipBannerDescPro)
         case .premium:
             return ""
         }
@@ -53,11 +53,11 @@ struct MembershipBannerView: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(titleText)
-                            .font(SafeEatFont.custom(16, relativeTo: .subheadline, weight: .bold))
+                            .font(SafeMealFont.custom(16, relativeTo: .subheadline, weight: .bold))
                             .foregroundStyle(.white)
 
                         Text(subtitleText)
-                            .font(SafeEatFont.custom(13, relativeTo: .footnote))
+                            .font(SafeMealFont.custom(13, relativeTo: .footnote))
                             .foregroundStyle(.white.opacity(0.85))
                             .lineLimit(2)
                     }
@@ -67,8 +67,8 @@ struct MembershipBannerView: View {
                     Button {
                         onUpgrade()
                     } label: {
-                        Text(SafeEatL10n.text(L10nKey.Result.membershipBannerAction))
-                            .font(SafeEatFont.custom(13, relativeTo: .footnote, weight: .semibold))
+                        Text(SafeMealL10n.text(L10nKey.Result.membershipBannerAction))
+                            .font(SafeMealFont.custom(13, relativeTo: .footnote, weight: .semibold))
                             .foregroundStyle(Color(red: 0.62, green: 0.44, blue: 0.20))
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)

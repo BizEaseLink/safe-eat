@@ -139,7 +139,7 @@ struct MainTabView: View {
 
             // 识别中加载遮罩
             if let phase = recognitionPhase {
-                SafeEatLoadingOverlay(
+                SafeMealLoadingOverlay(
                     phase: phase,
                     previewImage: recognizingPreviewImage,
                     onCandidateSelected: { foodId, name, sessionId in
@@ -208,13 +208,13 @@ struct MainTabView: View {
             AdRewardResultSheet(resultType: adRewardResultType)
         }
         .alert(
-            SafeEatL10n.text(L10nKey.Common.notice),
+            SafeMealL10n.text(L10nKey.Common.notice),
             isPresented: Binding<Bool>(
                 get: { store.errorMessage != nil },
                 set: { if !$0 { store.errorMessage = nil } }
             ),
             actions: {
-                Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) { store.errorMessage = nil }
+                Button(SafeMealL10n.text(L10nKey.Common.ok), role: .cancel) { store.errorMessage = nil }
             },
             message: {
                 Text(store.errorMessage ?? "")
@@ -222,17 +222,17 @@ struct MainTabView: View {
         )
         // 本地网络权限被拒绝时的专用引导弹窗
         .alert(
-            SafeEatL10n.text(L10nKey.Errors.localNetworkDeniedTitle),
+            SafeMealL10n.text(L10nKey.Errors.localNetworkDeniedTitle),
             isPresented: $store.showLocalNetworkDenied,
             actions: {
-                Button(SafeEatL10n.text(L10nKey.Errors.localNetworkOpenSettings)) {
+                Button(SafeMealL10n.text(L10nKey.Errors.localNetworkOpenSettings)) {
                     guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
                     openURL(settingsURL)
                 }
-                Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+                Button(SafeMealL10n.text(L10nKey.Common.cancel), role: .cancel) {}
             },
             message: {
-                Text(SafeEatL10n.text(L10nKey.Errors.localNetworkDeniedBody))
+                Text(SafeMealL10n.text(L10nKey.Errors.localNetworkDeniedBody))
             }
         )
         .task {
@@ -269,13 +269,13 @@ struct MainTabView: View {
             // 拍摄按钮
             scanBarItem
 
-            tabBarItem(tab: .home, icon: "house.fill", label: SafeEatL10n.text(L10nKey.Tab.home))
+            tabBarItem(tab: .home, icon: "house.fill", label: SafeMealL10n.text(L10nKey.Tab.home))
 
-            tabBarItem(tab: .history, icon: "book.closed.fill", label: SafeEatL10n.text(L10nKey.Tab.menu))
+            tabBarItem(tab: .history, icon: "book.closed.fill", label: SafeMealL10n.text(L10nKey.Tab.menu))
 
-            // tabBarItem(tab: .trend, icon: "chart.line.uptrend.xyaxis", label: SafeEatL10n.text(L10nKey.Tab.trend))  // v1.3.0 启用
+            // tabBarItem(tab: .trend, icon: "chart.line.uptrend.xyaxis", label: SafeMealL10n.text(L10nKey.Tab.trend))  // v1.3.0 启用
 
-            tabBarItem(tab: .profile, icon: "person.fill", label: SafeEatL10n.text(L10nKey.Tab.profile))
+            tabBarItem(tab: .profile, icon: "person.fill", label: SafeMealL10n.text(L10nKey.Tab.profile))
         }
         .accessibilityIdentifier("floatingBottomBar")
         .padding(.horizontal, 8)
@@ -309,17 +309,17 @@ struct MainTabView: View {
             VStack(spacing: 6) {
                 Image(systemName: "camera.fill")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(scanPressed ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
-                Text(SafeEatL10n.text(L10nKey.Tab.scan))
+                    .foregroundColor(scanPressed ? SafeMealTheme.primary : SafeMealTheme.textSecondary)
+                Text(SafeMealL10n.text(L10nKey.Tab.scan))
                     .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(scanPressed ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
+                    .foregroundColor(scanPressed ? SafeMealTheme.primary : SafeMealTheme.textSecondary)
             }
             .padding(.top, 8)
             .padding(.bottom, 8)
             .frame(minWidth: 56)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(scanPressed ? SafeEatTheme.primary.opacity(0.12) : Color.clear)
+                    .fill(scanPressed ? SafeMealTheme.primary.opacity(0.12) : Color.clear)
             )
         }
         .buttonStyle(.plain)
@@ -327,7 +327,7 @@ struct MainTabView: View {
 
     private func tabBarItem(tab: AppRootTab, icon: String, label: String) -> some View {
         let isSelected = selectedTab == tab
-        let iconColor: Color = isSelected ? SafeEatTheme.primary : SafeEatTheme.textSecondary
+        let iconColor: Color = isSelected ? SafeMealTheme.primary : SafeMealTheme.textSecondary
         return Button {
             selectedTab = tab
             store.selectedRootTab = tab
@@ -345,7 +345,7 @@ struct MainTabView: View {
             .frame(minWidth: 56)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(isSelected ? SafeEatTheme.primary.opacity(0.12) : Color.clear)
+                    .fill(isSelected ? SafeMealTheme.primary.opacity(0.12) : Color.clear)
             )
         }
         .buttonStyle(.plain)
@@ -357,7 +357,7 @@ struct MainTabView: View {
         guard recognitionPhase == nil else { return }
 
         guard store.session != nil else {
-            store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.scanAction))
+            store.requireLogin(featureHint: SafeMealL10n.text(L10nKey.Home.scanAction))
             return
         }
 
@@ -374,14 +374,14 @@ struct MainTabView: View {
     @MainActor
     private func recognize(croppedImage: UIImage, rawImage: UIImage) async {
         guard store.session != nil else {
-            store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Home.scanAction))
+            store.requireLogin(featureHint: SafeMealL10n.text(L10nKey.Home.scanAction))
             return
         }
 
         recognitionPhase = .identifying
 
         guard let uploadData = croppedImage.jpegDataForUpload() else {
-            store.errorMessage = SafeEatL10n.text(L10nKey.Errors.imageCaptureFailed)
+            store.errorMessage = SafeMealL10n.text(L10nKey.Errors.imageCaptureFailed)
             recognitionPhase = nil
             recognizingPreviewImage = nil
             return
@@ -532,7 +532,7 @@ struct MainTabView: View {
 
     private func isQuotaExceededError(_ error: Error) -> Bool {
         guard case let APIError.server(status, message, _) = error else { return false }
-        return status == 400 && message == SafeEatL10n.text(L10nKey.Errors.requestQuotaExceeded)
+        return status == 400 && message == SafeMealL10n.text(L10nKey.Errors.requestQuotaExceeded)
     }
 
     private func watchRewardAd() {
