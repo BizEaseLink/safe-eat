@@ -19,7 +19,7 @@ struct NutrientValue: Codable {
     private enum CodingKeys: String, CodingKey {
         case value = "amount"
         case unit
-        case dailyValuePercent = "nrv"
+        case dailyValuePercent = "nrvPercent"
         case source
     }
 
@@ -52,6 +52,8 @@ struct Vitamins: Codable {
     let e: NutrientValue?
     let k: NutrientValue?
     let folate: NutrientValue?
+    let biotin: NutrientValue?
+    let choline: NutrientValue?
 
     private enum CodingKeys: String, CodingKey {
         case a = "vitaminA"
@@ -66,6 +68,8 @@ struct Vitamins: Codable {
         case e = "vitaminE"
         case k = "vitaminK"
         case folate
+        case biotin
+        case choline
     }
 }
 
@@ -77,6 +81,9 @@ struct Minerals: Codable {
     let potassium: NutrientValue?
     let zinc: NutrientValue?
     let selenium: NutrientValue?
+    let iodine: NutrientValue?
+    let copper: NutrientValue?
+    let manganese: NutrientValue?
 }
 
 struct Nutrients: Codable {
@@ -91,9 +98,6 @@ struct Nutrients: Codable {
     let addedSugars: NutrientValue?
     let cholesterol: NutrientValue?
     let sodium: NutrientValue?
-    // 后端 v3 嵌套在此处的 vitamins/minerals，由 NutritionMetrics 自定义解码器提取到顶层
-    let vitamins: Vitamins?
-    let minerals: Minerals?
 
     // 后端返回 "sugars"（复数），iOS 属性名为 "sugar"（单数）
     private enum CodingKeys: String, CodingKey {
@@ -108,8 +112,6 @@ struct Nutrients: Codable {
         case addedSugars
         case cholesterol
         case sodium
-        case vitamins
-        case minerals
     }
 }
 
@@ -211,17 +213,9 @@ struct NutritionMetrics: Codable {
         ingredients = try container.decodeIfPresent([String].self, forKey: .ingredients)
         ingredientBreakdown = try container.decodeIfPresent([IngredientBreakdown].self, forKey: .ingredientBreakdown)
 
-        // 优先从顶层读取 vitamins/minerals，若不存在则从 nutrients 内部提取
-        if let topVitamins = try? container.decodeIfPresent(Vitamins.self, forKey: .vitamins) {
-            vitamins = topVitamins
-        } else {
-            vitamins = nutrients?.vitamins
-        }
-        if let topMinerals = try? container.decodeIfPresent(Minerals.self, forKey: .minerals) {
-            minerals = topMinerals
-        } else {
-            minerals = nutrients?.minerals
-        }
+        // v4 顶层布局：vitamins/minerals 直接读顶层（不再支持 v3 嵌套）
+        vitamins = try container.decodeIfPresent(Vitamins.self, forKey: .vitamins)
+        minerals = try container.decodeIfPresent(Minerals.self, forKey: .minerals)
     }
 }
 
@@ -546,9 +540,7 @@ struct RecognitionRecord: Codable, Identifiable {
                 sugar: nil,
                 addedSugars: nil,
                 cholesterol: nil,
-                sodium: nil,
-                vitamins: nil,
-                minerals: nil
+                sodium: nil
             ),
             vitamins: nil,
             minerals: nil,
@@ -647,6 +639,9 @@ enum FeedbackType: String, CaseIterable, Identifiable {
     case wrongNutrition = "wrong_nutrition"
     case wrongCategory = "wrong_category"
     case addAlias = "add_alias"
+    case removeAlias = "remove_alias"
+    case wrongTags = "wrong_tags"
+    case translationError = "translation_error"
     case newFood = "new_food"
     case other = "other"
 
@@ -659,8 +654,16 @@ enum FeedbackType: String, CaseIterable, Identifiable {
         case .wrongNutrition: return SafeEatL10n.text(L10nKey.Feedback.typeWrongNutrition)
         case .wrongCategory: return SafeEatL10n.text(L10nKey.Feedback.typeWrongCategory)
         case .addAlias: return SafeEatL10n.text(L10nKey.Feedback.typeAddAlias)
+        case .removeAlias: return SafeEatL10n.text(L10nKey.Feedback.typeRemoveAlias)
+        case .translationError: return SafeEatL10n.text(L10nKey.Feedback.typeTranslationError)
+        case .wrongTags: return SafeEatL10n.text(L10nKey.Feedback.typeWrongTags)
         case .newFood: return SafeEatL10n.text(L10nKey.Feedback.typeNewFood)
         case .other: return SafeEatL10n.text(L10nKey.Feedback.typeOther)
         }
+    }
+
+    /// 反馈提交入口展示的类型（other / wrong_category 暂不上；remove_alias 下线不再提供）
+    static var selectableCases: [FeedbackType] {
+        allCases.filter { $0 != .other && $0 != .wrongCategory && $0 != .removeAlias && $0 != .newFood }
     }
 }

@@ -499,6 +499,27 @@ final class SafeEatAPI {
         return try await send(request, as: RecognitionRecord.self)
     }
 
+
+    /// 反馈营养核对器的可选项（过敏原/饮食标签，来自后台规则表，前后端一致）
+    struct FeedbackMetaItem: Codable {
+        let key: String
+        let en: String
+        let zh: String
+    }
+    struct FeedbackMeta: Codable {
+        let allergens: [FeedbackMetaItem]
+        let dietaryTags: [FeedbackMetaItem]
+    }
+
+    func getFeedbackMeta(accessToken: String) async throws -> FeedbackMeta {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/feedback-meta",
+            method: "GET"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: FeedbackMeta.self)
+    }
+
     func getPendingFeedbacks(accessToken: String) async throws -> [PendingFeedbackItem] {
         var request = try buildRequest(
             path: "/v1/apps/\(AppConfig.appCode)/recognitions/feedbacks/pending",
@@ -615,6 +636,7 @@ final class SafeEatAPI {
         proposedName: String,
         comment: String,
         feedbackType: FeedbackType? = nil,
+        proposedChanges: String? = nil,
         evidenceImage: (data: Data, fileName: String)? = nil
     ) async throws -> [RecognitionRecord] {
         // 后端路由: POST /v1/apps/:appCode/recognitions/:recognitionId/feedback
@@ -634,6 +656,11 @@ final class SafeEatAPI {
 
         if let ft = feedbackType {
             textFields["feedbackType"] = ft.rawValue
+        }
+
+        // 结构化修改内容（JSON 字符串）：后端存 recognition_feedbacks.proposed_changes
+        if let pc = proposedChanges {
+            textFields["proposedChanges"] = pc
         }
 
         if let image = evidenceImage {

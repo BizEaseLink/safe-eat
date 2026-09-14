@@ -879,7 +879,7 @@ struct SafeEatLoadingOverlay: View {
         let isDirect = group.mode == "direct"
         let isDraft = group.mode == "draft"
         let expandable = group.mode == "select"
-        let isExpanded = false // 默认折叠，点击展开
+        let isExpanded = expandedAiNames.contains(group.aiName) // 默认（集合空）折叠，点击展开
 
         return VStack(alignment: .leading, spacing: 8) {
             Button {
