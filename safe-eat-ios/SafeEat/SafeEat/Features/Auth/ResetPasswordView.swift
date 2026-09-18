@@ -42,7 +42,7 @@ struct ResetPasswordView: View {
     }
 
     private var successMessage: String {
-        phoneMode == .input ? "密码已重置，请重新登录" : SafeEatL10n.text(L10nKey.Auth.resetPasswordSuccess)
+        phoneMode == .input ? "密码已重置，请重新登录" : SafeMealL10n.text(L10nKey.Auth.resetPasswordSuccess)
     }
 
     private var canSubmit: Bool {
@@ -53,8 +53,8 @@ struct ResetPasswordView: View {
 
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.Auth.resetPasswordTitle),
-            subtitle: SafeEatL10n.text(L10nKey.Auth.resetPasswordSubtitle)
+            title: SafeMealL10n.text(L10nKey.Auth.resetPasswordTitle),
+            subtitle: SafeMealL10n.text(L10nKey.Auth.resetPasswordSubtitle)
         ) {
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 16) {
@@ -62,7 +62,7 @@ struct ResetPasswordView: View {
                         ProfileDisabledField(text: maskedPhone, colorScheme: colorScheme)
                     } else {
                         ProfileTextField(
-                            title: SafeEatL10n.text(L10nKey.Auth.phoneLabel),
+                            title: SafeMealL10n.text(L10nKey.Auth.phoneLabel),
                             text: $phone,
                             keyboardType: .numberPad
                         )
@@ -74,34 +74,34 @@ struct ResetPasswordView: View {
                         buttonText: smsCountdownManager.countdown > 0
                             ? "\(smsCountdownManager.countdown)s"
                             : (smsCountdownManager.isSending
-                                ? SafeEatL10n.text(L10nKey.Common.sending)
-                                : SafeEatL10n.text(L10nKey.Common.sendCode))
+                                ? SafeMealL10n.text(L10nKey.Common.sending)
+                                : SafeMealL10n.text(L10nKey.Common.sendCode))
                     ) {
                         Task { await requestSMS() }
                     }
 
                     ProfileSecureField(
-                        title: SafeEatL10n.text(L10nKey.Auth.newPasswordLabel),
+                        title: SafeMealL10n.text(L10nKey.Auth.newPasswordLabel),
                         text: $newPassword
                     )
 
                     passwordRequirementHints(newPassword)
 
                     ProfileSecureField(
-                        title: SafeEatL10n.text(L10nKey.Auth.confirmPasswordLabel),
+                        title: SafeMealL10n.text(L10nKey.Auth.confirmPasswordLabel),
                         text: $confirmPassword
                     )
 
                     if !confirmPassword.isEmpty && newPassword != confirmPassword {
-                        Text(SafeEatL10n.text(L10nKey.Auth.passwordMismatch))
-                            .font(SafeEatFont.textStyle(.footnote))
-                            .foregroundStyle(SafeEatTheme.danger)
+                        Text(SafeMealL10n.text(L10nKey.Auth.passwordMismatch))
+                            .font(SafeMealFont.textStyle(.footnote))
+                            .foregroundStyle(SafeMealTheme.danger)
                     }
                 }
             }
         } footer: {
             ProfilePrimaryActionButton(
-                title: SafeEatL10n.text(L10nKey.Auth.resetPasswordAction),
+                title: SafeMealL10n.text(L10nKey.Auth.resetPasswordAction),
                 isLoading: isLoading,
                 isDisabled: !canSubmit
             ) {
@@ -116,13 +116,13 @@ struct ResetPasswordView: View {
                 nextSmsNeedsCaptcha = true
             }
         }
-        .alert(SafeEatL10n.text(L10nKey.Common.notice), isPresented: showErrorMessage) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) { errorMessage = nil }
+        .alert(SafeMealL10n.text(L10nKey.Common.notice), isPresented: showErrorMessage) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok), role: .cancel) { errorMessage = nil }
         } message: {
             Text(errorMessage ?? "")
         }
         .alert(successMessage, isPresented: $showSuccess) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok)) { dismiss() }
+            Button(SafeMealL10n.text(L10nKey.Common.ok)) { dismiss() }
         }
     }
 
@@ -172,7 +172,7 @@ struct ResetPasswordView: View {
             return
         }
         guard newPassword == confirmPassword else {
-            errorMessage = SafeEatL10n.text(L10nKey.Auth.passwordMismatch)
+            errorMessage = SafeMealL10n.text(L10nKey.Auth.passwordMismatch)
             return
         }
         isLoading = true
@@ -194,11 +194,11 @@ struct ResetPasswordView: View {
         if !password.isEmpty {
             let result = PasswordValidator.validate(password)
             VStack(alignment: .leading, spacing: 4) {
-                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementLength), passed: result.isLengthValid)
-                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementUppercase), passed: result.hasUppercase)
-                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementLowercase), passed: result.hasLowercase)
-                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementDigit), passed: result.hasDigit)
-                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementSpecial), passed: result.hasSpecialChar)
+                requirementRow(text: SafeMealL10n.text(L10nKey.Auth.passwordRequirementLength), passed: result.isLengthValid)
+                requirementRow(text: SafeMealL10n.text(L10nKey.Auth.passwordRequirementUppercase), passed: result.hasUppercase)
+                requirementRow(text: SafeMealL10n.text(L10nKey.Auth.passwordRequirementLowercase), passed: result.hasLowercase)
+                requirementRow(text: SafeMealL10n.text(L10nKey.Auth.passwordRequirementDigit), passed: result.hasDigit)
+                requirementRow(text: SafeMealL10n.text(L10nKey.Auth.passwordRequirementSpecial), passed: result.hasSpecialChar)
             }
         }
     }
@@ -207,10 +207,10 @@ struct ResetPasswordView: View {
         HStack(spacing: 4) {
             Image(systemName: passed ? "checkmark.circle.fill" : "circle")
                 .font(.system(size: 12))
-                .foregroundStyle(passed ? SafeEatTheme.success : SafeEatTheme.textSecondary)
+                .foregroundStyle(passed ? SafeMealTheme.success : SafeMealTheme.textSecondary)
             Text(text)
-                .font(SafeEatFont.textStyle(.caption2))
-                .foregroundStyle(passed ? SafeEatTheme.success : SafeEatTheme.textSecondary)
+                .font(SafeMealFont.textStyle(.caption2))
+                .foregroundStyle(passed ? SafeMealTheme.success : SafeMealTheme.textSecondary)
         }
     }
 }

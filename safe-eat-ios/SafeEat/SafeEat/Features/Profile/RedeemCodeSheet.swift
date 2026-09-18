@@ -10,12 +10,12 @@ struct RedeemCodeSheet: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        SafeEatSettingsSheetContainer(
-            title: SafeEatL10n.text(L10nKey.Profile.Redeem.title),
-            subtitle: SafeEatL10n.text(L10nKey.Profile.Redeem.subtitle),
+        SafeMealSettingsSheetContainer(
+            title: SafeMealL10n.text(L10nKey.Profile.Redeem.title),
+            subtitle: SafeMealL10n.text(L10nKey.Profile.Redeem.subtitle),
             contentHeight: 150,
             primaryButton: SheetButton(
-                title: SafeEatL10n.text(L10nKey.Profile.Redeem.action),
+                title: SafeMealL10n.text(L10nKey.Profile.Redeem.action),
                 isLoading: isRedeeming,
                 isDisabled: code.trimmingCharacters(in: .whitespaces).isEmpty
             ) {
@@ -27,27 +27,27 @@ struct RedeemCodeSheet: View {
                     HStack(spacing: 14) {
                         ZStack {
                             Circle()
-                                .fill(SafeEatTheme.primary.opacity(0.12))
+                                .fill(SafeMealTheme.primary.opacity(0.12))
                                 .frame(width: 46, height: 46)
 
                             Image(systemName: "ticket.fill")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(SafeEatTheme.primary)
+                                .foregroundStyle(SafeMealTheme.primary)
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(SafeEatL10n.text(L10nKey.Profile.Redeem.inputLabel))
-                                .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
+                            Text(SafeMealL10n.text(L10nKey.Profile.Redeem.inputLabel))
+                                .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
+                                .foregroundStyle(SafeMealTheme.textPrimary)
 
-                            Text(SafeEatL10n.text(L10nKey.Profile.Redeem.inputHint))
-                                .font(SafeEatFont.textStyle(.footnote))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                            Text(SafeMealL10n.text(L10nKey.Profile.Redeem.inputHint))
+                                .font(SafeMealFont.textStyle(.footnote))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                     }
 
-                    TextField(SafeEatL10n.text(L10nKey.Profile.Redeem.inputPlaceholder), text: $code)
-                        .font(SafeEatFont.textStyle(.body))
+                    TextField(SafeMealL10n.text(L10nKey.Profile.Redeem.inputPlaceholder), text: $code)
+                        .font(SafeMealFont.textStyle(.body))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 12)
                         .background(
@@ -56,14 +56,14 @@ struct RedeemCodeSheet: View {
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(SafeEatTheme.primary.opacity(0.2), lineWidth: 1)
+                                .stroke(SafeMealTheme.primary.opacity(0.2), lineWidth: 1)
                         )
                         .textInputAutocapitalization(.characters)
                         .autocorrectionDisabled()
 
                     if let error = errorMessage {
                         Text(error)
-                            .font(SafeEatFont.textStyle(.caption))
+                            .font(SafeMealFont.textStyle(.caption))
                             .foregroundStyle(.red)
                     }
                 }
@@ -83,7 +83,7 @@ struct RedeemCodeSheet: View {
             if result.success {
                 dismiss()
             } else {
-                errorMessage = SafeEatL10n.text(L10nKey.Profile.Redeem.failedMessage)
+                errorMessage = SafeMealL10n.text(L10nKey.Profile.Redeem.failedMessage)
             }
         } catch {
             errorMessage = error.localizedDescription

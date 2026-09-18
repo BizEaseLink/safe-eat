@@ -9,32 +9,32 @@ struct RestorePurchasesView: View {
 
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.Profile.RestorePurchases.title),
-            subtitle: SafeEatL10n.text(L10nKey.Profile.RestorePurchases.subtitle)
+            title: SafeMealL10n.text(L10nKey.Profile.RestorePurchases.title),
+            subtitle: SafeMealL10n.text(L10nKey.Profile.RestorePurchases.subtitle)
         ) {
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 12) {
                     if isRestoring {
                         HStack(spacing: 12) {
                             ProgressView()
-                            Text(SafeEatL10n.text(L10nKey.Profile.RestorePurchases.restoring))
-                                .font(SafeEatFont.textStyle(.body))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                            Text(SafeMealL10n.text(L10nKey.Profile.RestorePurchases.restoring))
+                                .font(SafeMealFont.textStyle(.body))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                     } else if let resultMessage {
                         Text(resultMessage)
-                            .font(SafeEatFont.textStyle(.body))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
+                            .font(SafeMealFont.textStyle(.body))
+                            .foregroundStyle(SafeMealTheme.textPrimary)
                     } else {
-                        Text(SafeEatL10n.text(L10nKey.Profile.RestorePurchases.subtitle))
-                            .font(SafeEatFont.textStyle(.body))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                        Text(SafeMealL10n.text(L10nKey.Profile.RestorePurchases.subtitle))
+                            .font(SafeMealFont.textStyle(.body))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                     }
                 }
             }
         } footer: {
             ProfilePrimaryActionButton(
-                title: SafeEatL10n.text(L10nKey.Profile.RestorePurchases.title),
+                title: SafeMealL10n.text(L10nKey.Profile.RestorePurchases.title),
                 isLoading: isRestoring
             ) {
                 restorePurchases()
@@ -51,7 +51,7 @@ struct RestorePurchasesView: View {
             if let error = store.purchaseError {
                 resultMessage = error
             } else {
-                resultMessage = SafeEatL10n.text(L10nKey.Profile.RestorePurchases.success)
+                resultMessage = SafeMealL10n.text(L10nKey.Profile.RestorePurchases.success)
             }
         }
     }

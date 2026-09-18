@@ -38,10 +38,10 @@ struct AccountRecoveryView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
                         Color.clear
-                            .frame(height: SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
+                            .frame(height: SafeMealSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
 
                         backButton
-                        heroBlock(title: SafeEatL10n.text(L10nKey.Auth.accountRecoveryTitle))
+                        heroBlock(title: SafeMealL10n.text(L10nKey.Auth.accountRecoveryTitle))
                         recoveryContent
                     }
                     .padding(.horizontal, 20)
@@ -60,13 +60,13 @@ struct AccountRecoveryView: View {
                 nextSmsNeedsCaptcha = true
             }
         }
-        .alert(SafeEatL10n.text(L10nKey.Common.notice), isPresented: showErrorMessage) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) { errorMessage = nil }
+        .alert(SafeMealL10n.text(L10nKey.Common.notice), isPresented: showErrorMessage) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok), role: .cancel) { errorMessage = nil }
         } message: {
             Text(errorMessage ?? "")
         }
-        .alert(SafeEatL10n.text(L10nKey.Auth.accountRecoverySuccess), isPresented: $showSuccess) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok)) {
+        .alert(SafeMealL10n.text(L10nKey.Auth.accountRecoverySuccess), isPresented: $showSuccess) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok)) {
                 // 恢复成功后，如果需要设置密码则跳转设置密码页，否则直接进首页
                 // AppStore.finishLogin 已处理 requiresPasswordSetup
             }
@@ -84,7 +84,7 @@ struct AccountRecoveryView: View {
 
     private var authBackground: some View {
         ZStack {
-            SafeEatMainGradientBackground()
+            SafeMealMainGradientBackground()
 
             Circle()
                 .fill(Color(red: 0.89, green: 0.95, blue: 0.90).opacity(colorScheme == .dark ? 0.10 : 0.82))
@@ -99,7 +99,7 @@ struct AccountRecoveryView: View {
                 .offset(x: 132, y: -280)
 
             Circle()
-                .fill(SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.08 : 0.35))
+                .fill(SafeMealTheme.primarySoft.opacity(colorScheme == .dark ? 0.08 : 0.35))
                 .frame(width: 280, height: 280)
                 .offset(x: 118, y: 320)
         }
@@ -116,7 +116,7 @@ struct AccountRecoveryView: View {
         } label: {
             Image(systemName: "chevron.left")
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: 46, height: 46)
                 .background(
                     Circle()
@@ -124,7 +124,7 @@ struct AccountRecoveryView: View {
                 )
                 .overlay(
                     Circle()
-                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -136,39 +136,39 @@ struct AccountRecoveryView: View {
                 AppLogoView(size: 44, animate: false)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(SafeEatL10n.text(L10nKey.Brand.appName))
-                        .font(SafeEatFont.custom(22, relativeTo: .title2, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    Text(SafeMealL10n.text(L10nKey.Brand.appName))
+                        .font(SafeMealFont.custom(22, relativeTo: .title2, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
 
-                    Text(SafeEatL10n.text(L10nKey.Brand.slogan))
-                        .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.primaryDeep)
+                    Text(SafeMealL10n.text(L10nKey.Brand.slogan))
+                        .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.primaryDeep)
                 }
             }
 
             Text(title)
-                .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(34, relativeTo: .largeTitle, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
         }
     }
 
     private var recoveryContent: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(SafeEatL10n.text(L10nKey.Auth.accountRecoverySubtitle))
-                .font(SafeEatFont.custom(15, relativeTo: .body))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+            Text(SafeMealL10n.text(L10nKey.Auth.accountRecoverySubtitle))
+                .font(SafeMealFont.custom(15, relativeTo: .body))
+                .foregroundStyle(SafeMealTheme.textSecondary)
 
-            recoveryField(title: SafeEatL10n.text(L10nKey.Auth.phoneLabel), text: $inputPhone, keyboardType: .numberPad)
+            recoveryField(title: SafeMealL10n.text(L10nKey.Auth.phoneLabel), text: $inputPhone, keyboardType: .numberPad)
 
             // 验证码行
             HStack(spacing: 12) {
-                recoveryField(title: SafeEatL10n.text(L10nKey.Auth.codeLabel), text: $code, keyboardType: .numberPad)
+                recoveryField(title: SafeMealL10n.text(L10nKey.Auth.codeLabel), text: $code, keyboardType: .numberPad)
 
                 Button {
                     Task { await requestSMS() }
                 } label: {
-                    Text(smsCountdownManager.countdown > 0 ? "\(smsCountdownManager.countdown)s" : (smsCountdownManager.isSending ? SafeEatL10n.text(L10nKey.Common.sending) : SafeEatL10n.text(L10nKey.Common.sendCode)))
-                        .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
+                    Text(smsCountdownManager.countdown > 0 ? "\(smsCountdownManager.countdown)s" : (smsCountdownManager.isSending ? SafeMealL10n.text(L10nKey.Common.sending) : SafeMealL10n.text(L10nKey.Common.sendCode)))
+                        .font(SafeMealFont.custom(15, relativeTo: .body, weight: .bold))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 18)
                         .frame(height: 56)
@@ -176,7 +176,7 @@ struct AccountRecoveryView: View {
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
                                 .fill(
                                     LinearGradient(
-                                        colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                        colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
@@ -188,27 +188,27 @@ struct AccountRecoveryView: View {
             }
 
             if let devCodeHint, !devCodeHint.isEmpty {
-                Text(SafeEatL10n.format(L10nKey.Auth.smsHintFormat, devCodeHint))
-                    .font(SafeEatFont.textStyle(.footnote))
+                Text(SafeMealL10n.format(L10nKey.Auth.smsHintFormat, devCodeHint))
+                    .font(SafeMealFont.textStyle(.footnote))
                     .foregroundStyle(Color(red: 0.82, green: 0.47, blue: 0.18))
             }
 
-            authPrimaryButton(title: SafeEatL10n.text(L10nKey.Auth.accountRecoveryAction), isLoading: isLoading) {
+            authPrimaryButton(title: SafeMealL10n.text(L10nKey.Auth.accountRecoveryAction), isLoading: isLoading) {
                 Task { await recoverAccount() }
             }
             .disabled(!canSubmit)
         }
         .padding(24)
         .background(cardBackground)
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
+        .shadow(color: SafeMealTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
     }
 
     private func recoveryField(title: String, text: Binding<String>, keyboardType: UIKeyboardType) -> some View {
         TextField(title, text: text)
             .keyboardType(keyboardType)
             .textInputAutocapitalization(.never)
-            .font(SafeEatFont.custom(16, relativeTo: .body))
-            .foregroundStyle(SafeEatTheme.textPrimary)
+            .font(SafeMealFont.custom(16, relativeTo: .body))
+            .foregroundStyle(SafeMealTheme.textPrimary)
             .padding(.horizontal, 16)
             .frame(height: 56)
             .background(
@@ -217,7 +217,7 @@ struct AccountRecoveryView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                    .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
             )
     }
 
@@ -233,14 +233,14 @@ struct AccountRecoveryView: View {
                         .frame(maxWidth: .infinity)
                 }
             }
-            .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+            .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
             .foregroundStyle(.white)
             .padding(.vertical, 16)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                            colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -259,7 +259,7 @@ struct AccountRecoveryView: View {
         }
         .overlay(
             RoundedRectangle(cornerRadius: 32, style: .continuous)
-                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
         )
     }
 
@@ -305,7 +305,7 @@ struct AccountRecoveryView: View {
         await store.cancelDeletionPublic(phone: inputPhone, code: code)
 
         if store.accountDeletingDetected {
-            errorMessage = SafeEatL10n.text(L10nKey.Auth.accountDeletingMessage)
+            errorMessage = SafeMealL10n.text(L10nKey.Auth.accountDeletingMessage)
             store.accountDeletingDetected = false
         } else if store.session != nil {
             showSuccess = true

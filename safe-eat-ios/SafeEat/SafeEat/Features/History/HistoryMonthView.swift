@@ -13,7 +13,7 @@ struct HistoryMonthView: View {
     @State private var scrollOffset: CGFloat = 0
     @State private var showServerHistory = false
 
-    private let scrollCoordinateSpace = "safeeat.history.month.scroll"
+    private let scrollCoordinateSpace = "safemeal.history.month.scroll"
 
     private var monthGroups: [MonthGroup] {
         let grouped = Dictionary(grouping: store.localHistory) { item in
@@ -42,16 +42,16 @@ struct HistoryMonthView: View {
 
                 if monthGroups.isEmpty {
                     VStack(alignment: .leading, spacing: 0) {
-                        SafeEatPageHeader(title: SafeEatL10n.text(L10nKey.Menu.title))
+                        SafeMealPageHeader(title: SafeMealL10n.text(L10nKey.Menu.title))
                             .padding(.horizontal, 20)
                             .padding(.top, 16)
                             .padding(.bottom, 8)
 
                         Spacer()
 
-                        SafeEatEmptyState(
-                            title: SafeEatL10n.text(L10nKey.History.dayEmptyTitle),
-                            message: SafeEatL10n.text(L10nKey.History.dayEmptyMessage),
+                        SafeMealEmptyState(
+                            title: SafeMealL10n.text(L10nKey.History.dayEmptyTitle),
+                            message: SafeMealL10n.text(L10nKey.History.dayEmptyMessage),
                             systemImage: "clock.arrow.circlepath"
                         )
                         .padding(.horizontal, 24)
@@ -61,9 +61,9 @@ struct HistoryMonthView: View {
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 18) {
-                            SafeEatScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
+                            SafeMealScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
 
-                            SafeEatPageHeader(title: SafeEatL10n.text(L10nKey.Menu.title))
+                            SafeMealPageHeader(title: SafeMealL10n.text(L10nKey.Menu.title))
 
                             // 服务器历史记录入口
                             serverHistoryEntry
@@ -76,18 +76,18 @@ struct HistoryMonthView: View {
                                         HStack(spacing: 12) {
                                             VStack(alignment: .leading, spacing: 6) {
                                                 Text(group.title)
-                                                    .font(SafeEatFont.textStyle(.headline))
-                                                    .foregroundStyle(SafeEatTheme.textPrimary)
-                                                Text(SafeEatL10n.format(L10nKey.History.recordCountOther, group.items.count))
-                                                    .font(SafeEatFont.textStyle(.subheadline))
-                                                    .foregroundStyle(SafeEatTheme.textSecondary)
+                                                    .font(SafeMealFont.textStyle(.headline))
+                                                    .foregroundStyle(SafeMealTheme.textPrimary)
+                                                Text(SafeMealL10n.format(L10nKey.History.recordCountOther, group.items.count))
+                                                    .font(SafeMealFont.textStyle(.subheadline))
+                                                    .foregroundStyle(SafeMealTheme.textSecondary)
                                             }
 
                                             Spacer()
 
                                             Image(systemName: "chevron.right")
                                                 .font(.system(size: 14, weight: .semibold))
-                                                .foregroundStyle(SafeEatTheme.textSecondary)
+                                                .foregroundStyle(SafeMealTheme.textSecondary)
                                         }
                                         .padding(18)
                                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -97,7 +97,7 @@ struct HistoryMonthView: View {
                                         )
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                                .stroke(SafeEatTheme.line, lineWidth: 1)
+                                                .stroke(SafeMealTheme.line, lineWidth: 1)
                                         )
                                     }
                                     .buttonStyle(.plain)
@@ -109,13 +109,13 @@ struct HistoryMonthView: View {
                         .padding(.bottom, 48)
                     }
                     .coordinateSpace(name: scrollCoordinateSpace)
-                    .onPreferenceChange(SafeEatScrollOffsetKey.self) { value in
+                    .onPreferenceChange(SafeMealScrollOffsetKey.self) { value in
                         scrollOffset = value
                     }
                 }
 
-                SafeEatScrollNavChrome(
-                    title: SafeEatL10n.text(L10nKey.Menu.title),
+                SafeMealScrollNavChrome(
+                    title: SafeMealL10n.text(L10nKey.Menu.title),
                     scrollOffset: scrollOffset,
                     topInset: proxy.safeAreaInsets.top
                 )
@@ -132,32 +132,32 @@ struct HistoryMonthView: View {
             HStack(spacing: 12) {
                 Image(systemName: "clock.arrow.circlepath")
                     .font(.system(size: 20))
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .foregroundStyle(SafeMealTheme.primary)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(SafeEatL10n.text(L10nKey.History.serverNavTitle))
-                        .font(SafeEatFont.textStyle(.headline))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
-                    Text(SafeEatL10n.text(L10nKey.History.dayEmptyMessage))
-                        .font(SafeEatFont.textStyle(.caption))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                    Text(SafeMealL10n.text(L10nKey.History.serverNavTitle))
+                        .font(SafeMealFont.textStyle(.headline))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
+                    Text(SafeMealL10n.text(L10nKey.History.dayEmptyMessage))
+                        .font(SafeMealFont.textStyle(.caption))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
             .padding(18)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(SafeEatTheme.primary.opacity(0.08))
+                    .fill(SafeMealTheme.primary.opacity(0.08))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(SafeEatTheme.primary.opacity(0.3), lineWidth: 1)
+                    .stroke(SafeMealTheme.primary.opacity(0.3), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)

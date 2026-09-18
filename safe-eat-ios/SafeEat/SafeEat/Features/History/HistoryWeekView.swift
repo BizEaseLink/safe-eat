@@ -6,7 +6,7 @@ private struct WeekDayGroup: Identifiable {
     let items: [LocalHistoryItem]
 
     var subtitle: String {
-        SafeEatHistoryL10n.recordCount(items.count)
+        SafeMealHistoryL10n.recordCount(items.count)
     }
 }
 
@@ -26,15 +26,17 @@ private struct WeekDayMarkerOffsetKey: PreferenceKey {
 struct HistoryWeekView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.resultDetailPresented) private var resultDetailPresented
 
     let referenceDate: Date
 
     @State private var resultRoute: HistoryWeekResultRoute?
     @State private var scrollOffset: CGFloat = 0
     @State private var currentVisibleDate: Date?
+    @State private var showSearch = false
 
     private let columns = [GridItem(.flexible(), spacing: 18), GridItem(.flexible(), spacing: 18)]
-    private let scrollCoordinateSpace = "safeeat.history.week.scroll"
+    private let scrollCoordinateSpace = "safemeal.history.week.scroll"
 
     private var weekInterval: DateInterval? {
         Calendar.current.dateInterval(of: .weekOfYear, for: referenceDate)
@@ -64,14 +66,14 @@ struct HistoryWeekView: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let topInset = SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top)
+            let topInset = SafeMealSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top)
 
             ZStack(alignment: .topLeading) {
-                SafeEatDottedRecordBackground()
+                SafeMealDottedRecordBackground()
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 28) {
-                        SafeEatGlobalScrollOffsetReader(
+                        SafeMealGlobalScrollOffsetReader(
                             scrollOffset: $scrollOffset
                         )
                         .id(referenceDate.weekIdentity)
@@ -97,12 +99,19 @@ struct HistoryWeekView: View {
                 }
                 .coordinateSpace(name: scrollCoordinateSpace)
 
-                SafeEatTopBackChrome(
+                SafeMealTopBackChrome(
                     title: currentVisibleDate?.chromeDateText ?? weekRangeText,
                     scrollOffset: scrollOffset,
                     topInset: topInset,
                     minimumBackdropOpacity: 0,
                     emphasizesSafeAreaFill: true,
+                    trailingContent: {
+                        AnyView(
+                            HistorySearchMagnifier {
+                                showSearch = true
+                            }
+                        )
+                    },
                     onBack: { dismiss() }
                 )
             }
@@ -113,31 +122,42 @@ struct HistoryWeekView: View {
         .navigationDestination(item: $resultRoute) { route in
             ResultView(itemId: route.itemId)
         }
+        .sheet(isPresented: $showSearch) {
+            HistorySearchView(dateRange: weekInterval.flatMap { $0.start...($0.end.addingTimeInterval(-1)) }, scopeTitle: SafeMealL10n.text(L10nKey.History.searchScopeWeek)) { item in
+                resultRoute = HistoryWeekResultRoute(id: item.id, itemId: item.id)
+            }
+        }
         .onAppear {
             currentVisibleDate = dayGroups.first?.date
             StickerImageCache.preload(for: Array(weekItems.prefix(12)))
+        }
+        .onChange(of: resultRoute) { _, newValue in
+            resultDetailPresented.wrappedValue = newValue != nil
+            #if DEBUG
+            print("[DBG WeekView onChange resultRoute] newValue=\(newValue != nil) => resultDetailPresented=\(resultDetailPresented.wrappedValue)")
+            #endif
         }
     }
 
     private var heroHeader: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(SafeEatL10n.text(L10nKey.History.weekTitle))
-                .font(SafeEatFont.custom(38, relativeTo: .largeTitle, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+            Text(SafeMealL10n.text(L10nKey.History.weekTitle))
+                .font(SafeMealFont.custom(38, relativeTo: .largeTitle, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
 
             Text(weekRangeText)
-                .font(SafeEatFont.custom(17, relativeTo: .body))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .font(SafeMealFont.custom(17, relativeTo: .body))
+                .foregroundStyle(SafeMealTheme.textSecondary)
 
             Text(
-                SafeEatL10n.format(
+                SafeMealL10n.format(
                     L10nKey.History.weekSummaryFormat,
-                    SafeEatHistoryL10n.recordCount(weekItems.count),
-                    SafeEatHistoryL10n.dayCount(dayGroups.count)
+                    SafeMealHistoryL10n.recordCount(weekItems.count),
+                    SafeMealHistoryL10n.dayCount(dayGroups.count)
                 )
             )
-                .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .font(SafeMealFont.custom(15, relativeTo: .subheadline))
+                .foregroundStyle(SafeMealTheme.textSecondary)
         }
     }
 
@@ -145,18 +165,18 @@ struct HistoryWeekView: View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(group.date.heroDateText)
-                    .font(SafeEatFont.custom(30, relativeTo: .title, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(30, relativeTo: .title, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
 
                 Text(
-                    SafeEatL10n.format(
+                    SafeMealL10n.format(
                         L10nKey.History.weekSectionSubtitleFormat,
                         group.date.weekdayText,
                         group.subtitle
                     )
                 )
-                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.custom(15, relativeTo: .subheadline))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
 
             Color.clear
@@ -197,7 +217,7 @@ struct HistoryWeekView: View {
             Button(role: .destructive) {
                 store.removeHistoryItem(item)
             } label: {
-                Label(SafeEatL10n.text(L10nKey.Common.delete), systemImage: "trash")
+                Label(SafeMealL10n.text(L10nKey.Common.delete), systemImage: "trash")
             }
         }
         .onTapGesture {
@@ -206,9 +226,9 @@ struct HistoryWeekView: View {
     }
 
     private var emptyState: some View {
-        SafeEatEmptyState(
-            title: SafeEatL10n.text(L10nKey.History.weekEmptyTitle),
-            message: SafeEatL10n.text(L10nKey.History.weekEmptyMessage),
+        SafeMealEmptyState(
+            title: SafeMealL10n.text(L10nKey.History.weekEmptyTitle),
+            message: SafeMealL10n.text(L10nKey.History.weekEmptyMessage),
             systemImage: "calendar.badge.exclamationmark"
         )
         .padding(.top, 28)
@@ -217,7 +237,7 @@ struct HistoryWeekView: View {
     private var weekRangeText: String {
         guard let weekInterval else { return "" }
 
-        return SafeEatHistoryL10n.weekRange(
+        return SafeMealHistoryL10n.weekRange(
             start: weekInterval.start,
             end: weekInterval.end.addingTimeInterval(-86400)
         )
@@ -260,14 +280,14 @@ private extension Date {
     }
 
     var chromeDateText: String {
-        SafeEatHistoryL10n.shortDate(self)
+        SafeMealHistoryL10n.shortDate(self)
     }
 
     var heroDateText: String {
-        SafeEatHistoryL10n.shortDate(self)
+        SafeMealHistoryL10n.shortDate(self)
     }
 
     var weekdayText: String {
-        SafeEatHistoryL10n.weekday(self)
+        SafeMealHistoryL10n.weekday(self)
     }
 }

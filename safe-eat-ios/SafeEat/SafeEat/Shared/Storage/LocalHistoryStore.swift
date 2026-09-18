@@ -2,8 +2,8 @@ import Foundation
 
 final class LocalHistoryStore {
     private let fileManager = FileManager.default
-    private let decoder = SafeEatAPI.makeLocalDecoder()
-    private let encoder = SafeEatAPI.makeLocalEncoder()
+    private let decoder = SafeMealAPI.makeLocalDecoder()
+    private let encoder = SafeMealAPI.makeLocalEncoder()
 
     private var currentUserId: String?
 
@@ -24,7 +24,7 @@ final class LocalHistoryStore {
 
     private var appSupportDirectory: URL {
         let root = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let dir = root.appendingPathComponent("SafeEat", isDirectory: true)
+        let dir = root.appendingPathComponent("SafeMeal", isDirectory: true)
         if !fileManager.fileExists(atPath: dir.path) {
             try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
         }
@@ -180,7 +180,7 @@ final class LocalHistoryStore {
     }
 }
 
-extension SafeEatAPI {
+extension SafeMealAPI {
     static func makeLocalDecoder() -> JSONDecoder {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601

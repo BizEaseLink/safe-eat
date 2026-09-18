@@ -3,7 +3,7 @@ import AppTrackingTransparency
 import Combine
 
 @main
-struct SafeEatApp: App {
+struct SafeMealApp: App {
     @StateObject private var store = AppStore()
     @StateObject private var settings = AppSettingsStore.shared
     private var adConfig: AdConfigStore { AdConfigStore.shared }
@@ -34,8 +34,8 @@ struct SafeEatApp: App {
     }
 
     init() {
-        SafeEatFont.bootstrap()
-        SafeEatAppearance.configure()
+        SafeMealFont.bootstrap()
+        SafeMealAppearance.configure()
 
         // 注入会员判断闭包给插屏广告管理器
         InterstitialAdManager.shared.isPremiumProvider = { [store] in
@@ -55,8 +55,8 @@ struct SafeEatApp: App {
         WindowGroup {
             ZStack {
                 ContentView()
-                    .safeEatBaseFont()
-                    .tint(SafeEatTheme.primary)
+                    .safeMealBaseFont()
+                    .tint(SafeMealTheme.primary)
                     .environmentObject(store)
                     .environmentObject(settings)
                     .environment(\.locale, settings.displayLocale)

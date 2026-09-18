@@ -10,7 +10,7 @@ func profileControlFill(for colorScheme: ColorScheme) -> Color {
 }
 
 func profileStrokeColor(for colorScheme: ColorScheme) -> Color {
-    colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
+    colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line
 }
 
 struct ProfileSurfaceCard<Content: View>: View {
@@ -31,7 +31,7 @@ struct ProfileSurfaceCard<Content: View>: View {
             RoundedRectangle(cornerRadius: 30, style: .continuous)
                 .stroke(profileStrokeColor(for: colorScheme), lineWidth: 1)
         )
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(0.10), radius: 22, y: 14)
+        .shadow(color: SafeMealTheme.primaryDeep.opacity(0.10), radius: 22, y: 14)
     }
 }
 
@@ -41,7 +41,7 @@ struct ProfileSectionBlock<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SafeEatSectionHeader(title: title)
+            SafeMealSectionHeader(title: title)
             ProfileSurfaceCard {
                 content
             }
@@ -54,7 +54,7 @@ struct ProfileNavigationRow: View {
     let title: String
     var subtitle: String? = nil
     var trailingText: String? = nil
-    var tint: Color = SafeEatTheme.primary
+    var tint: Color = SafeMealTheme.primary
 
     var body: some View {
         HStack(spacing: 14) {
@@ -69,13 +69,13 @@ struct ProfileNavigationRow: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(SafeEatFont.textStyle(.body))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.textStyle(.body))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
 
                 if let subtitle, !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(SafeEatFont.textStyle(.footnote))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.textStyle(.footnote))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
             }
 
@@ -83,13 +83,13 @@ struct ProfileNavigationRow: View {
 
             if let trailingText, !trailingText.isEmpty {
                 Text(trailingText)
-                    .font(SafeEatFont.textStyle(.footnote))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.textStyle(.footnote))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.75))
+                .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.75))
         }
         .frame(minHeight: 48)
         .contentShape(Rectangle())
@@ -105,17 +105,17 @@ struct ProfileChoiceChip: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
-                .foregroundStyle(isSelected ? Color.white : SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                .foregroundStyle(isSelected ? Color.white : SafeMealTheme.textPrimary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 11)
                 .background(
                     Capsule()
-                        .fill(isSelected ? SafeEatTheme.primary : profileControlFill(for: colorScheme))
+                        .fill(isSelected ? SafeMealTheme.primary : profileControlFill(for: colorScheme))
                 )
                 .overlay(
                     Capsule()
-                        .stroke(isSelected ? SafeEatTheme.primary : profileStrokeColor(for: colorScheme), lineWidth: 1)
+                        .stroke(isSelected ? SafeMealTheme.primary : profileStrokeColor(for: colorScheme), lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -132,15 +132,15 @@ struct ProfileSelectionRow: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Text(title)
-                    .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(15, relativeTo: .body, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
 
                 Spacer()
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.primary)
+                        .foregroundStyle(SafeMealTheme.primary)
                 } else {
                     Circle()
                         .stroke(profileStrokeColor(for: colorScheme), lineWidth: 1.5)
@@ -155,7 +155,7 @@ struct ProfileSelectionRow: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(isSelected ? SafeEatTheme.primary.opacity(0.28) : profileStrokeColor(for: colorScheme), lineWidth: 1)
+                    .stroke(isSelected ? SafeMealTheme.primary.opacity(0.28) : profileStrokeColor(for: colorScheme), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -195,7 +195,7 @@ struct ProfileAvatarView: View {
             Circle()
                 .stroke(profileStrokeColor(for: colorScheme), lineWidth: 2)
         )
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(0.16), radius: 12, y: 8)
+        .shadow(color: SafeMealTheme.primaryDeep.opacity(0.16), radius: 12, y: 8)
     }
 
     private var placeholder: some View {
@@ -235,7 +235,7 @@ struct ProfileAvatarView: View {
             )
         default:
             LinearGradient(
-                colors: [SafeEatTheme.primary, SafeEatTheme.primaryDeep],
+                colors: [SafeMealTheme.primary, SafeMealTheme.primaryDeep],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -250,9 +250,9 @@ struct ProfileAvatarView: View {
             if let phone = profile.phone, !phone.isEmpty {
                 return String(phone.suffix(2))
             }
-            return String(SafeEatL10n.text(L10nKey.Brand.appName).prefix(1))
+            return String(SafeMealL10n.text(L10nKey.Brand.appName).prefix(1))
         }
-        return String(SafeEatL10n.text(L10nKey.Brand.appName).prefix(1))
+        return String(SafeMealL10n.text(L10nKey.Brand.appName).prefix(1))
     }
 }
 
@@ -263,12 +263,12 @@ struct ProfileStaticRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 16) {
             Text(label)
-                .font(SafeEatFont.textStyle(.body))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.textStyle(.body))
+                .foregroundStyle(SafeMealTheme.textPrimary)
             Spacer()
             Text(value)
-                .font(SafeEatFont.textStyle(.body))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .font(SafeMealFont.textStyle(.body))
+                .foregroundStyle(SafeMealTheme.textSecondary)
                 .multilineTextAlignment(.trailing)
         }
     }
@@ -292,14 +292,14 @@ struct ProfilePrimaryActionButton: View {
                         .frame(maxWidth: .infinity)
                 }
             }
-            .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+            .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
             .foregroundStyle(.white)
             .padding(.vertical, 16)
             .background(
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                            colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -320,16 +320,16 @@ struct ProfileSecondaryActionButton: View {
         Button(action: action) {
             Text(title)
                 .frame(maxWidth: .infinity)
-                .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .semibold))
-                .foregroundStyle(SafeEatTheme.primary)
+                .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .semibold))
+                .foregroundStyle(SafeMealTheme.primary)
                 .padding(.vertical, 14)
                 .background(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .fill(SafeEatTheme.primarySoft)
+                        .fill(SafeMealTheme.primarySoft)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(SafeEatTheme.primary.opacity(0.3), lineWidth: 1)
+                        .stroke(SafeMealTheme.primary.opacity(0.3), lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -346,13 +346,13 @@ struct ProfileFieldBlock<Content: View>: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(label)
-                    .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(15, relativeTo: .body, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
 
                 if let hint, !hint.isEmpty {
                     Text(hint)
-                        .font(SafeEatFont.custom(12, relativeTo: .caption))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.custom(12, relativeTo: .caption))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
 
                 if let onInfo {
@@ -362,7 +362,7 @@ struct ProfileFieldBlock<Content: View>: View {
                     } label: {
                         Image(systemName: "questionmark.circle")
                             .font(.system(size: 16))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                     }
                     .buttonStyle(.plain)
                 }
@@ -382,8 +382,8 @@ struct ProfileTextField: View {
     var body: some View {
         TextField(title, text: $text)
             .keyboardType(keyboardType)
-            .font(SafeEatFont.custom(16, relativeTo: .body))
-            .foregroundStyle(SafeEatTheme.textPrimary)
+            .font(SafeMealFont.custom(16, relativeTo: .body))
+            .foregroundStyle(SafeMealTheme.textPrimary)
             .padding(.horizontal, 16)
             .frame(height: 56)
             .background(
@@ -405,8 +405,8 @@ struct ProfileSecureField: View {
     var body: some View {
         SecureField(title, text: $text)
             .textInputAutocapitalization(.never)
-            .font(SafeEatFont.custom(16, relativeTo: .body))
-            .foregroundStyle(SafeEatTheme.textPrimary)
+            .font(SafeMealFont.custom(16, relativeTo: .body))
+            .foregroundStyle(SafeMealTheme.textPrimary)
             .padding(.horizontal, 16)
             .frame(height: 56)
             .background(
@@ -441,15 +441,15 @@ struct ProfileMenuField: View {
             }
         } label: {
             HStack(spacing: 12) {
-                Text(options.first(where: { $0.id == value })?.title ?? SafeEatL10n.text(L10nKey.Common.notSet))
-                    .font(SafeEatFont.custom(16, relativeTo: .body))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                Text(options.first(where: { $0.id == value })?.title ?? SafeMealL10n.text(L10nKey.Common.notSet))
+                    .font(SafeMealFont.custom(16, relativeTo: .body))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
 
                 Spacer()
 
                 Image(systemName: "chevron.down")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
@@ -472,8 +472,8 @@ struct ProfileDisabledField: View {
 
     var body: some View {
         TextField(text, text: .constant(text))
-            .font(SafeEatFont.custom(16, relativeTo: .body))
-            .foregroundStyle(SafeEatTheme.textSecondary)
+            .font(SafeMealFont.custom(16, relativeTo: .body))
+            .foregroundStyle(SafeMealTheme.textSecondary)
             .disabled(true)
             .padding(.horizontal, 16)
             .frame(height: 56)
@@ -499,14 +499,14 @@ struct ProfileCodeRow: View {
     var body: some View {
         HStack(spacing: 12) {
             ProfileTextField(
-                title: SafeEatL10n.text(L10nKey.Auth.codeLabel),
+                title: SafeMealL10n.text(L10nKey.Auth.codeLabel),
                 text: code,
                 keyboardType: .numberPad
             )
 
             Button(action: action) {
                 Text(buttonText)
-                    .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
+                    .font(SafeMealFont.custom(15, relativeTo: .body, weight: .bold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 18)
                     .frame(height: 56)
@@ -515,10 +515,10 @@ struct ProfileCodeRow: View {
                             .fill(
                                 LinearGradient(
                                     colors: isDisabled
-                                        ? [SafeEatTheme.textSecondary.opacity(0.3), SafeEatTheme.textSecondary.opacity(0.3)]
+                                        ? [SafeMealTheme.textSecondary.opacity(0.3), SafeMealTheme.textSecondary.opacity(0.3)]
                                         : (useDangerColor
-                                            ? [SafeEatTheme.danger.opacity(0.85), SafeEatTheme.danger]
-                                            : [SafeEatTheme.primaryDeep, SafeEatTheme.primary]),
+                                            ? [SafeMealTheme.danger.opacity(0.85), SafeMealTheme.danger]
+                                            : [SafeMealTheme.primaryDeep, SafeMealTheme.primary]),
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
@@ -566,8 +566,8 @@ struct ProfileSecondaryChrome: View {
                 Spacer(minLength: 0)
 
                 Text(title)
-                    .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(22, relativeTo: .title3, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
                     .lineLimit(1)
                     .opacity(progress)
                     .offset(y: progress > 0.02 ? 0 : 6)
@@ -589,7 +589,7 @@ struct ProfileSecondaryChrome: View {
         Button(action: onBack) {
             Image(systemName: "chevron.left")
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: 48, height: 48)
                 .background(
                     Circle()
@@ -616,7 +616,7 @@ struct ProfileSecondaryPage<Content: View, Footer: View>: View {
     @ViewBuilder let footer: Footer
 
     @State private var scrollOffset: CGFloat = 0
-    private let scrollCoordinateSpace = "safeeat.profile.secondary.scroll"
+    private let scrollCoordinateSpace = "safemeal.profile.secondary.scroll"
 
     init(
         title: String,
@@ -646,14 +646,14 @@ struct ProfileSecondaryPage<Content: View, Footer: View>: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let topInset = SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top)
+            let topInset = SafeMealSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top)
 
             ZStack(alignment: .topLeading) {
-                SafeEatMainGradientBackground()
+                SafeMealMainGradientBackground()
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 20) {
-                        SafeEatScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
+                        SafeMealScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
 
                         Color.clear
                             .frame(height: topInset + 54)
@@ -668,7 +668,7 @@ struct ProfileSecondaryPage<Content: View, Footer: View>: View {
                     .padding(.bottom, 48)
                 }
                 .coordinateSpace(name: scrollCoordinateSpace)
-                .onPreferenceChange(SafeEatScrollOffsetKey.self) { value in
+                .onPreferenceChange(SafeMealScrollOffsetKey.self) { value in
                     scrollOffset = value
                 }
                 .applyIf(onRefresh != nil) { scroll in
@@ -690,13 +690,13 @@ struct ProfileSecondaryPage<Content: View, Footer: View>: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(34, relativeTo: .largeTitle, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
 
             if let subtitle, !subtitle.isEmpty {
                 Text(subtitle)
-                    .font(SafeEatFont.custom(16, relativeTo: .body))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.custom(16, relativeTo: .body))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
         }
     }
@@ -721,12 +721,12 @@ struct CancelledRenewalBanner: View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: "info.circle.fill")
                 .font(.system(size: 16))
-                .foregroundStyle(SafeEatTheme.warning)
+                .foregroundStyle(SafeMealTheme.warning)
                 .padding(.top, 2)
 
             Text("已关闭自动续费，当前会员权益可正常使用至 \(formattedEndsAt)，到期后将自动关闭会员特权")
-                .font(SafeEatFont.custom(13, relativeTo: .footnote))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(13, relativeTo: .footnote))
+                .foregroundStyle(SafeMealTheme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
             Spacer(minLength: 0)
@@ -735,11 +735,11 @@ struct CancelledRenewalBanner: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(SafeEatTheme.warning.opacity(0.10))
+                .fill(SafeMealTheme.warning.opacity(0.10))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(SafeEatTheme.warning.opacity(0.35), lineWidth: 1)
+                .stroke(SafeMealTheme.warning.opacity(0.35), lineWidth: 1)
         )
     }
 }
@@ -761,12 +761,12 @@ struct ExpiryUrgentReminderView: View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: "exclamationmark.circle.fill")
                 .font(.system(size: 16))
-                .foregroundStyle(SafeEatTheme.danger)
+                .foregroundStyle(SafeMealTheme.danger)
                 .padding(.top, 2)
 
             Text("您的会员将于 \(formattedEndsAt) 到期，如需继续使用请重新开通订阅")
-                .font(SafeEatFont.custom(13, relativeTo: .footnote, weight: .semibold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(13, relativeTo: .footnote, weight: .semibold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
             Spacer(minLength: 0)
@@ -775,11 +775,11 @@ struct ExpiryUrgentReminderView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(SafeEatTheme.danger.opacity(0.10))
+                .fill(SafeMealTheme.danger.opacity(0.10))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(SafeEatTheme.danger.opacity(0.35), lineWidth: 1)
+                .stroke(SafeMealTheme.danger.opacity(0.35), lineWidth: 1)
         )
     }
 }
@@ -804,11 +804,11 @@ struct PurchaseLoadingOverlay: View {
                     .scaleEffect(1.2)
 
                 Text("正在确认购买…")
-                    .font(SafeEatFont.custom(15, relativeTo: .body, weight: .semibold))
+                    .font(SafeMealFont.custom(15, relativeTo: .body, weight: .semibold))
                     .foregroundStyle(.white)
 
                 Text("请勿离开此页面，购买确认通常需要几秒到一分钟")
-                    .font(SafeEatFont.custom(12, relativeTo: .caption))
+                    .font(SafeMealFont.custom(12, relativeTo: .caption))
                     .foregroundStyle(.white.opacity(0.8))
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 240)
@@ -825,7 +825,7 @@ struct PurchaseLoadingOverlay: View {
                 onCancelWait()
             } label: {
                 Text("取消等待")
-                    .font(SafeEatFont.custom(13, relativeTo: .footnote))
+                    .font(SafeMealFont.custom(13, relativeTo: .footnote))
                     .foregroundStyle(.white.opacity(0.85))
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
@@ -849,5 +849,30 @@ private extension View {
         } else {
             self
         }
+    }
+}
+
+// MARK: - 个人页顶部图标按钮（风格对齐历史页放大镜 / 主页铃铛）
+
+struct ProfileHeaderIconButton: View {
+    let systemName: String
+    var accessibilityLabel: String = ""
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        Image(systemName: systemName)
+            .font(.system(size: 20, weight: .medium))
+            .foregroundStyle(SafeMealTheme.textPrimary)
+            .frame(width: 44, height: 44)
+            .background(
+                Circle()
+                    .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.72))
+            )
+            .overlay(
+                Circle()
+                    .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
+            )
+            .accessibilityLabel(accessibilityLabel)
     }
 }

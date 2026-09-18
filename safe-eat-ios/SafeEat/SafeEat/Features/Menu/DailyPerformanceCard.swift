@@ -50,11 +50,11 @@ struct AdviceRatioBar: View {
 
                     // 各段从左到右
                     HStack(spacing: 0) {
-                        barSegment(stats.recommended, totalW, SafeEatTheme.success)
-                        barSegment(stats.moderate, totalW, SafeEatTheme.primary)
-                        barSegment(stats.caution, totalW, SafeEatTheme.warning)
-                        barSegment(stats.avoid, totalW, SafeEatTheme.danger)
-                        barSegment(stats.evaluate, totalW, SafeEatTheme.textSecondary)
+                        barSegment(stats.recommended, totalW, SafeMealTheme.success)
+                        barSegment(stats.moderate, totalW, SafeMealTheme.primary)
+                        barSegment(stats.caution, totalW, SafeMealTheme.warning)
+                        barSegment(stats.avoid, totalW, SafeMealTheme.danger)
+                        barSegment(stats.evaluate, totalW, SafeMealTheme.textSecondary)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: barHeight / 2, style: .continuous))
                 }
@@ -83,33 +83,33 @@ struct AdviceRatioBar: View {
     private var legendRow: some View {
         HStack(spacing: 0) {
             legendItem(
-                label: SafeEatL10n.text(L10nKey.Advice.compactRecommended),
+                label: SafeMealL10n.text(L10nKey.Advice.compactRecommended),
                 count: stats.recommended,
-                color: SafeEatTheme.success
+                color: SafeMealTheme.success
             )
             Spacer()
             legendItem(
-                label: SafeEatL10n.text(L10nKey.Advice.compactModerate),
+                label: SafeMealL10n.text(L10nKey.Advice.compactModerate),
                 count: stats.moderate,
-                color: SafeEatTheme.primary
+                color: SafeMealTheme.primary
             )
             Spacer()
             legendItem(
-                label: SafeEatL10n.text(L10nKey.Advice.compactCaution),
+                label: SafeMealL10n.text(L10nKey.Advice.compactCaution),
                 count: stats.caution,
-                color: SafeEatTheme.warning
+                color: SafeMealTheme.warning
             )
             Spacer()
             legendItem(
-                label: SafeEatL10n.text(L10nKey.Advice.compactAvoid),
+                label: SafeMealL10n.text(L10nKey.Advice.compactAvoid),
                 count: stats.avoid,
-                color: SafeEatTheme.danger
+                color: SafeMealTheme.danger
             )
             Spacer()
             legendItem(
-                label: SafeEatL10n.text(L10nKey.Advice.compactEvaluate),
+                label: SafeMealL10n.text(L10nKey.Advice.compactEvaluate),
                 count: stats.evaluate,
-                color: SafeEatTheme.textSecondary
+                color: SafeMealTheme.textSecondary
             )
         }
     }
@@ -121,13 +121,13 @@ struct AdviceRatioBar: View {
                 .frame(width: 6, height: 6)
 
             Text(label)
-                .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                .foregroundStyle(SafeMealTheme.textSecondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
 
             Text("\(count)")
-                .font(SafeEatFont.custom(11, relativeTo: .caption2, weight: .bold))
+                .font(SafeMealFont.custom(11, relativeTo: .caption2, weight: .bold))
                 .foregroundStyle(color)
         }
     }
@@ -164,20 +164,20 @@ struct DailyPerformanceCard: View {
     }
 
     private var performanceLevel: String {
-        guard stats.total > 0 else { return SafeEatL10n.text(L10nKey.Menu.performanceNoRecord) }
+        guard stats.total > 0 else { return SafeMealL10n.text(L10nKey.Menu.performanceNoRecord) }
         let ratio = Double(stats.recommended + stats.moderate) / Double(stats.total)
-        if ratio >= 0.7 { return SafeEatL10n.text(L10nKey.Menu.performanceExcellent) }
-        if ratio >= 0.4 { return SafeEatL10n.text(L10nKey.Menu.performanceMedium) }
-        if stats.avoid > stats.recommended { return SafeEatL10n.text(L10nKey.Menu.performanceNeedsImprove) }
-        return SafeEatL10n.text(L10nKey.Menu.performanceMedium)
+        if ratio >= 0.7 { return SafeMealL10n.text(L10nKey.Menu.performanceExcellent) }
+        if ratio >= 0.4 { return SafeMealL10n.text(L10nKey.Menu.performanceMedium) }
+        if stats.avoid > stats.recommended { return SafeMealL10n.text(L10nKey.Menu.performanceNeedsImprove) }
+        return SafeMealL10n.text(L10nKey.Menu.performanceMedium)
     }
 
     private var statusColor: Color {
-        guard stats.total > 0 else { return SafeEatTheme.textSecondary }
+        guard stats.total > 0 else { return SafeMealTheme.textSecondary }
         let ratio = Double(stats.recommended + stats.moderate) / Double(stats.total)
-        if ratio >= 0.7 { return SafeEatTheme.success }
-        if ratio >= 0.4 { return SafeEatTheme.warning }
-        return SafeEatTheme.danger
+        if ratio >= 0.7 { return SafeMealTheme.success }
+        if ratio >= 0.4 { return SafeMealTheme.warning }
+        return SafeMealTheme.danger
     }
 
     @Environment(\.colorScheme) private var colorScheme
@@ -186,9 +186,9 @@ struct DailyPerformanceCard: View {
         VStack(alignment: .leading, spacing: 14) {
             // 1. 标题行
             HStack(spacing: 10) {
-                Text(SafeEatL10n.text(L10nKey.Menu.dailyHealthOverview))
-                    .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                Text(SafeMealL10n.text(L10nKey.Menu.dailyHealthOverview))
+                    .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
 
                 Circle()
                     .fill(statusColor)
@@ -199,19 +199,20 @@ struct DailyPerformanceCard: View {
                 if let onTapped {
                     Button(action: onTapped) {
                         HStack(spacing: 4) {
-                            Text(SafeEatL10n.text(L10nKey.Menu.dailyScanLog))
-                                .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
+                            Text(SafeMealL10n.text(L10nKey.Menu.dailyScanLog))
+                                .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .bold))
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 11, weight: .bold))
                         }
-                        .foregroundStyle(SafeEatTheme.primary)
+                        .foregroundStyle(SafeMealTheme.primary)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(
                             Capsule()
-                                .fill(SafeEatTheme.primarySoft.opacity(0.82))
+                                .fill(SafeMealTheme.primarySoft.opacity(0.82))
                         )
                     }
+                    .accessibilityIdentifier("menuDayEntry")
                     .buttonStyle(.plain)
                 }
             }
@@ -219,24 +220,24 @@ struct DailyPerformanceCard: View {
             // 2. 核心指标行（扫描次数 + 平均评分 + 总热量）
             HStack(spacing: 8) {
                 metricChip(
-                    title: SafeEatL10n.text(L10nKey.Menu.dailyScanCount),
+                    title: SafeMealL10n.text(L10nKey.Menu.dailyScanCount),
                     value: "\(items.count)",
                     icon: "barcode.viewfinder",
-                    iconColor: SafeEatTheme.primary
+                    iconColor: SafeMealTheme.primary
                 )
                 .frame(maxWidth: .infinity)
                 metricChip(
-                    title: SafeEatL10n.text(L10nKey.Menu.dailyAvgScore),
+                    title: SafeMealL10n.text(L10nKey.Menu.dailyAvgScore),
                     value: avgScore,
                     icon: "star.fill",
-                    iconColor: SafeEatTheme.warning
+                    iconColor: SafeMealTheme.warning
                 )
                 .frame(maxWidth: .infinity)
                 metricChip(
-                    title: SafeEatL10n.text(L10nKey.Menu.dailyTotalCalories),
+                    title: SafeMealL10n.text(L10nKey.Menu.dailyTotalCalories),
                     value: totalCalories,
                     icon: "flame.fill",
-                    iconColor: SafeEatTheme.danger
+                    iconColor: SafeMealTheme.danger
                 )
                 .frame(maxWidth: .infinity)
             }
@@ -264,12 +265,12 @@ struct DailyPerformanceCard: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
 
                 Text(value)
-                    .font(SafeEatFont.custom(16, relativeTo: .subheadline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(16, relativeTo: .subheadline, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
             }
         }
         .padding(.horizontal, 12)
@@ -300,7 +301,7 @@ struct DailyPerformanceCard: View {
     }
 
     private var heroCardStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line
     }
 }
 
@@ -329,11 +330,11 @@ struct WeeklySummaryCard: View {
 
     /// 趋势描述
     private var trendDescription: String {
-        guard stats.total > 0 else { return SafeEatL10n.text(L10nKey.Menu.weeklyTrendGood) }
+        guard stats.total > 0 else { return SafeMealL10n.text(L10nKey.Menu.weeklyTrendGood) }
         let ratio = Double(stats.recommended + stats.moderate) / Double(stats.total)
-        if ratio >= 0.7 { return SafeEatL10n.text(L10nKey.Menu.weeklyTrendGood) }
-        if ratio >= 0.4 { return SafeEatL10n.text(L10nKey.Menu.weeklyTrendModerate) }
-        return SafeEatL10n.text(L10nKey.Menu.weeklyTrendPoor)
+        if ratio >= 0.7 { return SafeMealL10n.text(L10nKey.Menu.weeklyTrendGood) }
+        if ratio >= 0.4 { return SafeMealL10n.text(L10nKey.Menu.weeklyTrendModerate) }
+        return SafeMealL10n.text(L10nKey.Menu.weeklyTrendPoor)
     }
 
     /// 连续达标天数
@@ -396,39 +397,39 @@ struct WeeklySummaryCard: View {
         VStack(alignment: .leading, spacing: 14) {
             // 1. 标题行 + 连续达标标签
             HStack {
-                Text(SafeEatL10n.text(L10nKey.Menu.weeklyOverview))
-                    .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                Text(SafeMealL10n.text(L10nKey.Menu.weeklyOverview))
+                    .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
 
                 Spacer()
 
                 if consecutiveDays > 0 {
                     HStack(spacing: 4) {
                         Image(systemName: "flame.fill")
-                        Text(SafeEatL10n.format(L10nKey.Menu.weeklyConsecutiveDaysFormat, consecutiveDays))
+                        Text(SafeMealL10n.format(L10nKey.Menu.weeklyConsecutiveDaysFormat, consecutiveDays))
                     }
-                    .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.primary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
-                    .background(Capsule().fill(SafeEatTheme.primarySoft))
+                    .background(Capsule().fill(SafeMealTheme.primarySoft))
                 }
             }
 
             // 2. 趋势描述
             Text(trendDescription)
-                .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .font(SafeMealFont.custom(14, relativeTo: .subheadline))
+                .foregroundStyle(SafeMealTheme.textSecondary)
 
             // 3. 本周使用统计行
             HStack {
-                Text(SafeEatL10n.text(L10nKey.Menu.weeklyUsageStats))
-                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                Text(SafeMealL10n.text(L10nKey.Menu.weeklyUsageStats))
+                    .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
                 Spacer()
-                Text(SafeEatL10n.format(L10nKey.Menu.weeklyScanCountFormat, weekItems.count))
-                    .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                Text(SafeMealL10n.format(L10nKey.Menu.weeklyScanCountFormat, weekItems.count))
+                    .font(SafeMealFont.custom(14, relativeTo: .subheadline))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
 
             // 4. 进度条 + 图例
@@ -442,25 +443,26 @@ struct WeeklySummaryCard: View {
             // 6. 周平均分 + 查看详情
             HStack(alignment: .bottom) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(SafeEatL10n.text(L10nKey.Menu.weeklyAvgScore))
-                        .font(SafeEatFont.custom(12, relativeTo: .caption2))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                    Text(SafeMealL10n.text(L10nKey.Menu.weeklyAvgScore))
+                        .font(SafeMealFont.custom(12, relativeTo: .caption2))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                     Text(weekAvgScore)
-                        .font(SafeEatFont.custom(34, relativeTo: .title, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .font(SafeMealFont.custom(34, relativeTo: .title, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
                 }
                 Spacer()
                 Button { onTapped(weekStartDate) } label: {
                     HStack(spacing: 4) {
-                        Text(SafeEatL10n.text(L10nKey.Menu.weeklyViewDetail))
+                        Text(SafeMealL10n.text(L10nKey.Menu.weeklyViewDetail))
                         Image(systemName: "arrow.forward")
                     }
-                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.primary)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(Capsule().fill(SafeEatTheme.primarySoft.opacity(0.82)))
+                    .background(Capsule().fill(SafeMealTheme.primarySoft.opacity(0.82)))
                 }
+                .accessibilityIdentifier("menuWeekEntry")
                 .buttonStyle(.plain)
             }
         }
@@ -496,7 +498,7 @@ struct WeeklySummaryCard: View {
     }
 
     private var heroCardStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line
     }
 }
 
@@ -524,8 +526,8 @@ struct WeeklyBarChart: View {
 
                     // 星期标签
                     Text(entry.day)
-                        .font(SafeEatFont.custom(10, relativeTo: .caption2))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.custom(10, relativeTo: .caption2))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                 }
@@ -545,6 +547,6 @@ struct WeeklyBarChart: View {
         guard count > 0 else {
             return colorScheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.06)
         }
-        return SafeEatTheme.primary.opacity(0.75)
+        return SafeMealTheme.primary.opacity(0.75)
     }
 }

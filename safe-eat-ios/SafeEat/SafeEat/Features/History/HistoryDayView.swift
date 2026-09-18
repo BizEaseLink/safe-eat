@@ -8,11 +8,13 @@ private struct HistoryDayResultRoute: Identifiable, Hashable {
 struct HistoryDayView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.resultDetailPresented) private var resultDetailPresented
 
     let date: Date
 
     @State private var resultRoute: HistoryDayResultRoute?
     @State private var scrollOffset: CGFloat = 0
+    @State private var showSearch = false
 
     private let columns = [GridItem(.flexible(), spacing: 18), GridItem(.flexible(), spacing: 18)]
 
@@ -22,16 +24,23 @@ struct HistoryDayView: View {
             .sorted { $0.createdAt > $1.createdAt }
     }
 
+    /// 当天搜索范围：当天 00:00 起，到次日 00:00 前最后一秒（含当天全部记录）
+    private var daySearchRange: ClosedRange<Date> {
+        let start = Calendar.current.startOfDay(for: date)
+        let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: start) ?? start
+        return start...(nextDay.addingTimeInterval(-1))
+    }
+
     var body: some View {
         GeometryReader { proxy in
-            let topInset = SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top)
+            let topInset = SafeMealSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top)
 
             ZStack(alignment: .topLeading) {
-                SafeEatDottedRecordBackground()
+                SafeMealDottedRecordBackground()
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 28) {
-                        SafeEatGlobalScrollOffsetReader(
+                        SafeMealGlobalScrollOffsetReader(
                             scrollOffset: $scrollOffset
                         )
                         .id(date.historyDayIdentity)
@@ -55,12 +64,19 @@ struct HistoryDayView: View {
                     .padding(.bottom, 48)
                 }
 
-                SafeEatTopBackChrome(
+                SafeMealTopBackChrome(
                     title: date.chromeDateText,
                     scrollOffset: scrollOffset,
                     topInset: topInset,
                     minimumBackdropOpacity: 0,
                     emphasizesSafeAreaFill: true,
+                    trailingContent: {
+                        AnyView(
+                            HistorySearchMagnifier {
+                                showSearch = true
+                            }
+                        )
+                    },
                     onBack: { dismiss() }
                 )
             }
@@ -71,21 +87,33 @@ struct HistoryDayView: View {
         .navigationDestination(item: $resultRoute) { route in
             ResultView(itemId: route.itemId)
         }
+        .sheet(isPresented: $showSearch) {
+            HistorySearchView(dateRange: daySearchRange, scopeTitle: SafeMealL10n.text(L10nKey.History.searchScopeDay)) { item in
+                // 搜当天：点结果直接进详情（复用现有 resultRoute）
+                resultRoute = HistoryDayResultRoute(id: item.id, itemId: item.id)
+            }
+        }
         .onAppear {
             scrollOffset = 0
             StickerImageCache.preload(for: Array(dayItems.prefix(10)))
+        }
+        .onChange(of: resultRoute) { _, newValue in
+            resultDetailPresented.wrappedValue = newValue != nil
+            #if DEBUG
+            print("[DBG DayView onChange resultRoute] newValue=\(newValue != nil) => resultDetailPresented=\(resultDetailPresented.wrappedValue)")
+            #endif
         }
     }
 
     private var heroHeader: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(date.heroDateText)
-                .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(34, relativeTo: .largeTitle, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
 
-            Text(dayItems.isEmpty ? SafeEatL10n.text(L10nKey.History.noRecords) : SafeEatHistoryL10n.recordCount(dayItems.count))
-                .font(SafeEatFont.custom(17, relativeTo: .body))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+            Text(dayItems.isEmpty ? SafeMealL10n.text(L10nKey.History.noRecords) : SafeMealHistoryL10n.recordCount(dayItems.count))
+                .font(SafeMealFont.custom(17, relativeTo: .body))
+                .foregroundStyle(SafeMealTheme.textSecondary)
         }
     }
 
@@ -105,7 +133,7 @@ struct HistoryDayView: View {
             Button(role: .destructive) {
                 store.removeHistoryItem(item)
             } label: {
-                Label(SafeEatL10n.text(L10nKey.Common.delete), systemImage: "trash")
+                Label(SafeMealL10n.text(L10nKey.Common.delete), systemImage: "trash")
             }
         }
         .onTapGesture {
@@ -114,9 +142,9 @@ struct HistoryDayView: View {
     }
 
     private var emptyState: some View {
-        SafeEatEmptyState(
-            title: SafeEatL10n.text(L10nKey.History.dayEmptyTitle),
-            message: SafeEatL10n.text(L10nKey.History.dayEmptyMessage),
+        SafeMealEmptyState(
+            title: SafeMealL10n.text(L10nKey.History.dayEmptyTitle),
+            message: SafeMealL10n.text(L10nKey.History.dayEmptyMessage),
             systemImage: "square.stack.3d.up.slash"
         )
         .padding(.top, 28)
@@ -132,10 +160,10 @@ private extension Date {
     }
 
     var chromeDateText: String {
-        SafeEatHistoryL10n.shortDate(self)
+        SafeMealHistoryL10n.shortDate(self)
     }
 
     var heroDateText: String {
-        SafeEatHistoryL10n.shortDate(self)
+        SafeMealHistoryL10n.shortDate(self)
     }
 }

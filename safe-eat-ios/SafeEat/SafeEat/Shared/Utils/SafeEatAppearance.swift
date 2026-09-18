@@ -1,39 +1,39 @@
 import UIKit
 
-enum SafeEatAppearance {
+enum SafeMealAppearance {
     static func configure() {
         let tabBarAppearance = UITabBarAppearance()
         tabBarAppearance.configureWithOpaqueBackground()
         tabBarAppearance.backgroundColor = .systemBackground
-        tabBarAppearance.stackedLayoutAppearance.normal.iconColor = SafeEatTheme.textSecondaryUIColor
-        tabBarAppearance.stackedLayoutAppearance.selected.iconColor = SafeEatTheme.primaryUIColor
+        tabBarAppearance.stackedLayoutAppearance.normal.iconColor = SafeMealTheme.textSecondaryUIColor
+        tabBarAppearance.stackedLayoutAppearance.selected.iconColor = SafeMealTheme.primaryUIColor
         tabBarAppearance.stackedLayoutAppearance.normal.titleTextAttributes = [
             .font: font(size: 11),
-            .foregroundColor: SafeEatTheme.textSecondaryUIColor,
+            .foregroundColor: SafeMealTheme.textSecondaryUIColor,
         ]
         tabBarAppearance.stackedLayoutAppearance.selected.titleTextAttributes = [
             .font: font(size: 11),
-            .foregroundColor: SafeEatTheme.primaryUIColor,
+            .foregroundColor: SafeMealTheme.primaryUIColor,
         ]
-        tabBarAppearance.inlineLayoutAppearance.normal.iconColor = SafeEatTheme.textSecondaryUIColor
-        tabBarAppearance.inlineLayoutAppearance.selected.iconColor = SafeEatTheme.primaryUIColor
+        tabBarAppearance.inlineLayoutAppearance.normal.iconColor = SafeMealTheme.textSecondaryUIColor
+        tabBarAppearance.inlineLayoutAppearance.selected.iconColor = SafeMealTheme.primaryUIColor
         tabBarAppearance.inlineLayoutAppearance.normal.titleTextAttributes = [
             .font: font(size: 11),
-            .foregroundColor: SafeEatTheme.textSecondaryUIColor,
+            .foregroundColor: SafeMealTheme.textSecondaryUIColor,
         ]
         tabBarAppearance.inlineLayoutAppearance.selected.titleTextAttributes = [
             .font: font(size: 11),
-            .foregroundColor: SafeEatTheme.primaryUIColor,
+            .foregroundColor: SafeMealTheme.primaryUIColor,
         ]
-        tabBarAppearance.compactInlineLayoutAppearance.normal.iconColor = SafeEatTheme.textSecondaryUIColor
-        tabBarAppearance.compactInlineLayoutAppearance.selected.iconColor = SafeEatTheme.primaryUIColor
+        tabBarAppearance.compactInlineLayoutAppearance.normal.iconColor = SafeMealTheme.textSecondaryUIColor
+        tabBarAppearance.compactInlineLayoutAppearance.selected.iconColor = SafeMealTheme.primaryUIColor
         tabBarAppearance.compactInlineLayoutAppearance.normal.titleTextAttributes = [
             .font: font(size: 11),
-            .foregroundColor: SafeEatTheme.textSecondaryUIColor,
+            .foregroundColor: SafeMealTheme.textSecondaryUIColor,
         ]
         tabBarAppearance.compactInlineLayoutAppearance.selected.titleTextAttributes = [
             .font: font(size: 11),
-            .foregroundColor: SafeEatTheme.primaryUIColor,
+            .foregroundColor: SafeMealTheme.primaryUIColor,
         ]
 
         let navigationAppearance = UINavigationBarAppearance()
@@ -41,11 +41,11 @@ enum SafeEatAppearance {
         navigationAppearance.backgroundColor = .systemBackground
         navigationAppearance.titleTextAttributes = [
             .font: font(size: 18, weight: .bold),
-            .foregroundColor: SafeEatTheme.textPrimaryUIColor,
+            .foregroundColor: SafeMealTheme.textPrimaryUIColor,
         ]
         navigationAppearance.largeTitleTextAttributes = [
             .font: font(size: 32, weight: .bold),
-            .foregroundColor: SafeEatTheme.textPrimaryUIColor,
+            .foregroundColor: SafeMealTheme.textPrimaryUIColor,
         ]
 
         UINavigationBar.appearance().standardAppearance = navigationAppearance
@@ -54,20 +54,20 @@ enum SafeEatAppearance {
 
         UIBarButtonItem.appearance().setTitleTextAttributes([
             .font: font(size: 15),
-            .foregroundColor: SafeEatTheme.primaryUIColor,
+            .foregroundColor: SafeMealTheme.primaryUIColor,
         ], for: .normal)
 
         UITabBar.appearance().standardAppearance = tabBarAppearance
         UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-        UITabBar.appearance().tintColor = SafeEatTheme.primaryUIColor
-        UITabBar.appearance().unselectedItemTintColor = SafeEatTheme.textSecondaryUIColor
+        UITabBar.appearance().tintColor = SafeMealTheme.primaryUIColor
+        UITabBar.appearance().unselectedItemTintColor = SafeMealTheme.textSecondaryUIColor
         UITabBarItem.appearance().setTitleTextAttributes([
             .font: font(size: 11),
-            .foregroundColor: SafeEatTheme.textSecondaryUIColor,
+            .foregroundColor: SafeMealTheme.textSecondaryUIColor,
         ], for: .normal)
         UITabBarItem.appearance().setTitleTextAttributes([
             .font: font(size: 11),
-            .foregroundColor: SafeEatTheme.primaryUIColor,
+            .foregroundColor: SafeMealTheme.primaryUIColor,
         ], for: .selected)
 
         UITextField.appearance().font = font(size: 16)
@@ -75,10 +75,10 @@ enum SafeEatAppearance {
     }
 
     private static func font(size: CGFloat) -> UIFont {
-        SafeEatFont.uiFont(size: size)
+        SafeMealFont.uiFont(size: size)
     }
 
-    private static func font(size: CGFloat, weight: SafeEatFontWeight) -> UIFont {
-        SafeEatFont.uiFont(size: size, weight: weight)
+    private static func font(size: CGFloat, weight: SafeMealFontWeight) -> UIFont {
+        SafeMealFont.uiFont(size: size, weight: weight)
     }
 }

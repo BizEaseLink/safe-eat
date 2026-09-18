@@ -3,8 +3,8 @@ import CoreGraphics
 import Combine
 
 enum AppConfig {
-    static let appCode = "safe-eat"
-    static let appStoreID = "6741974970"
+    static let appCode = "safe-meal"
+    static let appStoreID = "6807346000"
 
     // 根据 Xcode Scheme 环境变量切换 API 地址
     // 开发: 本地 192.168.31.160:3000
@@ -16,14 +16,14 @@ enum AppConfig {
 //            return url
 //        }
         #if DEBUG
-        return URL(string: "http://192.168.31.216:3000/api")!
+        return URL(string: "http://192.168.31.125:3000/api")!
         #else
         return URL(string: "http://106.53.186.117/api")!
         #endif
     }()
     static let imageCompressionQuality: CGFloat = 0.9
     static let historyFileName = "safe-eat-history.json"
-    static let historyImageFolder = "SafeEatHistoryImages"
+    static let historyImageFolder = "SafeMealHistoryImages"
     static let avatarMaxDimension: CGFloat = 1024
     static let avatarTargetMaxBytes = 300 * 1024
 

@@ -9,7 +9,7 @@ extension Notification.Name {
 
 @MainActor
 final class NotificationStore: ObservableObject {
-    private let api: SafeEatAPI
+    private let api: SafeMealAPI
 
     @Published var unreadCount: Int = 0
     @Published var messages: [NotificationMessage] = []
@@ -31,7 +31,7 @@ final class NotificationStore: ObservableObject {
         return f
     }()
 
-    init(api: SafeEatAPI = SafeEatAPI()) {
+    init(api: SafeMealAPI = SafeMealAPI()) {
         self.api = api
     }
 

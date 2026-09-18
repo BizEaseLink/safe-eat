@@ -31,24 +31,30 @@ struct MembershipPurchaseView: View {
     }
 
     private var isNewUser: Bool {
+        // 新用户跟随后端：从未正式付款（体验 ¥0 单不算）→ 正式付款后终身 false。
+        // 优先用后端返回的 isNewUser；旧后端/未返回时回退：free 档且未用过试用。
+        if let serverIsNewUser = store.profile?.isNewUser {
+            return serverIsNewUser
+        }
+        guard store.trialAvailable else { return false }
         guard let tier = store.profile?.currentPlanTier else { return true }
         return tier == "free"
     }
 
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.Membership.title),
-            subtitle: SafeEatL10n.text(L10nKey.Membership.subtitle),
+            title: SafeMealL10n.text(L10nKey.Membership.title),
+            subtitle: SafeMealL10n.text(L10nKey.Membership.subtitle),
             onRefresh: { await loadPlans(force: true) }
         ) {
-            // 新用户赠送提示
-            if isNewUser {
-                newUserGiftBanner
-            }
+            // 新用户赠送提示（已去掉：后续开活动时再启用）
+            // if isNewUser {
+            //     newUserGiftBanner
+            // }
 
             if loadingPlans {
                 ProgressView()
-                    .tint(SafeEatTheme.primary)
+                    .tint(SafeMealTheme.primary)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 24)
             } else if let error = plansLoadError {
@@ -70,9 +76,9 @@ struct MembershipPurchaseView: View {
                     Button {
                         showPriceBreakdownSheet = true
                     } label: {
-                        Text(SafeEatL10n.text(L10nKey.Membership.priceBreakdownTitle))
-                            .font(SafeEatFont.custom(13, relativeTo: .caption))
-                            .foregroundStyle(SafeEatTheme.primary)
+                        Text(SafeMealL10n.text(L10nKey.Membership.priceBreakdownTitle))
+                            .font(SafeMealFont.custom(13, relativeTo: .caption))
+                            .foregroundStyle(SafeMealTheme.primary)
                     }
                     .buttonStyle(.plain)
                 }
@@ -99,43 +105,44 @@ struct MembershipPurchaseView: View {
                         await store.restorePurchases()
                     }
                 } label: {
-                    Text(SafeEatL10n.text(L10nKey.Membership.restorePurchases))
-                        .font(SafeEatFont.textStyle(.caption))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                    Text(SafeMealL10n.text(L10nKey.Membership.restorePurchases))
+                        .font(SafeMealFont.textStyle(.caption))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
                 .disabled(store.isRestoringPurchases)
             }
         }
         .task {
-            await loadPlans()
+            // 每次进入都强制刷新 plans + trialAvailable（避免旧资格导致错弹体验入口）
+            await loadPlans(force: true)
         }
-        .alert(SafeEatL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
+        .alert(SafeMealL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
             get: { successMessage != nil },
             set: { if !$0 { successMessage = nil } }
         )) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok)) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok)) {
                 successMessage = nil
             }
         } message: {
             Text(successMessage ?? "")
         }
         // R1-1: purchaseError 绑 alert，超时/failed 都提示用户（之前 onChange 是空闭包，用户看不到）
-        .alert(SafeEatL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
+        .alert(SafeMealL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
             get: { store.purchaseError != nil },
             set: { if !$0 { store.purchaseError = nil } }
         )) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok)) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok)) {
                 store.purchaseError = nil
             }
         } message: {
             Text(store.purchaseError ?? "")
         }
         // 试用激活失败：走 store.errorMessage 通道，sheet 已关，用 alert 提示用户可重试
-        .alert(SafeEatL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
+        .alert(SafeMealL10n.text(L10nKey.Membership.noticeTitle), isPresented: Binding(
             get: { store.errorMessage != nil },
             set: { if !$0 { store.errorMessage = nil } }
         )) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok)) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok)) {
                 store.errorMessage = nil
             }
         } message: {
@@ -178,17 +185,17 @@ struct MembershipPurchaseView: View {
     private var newUserGiftBanner: some View {
         HStack(spacing: 8) {
             Image(systemName: "gift.fill")
-                .foregroundStyle(SafeEatTheme.warning)
-            Text(SafeEatL10n.text(L10nKey.Membership.newUserGiftBanner))
-                .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
-                .foregroundStyle(SafeEatTheme.warning)
+                .foregroundStyle(SafeMealTheme.warning)
+            Text(SafeMealL10n.text(L10nKey.Membership.newUserGiftBanner))
+                .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .bold))
+                .foregroundStyle(SafeMealTheme.warning)
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(SafeEatTheme.warning.opacity(0.10))
+                .fill(SafeMealTheme.warning.opacity(0.10))
         )
     }
 
@@ -199,17 +206,17 @@ struct MembershipPurchaseView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 32))
                 .foregroundStyle(.orange)
-            Text(SafeEatL10n.text(L10nKey.Membership.plansLoadError))
-                .font(SafeEatFont.textStyle(.body))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+            Text(SafeMealL10n.text(L10nKey.Membership.plansLoadError))
+                .font(SafeMealFont.textStyle(.body))
+                .foregroundStyle(SafeMealTheme.textSecondary)
                 .multilineTextAlignment(.center)
             Button {
                 plansLoadError = nil
                 Task { await loadPlans() }
             } label: {
-                Text(SafeEatL10n.text(L10nKey.Common.retry))
-                    .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.primary)
+                Text(SafeMealL10n.text(L10nKey.Common.retry))
+                    .font(SafeMealFont.custom(15, relativeTo: .body, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.primary)
             }
         }
         .padding(.top, 40)
@@ -219,10 +226,10 @@ struct MembershipPurchaseView: View {
         VStack(spacing: 12) {
             Image(systemName: "tray")
                 .font(.system(size: 32))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-            Text(SafeEatL10n.text(L10nKey.Membership.noPlansAvailable))
-                .font(SafeEatFont.textStyle(.body))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .foregroundStyle(SafeMealTheme.textSecondary)
+            Text(SafeMealL10n.text(L10nKey.Membership.noPlansAvailable))
+                .font(SafeMealFont.textStyle(.body))
+                .foregroundStyle(SafeMealTheme.textSecondary)
                 .multilineTextAlignment(.center)
         }
         .padding(.top, 40)
@@ -231,7 +238,7 @@ struct MembershipPurchaseView: View {
     private var planListSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                SafeEatSectionHeader(title: SafeEatL10n.text(L10nKey.Membership.sectionPlans))
+                SafeMealSectionHeader(title: SafeMealL10n.text(L10nKey.Membership.sectionPlans))
                 Spacer()
                 billingCyclePicker
             }
@@ -244,7 +251,7 @@ struct MembershipPurchaseView: View {
                         .font(.footnote)
                         .foregroundColor(.secondary)
                     Spacer()
-                    Button(SafeEatL10n.text(L10nKey.Common.retry)) {
+                    Button(SafeMealL10n.text(L10nKey.Common.retry)) {
                         plansLoadError = nil
                         Task { await loadPlans() }
                     }
@@ -285,7 +292,7 @@ struct MembershipPurchaseView: View {
                         : isSelected ? "checkmark.circle.fill" : "circle"
                     Image(systemName: imageName)
                         .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(isSelected ? SafeEatTheme.primary : SafeEatTheme.textSecondary.opacity(0.6))
+                        .foregroundStyle(isSelected ? SafeMealTheme.primary : SafeMealTheme.textSecondary.opacity(0.6))
                 }
                 .buttonStyle(.plain)
                 .disabled(downgrade || currentExact)
@@ -299,19 +306,19 @@ struct MembershipPurchaseView: View {
                             // 名称行：tier 名 + 当前标签
                             HStack(spacing: 8) {
                                 Text(PlanTierMapper.title(plan.tier))
-                                    .font(SafeEatFont.textStyle(.headline))
-                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                                    .font(SafeMealFont.textStyle(.headline))
+                                    .foregroundStyle(SafeMealTheme.textPrimary)
                                     .lineLimit(1)
 
                                 if isCurrentPlan(plan) {
-                                    Text(SafeEatL10n.text(L10nKey.Membership.currentPlanBadge))
-                                        .font(SafeEatFont.custom(11, relativeTo: .caption2, weight: .bold))
-                                        .foregroundStyle(SafeEatTheme.textSecondary)
+                                    Text(SafeMealL10n.text(L10nKey.Membership.currentPlanBadge))
+                                        .font(SafeMealFont.custom(11, relativeTo: .caption2, weight: .bold))
+                                        .foregroundStyle(SafeMealTheme.textSecondary)
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 4)
                                         .background(
                                             Capsule()
-                                                .fill(SafeEatTheme.textSecondary.opacity(0.12))
+                                                .fill(SafeMealTheme.textSecondary.opacity(0.12))
                                         )
                                 }
                             }
@@ -325,19 +332,19 @@ struct MembershipPurchaseView: View {
                                    let intro = product.subscription?.introductoryOffer,
                                    intro.paymentMode == .freeTrial {
                                     HStack(spacing: 6) {
-                                        Text(SafeEatL10n.format(L10nKey.Membership.freeTrialDays, intro.period.value))
-                                            .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                                            .foregroundStyle(SafeEatTheme.warning)
+                                        Text(SafeMealL10n.format(L10nKey.Membership.freeTrialDays, intro.period.value))
+                                            .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
+                                            .foregroundStyle(SafeMealTheme.warning)
                                             .padding(.horizontal, 10)
                                             .padding(.vertical, 6)
                                             .background(
                                                 Capsule()
-                                                    .fill(SafeEatTheme.warning.opacity(0.14))
+                                                    .fill(SafeMealTheme.warning.opacity(0.14))
                                             )
 
-                                        Text(SafeEatL10n.text(L10nKey.Membership.trialDisclaimer))
-                                            .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                                            .foregroundStyle(SafeEatTheme.textSecondary)
+                                        Text(SafeMealL10n.text(L10nKey.Membership.trialDisclaimer))
+                                            .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                                            .foregroundStyle(SafeMealTheme.textSecondary)
                                     }
                                 }
                             }
@@ -349,37 +356,37 @@ struct MembershipPurchaseView: View {
                             // 活动权益标签
                             ForEach(campaignBenefitsForPlan(plan)) { benefit in
                                 Text(campaignBenefitText(benefit))
-                                    .font(SafeEatFont.custom(11, relativeTo: .caption2, weight: .bold))
-                                    .foregroundStyle(SafeEatTheme.warning)
+                                    .font(SafeMealFont.custom(11, relativeTo: .caption2, weight: .bold))
+                                    .foregroundStyle(SafeMealTheme.warning)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 3)
                                     .background(
                                         Capsule()
-                                            .fill(SafeEatTheme.warning.opacity(0.14))
+                                            .fill(SafeMealTheme.warning.opacity(0.14))
                                     )
                             }
 
                             // 周期标签
                             Text(plan.billingCycle == "yearly"
-                                 ? SafeEatL10n.text(L10nKey.Membership.cycleYearly)
-                                 : SafeEatL10n.text(L10nKey.Membership.cycleMonthly))
-                                .font(SafeEatFont.custom(12, relativeTo: .caption))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                                 ? SafeMealL10n.text(L10nKey.Membership.cycleYearly)
+                                 : SafeMealL10n.text(L10nKey.Membership.cycleMonthly))
+                                .font(SafeMealFont.custom(12, relativeTo: .caption))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
 
                             // 价格
                             Text(displayPrice(for: plan))
-                                .font(SafeEatFont.custom(26, relativeTo: .title2, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
+                                .font(SafeMealFont.custom(26, relativeTo: .title2, weight: .bold))
+                                .foregroundStyle(SafeMealTheme.textPrimary)
 
                             // 年费对比
                             if selectedBillingCycle == "monthly", let yearlyPlan = store.membershipPlans.first(where: { $0.tier == plan.tier && $0.billingCycle == "yearly" }), yearlyPlan.priceFen > 0 {
-                                Text(SafeEatL10n.format(
+                                Text(SafeMealL10n.format(
                                     L10nKey.Membership.yearlyPriceHint,
-                                    SafeEatTheme.priceText(yearlyPlan.priceFen),
-                                    SafeEatTheme.priceText(yearlyPlan.priceFen / 12)
+                                    SafeMealTheme.priceText(yearlyPlan.priceFen),
+                                    SafeMealTheme.priceText(yearlyPlan.priceFen / 12)
                                ))
-                                .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                                .foregroundStyle(SafeEatTheme.primary.opacity(0.72))
+                                .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                                .foregroundStyle(SafeMealTheme.primary.opacity(0.72))
                             }
                         }
                     }
@@ -400,12 +407,12 @@ struct MembershipPurchaseView: View {
                     ForEach(desc.split(separator: "\n"), id: \.self) { line in
                         HStack(alignment: .top, spacing: 6) {
                             Image(systemName: "star.fill")
-                                .font(SafeEatFont.custom(9, relativeTo: .caption2))
-                                .foregroundStyle(SafeEatTheme.primary)
+                                .font(SafeMealFont.custom(9, relativeTo: .caption2))
+                                .foregroundStyle(SafeMealTheme.primary)
                                 .padding(.top, 3)
                             Text(String(line))
-                                .font(SafeEatFont.textStyle(.footnote))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                                .font(SafeMealFont.textStyle(.footnote))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
@@ -414,10 +421,10 @@ struct MembershipPurchaseView: View {
                 // 降级：本地额度文案
                 VStack(alignment: .leading, spacing: 4) {
                     if let level = plan.aiAdviceLevel, !level.isEmpty {
-                        benefitRow(SafeEatL10n.format(L10nKey.Membership.benefitAiAdviceLevel, AiAdviceLevelMapper.title(level)))
+                        benefitRow(SafeMealL10n.format(L10nKey.Membership.benefitAiAdviceLevel, AiAdviceLevelMapper.title(level)))
                     }
                     if let quota = plan.recognitionQuotaMonthly {
-                        benefitRow(SafeEatL10n.format(L10nKey.Membership.benefitRecognitionMonthly, quota))
+                        benefitRow(SafeMealL10n.format(L10nKey.Membership.benefitRecognitionMonthly, quota))
                     }
                 }
             }
@@ -427,12 +434,12 @@ struct MembershipPurchaseView: View {
     private func benefitRow(_ text: String) -> some View {
         HStack(alignment: .top, spacing: 6) {
             Image(systemName: "star.fill")
-                .font(SafeEatFont.custom(9, relativeTo: .caption2))
-                .foregroundStyle(SafeEatTheme.primary)
+                .font(SafeMealFont.custom(9, relativeTo: .caption2))
+                .foregroundStyle(SafeMealTheme.primary)
                 .padding(.top, 3)
             Text(text)
-                .font(SafeEatFont.textStyle(.footnote))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .font(SafeMealFont.textStyle(.footnote))
+                .foregroundStyle(SafeMealTheme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -444,16 +451,16 @@ struct MembershipPurchaseView: View {
             ForEach(campaignBenefitsForPlan(plan)) { benefit in
                 HStack(spacing: 4) {
                     Image(systemName: "gift")
-                        .font(SafeEatFont.custom(10, relativeTo: .caption2))
+                        .font(SafeMealFont.custom(10, relativeTo: .caption2))
                     Text(campaignBenefitText(benefit))
-                        .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                        .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
                 }
-                .foregroundStyle(SafeEatTheme.warning)
+                .foregroundStyle(SafeMealTheme.warning)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
                 .background(
                     Capsule()
-                        .fill(SafeEatTheme.warning.opacity(0.1))
+                        .fill(SafeMealTheme.warning.opacity(0.1))
                 )
             }
         }
@@ -462,11 +469,11 @@ struct MembershipPurchaseView: View {
     // MARK: - Price Breakdown Sheet
 
     private func priceBreakdownSheet(for plan: MembershipPlan) -> some View {
-        SafeEatSettingsSheetContainer(
-            title: SafeEatL10n.text(L10nKey.Membership.priceBreakdownTitle),
+        SafeMealSettingsSheetContainer(
+            title: SafeMealL10n.text(L10nKey.Membership.priceBreakdownTitle),
             subtitle: nil,
             contentHeight: 282,
-            secondaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Common.cancel)) {
+            secondaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Common.cancel)) {
                 showPriceBreakdownSheet = false
             }
         ) {
@@ -474,26 +481,26 @@ struct MembershipPurchaseView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     // 套餐原价
                     HStack {
-                        Text(SafeEatL10n.text(L10nKey.Membership.priceBreakdownOriginal))
+                        Text(SafeMealL10n.text(L10nKey.Membership.priceBreakdownOriginal))
                         Spacer()
                         Text(displayPrice(for: plan))
                             .strikethrough()
                     }
-                    .font(SafeEatFont.custom(16, relativeTo: .body))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.custom(16, relativeTo: .body))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
 
-                    Divider().overlay(SafeEatTheme.line)
+                    Divider().overlay(SafeMealTheme.line)
 
                     // Apple 优惠
                     if let product = storeKitProduct(for: plan),
                        let intro = product.subscription?.introductoryOffer, intro.paymentMode != .freeTrial {
                         HStack {
-                            Text(SafeEatL10n.text(L10nKey.Membership.priceBreakdownAppleOffer))
+                            Text(SafeMealL10n.text(L10nKey.Membership.priceBreakdownAppleOffer))
                             Spacer()
                             Text(appleOfferText(intro))
                         }
-                        .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.warning)
+                        .font(SafeMealFont.custom(16, relativeTo: .body, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.warning)
                     }
 
                     // 后台活动
@@ -503,32 +510,32 @@ struct MembershipPurchaseView: View {
                             Spacer()
                             Text("-\(campaignBenefitText(benefit))")
                         }
-                        .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.warning)
+                        .font(SafeMealFont.custom(16, relativeTo: .body, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.warning)
                     }
 
                     // 额外权益
                     let bonusText = bonusSummaryText(for: plan)
                     if !bonusText.isEmpty {
                         HStack {
-                            Text(SafeEatL10n.text(L10nKey.Membership.priceBreakdownBonus))
+                            Text(SafeMealL10n.text(L10nKey.Membership.priceBreakdownBonus))
                             Spacer()
                             Text(bonusText)
                         }
-                        .font(SafeEatFont.custom(16, relativeTo: .body, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.warning)
+                        .font(SafeMealFont.custom(16, relativeTo: .body, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.warning)
                     }
 
-                    Divider().overlay(SafeEatTheme.line)
+                    Divider().overlay(SafeMealTheme.line)
 
                     // 实际支付
                     HStack {
-                        Text(SafeEatL10n.text(L10nKey.Membership.priceBreakdownPayment))
+                        Text(SafeMealL10n.text(L10nKey.Membership.priceBreakdownPayment))
                         Spacer()
-                        Text(SafeEatL10n.text(L10nKey.Membership.priceBreakdownAppleFinal))
+                        Text(SafeMealL10n.text(L10nKey.Membership.priceBreakdownAppleFinal))
                     }
-                    .font(SafeEatFont.custom(20, relativeTo: .title3, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .font(SafeMealFont.custom(20, relativeTo: .title3, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.primary)
                 }
             }
         }
@@ -537,15 +544,15 @@ struct MembershipPurchaseView: View {
     // MARK: - Trial Prompt Sheet
 
     private var trialPromptSheet: some View {
-        SafeEatSettingsSheetContainer(
-            title: SafeEatL10n.text(L10nKey.Home.trialPromptTitle),
-            subtitle: SafeEatL10n.text(L10nKey.Home.trialPromptSubtitle),
+        SafeMealSettingsSheetContainer(
+            title: SafeMealL10n.text(L10nKey.Home.trialPromptTitle),
+            subtitle: SafeMealL10n.text(L10nKey.Home.trialPromptSubtitle),
             contentHeight: 160,
-            primaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Home.trialPromptClaimAction), isLoading: activatingTrial) {
+            primaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Home.trialPromptClaimAction), isLoading: activatingTrial) {
                 showTrialPrompt = false
                 Task { await activateTrial() }
             },
-            secondaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Home.trialPromptLaterAction)) {
+            secondaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Home.trialPromptLaterAction)) {
                 showTrialPrompt = false
                 showPurchaseConfirmSheet = true
             }
@@ -555,28 +562,28 @@ struct MembershipPurchaseView: View {
                     HStack(spacing: 14) {
                         ZStack {
                             Circle()
-                                .fill(SafeEatTheme.primary.opacity(0.12))
+                                .fill(SafeMealTheme.primary.opacity(0.12))
                                 .frame(width: 46, height: 46)
 
                             Image(systemName: "crown.fill")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(SafeEatTheme.warning)
+                                .foregroundStyle(SafeMealTheme.warning)
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(SafeEatL10n.text(L10nKey.Home.trialPromptBadgeTitle))
-                                .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
+                            Text(SafeMealL10n.text(L10nKey.Home.trialPromptBadgeTitle))
+                                .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
+                                .foregroundStyle(SafeMealTheme.textPrimary)
 
-                            Text(SafeEatL10n.text(L10nKey.Home.trialPromptBadgeSubtitle))
-                                .font(SafeEatFont.textStyle(.footnote))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                            Text(SafeMealL10n.text(L10nKey.Home.trialPromptBadgeSubtitle))
+                                .font(SafeMealFont.textStyle(.footnote))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                     }
 
-                    Text(SafeEatL10n.text(L10nKey.Home.trialPromptFootnote))
-                        .font(SafeEatFont.textStyle(.caption))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                    Text(SafeMealL10n.text(L10nKey.Home.trialPromptFootnote))
+                        .font(SafeMealFont.textStyle(.caption))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
             }
         }
@@ -589,7 +596,7 @@ struct MembershipPurchaseView: View {
         let ok = await store.activateTrialAndRefresh()
         if ok {
             // 成功：弹统一成功提示（与 NewUserWelcomeSheet 一致）
-            successMessage = SafeEatL10n.text(L10nKey.Home.trialPromptSuccessMessage)
+            successMessage = SafeMealL10n.text(L10nKey.Home.trialPromptSuccessMessage)
         }
         // 失败：store.errorMessage 已设置，sheet 已关 —— errorMessage 通过本页 alert 通道展示，
         // 用户可重新进入购买流程，不再自动跳转 purchaseConfirmSheet
@@ -599,21 +606,21 @@ struct MembershipPurchaseView: View {
 
     private func purchaseConfirmSheet(for plan: MembershipPlan) -> some View {
         let cycleTitle = plan.billingCycle == "yearly"
-            ? SafeEatL10n.text(L10nKey.Membership.cycleYearly)
-            : SafeEatL10n.text(L10nKey.Membership.cycleMonthly)
+            ? SafeMealL10n.text(L10nKey.Membership.cycleYearly)
+            : SafeMealL10n.text(L10nKey.Membership.cycleMonthly)
 
-        return SafeEatSettingsSheetContainer(
-            title: SafeEatL10n.text(L10nKey.Membership.confirmSheetTitle),
+        return SafeMealSettingsSheetContainer(
+            title: SafeMealL10n.text(L10nKey.Membership.confirmSheetTitle),
             subtitle: "\(PlanTierMapper.title(plan.tier)) \(cycleTitle)",
             contentHeight: 340,
             primaryButton: SheetButton(
-                title: SafeEatL10n.format(L10nKey.Membership.confirmPayButton, displayPrice(for: plan)),
+                title: SafeMealL10n.format(L10nKey.Membership.confirmPayButton, displayPrice(for: plan)),
                 isLoading: creatingOrder || store.isPurchasingMembership
             ) {
                 showPurchaseConfirmSheet = false
                 Task { await purchase() }
             },
-            secondaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Common.cancel)) {
+            secondaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Common.cancel)) {
                 showPurchaseConfirmSheet = false
             }
         ) {
@@ -626,64 +633,64 @@ struct MembershipPurchaseView: View {
 
                     // 原价
                     HStack {
-                        Text(SafeEatL10n.text(L10nKey.Membership.confirmOriginalPrice))
+                        Text(SafeMealL10n.text(L10nKey.Membership.confirmOriginalPrice))
                         Spacer()
                         Text(displayPrice(for: plan))
                     }
-                    .font(SafeEatFont.custom(16, relativeTo: .body))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.custom(16, relativeTo: .body))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
 
                     // 赠送权益明细
                     let benefits = campaignBenefitsForPlan(plan)
                     if !benefits.isEmpty {
-                        Divider().overlay(SafeEatTheme.line)
+                        Divider().overlay(SafeMealTheme.line)
 
-                        Text(SafeEatL10n.text(L10nKey.Membership.confirmBonusTitle))
-                            .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.warning)
+                        Text(SafeMealL10n.text(L10nKey.Membership.confirmBonusTitle))
+                            .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                            .foregroundStyle(SafeMealTheme.warning)
 
                         ForEach(benefits) { benefit in
                             HStack(spacing: 8) {
                                 Image(systemName: "gift.fill")
-                                    .font(SafeEatFont.custom(12, relativeTo: .caption))
-                                    .foregroundStyle(SafeEatTheme.warning)
+                                    .font(SafeMealFont.custom(12, relativeTo: .caption))
+                                    .foregroundStyle(SafeMealTheme.warning)
                                 Text(benefit.name)
                                 Spacer()
                                 Text(campaignBenefitText(benefit))
                                     .bold()
                             }
-                            .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
+                            .font(SafeMealFont.custom(14, relativeTo: .subheadline))
+                            .foregroundStyle(SafeMealTheme.textPrimary)
                         }
                     }
 
                     // Apple 优惠（试用/首期折扣）
                     if let product = storeKitProduct(for: plan),
                        let intro = product.subscription?.introductoryOffer {
-                        Divider().overlay(SafeEatTheme.line)
+                        Divider().overlay(SafeMealTheme.line)
 
                         HStack(spacing: 8) {
                             Image(systemName: "tag.fill")
-                                .font(SafeEatFont.custom(12, relativeTo: .caption))
-                                .foregroundStyle(SafeEatTheme.primary)
-                            Text(SafeEatL10n.text(L10nKey.Membership.confirmAppleOffer))
+                                .font(SafeMealFont.custom(12, relativeTo: .caption))
+                                .foregroundStyle(SafeMealTheme.primary)
+                            Text(SafeMealL10n.text(L10nKey.Membership.confirmAppleOffer))
                             Spacer()
                             Text(appleOfferText(intro))
                                 .bold()
                         }
-                        .font(SafeEatFont.custom(14, relativeTo: .subheadline))
-                        .foregroundStyle(SafeEatTheme.primary)
+                        .font(SafeMealFont.custom(14, relativeTo: .subheadline))
+                        .foregroundStyle(SafeMealTheme.primary)
                     }
 
                     // 最终价格提示
-                    Text(SafeEatL10n.text(L10nKey.Membership.confirmFinalPriceHint))
-                        .font(SafeEatFont.custom(13, relativeTo: .caption))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                    Text(SafeMealL10n.text(L10nKey.Membership.confirmFinalPriceHint))
+                        .font(SafeMealFont.custom(13, relativeTo: .caption))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
 
                     // 合规提示区
-                    Divider().overlay(SafeEatTheme.line)
+                    Divider().overlay(SafeMealTheme.line)
 
                     VStack(alignment: .leading, spacing: 8) {
                         // 免费试用说明（仅含试用优惠时显示）
@@ -692,32 +699,32 @@ struct MembershipPurchaseView: View {
                            intro.paymentMode == .freeTrial {
                             HStack(spacing: 6) {
                                 Image(systemName: "gift.fill")
-                                    .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                                    .foregroundStyle(SafeEatTheme.primary)
-                                Text(SafeEatL10n.format(L10nKey.Membership.confirmTrialInfo, trialDays(for: intro)))
-                                    .font(SafeEatFont.custom(12, relativeTo: .caption2))
-                                    .foregroundStyle(SafeEatTheme.primary)
+                                    .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                                    .foregroundStyle(SafeMealTheme.primary)
+                                Text(SafeMealL10n.format(L10nKey.Membership.confirmTrialInfo, trialDays(for: intro)))
+                                    .font(SafeMealFont.custom(12, relativeTo: .caption2))
+                                    .foregroundStyle(SafeMealTheme.primary)
                             }
                         }
 
                         // 自动续费提示
                         HStack(spacing: 6) {
                             Image(systemName: "arrow.triangle.2.circlepath")
-                                .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-                            Text(SafeEatL10n.text(L10nKey.Membership.confirmAutoRenewal))
-                                .font(SafeEatFont.custom(12, relativeTo: .caption2))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                                .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
+                            Text(SafeMealL10n.text(L10nKey.Membership.confirmAutoRenewal))
+                                .font(SafeMealFont.custom(12, relativeTo: .caption2))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                         }
 
                         // 取消路径提示
                         HStack(spacing: 6) {
                             Image(systemName: "xmark.circle")
-                                .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
-                            Text(SafeEatL10n.text(L10nKey.Membership.confirmCancelPath))
-                                .font(SafeEatFont.custom(12, relativeTo: .caption2))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                                .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
+                            Text(SafeMealL10n.text(L10nKey.Membership.confirmCancelPath))
+                                .font(SafeMealFont.custom(12, relativeTo: .caption2))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                     }
                 }
@@ -729,19 +736,19 @@ struct MembershipPurchaseView: View {
 
     private func benefitsDetailSheet(for plan: MembershipPlan) -> some View {
         let cycleTitle = plan.billingCycle == "yearly"
-            ? SafeEatL10n.text(L10nKey.Membership.cycleYearly)
-            : SafeEatL10n.text(L10nKey.Membership.cycleMonthly)
+            ? SafeMealL10n.text(L10nKey.Membership.cycleYearly)
+            : SafeMealL10n.text(L10nKey.Membership.cycleMonthly)
         let canSelect = !isDowngrade(plan) && !isCurrentExactPlan(plan)
 
-        return SafeEatSettingsSheetContainer(
-            title: SafeEatL10n.text(L10nKey.Membership.detailNavTitle),
+        return SafeMealSettingsSheetContainer(
+            title: SafeMealL10n.text(L10nKey.Membership.detailNavTitle),
             subtitle: "\(PlanTierMapper.title(plan.tier)) \(cycleTitle)",
             contentHeight: nil,
-            primaryButton: canSelect ? SheetButton(title: SafeEatL10n.text(L10nKey.Membership.selectPlan)) {
+            primaryButton: canSelect ? SheetButton(title: SafeMealL10n.text(L10nKey.Membership.selectPlan)) {
                 selectedPlanID = plan.id
                 benefitsPlan = nil
             } : nil,
-            secondaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Common.cancel)) {
+            secondaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Common.cancel)) {
                 benefitsPlan = nil
             }
         ) {
@@ -750,46 +757,46 @@ struct MembershipPurchaseView: View {
                     // AI 建议等级
                     if let level = plan.aiAdviceLevel, !level.isEmpty {
                         HStack {
-                            Label(SafeEatL10n.text(L10nKey.Membership.detailAiAdviceLevelLabel), systemImage: "brain.head.profile")
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                            Label(SafeMealL10n.text(L10nKey.Membership.detailAiAdviceLevelLabel), systemImage: "brain.head.profile")
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                             Spacer()
                             Text(AiAdviceLevelMapper.title(level))
                                 .bold()
                         }
-                        .font(SafeEatFont.custom(15, relativeTo: .body))
+                        .font(SafeMealFont.custom(15, relativeTo: .body))
                     }
 
                     // 识别次数
                     if let quota = plan.recognitionQuotaMonthly {
                         HStack {
-                            Label(SafeEatL10n.text(L10nKey.Membership.detailRecognitionMonthlyLabel), systemImage: "camera.viewfinder")
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                            Label(SafeMealL10n.text(L10nKey.Membership.detailRecognitionMonthlyLabel), systemImage: "camera.viewfinder")
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                             Spacer()
-                            Text(SafeEatL10n.format(L10nKey.Membership.detailCountFormat, quota))
+                            Text(SafeMealL10n.format(L10nKey.Membership.detailCountFormat, quota))
                                 .bold()
                         }
-                        .font(SafeEatFont.custom(15, relativeTo: .body))
+                        .font(SafeMealFont.custom(15, relativeTo: .body))
                     }
 
                     // 权益描述
                     if let desc = plan.benefitsDescription, !desc.isEmpty {
                         Rectangle()
-                            .fill(SafeEatTheme.line)
+                            .fill(SafeMealTheme.line)
                             .frame(height: 1)
 
-                        Text(SafeEatL10n.text(L10nKey.Membership.detailBenefitsTitle))
-                            .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                        Text(SafeMealL10n.text(L10nKey.Membership.detailBenefitsTitle))
+                            .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
 
                         VStack(alignment: .leading, spacing: 6) {
                             ForEach(desc.split(separator: "\n"), id: \.self) { line in
                                 HStack(alignment: .top, spacing: 6) {
                                     Image(systemName: "checkmark.circle.fill")
-                                        .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                                        .foregroundStyle(SafeEatTheme.primary)
+                                        .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                                        .foregroundStyle(SafeMealTheme.primary)
                                     Text(String(line))
-                                        .font(SafeEatFont.textStyle(.footnote))
-                                        .foregroundStyle(SafeEatTheme.textPrimary)
+                                        .font(SafeMealFont.textStyle(.footnote))
+                                        .foregroundStyle(SafeMealTheme.textPrimary)
                                 }
                             }
                         }
@@ -811,15 +818,15 @@ struct MembershipPurchaseView: View {
                     }
                 } label: {
                     Text(cycle == "yearly"
-                        ? SafeEatL10n.text(L10nKey.Membership.cycleYearly)
-                        : SafeEatL10n.text(L10nKey.Membership.cycleMonthly))
-                        .font(SafeEatFont.custom(13, relativeTo: .callout, weight: selectedBillingCycle == cycle ? .bold : .regular))
-                        .foregroundStyle(selectedBillingCycle == cycle ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
+                        ? SafeMealL10n.text(L10nKey.Membership.cycleYearly)
+                        : SafeMealL10n.text(L10nKey.Membership.cycleMonthly))
+                        .font(SafeMealFont.custom(13, relativeTo: .callout, weight: selectedBillingCycle == cycle ? .bold : .regular))
+                        .foregroundStyle(selectedBillingCycle == cycle ? SafeMealTheme.primary : SafeMealTheme.textSecondary)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
                         .background(
                             Capsule()
-                                .fill(selectedBillingCycle == cycle ? SafeEatTheme.primarySoft : Color.clear)
+                                .fill(selectedBillingCycle == cycle ? SafeMealTheme.primarySoft : Color.clear)
                         )
                 }
                 .buttonStyle(.plain)
@@ -877,11 +884,11 @@ struct MembershipPurchaseView: View {
         case .crossLevel:
             text = "升级高阶会员将全额扣除套餐费用，原套餐未使用时长按比例原路退款，权益立即生效"
             icon = "arrow.up.circle.fill"
-            color = SafeEatTheme.primary
+            color = SafeMealTheme.primary
         case .sameLevelCycle:
             text = "同权限时长切换，本期会员时长不变，新套餐将于当前会员到期后生效"
             icon = "arrow.triangle.2.circlepath.circle.fill"
-            color = SafeEatTheme.accent
+            color = SafeMealTheme.accent
         }
 
         return HStack(alignment: .top, spacing: 8) {
@@ -890,8 +897,8 @@ struct MembershipPurchaseView: View {
                 .foregroundStyle(color)
                 .padding(.top, 2)
             Text(text)
-                .font(SafeEatFont.custom(12, relativeTo: .caption))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .font(SafeMealFont.custom(12, relativeTo: .caption))
+                .foregroundStyle(SafeMealTheme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
@@ -947,19 +954,19 @@ struct MembershipPurchaseView: View {
 
     private var purchaseButtonText: String {
         if store.isPurchasingMembership || creatingOrder {
-            return SafeEatL10n.text(L10nKey.Membership.purchasing)
+            return SafeMealL10n.text(L10nKey.Membership.purchasing)
         }
 
         if let plan = store.membershipPlans.first(where: { $0.id == selectedPlanID }),
            let product = storeKitProduct(for: plan) {
             let bonusDays = totalBonusDays(for: plan)
             if bonusDays > 0 {
-                return SafeEatL10n.format(L10nKey.Membership.buyNowWithBonus, bonusDays)
+                return SafeMealL10n.format(L10nKey.Membership.buyNowWithBonus, bonusDays)
             }
-            return SafeEatL10n.format(L10nKey.Membership.subscribeWithPrice, product.displayPrice)
+            return SafeMealL10n.format(L10nKey.Membership.subscribeWithPrice, product.displayPrice)
         }
 
-        return SafeEatL10n.text(L10nKey.Membership.createOrder)
+        return SafeMealL10n.text(L10nKey.Membership.createOrder)
     }
 
     // MARK: - Price Display
@@ -968,7 +975,7 @@ struct MembershipPurchaseView: View {
         if let product = storeKitProduct(for: plan) {
             return product.displayPrice
         }
-        return SafeEatTheme.priceText(plan.priceFen)
+        return SafeMealTheme.priceText(plan.priceFen)
     }
 
     private func storeKitProduct(for plan: MembershipPlan) -> Product? {
@@ -984,9 +991,8 @@ struct MembershipPurchaseView: View {
     // MARK: - Campaign Benefits
 
     private func campaignBenefitsForPlan(_ plan: MembershipPlan) -> [CampaignBenefit] {
-        if let applicable = plan.applicableCampaigns, !applicable.isEmpty {
-            return applicable
-        }
+        // 只用全局 store.campaignBenefits（getPlans 覆盖、已按 enabled 过滤）。
+        // 不再兜底 plan.applicableCampaigns——那是后端内嵌的旧活动，admin 停用后会残留显示。
         return store.campaignBenefits.filter { benefit in
             guard let targetPlans = benefit.targetPlanIds, !targetPlans.isEmpty else { return true }
             return targetPlans.contains(plan.id)
@@ -995,13 +1001,13 @@ struct MembershipPurchaseView: View {
 
     private func campaignBenefitText(_ benefit: CampaignBenefit) -> String {
         if let days = benefit.bonusDays, days > 0 {
-            return SafeEatL10n.format(L10nKey.Membership.campaignBonusDays, days)
+            return SafeMealL10n.format(L10nKey.Membership.campaignBonusDays, days)
         }
         if let quota = benefit.bonusRecognitionQuota, quota > 0 {
-            return SafeEatL10n.format(L10nKey.Membership.campaignBonusQuota, quota)
+            return SafeMealL10n.format(L10nKey.Membership.campaignBonusQuota, quota)
         }
         if let aiQuota = benefit.bonusAiQuota, aiQuota > 0 {
-            return SafeEatL10n.format(L10nKey.Membership.campaignBonusAiQuota, aiQuota)
+            return SafeMealL10n.format(L10nKey.Membership.campaignBonusAiQuota, aiQuota)
         }
         return benefit.name
     }
@@ -1055,12 +1061,12 @@ struct MembershipPurchaseView: View {
     private func bonusSummaryText(for plan: MembershipPlan) -> String {
         var parts: [String] = []
         let days = totalBonusDays(for: plan)
-        if days > 0 { parts.append(SafeEatL10n.format(L10nKey.Membership.bonusDaysFormat, days)) }
+        if days > 0 { parts.append(SafeMealL10n.format(L10nKey.Membership.bonusDaysFormat, days)) }
         let quota = campaignBenefitsForPlan(plan).reduce(0) { $0 + ($1.bonusRecognitionQuota ?? 0) }
-        if quota > 0 { parts.append(SafeEatL10n.format(L10nKey.Membership.bonusRecognitionFormat, quota)) }
+        if quota > 0 { parts.append(SafeMealL10n.format(L10nKey.Membership.bonusRecognitionFormat, quota)) }
         let aiQuota = campaignBenefitsForPlan(plan).reduce(0) { $0 + ($1.bonusAiQuota ?? 0) }
-        if aiQuota > 0 { parts.append(SafeEatL10n.format(L10nKey.Membership.bonusAiFormat, aiQuota)) }
-        let sep = SafeEatL10n.text(L10nKey.Membership.bonusSeparator)
+        if aiQuota > 0 { parts.append(SafeMealL10n.format(L10nKey.Membership.bonusAiFormat, aiQuota)) }
+        let sep = SafeMealL10n.text(L10nKey.Membership.bonusSeparator)
         return parts.joined(separator: sep)
     }
 
@@ -1085,7 +1091,7 @@ struct MembershipPurchaseView: View {
         await store.loadPlansWithCampaigns()
 
         if store.membershipPlans.isEmpty {
-            plansLoadError = SafeEatL10n.text(L10nKey.Membership.plansLoadError)
+            plansLoadError = SafeMealL10n.text(L10nKey.Membership.plansLoadError)
         } else {
             selectedPlanID = firstUpgradePlan?.id
         }
@@ -1105,7 +1111,7 @@ struct MembershipPurchaseView: View {
         // Apple IAP 购买
         guard let plan = store.membershipPlans.first(where: { $0.id == selectedPlanID }),
               let product = storeKitProduct(for: plan) else {
-            store.purchaseError = SafeEatL10n.text(L10nKey.Membership.productNotReady)
+            store.purchaseError = SafeMealL10n.text(L10nKey.Membership.productNotReady)
             return
         }
 
@@ -1128,10 +1134,10 @@ struct MembershipPurchaseView: View {
 
             switch pollResult {
             case .activated:
-                successMessage = SafeEatL10n.text(L10nKey.Membership.purchaseSuccess)
+                successMessage = SafeMealL10n.text(L10nKey.Membership.purchaseSuccess)
             case .expired:
                 // 会员已生效但已过期（active=false）—— 不弹开通成功
-                successMessage = SafeEatL10n.text(L10nKey.Membership.verifyFailed)
+                successMessage = SafeMealL10n.text(L10nKey.Membership.verifyFailed)
             case .timeout:
                 store.purchaseError = "购买确认超时，请稍后下拉刷新会员页查看购买状态"
             case .failed(let error):
@@ -1144,7 +1150,7 @@ struct MembershipPurchaseView: View {
 
         case .pending:
             // Apple pending，等 Transaction.updates 异步补激活
-            store.purchaseError = SafeEatL10n.text(L10nKey.Membership.purchasePending)
+            store.purchaseError = SafeMealL10n.text(L10nKey.Membership.purchasePending)
 
         case .failed:
             // purchaseError 已在 store 内设置
@@ -1162,12 +1168,12 @@ struct MembershipPurchaseView: View {
             } label: {
                 Image(systemName: agreedToPurchaseTerms ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 18))
-                    .foregroundStyle(agreedToPurchaseTerms ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
+                    .foregroundStyle(agreedToPurchaseTerms ? SafeMealTheme.primary : SafeMealTheme.textSecondary)
             }
             .buttonStyle(.plain)
 
             purchaseTermsFlowText
-                .font(SafeEatFont.custom(13, relativeTo: .caption))
+                .font(SafeMealFont.custom(13, relativeTo: .caption))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .sheet(item: $showPurchaseDisclosure) { link in
@@ -1179,25 +1185,25 @@ struct MembershipPurchaseView: View {
 
     private func termsLinkText(_ display: String, url: String) -> AttributedString {
         var attr = AttributedString(display)
-        attr.foregroundColor = SafeEatTheme.primary
+        attr.foregroundColor = SafeMealTheme.primary
         attr.underlineStyle = .single
         attr.link = URL(string: url)
         return attr
     }
 
     private var purchaseTermsFlowText: some View {
-        let va = SafeEatL10n.text(L10nKey.Terms.purchaseValueAdded)
-        let ar = SafeEatL10n.text(L10nKey.Terms.purchaseAutoRenewal)
+        let va = SafeMealL10n.text(L10nKey.Terms.purchaseValueAdded)
+        let ar = SafeMealL10n.text(L10nKey.Terms.purchaseAutoRenewal)
 
         return (
-            Text(SafeEatL10n.text(L10nKey.Terms.purchasePrefix))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-            + Text(termsLinkText(va, url: "safeeat://value_added_service_agreement"))
-            + Text(SafeEatL10n.text(L10nKey.Terms.purchaseAnd))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-            + Text(termsLinkText(ar, url: "safeeat://auto_renewal_notice"))
-            + Text(SafeEatL10n.text(L10nKey.Terms.purchaseSuffix))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+            Text(SafeMealL10n.text(L10nKey.Terms.purchasePrefix))
+                .foregroundStyle(SafeMealTheme.textSecondary)
+            + Text(termsLinkText(va, url: "safemeal://value_added_service_agreement"))
+            + Text(SafeMealL10n.text(L10nKey.Terms.purchaseAnd))
+                .foregroundStyle(SafeMealTheme.textSecondary)
+            + Text(termsLinkText(ar, url: "safemeal://auto_renewal_notice"))
+            + Text(SafeMealL10n.text(L10nKey.Terms.purchaseSuffix))
+                .foregroundStyle(SafeMealTheme.textSecondary)
         )
         .environment(\.openURL, OpenURLAction { url in
             guard let host = url.host() else { return .discarded }

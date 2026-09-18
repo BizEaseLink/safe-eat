@@ -58,8 +58,8 @@ struct DeleteAccountView: View {
 
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.Profile.DeleteAccount.title),
-            subtitle: SafeEatL10n.text(L10nKey.Profile.DeleteAccount.subtitle)
+            title: SafeMealL10n.text(L10nKey.Profile.DeleteAccount.title),
+            subtitle: SafeMealL10n.text(L10nKey.Profile.DeleteAccount.subtitle)
         ) {
             if deletionStatus == "pending_cooldown" {
                 cooldownContent
@@ -82,18 +82,18 @@ struct DeleteAccountView: View {
                                 .tint(.white)
                                 .frame(maxWidth: .infinity)
                         } else {
-                            Text(SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmButton))
+                            Text(SafeMealL10n.text(L10nKey.Profile.DeleteAccount.confirmButton))
                                 .frame(maxWidth: .infinity)
                         }
                     }
-                    .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+                    .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
                     .foregroundStyle(.white)
                     .padding(.vertical, 16)
                     .background(
                         RoundedRectangle(cornerRadius: 22, style: .continuous)
                             .fill(
                                 LinearGradient(
-                                    colors: [SafeEatTheme.danger.opacity(0.85), SafeEatTheme.danger],
+                                    colors: [SafeMealTheme.danger.opacity(0.85), SafeMealTheme.danger],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
@@ -108,7 +108,7 @@ struct DeleteAccountView: View {
         .sheet(isPresented: $showDeleteGuide) {
             NavigationStack {
                 DisclosureDetailView(
-                    title: SafeEatL10n.text(L10nKey.Terms.deleteGuide),
+                    title: SafeMealL10n.text(L10nKey.Terms.deleteGuide),
                     category: "account_cancellation_guide"
                 )
             }
@@ -120,18 +120,18 @@ struct DeleteAccountView: View {
             countdownTimer?.invalidate()
         }
         .alert(
-            SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmDialogTitle),
+            SafeMealL10n.text(L10nKey.Profile.DeleteAccount.confirmDialogTitle),
             isPresented: $showConfirmDialog
         ) {
-            Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
-            Button(SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmButton), role: .destructive) {
+            Button(SafeMealL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+            Button(SafeMealL10n.text(L10nKey.Profile.DeleteAccount.confirmButton), role: .destructive) {
                 deleteAccount()
             }
         } message: {
-            Text(SafeEatL10n.text(L10nKey.Profile.DeleteAccount.confirmDialogMessage))
+            Text(SafeMealL10n.text(L10nKey.Profile.DeleteAccount.confirmDialogMessage))
         }
-        .alert(SafeEatL10n.text(L10nKey.Common.notice), isPresented: showError) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) { errorMessage = nil }
+        .alert(SafeMealL10n.text(L10nKey.Common.notice), isPresented: showError) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok), role: .cancel) { errorMessage = nil }
         } message: {
             Text(errorMessage ?? "")
         }
@@ -152,33 +152,33 @@ struct DeleteAccountView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Label {
                         Text("账号注销中")
-                            .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
+                            .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
                     } icon: {
                         Image(systemName: "hourglass.circle.fill")
-                            .foregroundStyle(SafeEatTheme.warning)
+                            .foregroundStyle(SafeMealTheme.warning)
                     }
 
                     Text("您的账号已进入7天注销冷静期，冷静期结束后账号将被永久注销。冷静期内您可以随时撤回注销申请。")
-                        .font(SafeEatFont.custom(15, relativeTo: .body))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.custom(15, relativeTo: .body))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
 
                     if remainingSeconds > 0 {
                         HStack {
                             Text("剩余时间")
-                                .font(SafeEatFont.custom(13, relativeTo: .caption))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                                .font(SafeMealFont.custom(13, relativeTo: .caption))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
 
                             Spacer()
 
                             Text(cooldownText)
-                                .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.warning)
+                                .font(SafeMealFont.custom(15, relativeTo: .body, weight: .bold))
+                                .foregroundStyle(SafeMealTheme.warning)
                         }
                         .padding(.vertical, 12)
                         .padding(.horizontal, 16)
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(SafeEatTheme.warning.opacity(0.08))
+                                .fill(SafeMealTheme.warning.opacity(0.08))
                         )
                     }
                 }
@@ -187,8 +187,8 @@ struct DeleteAccountView: View {
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("注销后影响")
-                        .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .font(SafeMealFont.custom(15, relativeTo: .body, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
 
                     VStack(alignment: .leading, spacing: 8) {
                         deletionImpactRow(icon: "person.crop.circle.badge.xmark", text: "个人资料将被永久删除")
@@ -205,12 +205,12 @@ struct DeleteAccountView: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.system(size: 14))
-                .foregroundStyle(SafeEatTheme.danger)
+                .foregroundStyle(SafeMealTheme.danger)
                 .frame(width: 20)
 
             Text(text)
-                .font(SafeEatFont.custom(13, relativeTo: .caption))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .font(SafeMealFont.custom(13, relativeTo: .caption))
+                .foregroundStyle(SafeMealTheme.textSecondary)
         }
     }
 
@@ -221,16 +221,16 @@ struct DeleteAccountView: View {
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 12) {
                     Label {
-                        Text(SafeEatL10n.text(L10nKey.Profile.DeleteAccount.warningTitle))
-                            .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
+                        Text(SafeMealL10n.text(L10nKey.Profile.DeleteAccount.warningTitle))
+                            .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
                     } icon: {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(SafeEatTheme.danger)
+                            .foregroundStyle(SafeMealTheme.danger)
                     }
 
-                    Text(SafeEatL10n.text(L10nKey.Profile.DeleteAccount.warningBody))
-                        .font(SafeEatFont.custom(15, relativeTo: .body))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                    Text(SafeMealL10n.text(L10nKey.Profile.DeleteAccount.warningBody))
+                        .font(SafeMealFont.custom(15, relativeTo: .body))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
             }
 
@@ -242,10 +242,10 @@ struct DeleteAccountView: View {
                         code: $verificationCode,
                         isDisabled: isSendingCode || smsCountdown.countdown > 0,
                         buttonText: isSendingCode
-                            ? SafeEatL10n.text(L10nKey.Common.sending)
+                            ? SafeMealL10n.text(L10nKey.Common.sending)
                             : (smsCountdown.countdown > 0
                                 ? "\(smsCountdown.countdown)s"
-                                : SafeEatL10n.text(L10nKey.Common.sendCode)),
+                                : SafeMealL10n.text(L10nKey.Common.sendCode)),
                         useDangerColor: true,
                         action: { Task { await requestSMS() } }
                     )
@@ -258,12 +258,12 @@ struct DeleteAccountView: View {
                 } label: {
                     Image(systemName: agreedToDelete ? "checkmark.circle.fill" : "circle")
                         .font(.system(size: 18))
-                        .foregroundStyle(agreedToDelete ? SafeEatTheme.danger : SafeEatTheme.textSecondary)
+                        .foregroundStyle(agreedToDelete ? SafeMealTheme.danger : SafeMealTheme.textSecondary)
                 }
                 .buttonStyle(.plain)
 
                 agreementText
-                    .font(SafeEatFont.custom(13, relativeTo: .caption))
+                    .font(SafeMealFont.custom(13, relativeTo: .caption))
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.top, 8)
@@ -272,21 +272,21 @@ struct DeleteAccountView: View {
 
     private func deleteLinkText(_ display: String, url: String) -> AttributedString {
         var attr = AttributedString(display)
-        attr.foregroundColor = SafeEatTheme.danger
+        attr.foregroundColor = SafeMealTheme.danger
         attr.underlineStyle = .single
         attr.link = URL(string: url)
         return attr
     }
 
     private var agreementText: some View {
-        let guide = SafeEatL10n.text(L10nKey.Terms.deleteGuide)
+        let guide = SafeMealL10n.text(L10nKey.Terms.deleteGuide)
 
         return (
-            Text(SafeEatL10n.text(L10nKey.Terms.deletePrefix))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-            + Text(deleteLinkText(guide, url: "safeeat://account_cancellation_guide"))
-            + Text(SafeEatL10n.text(L10nKey.Terms.deleteSuffix))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+            Text(SafeMealL10n.text(L10nKey.Terms.deletePrefix))
+                .foregroundStyle(SafeMealTheme.textSecondary)
+            + Text(deleteLinkText(guide, url: "safemeal://account_cancellation_guide"))
+            + Text(SafeMealL10n.text(L10nKey.Terms.deleteSuffix))
+                .foregroundStyle(SafeMealTheme.textSecondary)
         )
         .environment(\.openURL, OpenURLAction { _ in
             showDeleteGuide = true

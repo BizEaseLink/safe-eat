@@ -39,11 +39,11 @@
       "localizations" : [
         {
           "description" : "",
-          "displayName" : "食安安-订阅组",
+          "displayName" : "食必安-订阅组",
           "locale" : "zh_Hans"
         }
       ],
-      "name" : "safe_eat_membership",
+      "name" : "safe_meal_membership",
       "subscriptions" : [
         {
           "adHocOffers" : [
@@ -80,9 +80,9 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.bizeaselink.safeeat.lite.monthly",
+          "productID" : "com.bizeaselink.safemeal.lite.monthly",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "safe_eat_lite_monthly",
+          "referenceName" : "safe_meal_lite_monthly",
           "subscriptionGroupID" : "22190105",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
@@ -124,9 +124,9 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.bizeaselink.safeeat.lite.yearly",
+          "productID" : "com.bizeaselink.safemeal.lite.yearly",
           "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "safe_eat_lite_yearly",
+          "referenceName" : "safe_meal_lite_yearly",
           "subscriptionGroupID" : "22190105",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
@@ -168,9 +168,9 @@
               "locale" : "zh_Hans"
             }
           ],
-          "productID" : "com.bizeaselink.safeeat.premium.monthly",
+          "productID" : "com.bizeaselink.safemeal.premium.monthly",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "safe_eat_premium_monthly",
+          "referenceName" : "safe_meal_premium_monthly",
           "subscriptionGroupID" : "22190105",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
@@ -212,9 +212,9 @@
               "locale" : "zh_Hans"
             }
           ],
-          "productID" : "com.bizeaselink.safeeat.premium.yearly",
+          "productID" : "com.bizeaselink.safemeal.premium.yearly",
           "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "safe_eat_premium_yearly",
+          "referenceName" : "safe_meal_premium_yearly",
           "subscriptionGroupID" : "22190105",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
@@ -256,9 +256,9 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.bizeaselink.safeeat.pro.monthly",
+          "productID" : "com.bizeaselink.safemeal.pro.monthly",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "safe_eat_pro_monthly",
+          "referenceName" : "safe_meal_pro_monthly",
           "subscriptionGroupID" : "22190105",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
@@ -300,9 +300,9 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.bizeaselink.safeeat.pro.yearly",
+          "productID" : "com.bizeaselink.safemeal.pro.yearly",
           "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "safe_eat_pro_yearly",
+          "referenceName" : "safe_meal_pro_yearly",
           "subscriptionGroupID" : "22190105",
           "type" : "RecurringSubscription",
           "winbackOffers" : [

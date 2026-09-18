@@ -19,7 +19,7 @@ struct LoadingModifier: ViewModifier {
 
                 VStack(spacing: 16) {
                     ProgressView()
-                        .tint(SafeEatTheme.primary)
+                        .tint(SafeMealTheme.primary)
                     Text(text)
                         .font(.subheadline)
                         .foregroundColor(.secondary)

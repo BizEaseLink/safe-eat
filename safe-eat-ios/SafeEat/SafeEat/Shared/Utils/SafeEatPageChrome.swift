@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-enum SafeEatSafeArea {
+enum SafeMealSafeArea {
     static func resolvedTopInset(fallback: CGFloat) -> CGFloat {
         guard let scene = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
@@ -18,27 +18,27 @@ enum SafeEatSafeArea {
     }
 }
 
-struct SafeEatPageHeader: View {
+struct SafeMealPageHeader: View {
     let title: String
     var subtitle: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(SafeEatFont.custom(34, relativeTo: .largeTitle))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(34, relativeTo: .largeTitle))
+                .foregroundStyle(SafeMealTheme.textPrimary)
 
             if let subtitle {
                 Text(subtitle)
-                    .font(SafeEatFont.textStyle(.subheadline))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.textStyle(.subheadline))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
-struct SafeEatScrollOffsetKey: PreferenceKey {
+struct SafeMealScrollOffsetKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
@@ -46,14 +46,14 @@ struct SafeEatScrollOffsetKey: PreferenceKey {
     }
 }
 
-struct SafeEatScrollOffsetReader: View {
+struct SafeMealScrollOffsetReader: View {
     let coordinateSpaceName: String
 
     var body: some View {
         GeometryReader { proxy in
             Color.clear
                 .preference(
-                    key: SafeEatScrollOffsetKey.self,
+                    key: SafeMealScrollOffsetKey.self,
                     value: proxy.frame(in: .named(coordinateSpaceName)).minY
                 )
         }
@@ -61,7 +61,7 @@ struct SafeEatScrollOffsetReader: View {
     }
 }
 
-struct SafeEatGlobalScrollOffsetReader: View {
+struct SafeMealGlobalScrollOffsetReader: View {
     @Binding var scrollOffset: CGFloat
     @State private var initialMinY: CGFloat = 0
     @State private var hasInitialized = false
@@ -101,7 +101,7 @@ private struct ScrollOffsetPreferenceKey: PreferenceKey {
     }
 }
 
-struct SafeEatScrollNavChrome: View {
+struct SafeMealScrollNavChrome: View {
     let title: String
     let scrollOffset: CGFloat
     let topInset: CGFloat
@@ -136,8 +136,8 @@ struct SafeEatScrollNavChrome: View {
                 .opacity(progress)
 
             Text(title)
-                .font(SafeEatFont.custom(24, relativeTo: .title3))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(24, relativeTo: .title3))
+                .foregroundStyle(SafeMealTheme.textPrimary)
                 .lineLimit(1)
                 .padding(.top, topInset + 10)
                 .padding(.horizontal, 64)
@@ -151,7 +151,7 @@ struct SafeEatScrollNavChrome: View {
     }
 }
 
-struct SafeEatTopBackChrome: View {
+struct SafeMealTopBackChrome: View {
     let title: String
     let scrollOffset: CGFloat
     let topInset: CGFloat
@@ -160,6 +160,7 @@ struct SafeEatTopBackChrome: View {
     var minimumBackdropOpacity: CGFloat = 0
     var emphasizesSafeAreaFill: Bool = false
     var usesSolidBackdrop: Bool = false
+    var trailingContent: (() -> AnyView)? = nil
     let onBack: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
@@ -208,16 +209,20 @@ struct SafeEatTopBackChrome: View {
             Spacer(minLength: 0)
 
             Text(title)
-                .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(22, relativeTo: .title3, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
                 .lineLimit(1)
                 .opacity(showsChrome ? 1 : 0)
                 .offset(y: showsChrome ? 0 : 6)
 
             Spacer(minLength: 0)
 
-            Color.clear
-                .frame(width: buttonSize, height: buttonSize)
+            if let trailingContent {
+                trailingContent()
+            } else {
+                Color.clear
+                    .frame(width: buttonSize, height: buttonSize)
+            }
         }
         .padding(.horizontal, 20)
         .padding(.top, rowTopPadding)
@@ -308,7 +313,7 @@ struct SafeEatTopBackChrome: View {
         Button(action: onBack) {
             Image(systemName: "chevron.left")
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: buttonSize, height: buttonSize)
                 .background(
                     Circle()
@@ -316,7 +321,7 @@ struct SafeEatTopBackChrome: View {
                 )
                 .overlay(
                     Circle()
-                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -324,11 +329,11 @@ struct SafeEatTopBackChrome: View {
 }
 
 
-struct SafeEatDateTitle: View {
+struct SafeMealDateTitle: View {
     let date: Date
     var showsMonth = true
     var showsDay = true
-    var color: Color = SafeEatTheme.textPrimary
+    var color: Color = SafeMealTheme.textPrimary
     var largeSize: CGFloat = 34
     var smallSize: CGFloat = 18
 
@@ -344,10 +349,10 @@ struct SafeEatDateTitle: View {
         HStack(alignment: .firstTextBaseline, spacing: 2) {
             if showsMonth {
                 Text(monthText)
-                    .font(SafeEatFont.custom(largeSize, relativeTo: .largeTitle))
+                    .font(SafeMealFont.custom(largeSize, relativeTo: .largeTitle))
                     .foregroundStyle(color)
                 Text("月")
-                    .font(SafeEatFont.custom(smallSize, relativeTo: .headline))
+                    .font(SafeMealFont.custom(smallSize, relativeTo: .headline))
                     .foregroundStyle(color)
             }
 
@@ -358,10 +363,10 @@ struct SafeEatDateTitle: View {
 
             if showsDay {
                 Text(dayText)
-                    .font(SafeEatFont.custom(largeSize, relativeTo: .largeTitle))
+                    .font(SafeMealFont.custom(largeSize, relativeTo: .largeTitle))
                     .foregroundStyle(color)
                 Text("日")
-                    .font(SafeEatFont.custom(smallSize, relativeTo: .headline))
+                    .font(SafeMealFont.custom(smallSize, relativeTo: .headline))
                     .foregroundStyle(color)
             }
         }
@@ -369,18 +374,18 @@ struct SafeEatDateTitle: View {
     }
 }
 
-struct SafeEatSectionHeader: View {
+struct SafeMealSectionHeader: View {
     let title: String
 
     var body: some View {
         Text(title)
-            .font(SafeEatFont.textStyle(.headline))
-            .foregroundStyle(SafeEatTheme.textPrimary)
+            .font(SafeMealFont.textStyle(.headline))
+            .foregroundStyle(SafeMealTheme.textPrimary)
             .textCase(nil)
     }
 }
 
-struct SafeEatEmptyState: View {
+struct SafeMealEmptyState: View {
     let title: String
     let message: String
     let systemImage: String
@@ -389,16 +394,16 @@ struct SafeEatEmptyState: View {
         VStack(spacing: 14) {
             Image(systemName: systemImage)
                 .font(.system(size: 28))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .foregroundStyle(SafeMealTheme.textSecondary)
 
             VStack(spacing: 6) {
                 Text(title)
-                    .font(SafeEatFont.textStyle(.headline))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.textStyle(.headline))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
 
                 Text(message)
-                    .font(SafeEatFont.textStyle(.subheadline))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.textStyle(.subheadline))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
                     .multilineTextAlignment(.center)
             }
         }

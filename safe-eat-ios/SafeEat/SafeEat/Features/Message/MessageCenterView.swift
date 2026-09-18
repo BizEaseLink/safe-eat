@@ -18,7 +18,7 @@ struct MessageCenterView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
-                        SafeEatGlobalScrollOffsetReader(scrollOffset: $scrollOffset)
+                        SafeMealGlobalScrollOffsetReader(scrollOffset: $scrollOffset)
 
                         Color.clear.frame(height: proxy.safeAreaInsets.top + 74)
 
@@ -36,8 +36,8 @@ struct MessageCenterView: View {
                     .padding(.horizontal, 20)
                 }
 
-                SafeEatTopBackChrome(
-                    title: SafeEatL10n.text(L10nKey.Message.centerTitle),
+                SafeMealTopBackChrome(
+                    title: SafeMealL10n.text(L10nKey.Message.centerTitle),
                     scrollOffset: scrollOffset,
                     topInset: proxy.safeAreaInsets.top,
                     onBack: { dismiss() }
@@ -72,7 +72,7 @@ struct MessageCenterView: View {
                 startPoint: .top, endPoint: .bottom
             )
             RadialGradient(
-                colors: [SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.15 : 0.52), Color.clear],
+                colors: [SafeMealTheme.primarySoft.opacity(colorScheme == .dark ? 0.15 : 0.52), Color.clear],
                 center: .topLeading, startRadius: 18, endRadius: 360
             )
             RadialGradient(
@@ -86,13 +86,13 @@ struct MessageCenterView: View {
 
     private var heroSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(SafeEatL10n.text(L10nKey.Message.centerTitle))
-                .font(SafeEatFont.custom(36, relativeTo: .largeTitle, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+            Text(SafeMealL10n.text(L10nKey.Message.centerTitle))
+                .font(SafeMealFont.custom(36, relativeTo: .largeTitle, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
 
-            Text(SafeEatL10n.isZh ? "重要通知与更新尽在这里" : "Important notices and updates")
-                .font(SafeEatFont.custom(17, relativeTo: .body))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+            Text(SafeMealL10n.isZh ? "重要通知与更新尽在这里" : "Important notices and updates")
+                .font(SafeMealFont.custom(17, relativeTo: .body))
+                .foregroundStyle(SafeMealTheme.textSecondary)
         }
     }
 
@@ -115,16 +115,16 @@ struct MessageCenterView: View {
                 Image(systemName: hasUnreadMessages ? "checkmark.circle" : "arrow.counterclockwise.circle")
                     .font(.system(size: 14, weight: .semibold))
                 Text(hasUnreadMessages
-                    ? SafeEatL10n.text(L10nKey.Message.markAllRead)
-                    : (SafeEatL10n.isZh ? "重置未读" : "Reset unread"))
-                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .bold))
+                    ? SafeMealL10n.text(L10nKey.Message.markAllRead)
+                    : (SafeMealL10n.isZh ? "重置未读" : "Reset unread"))
+                    .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .bold))
             }
-            .foregroundStyle(SafeEatTheme.primary)
+            .foregroundStyle(SafeMealTheme.primary)
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(
                 Capsule().fill(
-                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.18 : 0.72)
+                    SafeMealTheme.primarySoft.opacity(colorScheme == .dark ? 0.18 : 0.72)
                 )
             )
         }
@@ -148,10 +148,10 @@ struct MessageCenterView: View {
             Spacer().frame(height: 40)
             Image(systemName: "bell.slash")
                 .font(.system(size: 44, weight: .light))
-                .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.4))
-            Text(SafeEatL10n.text(L10nKey.Message.emptyTitle))
-                .font(SafeEatFont.custom(18, relativeTo: .title3))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.4))
+            Text(SafeMealL10n.text(L10nKey.Message.emptyTitle))
+                .font(SafeMealFont.custom(18, relativeTo: .title3))
+                .foregroundStyle(SafeMealTheme.textSecondary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -250,24 +250,24 @@ private struct MessageDetailSheet: View {
     @Environment(\.colorScheme) private var colorScheme
 
     private var displayTitle: String {
-        SafeEatL10n.isZh ? (message.title ?? "") : (message.titleEn ?? message.title ?? "")
+        SafeMealL10n.isZh ? (message.title ?? "") : (message.titleEn ?? message.title ?? "")
     }
 
     private var displayContent: String {
-        SafeEatL10n.isZh ? (message.content ?? "") : (message.contentEn ?? message.content ?? "")
+        SafeMealL10n.isZh ? (message.content ?? "") : (message.contentEn ?? message.content ?? "")
     }
 
     // 固定内容高度 200，内部滚动
     private let fixedContentHeight: CGFloat = 200
 
     var body: some View {
-        SafeEatSettingsSheetContainer(
+        SafeMealSettingsSheetContainer(
             title: displayTitle,
             subtitle: nil,
             contentHeight: fixedContentHeight,
             dismissible: true,
             primaryButton: SheetButton(
-                title: SafeEatL10n.isZh ? "已阅" : "Read",
+                title: SafeMealL10n.isZh ? "已阅" : "Read",
                 action: {
                     if !message.isRead, let token = store.session?.accessToken {
                         Task { await store.notificationStore.markAsRead(accessToken: token, notificationId: message.id) }
@@ -280,14 +280,14 @@ private struct MessageDetailSheet: View {
                 VStack(alignment: .leading, spacing: 0) {
                     if let createdAt = message.createdAt {
                         Text(createdAt.notificationTimeText)
-                            .font(SafeEatFont.custom(12, relativeTo: .caption2))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .font(SafeMealFont.custom(12, relativeTo: .caption2))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                             .padding(.bottom, 10)
                     }
 
                     Text(displayContent)
-                        .font(SafeEatFont.custom(15, relativeTo: .body))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .font(SafeMealFont.custom(15, relativeTo: .body))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
                 }
             }
             .frame(height: fixedContentHeight)
@@ -317,10 +317,10 @@ private struct DisclosureSheetWrapper: View {
     private var disclosureTitle: String {
         if isExternalUrl { return "" }
         switch category {
-        case "privacy_policy": return SafeEatL10n.isZh ? "隐私政策" : "Privacy Policy"
-        case "terms_of_service": return SafeEatL10n.isZh ? "服务条款" : "Terms of Service"
-        case "disclaimer": return SafeEatL10n.isZh ? "免责声明" : "Disclaimer"
-        default: return SafeEatL10n.isZh ? "协议详情" : "Details"
+        case "privacy_policy": return SafeMealL10n.isZh ? "隐私政策" : "Privacy Policy"
+        case "terms_of_service": return SafeMealL10n.isZh ? "服务条款" : "Terms of Service"
+        case "disclaimer": return SafeMealL10n.isZh ? "免责声明" : "Disclaimer"
+        default: return SafeMealL10n.isZh ? "协议详情" : "Details"
         }
     }
 
@@ -339,7 +339,7 @@ private struct DisclosureSheetWrapper: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                     }
                 }
             }
@@ -359,7 +359,7 @@ private struct ExternalUrlView: View {
 
             if isLoading {
                 ProgressView()
-                    .tint(SafeEatTheme.primary)
+                    .tint(SafeMealTheme.primary)
                     .padding(.top, 20)
             }
         }

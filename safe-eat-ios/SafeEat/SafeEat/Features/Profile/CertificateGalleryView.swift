@@ -11,26 +11,26 @@ struct CertificateGalleryView: View {
                 ProgressView()
             } else if let errorMessage {
                 Text(errorMessage)
-                    .font(SafeEatFont.textStyle(.body))
-                    .foregroundStyle(SafeEatTheme.danger)
+                    .font(SafeMealFont.textStyle(.body))
+                    .foregroundStyle(SafeMealTheme.danger)
                     .padding(20)
             } else if items.isEmpty {
-                Text(SafeEatL10n.text(L10nKey.Errors.invalidResponse))
-                    .font(SafeEatFont.textStyle(.body))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                Text(SafeMealL10n.text(L10nKey.Errors.invalidResponse))
+                    .font(SafeMealFont.textStyle(.body))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
                     .padding(20)
             } else {
 //                RichContentView(html: buildHTML(from: items))
             }
         }
-        .navigationTitle(SafeEatL10n.text(L10nKey.Profile.About.certificate))
+        .navigationTitle(SafeMealL10n.text(L10nKey.Profile.About.certificate))
         .navigationBarTitleDisplayMode(.inline)
         .task { await loadCertificates() }
     }
 
     private func loadCertificates() async {
         do {
-            let result = try await SafeEatAPI().fetchDisclosure(category: "证件公示")
+            let result = try await SafeMealAPI().fetchDisclosure(category: "证件公示")
             items = result.items
         } catch {
             errorMessage = error.localizedDescription

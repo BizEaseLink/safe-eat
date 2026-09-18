@@ -2,16 +2,40 @@ import Foundation
 
 // MARK: - NutritionMetrics v3 嵌套结构（对齐后端 nutrition-metrics.interface.ts）
 
+/// NRV 计算依据标准（响应顶层）
+struct NrvStandard: Codable {
+    let code: String
+    let version: String
+}
+
 struct NutrientValue: Codable {
     let value: Double
     let unit: String
     let dailyValuePercent: Double?
+    /// v4 值级别：measured(实测，无标识) | estimated(估算，显示「估」) | none(暂无)
+    var source: String? = nil
 
     // 后端返回 "amount"，iOS 属性名为 "value"
     private enum CodingKeys: String, CodingKey {
         case value = "amount"
         case unit
-        case dailyValuePercent = "nrv"
+        case dailyValuePercent = "nrvPercent"
+        case source
+    }
+
+    init(value: Double, unit: String, dailyValuePercent: Double? = nil, source: String? = nil) {
+        self.value = value
+        self.unit = unit
+        self.dailyValuePercent = dailyValuePercent
+        self.source = source
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        value = try c.decode(Double.self, forKey: .value)
+        unit = try c.decode(String.self, forKey: .unit)
+        dailyValuePercent = try c.decodeIfPresent(Double.self, forKey: .dailyValuePercent)
+        source = try c.decodeIfPresent(String.self, forKey: .source)
     }
 }
 
@@ -28,6 +52,8 @@ struct Vitamins: Codable {
     let e: NutrientValue?
     let k: NutrientValue?
     let folate: NutrientValue?
+    let biotin: NutrientValue?
+    let choline: NutrientValue?
 
     private enum CodingKeys: String, CodingKey {
         case a = "vitaminA"
@@ -42,6 +68,8 @@ struct Vitamins: Codable {
         case e = "vitaminE"
         case k = "vitaminK"
         case folate
+        case biotin
+        case choline
     }
 }
 
@@ -53,6 +81,9 @@ struct Minerals: Codable {
     let potassium: NutrientValue?
     let zinc: NutrientValue?
     let selenium: NutrientValue?
+    let iodine: NutrientValue?
+    let copper: NutrientValue?
+    let manganese: NutrientValue?
 }
 
 struct Nutrients: Codable {
@@ -67,9 +98,6 @@ struct Nutrients: Codable {
     let addedSugars: NutrientValue?
     let cholesterol: NutrientValue?
     let sodium: NutrientValue?
-    // 后端 v3 嵌套在此处的 vitamins/minerals，由 NutritionMetrics 自定义解码器提取到顶层
-    let vitamins: Vitamins?
-    let minerals: Minerals?
 
     // 后端返回 "sugars"（复数），iOS 属性名为 "sugar"（单数）
     private enum CodingKeys: String, CodingKey {
@@ -84,8 +112,6 @@ struct Nutrients: Codable {
         case addedSugars
         case cholesterol
         case sodium
-        case vitamins
-        case minerals
     }
 }
 
@@ -187,17 +213,9 @@ struct NutritionMetrics: Codable {
         ingredients = try container.decodeIfPresent([String].self, forKey: .ingredients)
         ingredientBreakdown = try container.decodeIfPresent([IngredientBreakdown].self, forKey: .ingredientBreakdown)
 
-        // 优先从顶层读取 vitamins/minerals，若不存在则从 nutrients 内部提取
-        if let topVitamins = try? container.decodeIfPresent(Vitamins.self, forKey: .vitamins) {
-            vitamins = topVitamins
-        } else {
-            vitamins = nutrients?.vitamins
-        }
-        if let topMinerals = try? container.decodeIfPresent(Minerals.self, forKey: .minerals) {
-            minerals = topMinerals
-        } else {
-            minerals = nutrients?.minerals
-        }
+        // v4 顶层布局：vitamins/minerals 直接读顶层（不再支持 v3 嵌套）
+        vitamins = try container.decodeIfPresent(Vitamins.self, forKey: .vitamins)
+        minerals = try container.decodeIfPresent(Minerals.self, forKey: .minerals)
     }
 }
 
@@ -261,36 +279,31 @@ struct DbMatch: Codable, Identifiable {
     let matchedAiName: String?
 }
 
+/// 分组树：每个 AI 候选一组，mode 决定渲染方式
+struct MatchGroup: Codable, Identifiable {
+    let aiName: String
+    let confidence: Double?
+    let type: String?
+    let source: String?
+    /// direct=组内 1 条且 100% 等值（单层直通）| select=展开二级选单 | draft=组内无匹配（点击后建草稿）
+    let mode: String
+    let matches: [DbMatch]?
+
+    var id: String { aiName }
+    var effectiveMatches: [DbMatch] { matches ?? [] }
+}
+
 struct IdentifyResponse: Codable {
-    /// 新契约:一级 AI 候选
-    let aiCandidates: [IdentifyCandidate]?
-    /// 新契约:二级 DB 命中(去重排序后)
-    let dbMatches: [DbMatch]?
-    /// 新契约:走法 "direct" | "select"
-    let walkAction: String?
+    /// 分组树：每个 AI 候选一组，按组 mode 渲染
+    let groups: [MatchGroup]?
     let sessionId: String
 
-    /// 旧契约兼容(后端已不返回,保险)
-    private let candidates: [IdentifyCandidate]?
-
-    /// 统一访问 AI 候选:优先 aiCandidates,降级旧 candidates
-    var effectiveAiCandidates: [IdentifyCandidate] {
-        aiCandidates ?? candidates ?? []
-    }
-
-    var effectiveDbMatches: [DbMatch] {
-        dbMatches ?? []
-    }
-
-    /// 统一走法:无 walkAction 时按候选数推断(旧契约降级)
-    var effectiveWalkAction: String {
-        if let action = walkAction { return action }
-        let ai = effectiveAiCandidates.count
-        return ai <= 1 ? "direct" : "select"
+    var effectiveGroups: [MatchGroup] {
+        groups ?? []
     }
 
     private enum CodingKeys: String, CodingKey {
-        case aiCandidates, dbMatches, walkAction, sessionId, candidates
+        case groups, sessionId
     }
 }
 
@@ -342,6 +355,10 @@ struct RecognitionRecord: Codable, Identifiable {
     let categoryLabelEn: String?
     let ruleVersion: String?
     let nutritionVersion: String?
+    /// v4 食物级来源：predicted=后台推算（整卡显示「推」）；其他=数据库来源
+    let nutritionSource: String?
+    /// NRV 计算依据标准
+    let nrvStandard: NrvStandard?
     let satietyScore: Double?
     let bloodSugarImpact: BloodSugarImpact?
     let drvPercentages: [String: Double]?
@@ -371,6 +388,8 @@ struct RecognitionRecord: Codable, Identifiable {
         case categoryLabelEn
         case ruleVersion
         case nutritionVersion
+        case nutritionSource
+        case nrvStandard
         case satietyScore
         case bloodSugarImpact
         case drvPercentages
@@ -401,6 +420,8 @@ struct RecognitionRecord: Codable, Identifiable {
         categoryLabelEn: String? = nil,
         ruleVersion: String? = nil,
         nutritionVersion: String? = nil,
+        nutritionSource: String? = nil,
+        nrvStandard: NrvStandard? = nil,
         satietyScore: Double? = nil,
         bloodSugarImpact: BloodSugarImpact? = nil,
         drvPercentages: [String: Double]? = nil
@@ -429,6 +450,8 @@ struct RecognitionRecord: Codable, Identifiable {
         self.categoryLabelEn = categoryLabelEn
         self.ruleVersion = ruleVersion
         self.nutritionVersion = nutritionVersion
+        self.nutritionSource = nutritionSource
+        self.nrvStandard = nrvStandard
         self.satietyScore = satietyScore
         self.bloodSugarImpact = bloodSugarImpact
         self.drvPercentages = drvPercentages
@@ -460,6 +483,8 @@ struct RecognitionRecord: Codable, Identifiable {
         categoryLabelEn = try container.decodeIfPresent(String.self, forKey: .categoryLabelEn)
         ruleVersion = try container.decodeIfPresent(String.self, forKey: .ruleVersion)
         nutritionVersion = try container.decodeIfPresent(String.self, forKey: .nutritionVersion)
+        nutritionSource = try container.decodeIfPresent(String.self, forKey: .nutritionSource)
+        nrvStandard = try container.decodeIfPresent(NrvStandard.self, forKey: .nrvStandard)
         satietyScore = try container.decodeIfPresent(Double.self, forKey: .satietyScore)
         bloodSugarImpact = try container.decodeIfPresent(BloodSugarImpact.self, forKey: .bloodSugarImpact)
         drvPercentages = try container.decodeIfPresent([String: Double].self, forKey: .drvPercentages)
@@ -491,6 +516,8 @@ struct RecognitionRecord: Codable, Identifiable {
         try container.encodeIfPresent(categoryLabelEn, forKey: .categoryLabelEn)
         try container.encodeIfPresent(ruleVersion, forKey: .ruleVersion)
         try container.encodeIfPresent(nutritionVersion, forKey: .nutritionVersion)
+        try container.encodeIfPresent(nutritionSource, forKey: .nutritionSource)
+        try container.encodeIfPresent(nrvStandard, forKey: .nrvStandard)
         try container.encodeIfPresent(satietyScore, forKey: .satietyScore)
         try container.encodeIfPresent(bloodSugarImpact, forKey: .bloodSugarImpact)
         try container.encodeIfPresent(drvPercentages, forKey: .drvPercentages)
@@ -513,9 +540,7 @@ struct RecognitionRecord: Codable, Identifiable {
                 sugar: nil,
                 addedSugars: nil,
                 cholesterol: nil,
-                sodium: nil,
-                vitamins: nil,
-                minerals: nil
+                sodium: nil
             ),
             vitamins: nil,
             minerals: nil,
@@ -614,6 +639,9 @@ enum FeedbackType: String, CaseIterable, Identifiable {
     case wrongNutrition = "wrong_nutrition"
     case wrongCategory = "wrong_category"
     case addAlias = "add_alias"
+    case removeAlias = "remove_alias"
+    case wrongTags = "wrong_tags"
+    case translationError = "translation_error"
     case newFood = "new_food"
     case other = "other"
 
@@ -621,13 +649,21 @@ enum FeedbackType: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .wrongFood: return SafeEatL10n.text(L10nKey.Feedback.typeWrongFood)
-        case .wrongName: return SafeEatL10n.text(L10nKey.Feedback.typeWrongName)
-        case .wrongNutrition: return SafeEatL10n.text(L10nKey.Feedback.typeWrongNutrition)
-        case .wrongCategory: return SafeEatL10n.text(L10nKey.Feedback.typeWrongCategory)
-        case .addAlias: return SafeEatL10n.text(L10nKey.Feedback.typeAddAlias)
-        case .newFood: return SafeEatL10n.text(L10nKey.Feedback.typeNewFood)
-        case .other: return SafeEatL10n.text(L10nKey.Feedback.typeOther)
+        case .wrongFood: return SafeMealL10n.text(L10nKey.Feedback.typeWrongFood)
+        case .wrongName: return SafeMealL10n.text(L10nKey.Feedback.typeWrongName)
+        case .wrongNutrition: return SafeMealL10n.text(L10nKey.Feedback.typeWrongNutrition)
+        case .wrongCategory: return SafeMealL10n.text(L10nKey.Feedback.typeWrongCategory)
+        case .addAlias: return SafeMealL10n.text(L10nKey.Feedback.typeAddAlias)
+        case .removeAlias: return SafeMealL10n.text(L10nKey.Feedback.typeRemoveAlias)
+        case .translationError: return SafeMealL10n.text(L10nKey.Feedback.typeTranslationError)
+        case .wrongTags: return SafeMealL10n.text(L10nKey.Feedback.typeWrongTags)
+        case .newFood: return SafeMealL10n.text(L10nKey.Feedback.typeNewFood)
+        case .other: return SafeMealL10n.text(L10nKey.Feedback.typeOther)
         }
+    }
+
+    /// 反馈提交入口展示的类型（other / wrong_category 暂不上；remove_alias 下线不再提供）
+    static var selectableCases: [FeedbackType] {
+        allCases.filter { $0 != .other && $0 != .wrongCategory && $0 != .removeAlias && $0 != .newFood }
     }
 }

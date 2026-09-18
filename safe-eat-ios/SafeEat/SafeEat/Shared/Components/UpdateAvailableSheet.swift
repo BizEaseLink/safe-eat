@@ -6,7 +6,7 @@ struct UpdateAvailableSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        SafeEatSettingsSheetContainer(
+        SafeMealSettingsSheetContainer(
             title: "更新提醒",
             subtitle: "发现新版本：\(store.updateInfo?.latestVersion ?? "最新")",
             contentHeight: 180,
@@ -22,8 +22,8 @@ struct UpdateAvailableSheet: View {
                 ProfileSurfaceCard {
                     ScrollView {
                         Text(notes)
-                            .font(SafeEatFont.textStyle(.subheadline))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .font(SafeMealFont.textStyle(.subheadline))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                             .lineSpacing(4)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }

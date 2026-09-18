@@ -3,7 +3,7 @@ import Security
 
 final class AuthSessionStore {
     private let key = "safe-eat.auth-session"
-    private let service = "com.bizeasylink.safe-eat.auth-session"
+    private let service = "com.bizeasylink.SafeMeal.auth-session"
     private let account = "default"
 
     func load() -> AuthSession? {

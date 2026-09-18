@@ -10,13 +10,13 @@ struct PreferenceSettingsView: View {
 
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.Profile.preferenceTitle),
-            subtitle: SafeEatL10n.text(L10nKey.Profile.Preference.subtitle)
+            title: SafeMealL10n.text(L10nKey.Profile.preferenceTitle),
+            subtitle: SafeMealL10n.text(L10nKey.Profile.Preference.subtitle)
         ) {
             ProfileSurfaceCard {
                 ProfileFieldBlock(
-                    label: SafeEatL10n.text(L10nKey.Profile.Preference.healthTags),
-                    hint: SafeEatL10n.text(L10nKey.Profile.Preference.healthTagsHint)
+                    label: SafeMealL10n.text(L10nKey.Profile.Preference.healthTags),
+                    hint: SafeMealL10n.text(L10nKey.Profile.Preference.healthTagsHint)
                 ) {
                     VStack(spacing: 10) {
                         ForEach(HealthTagMapper.allTags, id: \.self) { tag in
@@ -37,8 +37,8 @@ struct PreferenceSettingsView: View {
 
             ProfileSurfaceCard {
                 ProfileFieldBlock(
-                    label: SafeEatL10n.text(L10nKey.Profile.Preference.fitnessGoal),
-                    hint: SafeEatL10n.text(L10nKey.Profile.Preference.fitnessGoalHint)
+                    label: SafeMealL10n.text(L10nKey.Profile.Preference.fitnessGoal),
+                    hint: SafeMealL10n.text(L10nKey.Profile.Preference.fitnessGoalHint)
                 ) {
                     VStack(spacing: 10) {
                         ForEach(FitnessGoalMapper.allGoals, id: \.self) { goal in
@@ -54,7 +54,7 @@ struct PreferenceSettingsView: View {
             }
         } footer: {
             ProfilePrimaryActionButton(
-                title: SafeEatL10n.text(L10nKey.Common.save),
+                title: SafeMealL10n.text(L10nKey.Common.save),
                 isLoading: isSaving
             ) {
                 Task {

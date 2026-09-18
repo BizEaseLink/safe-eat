@@ -11,7 +11,7 @@ struct HealthProfileTemplate: Identifiable, Hashable {
     var isHighlighted: Bool
 
     var displayName: String {
-        SafeEatL10n.text(displayNameKey)
+        SafeMealL10n.text(displayNameKey)
     }
 
     enum HealthProfileGroup: String, CaseIterable {
@@ -21,9 +21,9 @@ struct HealthProfileTemplate: Identifiable, Hashable {
         var title: String {
             switch self {
             case .healthRisk:
-                return SafeEatL10n.text(L10nKey.HealthGoal.groupHealthRisk)
+                return SafeMealL10n.text(L10nKey.HealthGoal.groupHealthRisk)
             case .lifeGoal:
-                return SafeEatL10n.text(L10nKey.HealthGoal.groupLifeGoal)
+                return SafeMealL10n.text(L10nKey.HealthGoal.groupLifeGoal)
             }
         }
 
@@ -79,15 +79,15 @@ struct HealthGoalSelectionView: View {
 
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.HealthGoal.navTitle),
-            subtitle: SafeEatL10n.format(L10nKey.HealthGoal.limitHintFormat, maxSelection)
+            title: SafeMealL10n.text(L10nKey.HealthGoal.navTitle),
+            subtitle: SafeMealL10n.format(L10nKey.HealthGoal.limitHintFormat, maxSelection)
         ) {
             ForEach(HealthProfileTemplate.HealthProfileGroup.allCases, id: \.self) { group in
                 templateGroupSection(group: group)
             }
         } footer: {
             ProfilePrimaryActionButton(
-                title: SafeEatL10n.text(L10nKey.HealthGoal.saveAction),
+                title: SafeMealL10n.text(L10nKey.HealthGoal.saveAction),
                 isDisabled: selectedIds.isEmpty
             ) {
                 saveSelection()
@@ -108,10 +108,10 @@ struct HealthGoalSelectionView: View {
             HStack(spacing: 8) {
                 Image(systemName: group.icon)
                     .font(.system(size: 16))
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .foregroundStyle(SafeMealTheme.primary)
                 Text(group.title)
-                    .font(SafeEatFont.custom(17, relativeTo: .headline, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(17, relativeTo: .headline, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
             }
 
             let groupTemplates = templates.filter { $0.group == group }
@@ -133,7 +133,7 @@ struct HealthGoalSelectionView: View {
         let isPrimary = primaryId == template.id
         let canSelect = isSelected || !isAtLimit
         let config = HealthTagConfig.forCode(template.code)
-        let tagColor = config?.color ?? SafeEatTheme.primary
+        let tagColor = config?.color ?? SafeMealTheme.primary
 
         return Button {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -161,19 +161,19 @@ struct HealthGoalSelectionView: View {
 
                     Image(systemName: template.icon)
                         .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(isSelected ? tagColor : SafeEatTheme.textSecondary)
+                        .foregroundStyle(isSelected ? tagColor : SafeMealTheme.textSecondary)
                 }
 
                 Text(template.displayName)
-                    .font(SafeEatFont.custom(13, relativeTo: .caption, weight: isSelected ? .bold : .regular))
-                    .foregroundStyle(isSelected ? SafeEatTheme.textPrimary : SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.custom(13, relativeTo: .caption, weight: isSelected ? .bold : .regular))
+                    .foregroundStyle(isSelected ? SafeMealTheme.textPrimary : SafeMealTheme.textSecondary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
 
                 if isPrimary {
-                    Text(SafeEatL10n.text(L10nKey.HealthGoal.primaryTag))
-                        .font(SafeEatFont.custom(10, relativeTo: .caption2, weight: .bold))
+                    Text(SafeMealL10n.text(L10nKey.HealthGoal.primaryTag))
+                        .font(SafeMealFont.custom(10, relativeTo: .caption2, weight: .bold))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
@@ -190,7 +190,7 @@ struct HealthGoalSelectionView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(isSelected ? tagColor.opacity(0.35) : (colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line), lineWidth: isSelected ? 1.5 : 1)
+                    .stroke(isSelected ? tagColor.opacity(0.35) : (colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line), lineWidth: isSelected ? 1.5 : 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
@@ -201,13 +201,13 @@ struct HealthGoalSelectionView: View {
                     Button {
                         primaryId = selectedIds.first(where: { $0 != template.id })
                     } label: {
-                        Label(SafeEatL10n.text(L10nKey.HealthGoal.unsetPrimaryAction), systemImage: "star")
+                        Label(SafeMealL10n.text(L10nKey.HealthGoal.unsetPrimaryAction), systemImage: "star")
                     }
                 } else {
                     Button {
                         primaryId = template.id
                     } label: {
-                        Label(SafeEatL10n.text(L10nKey.HealthGoal.setPrimaryAction), systemImage: "star.fill")
+                        Label(SafeMealL10n.text(L10nKey.HealthGoal.setPrimaryAction), systemImage: "star.fill")
                     }
                 }
 
@@ -221,7 +221,7 @@ struct HealthGoalSelectionView: View {
                         }
                     }
                 } label: {
-                    Label(SafeEatL10n.text(L10nKey.HealthGoal.removeAction), systemImage: "minus.circle")
+                    Label(SafeMealL10n.text(L10nKey.HealthGoal.removeAction), systemImage: "minus.circle")
                 }
             }
         }

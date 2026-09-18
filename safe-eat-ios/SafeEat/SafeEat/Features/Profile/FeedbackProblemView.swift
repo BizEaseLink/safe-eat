@@ -24,40 +24,40 @@ struct FeedbackProblemView: View {
 
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.Profile.Feedback.title),
-            subtitle: SafeEatL10n.text(L10nKey.Profile.Feedback.subtitle)
+            title: SafeMealL10n.text(L10nKey.Profile.Feedback.title),
+            subtitle: SafeMealL10n.text(L10nKey.Profile.Feedback.subtitle)
         ) {
             ProfileSurfaceCard {
                 ProfileStaticRow(
-                    label: SafeEatL10n.text(L10nKey.Profile.Feedback.versionLabel),
+                    label: SafeMealL10n.text(L10nKey.Profile.Feedback.versionLabel),
                     value: version
                 )
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
                 ProfileStaticRow(
-                    label: SafeEatL10n.text(L10nKey.Profile.Feedback.deviceLabel),
-                    value: SafeEatL10n.format(L10nKey.Profile.Feedback.device, UIDevice.current.model)
+                    label: SafeMealL10n.text(L10nKey.Profile.Feedback.deviceLabel),
+                    value: SafeMealL10n.format(L10nKey.Profile.Feedback.device, UIDevice.current.model)
                 )
             }
 
             ProfileSurfaceCard {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(SafeEatL10n.text(L10nKey.Profile.Feedback.hint))
-                        .font(SafeEatFont.textStyle(.body))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    Text(SafeMealL10n.text(L10nKey.Profile.Feedback.hint))
+                        .font(SafeMealFont.textStyle(.body))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
 
-                    Divider().overlay(SafeEatTheme.line)
+                    Divider().overlay(SafeMealTheme.line)
 
                     Button(action: { showMailComposer = true }) {
                         HStack(spacing: 12) {
                             Image(systemName: "envelope.fill")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(SafeEatTheme.primary)
+                                .foregroundStyle(SafeMealTheme.primary)
 
-                            Text(SafeEatL10n.text(L10nKey.Profile.Feedback.emailAction))
-                                .font(SafeEatFont.textStyle(.body))
-                                .foregroundStyle(SafeEatTheme.primary)
+                            Text(SafeMealL10n.text(L10nKey.Profile.Feedback.emailAction))
+                                .font(SafeMealFont.textStyle(.body))
+                                .foregroundStyle(SafeMealTheme.primary)
                         }
                     }
                     .buttonStyle(.plain)
@@ -68,8 +68,8 @@ struct FeedbackProblemView: View {
         }
         .sheet(isPresented: $showMailComposer) {
             MailComposeView(
-                toRecipients: ["bel_safeeat@163.com"],
-                subject: "食安安用户反馈",
+                toRecipients: ["bel_safemeal@163.com"],
+                subject: "食必安用户反馈",
                 messageBody: "\n\n---\n\(deviceInfo)"
             )
         }

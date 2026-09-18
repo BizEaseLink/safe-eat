@@ -14,20 +14,24 @@ struct ProfileView: View {
     /// T10：onAppear 防抖时间戳（5s 内不重复刷新）
     @State private var lastRefreshAt: Date?
 
-    private let scrollCoordinateSpace = "safeeat.profile.scroll"
+    private let scrollCoordinateSpace = "safemeal.profile.scroll"
 
     var body: some View {
         GeometryReader { proxy in
             ZStack(alignment: .top) {
-                SafeEatMainGradientBackground()
+                SafeMealMainGradientBackground()
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 22) {
-                        SafeEatScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
+                        // 顶部容器占位（高度对齐历史页放大镜 / 首页铃铛；按钮逻辑后续加入）
+                        HStack {
+                            Spacer()
 
-                        Color.clear.frame(height: 8)
+                            Color.clear
+                                .frame(width: 44, height: 44)
+                        }
 
-                        SafeEatPageHeader(title: SafeEatL10n.text(L10nKey.Profile.title))
+                        SafeMealScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
 
                         if store.session == nil {
                             notLoggedInView
@@ -50,7 +54,7 @@ struct ProfileView: View {
                     .padding(.bottom, 120)
                 }
                 .coordinateSpace(name: scrollCoordinateSpace)
-                .onPreferenceChange(SafeEatScrollOffsetKey.self) { value in
+                .onPreferenceChange(SafeMealScrollOffsetKey.self) { value in
                     scrollOffset = value
                 }
                 // T10：下拉刷新
@@ -59,8 +63,8 @@ struct ProfileView: View {
                     await store.loadMembershipStatus()
                 }
 
-                SafeEatScrollNavChrome(
-                    title: SafeEatL10n.text(L10nKey.Profile.title),
+                SafeMealScrollNavChrome(
+                    title: SafeMealL10n.text(L10nKey.Profile.title),
                     scrollOffset: scrollOffset,
                     topInset: proxy.safeAreaInsets.top
                 )
@@ -70,7 +74,7 @@ struct ProfileView: View {
         .sheet(item: $activeSheet) { sheet in
             switch sheet {
             case .reminder:
-                SafeEatReminderSettingsSheet()
+                SafeMealReminderSettingsSheet()
             case .language:
                 LanguageSettingsView()
             }
@@ -118,7 +122,7 @@ struct ProfileView: View {
         case .updates:
             UpdateSettingsView()
         case .about:
-            AboutSafeEatView()
+            AboutSafeMealView()
         case .changePhone:
             ChangePhoneView()
         case .changePassword:
@@ -129,47 +133,47 @@ struct ProfileView: View {
             DeleteAccountView()
         case .userAgreement:
             DisclosureDetailView(
-                title: SafeEatL10n.text(L10nKey.Profile.About.userAgreement),
+                title: SafeMealL10n.text(L10nKey.Profile.About.userAgreement),
                 category: "user_agreement"
             )
         case .privacyPolicy:
             DisclosureDetailView(
-                title: SafeEatL10n.text(L10nKey.Profile.About.privacyPolicy),
+                title: SafeMealL10n.text(L10nKey.Profile.About.privacyPolicy),
                 category: "privacy_policy"
             )
         case .valueAdded:
             DisclosureDetailView(
-                title: SafeEatL10n.text(L10nKey.Profile.About.valueAdded),
+                title: SafeMealL10n.text(L10nKey.Profile.About.valueAdded),
                 category: "value_added_service_agreement"
             )
         case .minorProtection:
             DisclosureDetailView(
-                title: SafeEatL10n.text(L10nKey.Profile.About.minorProtection),
+                title: SafeMealL10n.text(L10nKey.Profile.About.minorProtection),
                 category: "minor_protection_guide"
             )
         case .autoRenewalNotice:
             DisclosureDetailView(
-                title: SafeEatL10n.text(L10nKey.Profile.About.autoRenewalNotice),
+                title: SafeMealL10n.text(L10nKey.Profile.About.autoRenewalNotice),
                 category: "auto_renewal_notice"
             )
         case .permissionUsage:
             DisclosureDetailView(
-                title: SafeEatL10n.text(L10nKey.Profile.About.permissionUsage),
+                title: SafeMealL10n.text(L10nKey.Profile.About.permissionUsage),
                 category: "permission_usage"
             )
         case .aiDisclaimer:
             DisclosureDetailView(
-                title: SafeEatL10n.text(L10nKey.Profile.About.aiDisclaimer),
+                title: SafeMealL10n.text(L10nKey.Profile.About.aiDisclaimer),
                 category: "ai_disclaimer"
             )
         case .adServiceNotice:
             DisclosureDetailView(
-                title: SafeEatL10n.text(L10nKey.Profile.About.adServiceNotice),
+                title: SafeMealL10n.text(L10nKey.Profile.About.adServiceNotice),
                 category: "ad_service_notice"
             )
         case .cancellationGuide:
             DisclosureDetailView(
-                title: SafeEatL10n.text(L10nKey.Profile.About.cancellationGuide),
+                title: SafeMealL10n.text(L10nKey.Profile.About.cancellationGuide),
                 category: "account_cancellation_guide"
             )
         case .certificate:
@@ -187,14 +191,14 @@ struct ProfileView: View {
 
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(spacing: 8) {
-                            Text(store.profile?.displayNameOrFallback ?? SafeEatL10n.text(L10nKey.Profile.heroDefaultName))
-                                .font(SafeEatFont.custom(26, relativeTo: .title2, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
+                            Text(store.profile?.displayNameOrFallback ?? SafeMealL10n.text(L10nKey.Profile.heroDefaultName))
+                                .font(SafeMealFont.custom(26, relativeTo: .title2, weight: .bold))
+                                .foregroundStyle(SafeMealTheme.textPrimary)
                                 .lineLimit(1)
 
                             if let status = store.membershipStatus, status.isTrial == true {
-                                Text(SafeEatL10n.text(L10nKey.Membership.trialActive))
-                                    .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                                Text(SafeMealL10n.text(L10nKey.Membership.trialActive))
+                                    .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
                                     .foregroundStyle(.orange)
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 6)
@@ -205,8 +209,8 @@ struct ProfileView: View {
                             }
 
                             if store.hasFirstPurchaseBonusClaimed {
-                                Text(SafeEatL10n.text(L10nKey.Membership.firstPurchaseClaimed))
-                                    .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                                Text(SafeMealL10n.text(L10nKey.Membership.firstPurchaseClaimed))
+                                    .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
                                     .foregroundStyle(.green)
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 6)
@@ -218,21 +222,21 @@ struct ProfileView: View {
                         }
 
                         Text(store.profile?.phone ?? "--")
-                            .font(SafeEatFont.textStyle(.subheadline))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .font(SafeMealFont.textStyle(.subheadline))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
 
                         HStack(spacing: 8) {
                             Image(systemName: "globe")
                                 .font(.system(size: 13, weight: .semibold))
                             Text(settings.languageSummary)
-                                .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
+                                .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .bold))
                         }
-                        .foregroundStyle(SafeEatTheme.primary)
+                        .foregroundStyle(SafeMealTheme.primary)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 8)
                         .background(
                             Capsule()
-                                .fill(SafeEatTheme.primary.opacity(0.12))
+                                .fill(SafeMealTheme.primary.opacity(0.12))
                         )
                     }
 
@@ -240,7 +244,7 @@ struct ProfileView: View {
 
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
             }
         }
@@ -252,22 +256,22 @@ struct ProfileView: View {
     private var healthProfileSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(SafeEatL10n.text(L10nKey.Profile.healthProfileTitle))
-                    .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                Text(SafeMealL10n.text(L10nKey.Profile.healthProfileTitle))
+                    .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: .semibold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
                 Spacer()
                 NavigationLink(value: ProfileRoute.healthGoal) {
-                    Text(SafeEatL10n.text(L10nKey.Profile.healthProfileEdit))
-                        .font(SafeEatFont.custom(13, relativeTo: .caption))
-                        .foregroundStyle(SafeEatTheme.primary)
+                    Text(SafeMealL10n.text(L10nKey.Profile.healthProfileEdit))
+                        .font(SafeMealFont.custom(13, relativeTo: .caption))
+                        .foregroundStyle(SafeMealTheme.primary)
                 }
             }
 
             let selectedTags = healthSelectedTags
             if selectedTags.isEmpty {
-                Text(SafeEatL10n.text(L10nKey.Profile.healthProfileEmptyHint))
-                    .font(SafeEatFont.custom(13, relativeTo: .caption))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                Text(SafeMealL10n.text(L10nKey.Profile.healthProfileEmptyHint))
+                    .font(SafeMealFont.custom(13, relativeTo: .caption))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             } else {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                     ForEach(selectedTags, id: \.code) { tag in
@@ -283,7 +287,7 @@ struct ProfileView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line.opacity(0.12), lineWidth: 1)
+                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line.opacity(0.12), lineWidth: 1)
         )
     }
 
@@ -294,7 +298,7 @@ struct ProfileView: View {
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(tag.color)
             Text(tag.displayName)
-                .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .semibold))
+                .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .semibold))
                 .foregroundStyle(tag.color)
         }
         .padding(.horizontal, 12)
@@ -342,21 +346,21 @@ struct ProfileView: View {
             HStack(spacing: 8) {
                 Image(systemName: "creditcard.and.123")
                     .font(.system(size: 14))
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .foregroundStyle(SafeMealTheme.primary)
                 Text("管理订阅")
-                    .font(SafeEatFont.custom(13, relativeTo: .footnote))
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .font(SafeMealFont.custom(13, relativeTo: .footnote))
+                    .foregroundStyle(SafeMealTheme.primary)
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(SafeEatTheme.primary.opacity(0.08))
+                    .fill(SafeMealTheme.primary.opacity(0.08))
             )
         }
         .buttonStyle(.plain)
@@ -386,26 +390,26 @@ struct ProfileView: View {
     // MARK: - 账号与安全（含兑换码、订单历史）
 
     private var accountSection: some View {
-        ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.editGroupTitle)) {
+        ProfileSectionBlock(title: SafeMealL10n.text(L10nKey.Profile.editGroupTitle)) {
             if store.session != nil {
                 NavigationLink(value: ProfileRoute.security) {
                     ProfileNavigationRow(
                         icon: "lock.shield",
-                        title: SafeEatL10n.text(L10nKey.Profile.securityTitle),
-                        subtitle: SafeEatL10n.text(L10nKey.Profile.securitySubtitle)
+                        title: SafeMealL10n.text(L10nKey.Profile.securityTitle),
+                        subtitle: SafeMealL10n.text(L10nKey.Profile.securitySubtitle)
                     )
                 }
                 .buttonStyle(.plain)
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
             } else {
                 Button {
-                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Profile.securityTitle))
+                    store.requireLogin(featureHint: SafeMealL10n.text(L10nKey.Profile.securityTitle))
                 } label: {
                     ProfileNavigationRow(
                         icon: "lock.shield",
-                        title: SafeEatL10n.text(L10nKey.Profile.securityTitle),
-                        subtitle: SafeEatL10n.text(L10nKey.Profile.securitySubtitle)
+                        title: SafeMealL10n.text(L10nKey.Profile.securityTitle),
+                        subtitle: SafeMealL10n.text(L10nKey.Profile.securitySubtitle)
                     )
                 }
                 .buttonStyle(.plain)
@@ -414,21 +418,21 @@ struct ProfileView: View {
             NavigationLink(value: ProfileRoute.orderHistory) {
                 ProfileNavigationRow(
                     icon: "receipt",
-                    title: SafeEatL10n.text(L10nKey.Order.title),
-                    subtitle: SafeEatL10n.text(L10nKey.Order.subtitle)
+                    title: SafeMealL10n.text(L10nKey.Order.title),
+                    subtitle: SafeMealL10n.text(L10nKey.Order.subtitle)
                 )
             }
             .buttonStyle(.plain)
 
-            Divider().overlay(SafeEatTheme.line)
+            Divider().overlay(SafeMealTheme.line)
 
             Button {
                 showRedeemCodeSheet = true
             } label: {
                 ProfileNavigationRow(
                     icon: "ticket",
-                    title: SafeEatL10n.text(L10nKey.Membership.redeemCodeEntryTitle),
-                    subtitle: SafeEatL10n.text(L10nKey.Membership.redeemCodeEntrySubtitle)
+                    title: SafeMealL10n.text(L10nKey.Membership.redeemCodeEntryTitle),
+                    subtitle: SafeMealL10n.text(L10nKey.Membership.redeemCodeEntrySubtitle)
                 )
             }
             .buttonStyle(.plain)
@@ -436,74 +440,74 @@ struct ProfileView: View {
     }
 
     private var systemSettingsSection: some View {
-        ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.systemSectionTitle)) {
+        ProfileSectionBlock(title: SafeMealL10n.text(L10nKey.Profile.systemSectionTitle)) {
             Button {
                 activeSheet = .reminder
             } label: {
                 ProfileNavigationRow(
                     icon: "bell.badge",
-                    title: SafeEatL10n.text(L10nKey.Profile.reminderTitle),
-                    subtitle: SafeEatL10n.text(L10nKey.Reminder.entrySubtitle),
+                    title: SafeMealL10n.text(L10nKey.Profile.reminderTitle),
+                    subtitle: SafeMealL10n.text(L10nKey.Reminder.entrySubtitle),
                     trailingText: settings.reminderSummary
                 )
             }
             .buttonStyle(.plain)
 
-            Divider().overlay(SafeEatTheme.line)
+            Divider().overlay(SafeMealTheme.line)
 
             Button {
                 activeSheet = .language
             } label: {
                 ProfileNavigationRow(
                     icon: "globe",
-                    title: SafeEatL10n.text(L10nKey.Profile.languageTitle),
-                    subtitle: SafeEatL10n.text(L10nKey.Profile.languageSubtitle),
+                    title: SafeMealL10n.text(L10nKey.Profile.languageTitle),
+                    subtitle: SafeMealL10n.text(L10nKey.Profile.languageSubtitle),
                     trailingText: settings.languageSummary
                 )
             }
             .buttonStyle(.plain)
 
-            Divider().overlay(SafeEatTheme.line)
+            Divider().overlay(SafeMealTheme.line)
 
             NavigationLink(value: ProfileRoute.cache) {
                 ProfileNavigationRow(
                     icon: "internaldrive",
-                    title: SafeEatL10n.text(L10nKey.Profile.cacheTitle),
-                    subtitle: SafeEatL10n.text(L10nKey.Profile.cacheSubtitle),
+                    title: SafeMealL10n.text(L10nKey.Profile.cacheTitle),
+                    subtitle: SafeMealL10n.text(L10nKey.Profile.cacheSubtitle),
                     trailingText: store.localCacheSizeText
                 )
             }
             .buttonStyle(.plain)
 
-            Divider().overlay(SafeEatTheme.line)
+            Divider().overlay(SafeMealTheme.line)
 
             NavigationLink(value: ProfileRoute.helpCenter) {
                 ProfileNavigationRow(
                     icon: "questionmark.circle",
-                    title: SafeEatL10n.text(L10nKey.Profile.Help.title),
-                    subtitle: SafeEatL10n.text(L10nKey.Profile.Help.subtitle)
+                    title: SafeMealL10n.text(L10nKey.Profile.Help.title),
+                    subtitle: SafeMealL10n.text(L10nKey.Profile.Help.subtitle)
                 )
             }
             .buttonStyle(.plain)
 
-            Divider().overlay(SafeEatTheme.line)
+            Divider().overlay(SafeMealTheme.line)
 
             NavigationLink(value: ProfileRoute.feedback) {
                 ProfileNavigationRow(
                     icon: "exclamationmark.bubble",
-                    title: SafeEatL10n.text(L10nKey.Profile.feedbackTitle),
-                    subtitle: SafeEatL10n.text(L10nKey.Profile.feedbackSubtitle)
+                    title: SafeMealL10n.text(L10nKey.Profile.feedbackTitle),
+                    subtitle: SafeMealL10n.text(L10nKey.Profile.feedbackSubtitle)
                 )
             }
             .buttonStyle(.plain)
 
-            Divider().overlay(SafeEatTheme.line)
+            Divider().overlay(SafeMealTheme.line)
 
             NavigationLink(value: ProfileRoute.updates) {
                 ProfileNavigationRow(
                     icon: "arrow.triangle.2.circlepath.circle",
-                    title: SafeEatL10n.text(L10nKey.Profile.updatesTitle),
-                    subtitle: SafeEatL10n.text(L10nKey.Profile.updatesSubtitle)
+                    title: SafeMealL10n.text(L10nKey.Profile.updatesTitle),
+                    subtitle: SafeMealL10n.text(L10nKey.Profile.updatesSubtitle)
                 )
             }
             .buttonStyle(.plain)
@@ -511,25 +515,25 @@ struct ProfileView: View {
     }
 
     private var serviceSection: some View {
-        ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.serviceGroupTitle)) {
+        ProfileSectionBlock(title: SafeMealL10n.text(L10nKey.Profile.serviceGroupTitle)) {
             NavigationLink(value: ProfileRoute.about) {
                 ProfileNavigationRow(
                     icon: "leaf.circle",
-                    title: SafeEatL10n.text(L10nKey.Profile.aboutTitle),
-                    subtitle: SafeEatL10n.text(L10nKey.Profile.aboutSubtitle)
+                    title: SafeMealL10n.text(L10nKey.Profile.aboutTitle),
+                    subtitle: SafeMealL10n.text(L10nKey.Profile.aboutSubtitle)
                 )
             }
             .buttonStyle(.plain)
 
-            Divider().overlay(SafeEatTheme.line)
+            Divider().overlay(SafeMealTheme.line)
 
             Button {
                 requestAppReview()
             } label: {
                 ProfileNavigationRow(
                     icon: "star.bubble",
-                    title: SafeEatL10n.text(L10nKey.Profile.rateTitle),
-                    subtitle: SafeEatL10n.text(L10nKey.Profile.rateSubtitle)
+                    title: SafeMealL10n.text(L10nKey.Profile.rateTitle),
+                    subtitle: SafeMealL10n.text(L10nKey.Profile.rateSubtitle)
                 )
             }
             .buttonStyle(.plain)
@@ -542,29 +546,29 @@ struct ProfileView: View {
         VStack(spacing: 6) {
             HStack(spacing: 8) {
                 NavigationLink(value: ProfileRoute.userAgreement) {
-                    Text(SafeEatL10n.text(L10nKey.Profile.About.userAgreement))
-                        .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                        .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.7))
+                    Text(SafeMealL10n.text(L10nKey.Profile.About.userAgreement))
+                        .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                        .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.7))
                 }
                 .buttonStyle(.plain)
 
                 Text("｜")
-                    .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                    .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.7))
+                    .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                    .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.7))
 
                 NavigationLink(value: ProfileRoute.privacyPolicy) {
-                    Text(SafeEatL10n.text(L10nKey.Profile.About.privacyPolicy))
-                        .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                        .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.7))
+                    Text(SafeMealL10n.text(L10nKey.Profile.About.privacyPolicy))
+                        .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                        .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.7))
                 }
                 .buttonStyle(.plain)
             }
             .frame(maxWidth: .infinity, alignment: .center)
 
             // ICP 备案号：中文政务信息，中英文语言下都显示中文原文，不做本地化翻译
-            Text(SafeEatL10n.text(L10nKey.Profile.About.icpRecord))
-                .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.7))
+            Text(SafeMealL10n.text(L10nKey.Profile.About.icpRecord))
+                .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.7))
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.top, 24)
@@ -580,21 +584,21 @@ struct ProfileView: View {
                 HStack(spacing: 16) {
                     ZStack {
                         Circle()
-                            .fill(SafeEatTheme.primarySoft)
+                            .fill(SafeMealTheme.primarySoft)
                             .frame(width: 86, height: 86)
                         Image(systemName: "person.crop.circle.badge.plus")
                             .font(.system(size: 32))
-                            .foregroundStyle(SafeEatTheme.primary)
+                            .foregroundStyle(SafeMealTheme.primary)
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(SafeEatL10n.text(L10nKey.Profile.notLoggedInTitle))
-                            .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
+                        Text(SafeMealL10n.text(L10nKey.Profile.notLoggedInTitle))
+                            .font(SafeMealFont.custom(22, relativeTo: .title3, weight: .bold))
+                            .foregroundStyle(SafeMealTheme.textPrimary)
 
-                        Text(SafeEatL10n.text(L10nKey.Profile.notLoggedInMessage))
-                            .font(SafeEatFont.custom(14, relativeTo: .body))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                        Text(SafeMealL10n.text(L10nKey.Profile.notLoggedInMessage))
+                            .font(SafeMealFont.custom(14, relativeTo: .body))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                             .lineLimit(2)
                     }
 
@@ -602,7 +606,7 @@ struct ProfileView: View {
 
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
                 .padding(20)
                 .background(
@@ -611,85 +615,85 @@ struct ProfileView: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
                 )
             }
             .buttonStyle(.plain)
 
             // 需要登录的功能入口
-            ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.memberEntryTitle)) {
+            ProfileSectionBlock(title: SafeMealL10n.text(L10nKey.Profile.memberEntryTitle)) {
                 Button {
-                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Profile.memberEntryTitle))
+                    store.requireLogin(featureHint: SafeMealL10n.text(L10nKey.Profile.memberEntryTitle))
                 } label: {
                     ProfileNavigationRow(
                         icon: "crown.fill",
-                        title: SafeEatL10n.text(L10nKey.Profile.memberEntryTitle),
-                        subtitle: SafeEatL10n.text(L10nKey.Profile.memberEntrySubtitle)
+                        title: SafeMealL10n.text(L10nKey.Profile.memberEntryTitle),
+                        subtitle: SafeMealL10n.text(L10nKey.Profile.memberEntrySubtitle)
                     )
                 }
                 .buttonStyle(.plain)
             }
 
-            ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.editGroupTitle)) {
+            ProfileSectionBlock(title: SafeMealL10n.text(L10nKey.Profile.editGroupTitle)) {
                 Button {
-                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Profile.editTitle))
+                    store.requireLogin(featureHint: SafeMealL10n.text(L10nKey.Profile.editTitle))
                 } label: {
                     ProfileNavigationRow(
                         icon: "person.crop.circle.badge.plus",
-                        title: SafeEatL10n.text(L10nKey.Profile.editTitle),
-                        subtitle: SafeEatL10n.text(L10nKey.Profile.editSubtitle)
+                        title: SafeMealL10n.text(L10nKey.Profile.editTitle),
+                        subtitle: SafeMealL10n.text(L10nKey.Profile.editSubtitle)
                     )
                 }
                 .buttonStyle(.plain)
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
                 Button {
-                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Profile.preferenceTitle))
+                    store.requireLogin(featureHint: SafeMealL10n.text(L10nKey.Profile.preferenceTitle))
                 } label: {
                     ProfileNavigationRow(
                         icon: "slider.horizontal.3",
-                        title: SafeEatL10n.text(L10nKey.Profile.preferenceTitle),
-                        subtitle: SafeEatL10n.text(L10nKey.Profile.preferenceSubtitleDefault)
+                        title: SafeMealL10n.text(L10nKey.Profile.preferenceTitle),
+                        subtitle: SafeMealL10n.text(L10nKey.Profile.preferenceSubtitleDefault)
                     )
                 }
                 .buttonStyle(.plain)
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
                 Button {
-                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Profile.securityTitle))
+                    store.requireLogin(featureHint: SafeMealL10n.text(L10nKey.Profile.securityTitle))
                 } label: {
                     ProfileNavigationRow(
                         icon: "lock.shield",
-                        title: SafeEatL10n.text(L10nKey.Profile.securityTitle),
-                        subtitle: SafeEatL10n.text(L10nKey.Profile.securitySubtitle)
+                        title: SafeMealL10n.text(L10nKey.Profile.securityTitle),
+                        subtitle: SafeMealL10n.text(L10nKey.Profile.securitySubtitle)
                     )
                 }
                 .buttonStyle(.plain)
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
                 Button {
-                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Order.title))
+                    store.requireLogin(featureHint: SafeMealL10n.text(L10nKey.Order.title))
                 } label: {
                     ProfileNavigationRow(
                         icon: "receipt",
-                        title: SafeEatL10n.text(L10nKey.Order.title),
-                        subtitle: SafeEatL10n.text(L10nKey.Order.subtitle)
+                        title: SafeMealL10n.text(L10nKey.Order.title),
+                        subtitle: SafeMealL10n.text(L10nKey.Order.subtitle)
                     )
                 }
                 .buttonStyle(.plain)
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
                 Button {
-                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Membership.redeemCodeEntryTitle))
+                    store.requireLogin(featureHint: SafeMealL10n.text(L10nKey.Membership.redeemCodeEntryTitle))
                 } label: {
                     ProfileNavigationRow(
                         icon: "ticket",
-                        title: SafeEatL10n.text(L10nKey.Membership.redeemCodeEntryTitle),
-                        subtitle: SafeEatL10n.text(L10nKey.Membership.redeemCodeEntrySubtitle)
+                        title: SafeMealL10n.text(L10nKey.Membership.redeemCodeEntryTitle),
+                        subtitle: SafeMealL10n.text(L10nKey.Membership.redeemCodeEntrySubtitle)
                     )
                 }
                 .buttonStyle(.plain)
@@ -710,16 +714,16 @@ struct ProfileView: View {
                     ProgressView()
                         .frame(maxWidth: .infinity)
                 } else {
-                    Text(SafeEatL10n.text(L10nKey.Profile.logout))
+                    Text(SafeMealL10n.text(L10nKey.Profile.logout))
                         .frame(maxWidth: .infinity)
                 }
             }
-            .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
-            .foregroundStyle(SafeEatTheme.danger)
+            .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
+            .foregroundStyle(SafeMealTheme.danger)
             .padding(.vertical, 16)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(SafeEatTheme.danger.opacity(0.10))
+                    .fill(SafeMealTheme.danger.opacity(0.10))
             )
         }
         .buttonStyle(.plain)
@@ -828,14 +832,14 @@ enum HealthTagConfig {
 
     var color: Color {
         switch self {
-        case .high_blood_pressure: return SafeEatTheme.danger
-        case .high_blood_sugar: return SafeEatTheme.warning
+        case .high_blood_pressure: return SafeMealTheme.danger
+        case .high_blood_sugar: return SafeMealTheme.warning
         case .high_blood_lipids: return Color(red: 0.545, green: 0.412, blue: 0.078)
-        case .general_wellness: return SafeEatTheme.success
-        case .fat_loss: return SafeEatTheme.danger
-        case .muscle_gain: return SafeEatTheme.primary
-        case .blood_sugar_control: return SafeEatTheme.warning
-        case .balanced: return SafeEatTheme.primary
+        case .general_wellness: return SafeMealTheme.success
+        case .fat_loss: return SafeMealTheme.danger
+        case .muscle_gain: return SafeMealTheme.primary
+        case .blood_sugar_control: return SafeMealTheme.warning
+        case .balanced: return SafeMealTheme.primary
         }
     }
 
@@ -875,10 +879,10 @@ private struct MembershipTierCard: View {
             // 文字
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(SafeEatFont.custom(16, relativeTo: .subheadline, weight: .bold))
+                    .font(SafeMealFont.custom(16, relativeTo: .subheadline, weight: .bold))
                     .foregroundStyle(titleColor)
                 Text(subtitle)
-                    .font(SafeEatFont.custom(13, relativeTo: .caption))
+                    .font(SafeMealFont.custom(13, relativeTo: .caption))
                     .foregroundStyle(subtitleColor)
             }
 
@@ -909,8 +913,8 @@ private struct MembershipTierCard: View {
 
     private var iconBgColor: Color {
         switch tier {
-        case .free: return SafeEatTheme.primarySoft
-        case .lite: return SafeEatTheme.warning.opacity(0.15)
+        case .free: return SafeMealTheme.primarySoft
+        case .lite: return SafeMealTheme.warning.opacity(0.15)
         case .pro: return Color(red: 0.83, green: 0.65, blue: 0.27).opacity(0.20)
         case .premium: return Color(red: 0.83, green: 0.65, blue: 0.27).opacity(0.20)
         }
@@ -918,42 +922,42 @@ private struct MembershipTierCard: View {
 
     private var iconFgColor: Color {
         switch tier {
-        case .free: return SafeEatTheme.textSecondary
-        case .lite: return SafeEatTheme.warning
+        case .free: return SafeMealTheme.textSecondary
+        case .lite: return SafeMealTheme.warning
         case .pro, .premium: return Color(red: 0.83, green: 0.65, blue: 0.27)
         }
     }
 
     private var title: String {
         switch tier {
-        case .free: return SafeEatL10n.text(L10nKey.Profile.Member.freeTitle)
-        case .lite: return SafeEatL10n.text(L10nKey.Profile.Member.liteTitle)
-        case .pro: return SafeEatL10n.text(L10nKey.Profile.Member.proTitle)
-        case .premium: return SafeEatL10n.text(L10nKey.Profile.Member.premiumTitle)
+        case .free: return SafeMealL10n.text(L10nKey.Profile.Member.freeTitle)
+        case .lite: return SafeMealL10n.text(L10nKey.Profile.Member.liteTitle)
+        case .pro: return SafeMealL10n.text(L10nKey.Profile.Member.proTitle)
+        case .premium: return SafeMealL10n.text(L10nKey.Profile.Member.premiumTitle)
         }
     }
 
     private var subtitle: String {
         switch tier {
-        case .free: return SafeEatL10n.text(L10nKey.Profile.Member.freeSubtitle)
-        case .lite: return SafeEatL10n.text(L10nKey.Profile.Member.liteSubtitle)
-        case .pro: return SafeEatL10n.text(L10nKey.Profile.Member.proSubtitle)
-        case .premium: return SafeEatL10n.text(L10nKey.Profile.Member.premiumSubtitle)
+        case .free: return SafeMealL10n.text(L10nKey.Profile.Member.freeSubtitle)
+        case .lite: return SafeMealL10n.text(L10nKey.Profile.Member.liteSubtitle)
+        case .pro: return SafeMealL10n.text(L10nKey.Profile.Member.proSubtitle)
+        case .premium: return SafeMealL10n.text(L10nKey.Profile.Member.premiumSubtitle)
         }
     }
 
     private var titleColor: Color {
         switch tier {
-        case .free: return SafeEatTheme.textPrimary
-        case .lite: return SafeEatTheme.textPrimary
+        case .free: return SafeMealTheme.textPrimary
+        case .lite: return SafeMealTheme.textPrimary
         case .pro, .premium: return .white
         }
     }
 
     private var subtitleColor: Color {
         switch tier {
-        case .free: return SafeEatTheme.textSecondary
-        case .lite: return SafeEatTheme.textSecondary
+        case .free: return SafeMealTheme.textSecondary
+        case .lite: return SafeMealTheme.textSecondary
         case .pro: return .white.opacity(0.80)
         case .premium: return .white.opacity(0.80)
         }
@@ -961,16 +965,16 @@ private struct MembershipTierCard: View {
 
     private var chevronColor: Color {
         switch tier {
-        case .free: return SafeEatTheme.textSecondary
-        case .lite: return SafeEatTheme.textSecondary
+        case .free: return SafeMealTheme.textSecondary
+        case .lite: return SafeMealTheme.textSecondary
         case .pro, .premium: return .white.opacity(0.60)
         }
     }
 
     private var strokeColor: Color {
         switch tier {
-        case .free: return colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
-        case .lite: return SafeEatTheme.warning.opacity(0.25)
+        case .free: return colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line
+        case .lite: return SafeMealTheme.warning.opacity(0.25)
         case .pro, .premium: return Color.clear
         }
     }
@@ -983,12 +987,12 @@ private struct MembershipTierCard: View {
                 .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.92))
         case .lite:
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(SafeEatTheme.warning.opacity(colorScheme == .dark ? 0.10 : 0.08))
+                .fill(SafeMealTheme.warning.opacity(colorScheme == .dark ? 0.10 : 0.08))
         case .pro:
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(
                     LinearGradient(
-                        colors: [SafeEatTheme.primary, SafeEatTheme.primaryDeep],
+                        colors: [SafeMealTheme.primary, SafeMealTheme.primaryDeep],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -997,7 +1001,7 @@ private struct MembershipTierCard: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(
                     LinearGradient(
-                        colors: [SafeEatTheme.primaryDeep, Color(red: 0.06, green: 0.24, blue: 0.17)],
+                        colors: [SafeMealTheme.primaryDeep, Color(red: 0.06, green: 0.24, blue: 0.17)],
                         startPoint: .leading,
                         endPoint: .trailing
                     )

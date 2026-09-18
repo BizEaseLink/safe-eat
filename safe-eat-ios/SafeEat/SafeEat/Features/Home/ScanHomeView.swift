@@ -15,7 +15,7 @@ struct ScanHomeView: View {
     var onShowMembership: (() -> Void)?
     var onOpenResult: ((String) -> Void)?
 
-    let scrollCoordinateSpace = "safeeat.home.scroll"
+    let scrollCoordinateSpace = "safemeal.home.scroll"
 
     private var isPaidMember: Bool {
         guard let tier = store.profile?.currentPlanTier else { return false }
@@ -27,7 +27,7 @@ struct ScanHomeView: View {
     }
 
     private var brandLabelColor: Color {
-        colorScheme == .dark ? Color(red: 0.67, green: 0.86, blue: 0.73) : SafeEatTheme.primaryDeep
+        colorScheme == .dark ? Color(red: 0.67, green: 0.86, blue: 0.73) : SafeMealTheme.primaryDeep
     }
 
     private var heroPillFill: Color {
@@ -84,9 +84,9 @@ struct ScanHomeView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 26) {
-                        SafeEatScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
-
                         homeHeaderBar
+
+                        SafeMealScrollOffsetReader(coordinateSpaceName: scrollCoordinateSpace)
 
                         heroSection
 
@@ -104,15 +104,16 @@ struct ScanHomeView: View {
                     .padding(.bottom, 120)
                 }
                 .coordinateSpace(name: scrollCoordinateSpace)
-                .onPreferenceChange(SafeEatScrollOffsetKey.self) { value in
+                .onPreferenceChange(SafeMealScrollOffsetKey.self) { value in
                     scrollOffset = value
                 }
 
-                SafeEatScrollNavChrome(
-                    title: SafeEatL10n.text(L10nKey.Home.title),
-                    scrollOffset: scrollOffset,
-                    topInset: proxy.safeAreaInsets.top
-                )
+                // 注销：滚动标题条（ScrollNavChrome），避免滚动时铃铛位置视觉下移；如需恢复取消注释
+                // SafeMealScrollNavChrome(
+                //     title: SafeMealL10n.text(L10nKey.Home.title),
+                //     scrollOffset: scrollOffset,
+                //     topInset: proxy.safeAreaInsets.top
+                // )
             }
         }
         .toolbar(.hidden, for: .navigationBar)
@@ -129,7 +130,7 @@ struct ScanHomeView: View {
     }
 
     private var homeBackground: some View {
-        SafeEatMainGradientBackground()
+        SafeMealMainGradientBackground()
     }
 
     private var homeHeaderBar: some View {
@@ -147,13 +148,13 @@ struct ScanHomeView: View {
                 if store.session != nil {
                     showNotificationCenter = true
                 } else {
-                    store.requireLogin(featureHint: SafeEatL10n.text(L10nKey.Message.centerTitle))
+                    store.requireLogin(featureHint: SafeMealL10n.text(L10nKey.Message.centerTitle))
                 }
             } label: {
                 ZStack(alignment: .topTrailing) {
                     Image(systemName: "bell")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .foregroundStyle(SafeMealTheme.textPrimary)
                         .frame(width: 44, height: 44)
                         .background(
                             Circle()
@@ -161,13 +162,13 @@ struct ScanHomeView: View {
                         )
                         .overlay(
                             Circle()
-                                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
                         )
 
                     // 未读小圆点
                     if store.notificationUnreadCount > 0 {
                         Circle()
-                            .fill(SafeEatTheme.danger)
+                            .fill(SafeMealTheme.danger)
                             .frame(width: 10, height: 10)
                             .offset(x: 2, y: 2)
                     }
@@ -180,15 +181,15 @@ struct ScanHomeView: View {
     private var heroSection: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(spacing: 10) {
-                heroPill(SafeEatL10n.text(L10nKey.Home.heroTagHistory))
-                heroPill(SafeEatL10n.text(L10nKey.Home.heroTagHealth))
-                heroPill(SafeEatL10n.text(L10nKey.Home.heroTagKnow))
+                heroPill(SafeMealL10n.text(L10nKey.Home.heroTagHistory))
+                heroPill(SafeMealL10n.text(L10nKey.Home.heroTagHealth))
+                heroPill(SafeMealL10n.text(L10nKey.Home.heroTagKnow))
             }
 
             VStack(alignment: .leading, spacing: 10) {
-                Text(SafeEatL10n.text(L10nKey.Home.heroTitle))
-                    .font(SafeEatFont.custom(36, relativeTo: .largeTitle))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                Text(SafeMealL10n.text(L10nKey.Home.heroTitle))
+                    .font(SafeMealFont.custom(36, relativeTo: .largeTitle))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
                     .lineSpacing(-2)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -204,13 +205,13 @@ struct ScanHomeView: View {
         if let latestRecord {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 12) {
-                    Text(SafeEatL10n.text(L10nKey.Home.recentTitle))
-                        .font(SafeEatFont.textStyle(.headline))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    Text(SafeMealL10n.text(L10nKey.Home.recentTitle))
+                        .font(SafeMealFont.textStyle(.headline))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
 
                     LinearGradient(
                         colors: [
-                            SafeEatTheme.textPrimary.opacity(colorScheme == .dark ? 0.16 : 0.12),
+                            SafeMealTheme.textPrimary.opacity(colorScheme == .dark ? 0.16 : 0.12),
                             .clear,
                         ],
                         startPoint: .leading,
@@ -231,7 +232,7 @@ struct ScanHomeView: View {
 
     private func heroPill(_ text: String) -> some View {
         Text(text)
-            .font(SafeEatFont.custom(15, relativeTo: .subheadline))
+            .font(SafeMealFont.custom(15, relativeTo: .subheadline))
             .foregroundStyle(brandLabelColor)
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
@@ -257,7 +258,7 @@ private struct HomeRecentRecordCard: View {
     }
 
     private var nutritionPrimaryColor: Color {
-        colorScheme == .dark ? Color(red: 0.85, green: 0.93, blue: 0.88) : SafeEatTheme.primaryDeep
+        colorScheme == .dark ? Color(red: 0.85, green: 0.93, blue: 0.88) : SafeMealTheme.primaryDeep
     }
 
     private var impactItems: [HealthImpact] {
@@ -275,13 +276,13 @@ private struct HomeRecentRecordCard: View {
             let nutrients = nutrition.nutrients
             var chips: [(String, Color)] = []
             if let calories = nutrients?.calories.value {
-                chips.append((SafeEatL10n.format(L10nKey.Home.caloriesFormat, Int(calories)), nutritionPrimaryColor))
+                chips.append((SafeMealL10n.format(L10nKey.Home.caloriesFormat, Int(calories)), nutritionPrimaryColor))
             }
             if let protein = nutrients?.protein.value {
-                chips.append((SafeEatL10n.format(L10nKey.Home.proteinFormat, protein), SafeEatTheme.success))
+                chips.append((SafeMealL10n.format(L10nKey.Home.proteinFormat, protein), SafeMealTheme.success))
             }
             if let carbs = nutrients?.carbohydrates.value, chips.count < 2 {
-                chips.append((SafeEatL10n.format(L10nKey.Home.carbsFormat, carbs), SafeEatTheme.warning))
+                chips.append((SafeMealL10n.format(L10nKey.Home.carbsFormat, carbs), SafeMealTheme.warning))
             }
             if !chips.isEmpty {
                 return Array(chips.prefix(2))
@@ -290,23 +291,23 @@ private struct HomeRecentRecordCard: View {
 
         switch item.adviceLevel {
         case "recommended":
-            return [(SafeEatL10n.text(L10nKey.Home.chipFriendly), SafeEatTheme.success)]
+            return [(SafeMealL10n.text(L10nKey.Home.chipFriendly), SafeMealTheme.success)]
         case "moderate":
-            return [(SafeEatL10n.text(L10nKey.Home.chipModerate), SafeEatTheme.primary)]
+            return [(SafeMealL10n.text(L10nKey.Home.chipModerate), SafeMealTheme.primary)]
         case "caution":
-            return [(SafeEatL10n.text(L10nKey.Home.chipPortion), SafeEatTheme.warning)]
+            return [(SafeMealL10n.text(L10nKey.Home.chipPortion), SafeMealTheme.warning)]
         case "avoid":
-            return [(SafeEatL10n.text(L10nKey.Home.chipSwitch), SafeEatTheme.danger)]
+            return [(SafeMealL10n.text(L10nKey.Home.chipSwitch), SafeMealTheme.danger)]
         default:
-            return [(SafeEatL10n.text(L10nKey.Home.chipCheck), SafeEatTheme.textSecondary)]
+            return [(SafeMealL10n.text(L10nKey.Home.chipCheck), SafeMealTheme.textSecondary)]
         }
     }
 
     private var displayName: String {
         let trimmed = item.recognizedName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let unknownFoodNames = ["未知食物", "Unrecognized food", SafeEatL10n.text(L10nKey.Common.unknownFood)]
+        let unknownFoodNames = ["未知食物", "Unrecognized food", SafeMealL10n.text(L10nKey.Common.unknownFood)]
         if trimmed.isEmpty || unknownFoodNames.contains(trimmed) {
-            return SafeEatL10n.text(L10nKey.Home.unknownFood)
+            return SafeMealL10n.text(L10nKey.Home.unknownFood)
         }
         return trimmed
     }
@@ -319,20 +320,20 @@ private struct HomeRecentRecordCard: View {
 
         switch item.adviceLevel {
         case "recommended":
-            return SafeEatL10n.text(L10nKey.Home.summaryRecommended)
+            return SafeMealL10n.text(L10nKey.Home.summaryRecommended)
         case "moderate":
-            return SafeEatL10n.text(L10nKey.Home.summaryModerate)
+            return SafeMealL10n.text(L10nKey.Home.summaryModerate)
         case "caution":
-            return SafeEatL10n.text(L10nKey.Home.summaryCaution)
+            return SafeMealL10n.text(L10nKey.Home.summaryCaution)
         case "avoid":
-            return SafeEatL10n.text(L10nKey.Home.summaryAvoid)
+            return SafeMealL10n.text(L10nKey.Home.summaryAvoid)
         default:
-            return SafeEatL10n.text(L10nKey.Home.summaryUnknown)
+            return SafeMealL10n.text(L10nKey.Home.summaryUnknown)
         }
     }
 
     var body: some View {
-        SafeEatSurfaceCard(onTap: onOpenDetail) {
+        SafeMealSurfaceCard(onTap: onOpenDetail) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(alignment: .top, spacing: 16) {
                     imagePreview
@@ -341,25 +342,25 @@ private struct HomeRecentRecordCard: View {
                         HStack(alignment: .top, spacing: 12) {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(displayName)
-                                    .font(SafeEatFont.custom(28, relativeTo: .title2))
-                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                                    .font(SafeMealFont.custom(28, relativeTo: .title2))
+                                    .foregroundStyle(SafeMealTheme.textPrimary)
                                     .lineLimit(2)
 
                                 Text(
-                                    SafeEatL10n.format(
+                                    SafeMealL10n.format(
                                         L10nKey.Home.localImageFormat,
-                                        SafeEatL10n.text(L10nKey.Home.localImagePrefix),
+                                        SafeMealL10n.text(L10nKey.Home.localImagePrefix),
                                         item.createdAt.homeTimeText
                                     )
                                 )
-                                    .font(SafeEatFont.custom(15, relativeTo: .body))
-                                    .foregroundStyle(SafeEatTheme.textSecondary)
+                                    .font(SafeMealFont.custom(15, relativeTo: .body))
+                                    .foregroundStyle(SafeMealTheme.textSecondary)
                             }
 
                             Spacer(minLength: 8)
 
                             Text(AdviceLevelMapper.title(item.adviceLevel))
-                                .font(SafeEatFont.custom(13, relativeTo: .subheadline))
+                                .font(SafeMealFont.custom(13, relativeTo: .subheadline))
                                 .foregroundStyle(statusColor)
                                 .padding(.horizontal, 11)
                                 .padding(.vertical, 7)
@@ -368,17 +369,17 @@ private struct HomeRecentRecordCard: View {
                         }
 
                         HStack(spacing: 8) {
-                            Text(SafeEatL10n.format(L10nKey.Home.scoreFormat, item.foodScore))
-                                .font(SafeEatFont.custom(14, relativeTo: .footnote))
-                                .foregroundStyle(SafeEatTheme.warning)
+                            Text(SafeMealL10n.format(L10nKey.Home.scoreFormat, item.foodScore))
+                                .font(SafeMealFont.custom(14, relativeTo: .footnote))
+                                .foregroundStyle(SafeMealTheme.warning)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
-                                .background(SafeEatTheme.warning.opacity(0.12))
+                                .background(SafeMealTheme.warning.opacity(0.12))
                                 .clipShape(Capsule())
 
                             ForEach(Array(summaryChips.prefix(1).enumerated()), id: \.offset) { _, chip in
                                 Text(chip.0)
-                                    .font(SafeEatFont.custom(14, relativeTo: .footnote))
+                                    .font(SafeMealFont.custom(14, relativeTo: .footnote))
                                     .foregroundStyle(chip.1)
                                     .lineLimit(1)
                                     .truncationMode(.tail)
@@ -392,8 +393,8 @@ private struct HomeRecentRecordCard: View {
                 }
 
                 Button(action: onOpenDetail) {
-                    Text(SafeEatL10n.text(L10nKey.Home.detailAction))
-                        .font(SafeEatFont.custom(20, relativeTo: .headline))
+                    Text(SafeMealL10n.text(L10nKey.Home.detailAction))
+                        .font(SafeMealFont.custom(20, relativeTo: .headline))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
@@ -401,13 +402,13 @@ private struct HomeRecentRecordCard: View {
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
                                 .fill(
                                     LinearGradient(
-                                        colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                        colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
                                 )
                         )
-                        .shadow(color: SafeEatTheme.primaryDeep.opacity(0.16), radius: 16, y: 10)
+                        .shadow(color: SafeMealTheme.primaryDeep.opacity(0.16), radius: 16, y: 10)
                 }
                 .buttonStyle(.plain)
             }
@@ -438,7 +439,7 @@ private struct HomeRecentRecordCard: View {
                 .overlay {
                     Image(systemName: "photo")
                         .font(.title2)
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
         }
     }
@@ -446,13 +447,13 @@ private struct HomeRecentRecordCard: View {
     private func chipColor(level: String) -> Color {
         switch level {
         case "positive":
-            return SafeEatTheme.success
+            return SafeMealTheme.success
         case "risk":
-            return SafeEatTheme.danger
+            return SafeMealTheme.danger
         case "caution":
-            return SafeEatTheme.warning
+            return SafeMealTheme.warning
         default:
-            return SafeEatTheme.textSecondary
+            return SafeMealTheme.textSecondary
         }
     }
 }

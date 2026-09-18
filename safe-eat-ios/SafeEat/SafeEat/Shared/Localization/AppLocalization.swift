@@ -24,6 +24,7 @@ enum L10nKey {
         static let `continue` = "common.continue"
         static let back = "common.back"
         static let cancel = "common.cancel"
+        static let close = "common.close"
         static let clear = "common.clear"
         static let delete = "common.delete"
         static let notSet = "common.not_set"
@@ -186,7 +187,7 @@ enum L10nKey {
         static let contactEmail = "auth.contact.email"
         static let contactSupportSubtitle = "auth.contact_support.subtitle"
         static let contactCopied = "auth.contact.copied"
-        static let contactDefaultEmail = "bel_safeeat@163.com"
+        static let contactDefaultEmail = "bel_safemeal@163.com"
         static let termsNotAgreed = "auth.terms.not_agreed"
         static let setPasswordTitle = "auth.set_password.title"
         static let setPasswordSubtitle = "auth.set_password.subtitle"
@@ -845,6 +846,7 @@ enum L10nKey {
         static let dietNutFree = "result.diet.nut_free"
         static let preparation = "result.preparation"
         static let per100gServing = "result.per_100g_serving"
+        static let nrvBasisFormat = "result.nrv_basis_format"
         // T7: 详细营养素本地化
         static let saturatedFat = "result.nutrient.saturated_fat"
         static let transFat = "result.nutrient.trans_fat"
@@ -902,6 +904,8 @@ enum L10nKey {
         static let auditTitle = "feedback.audit.title"
         static let auditBody = "feedback.audit.body"
         static let submit = "feedback.submit"
+        static let successTitle = "feedback.success_title"
+        static let successSubtitle = "feedback.success_subtitle"
         static let thanks = "feedback.thanks"
         static let evidenceRequired = "feedback.error.evidence_required"
         static let submitFailed = "feedback.submit_failed"
@@ -910,9 +914,73 @@ enum L10nKey {
         static let typeHint = "feedback.type.hint"
         static let typeWrongFood = "feedback.type.wrong_food"
         static let typeWrongName = "feedback.type.wrong_name"
+        // T: 营养数据核对（wrong_nutrition）
+        static let nutritionSelect = "feedback.nutrition.select"
+        static let nutritionBefore = "feedback.nutrition.before"
+        static let nutritionAfter = "feedback.nutrition.after"
+        static let nutritionAfterNumberPlaceholder = "feedback.nutrition.after_number_placeholder"
+        static let nutritionAfterTextPlaceholder = "feedback.nutrition.after_text_placeholder"
+        static let nutritionEmptyHint = "feedback.nutrition.empty_hint"
+        static let nutritionSectionMacros = "feedback.nutrition.section_macros"
+        static let nutritionSectionVitamins = "feedback.nutrition.section_vitamins"
+        static let nutritionSectionMinerals = "feedback.nutrition.section_minerals"
+        static let nutritionSectionGlycemic = "feedback.nutrition.section_glycemic"
+        static let nutritionSectionDietary = "feedback.nutrition.section_dietary"
+        static let nutritionSectionAllergens = "feedback.nutrition.section_allergens"
+        static let nutritionCalories = "feedback.nutrition.calories"
+        static let nutritionProtein = "feedback.nutrition.protein"
+        static let nutritionFat = "feedback.nutrition.fat"
+        static let nutritionSaturatedFat = "feedback.nutrition.saturated_fat"
+        static let nutritionTransFat = "feedback.nutrition.trans_fat"
+        static let nutritionCarbohydrates = "feedback.nutrition.carbohydrates"
+        static let nutritionDietaryFiber = "feedback.nutrition.dietary_fiber"
+        static let nutritionCholesterol = "feedback.nutrition.cholesterol"
+        static let nutritionSodium = "feedback.nutrition.sodium"
+        static let nutritionVitaminA = "feedback.nutrition.vitamin_a"
+        static let nutritionThiamin = "feedback.nutrition.thiamin"
+        static let nutritionRiboflavin = "feedback.nutrition.riboflavin"
+        static let nutritionNiacin = "feedback.nutrition.niacin"
+        static let nutritionPantothenicAcid = "feedback.nutrition.pantothenic_acid"
+        static let nutritionVitaminB6 = "feedback.nutrition.vitamin_b6"
+        static let nutritionVitaminB12 = "feedback.nutrition.vitamin_b12"
+        static let nutritionVitaminC = "feedback.nutrition.vitamin_c"
+        static let nutritionVitaminD = "feedback.nutrition.vitamin_d"
+        static let nutritionVitaminE = "feedback.nutrition.vitamin_e"
+        static let nutritionVitaminK = "feedback.nutrition.vitamin_k"
+        static let nutritionFolate = "feedback.nutrition.folate"
+        static let nutritionBiotin = "feedback.nutrition.biotin"
+        static let nutritionCholine = "feedback.nutrition.choline"
+        static let nutritionIodine = "feedback.nutrition.iodine"
+        static let nutritionCopper = "feedback.nutrition.copper"
+        static let nutritionManganese = "feedback.nutrition.manganese"
+        static let nutritionCalcium = "feedback.nutrition.calcium"
+        static let nutritionIron = "feedback.nutrition.iron"
+        static let nutritionMagnesium = "feedback.nutrition.magnesium"
+        static let nutritionPhosphorus = "feedback.nutrition.phosphorus"
+        static let nutritionPotassium = "feedback.nutrition.potassium"
+        static let nutritionZinc = "feedback.nutrition.zinc"
+        static let nutritionSelenium = "feedback.nutrition.selenium"
+        static let nutritionGlycemicIndex = "feedback.nutrition.glycemic_index"
+        static let nutritionGlycemicLoad = "feedback.nutrition.glycemic_load"
+        static let nutritionDietVegetarian = "feedback.nutrition.diet_vegetarian"
+        static let nutritionDietVegan = "feedback.nutrition.diet_vegan"
+        static let nutritionDietGlutenFree = "feedback.nutrition.diet_gluten_free"
+        static let nutritionDietLactoseFree = "feedback.nutrition.diet_lactose_free"
+        static let nutritionDietHalal = "feedback.nutrition.diet_halal"
+        static let nutritionDietBuddhist = "feedback.nutrition.diet_buddhist"
+        static let nutritionDietDairyFree = "feedback.nutrition.diet_dairy_free"
+        static let nutritionDietNutFree = "feedback.nutrition.diet_nut_free"
+        static let nutritionDietLowFodmap = "feedback.nutrition.diet_low_fodmap"
+        static let nutritionAllergens = "feedback.nutrition.allergens"
+        static let nutritionRemove = "feedback.nutrition.remove"
+        static let nutritionYes = "feedback.nutrition.yes"
+        static let nutritionNo = "feedback.nutrition.no"
         static let typeWrongNutrition = "feedback.type.wrong_nutrition"
         static let typeWrongCategory = "feedback.type.wrong_category"
         static let typeAddAlias = "feedback.type.add_alias"
+        static let typeRemoveAlias = "feedback.type.remove_alias"
+        static let typeWrongTags = "feedback.type.wrong_tags"
+        static let typeTranslationError = "feedback.type.translation_error"
         static let typeNewFood = "feedback.type.new_food"
         static let typeOther = "feedback.type.other"
         static let suggestionSoba = "feedback.suggestion.soba"
@@ -952,6 +1020,16 @@ enum L10nKey {
         static let upgradePromptAction = "history.server.upgrade_prompt_action"
         static let loadingTitle = "history.server.loading_title"
         static let dateLabel = "history.date_label"
+        // 历史秒搜
+        static let searchTitle = "history.search.title"
+        static let searchPlaceholder = "history.search.placeholder"
+        static let searchAllHint = "history.search.all_hint"
+        static let searchScopeFormat = "history.search.scope_format"
+        static let searchEmptyTitle = "history.search.empty_title"
+        static let searchEmptyMessage = "history.search.empty_message"
+        static let searchScopeDay = "history.search.scope_day"
+        static let searchScopeWeek = "history.search.scope_week"
+        static let searchScopeAll = "history.search.scope_all"
     }
 
     enum Sticker {
@@ -1100,9 +1178,9 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var displayName: String {
         switch self {
         case .zhHans:
-            return SafeEatL10n.text(L10nKey.Language.optionChinese)
+            return SafeMealL10n.text(L10nKey.Language.optionChinese)
         case .en:
-            return SafeEatL10n.text(L10nKey.Language.optionEnglish)
+            return SafeMealL10n.text(L10nKey.Language.optionEnglish)
         }
     }
 
@@ -1120,15 +1198,15 @@ enum ReminderStartDay: Int, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .today:
-            return SafeEatL10n.text(L10nKey.Reminder.optionToday)
+            return SafeMealL10n.text(L10nKey.Reminder.optionToday)
         case .tomorrow:
-            return SafeEatL10n.text(L10nKey.Reminder.optionTomorrow)
+            return SafeMealL10n.text(L10nKey.Reminder.optionTomorrow)
         }
     }
 }
 
-enum SafeEatL10n {
-    private static let languageKey = "safeeat.settings.language"
+enum SafeMealL10n {
+    private static let languageKey = "safemeal.settings.language"
 
     static var isZh: Bool { currentLanguage == .zhHans }
 
@@ -1161,12 +1239,12 @@ enum SafeEatL10n {
     }
 }
 
-enum SafeEatHistoryL10n {
+enum SafeMealHistoryL10n {
     private static var currentDisplayLocale: Locale {
         currentLanguage.locale
     }
 
-    private static let languageKey = "safeeat.settings.language"
+    private static let languageKey = "safemeal.settings.language"
 
     private static var currentLanguage: AppLanguage {
         if let rawValue = UserDefaults.standard.string(forKey: languageKey),
@@ -1179,12 +1257,12 @@ enum SafeEatHistoryL10n {
     static func shortDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = currentDisplayLocale
-        formatter.dateFormat = SafeEatL10n.text(L10nKey.History.dateShortFormat)
+        formatter.dateFormat = SafeMealL10n.text(L10nKey.History.dateShortFormat)
         return formatter.string(from: date)
     }
 
     static func weekRange(start: Date, end: Date) -> String {
-        SafeEatL10n.format(
+        SafeMealL10n.format(
             L10nKey.History.weekRangeFormat,
             shortDate(start),
             shortDate(end)
@@ -1192,14 +1270,14 @@ enum SafeEatHistoryL10n {
     }
 
     static func recordCount(_ count: Int) -> String {
-        SafeEatL10n.format(
+        SafeMealL10n.format(
             count == 1 ? L10nKey.History.recordCountOne : L10nKey.History.recordCountOther,
             count
         )
     }
 
     static func dayCount(_ count: Int) -> String {
-        SafeEatL10n.format(
+        SafeMealL10n.format(
             count == 1 ? L10nKey.History.dayCountOne : L10nKey.History.dayCountOther,
             count
         )
@@ -1208,19 +1286,19 @@ enum SafeEatHistoryL10n {
     static func weekday(_ date: Date) -> String {
         switch Calendar.current.component(.weekday, from: date) {
         case 1:
-            return SafeEatL10n.text(L10nKey.History.weekdaySunday)
+            return SafeMealL10n.text(L10nKey.History.weekdaySunday)
         case 2:
-            return SafeEatL10n.text(L10nKey.History.weekdayMonday)
+            return SafeMealL10n.text(L10nKey.History.weekdayMonday)
         case 3:
-            return SafeEatL10n.text(L10nKey.History.weekdayTuesday)
+            return SafeMealL10n.text(L10nKey.History.weekdayTuesday)
         case 4:
-            return SafeEatL10n.text(L10nKey.History.weekdayWednesday)
+            return SafeMealL10n.text(L10nKey.History.weekdayWednesday)
         case 5:
-            return SafeEatL10n.text(L10nKey.History.weekdayThursday)
+            return SafeMealL10n.text(L10nKey.History.weekdayThursday)
         case 6:
-            return SafeEatL10n.text(L10nKey.History.weekdayFriday)
+            return SafeMealL10n.text(L10nKey.History.weekdayFriday)
         default:
-            return SafeEatL10n.text(L10nKey.History.weekdaySaturday)
+            return SafeMealL10n.text(L10nKey.History.weekdaySaturday)
         }
     }
 }
@@ -1262,11 +1340,11 @@ final class AppSettingsStore: ObservableObject {
     @Published var notificationMessage: String?
     @Published var showNotificationDenied = false
 
-    private static let languageKey = "safeeat.settings.language"
-    private static let reminderKey = "safeeat.settings.reminderEnabled"
-    private static let reminderStartDayKey = "safeeat.settings.reminderStartDayOffset"
-    private static let reminderTimeKey = "safeeat.settings.reminderTimeMinutes"
-    private static let reminderIdentifierPrefix = "safeeat.daily.reminder"
+    private static let languageKey = "safemeal.settings.language"
+    private static let reminderKey = "safemeal.settings.reminderEnabled"
+    private static let reminderStartDayKey = "safemeal.settings.reminderStartDayOffset"
+    private static let reminderTimeKey = "safemeal.settings.reminderTimeMinutes"
+    private static let reminderIdentifierPrefix = "safemeal.daily.reminder"
     private static let reminderHorizonDays = 45
 
     private init() {
@@ -1292,7 +1370,7 @@ final class AppSettingsStore: ObservableObject {
 
     var reminderSummary: String {
         if reminderEnabled {
-            return SafeEatL10n.format(
+            return SafeMealL10n.format(
                 L10nKey.Reminder.summaryFormat,
                 reminderStartDayTitle,
                 reminderTimeText
@@ -1301,9 +1379,9 @@ final class AppSettingsStore: ObservableObject {
 
         switch notificationStatus {
         case .denied:
-            return SafeEatL10n.text(L10nKey.Reminder.systemDenied)
+            return SafeMealL10n.text(L10nKey.Reminder.systemDenied)
         default:
-            return SafeEatL10n.text(L10nKey.Reminder.off)
+            return SafeMealL10n.text(L10nKey.Reminder.off)
         }
     }
 
@@ -1313,7 +1391,7 @@ final class AppSettingsStore: ObservableObject {
 
     var reminderStartDayTitle: String {
         ReminderStartDay(rawValue: reminderStartDayOffset)?.title
-            ?? SafeEatL10n.text(L10nKey.Reminder.optionToday)
+            ?? SafeMealL10n.text(L10nKey.Reminder.optionToday)
     }
 
     func refreshNotificationStatus() async {
@@ -1362,7 +1440,7 @@ final class AppSettingsStore: ObservableObject {
 
                 guard granted == true || notificationStatus == .authorized || notificationStatus == .provisional else {
                     reminderEnabled = false
-                    notificationMessage = SafeEatL10n.text(L10nKey.Reminder.enableFailed)
+                    notificationMessage = SafeMealL10n.text(L10nKey.Reminder.enableFailed)
                     return false
                 }
             }
@@ -1370,13 +1448,13 @@ final class AppSettingsStore: ObservableObject {
             // 已授权或临时授权
             reminderEnabled = true
             await scheduleReminder()
-            notificationMessage = SafeEatL10n.text(L10nKey.Reminder.enabled)
+            notificationMessage = SafeMealL10n.text(L10nKey.Reminder.enabled)
             return true
         }
 
         reminderEnabled = false
         await removeReminder()
-        notificationMessage = SafeEatL10n.text(L10nKey.Reminder.disabled)
+        notificationMessage = SafeMealL10n.text(L10nKey.Reminder.disabled)
         return true
     }
 
@@ -1428,16 +1506,16 @@ final class AppSettingsStore: ObservableObject {
 
         if calendar.isDate(target, inSameDayAs: today) {
             return (
-                SafeEatL10n.text(L10nKey.Reminder.titleToday),
-                SafeEatL10n.text(L10nKey.Reminder.bodyToday)
+                SafeMealL10n.text(L10nKey.Reminder.titleToday),
+                SafeMealL10n.text(L10nKey.Reminder.bodyToday)
             )
         }
 
         // 目标日期是昨天（选择"明天"时，通知在明天触发，指向昨天的总结）
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: today), calendar.isDate(target, inSameDayAs: yesterday) {
             return (
-                SafeEatL10n.text(L10nKey.Reminder.titleYesterday),
-                SafeEatL10n.text(L10nKey.Reminder.bodyYesterday)
+                SafeMealL10n.text(L10nKey.Reminder.titleYesterday),
+                SafeMealL10n.text(L10nKey.Reminder.bodyYesterday)
             )
         }
 
@@ -1447,8 +1525,8 @@ final class AppSettingsStore: ObservableObject {
         formatter.dateFormat = AppSettingsStore.shared.language == .en ? "MMM d" : "M月d日"
         let dateStr = formatter.string(from: target)
         return (
-            SafeEatL10n.format(L10nKey.Reminder.titleDate, dateStr),
-            SafeEatL10n.format(L10nKey.Reminder.bodyDate, dateStr)
+            SafeMealL10n.format(L10nKey.Reminder.titleDate, dateStr),
+            SafeMealL10n.format(L10nKey.Reminder.bodyDate, dateStr)
         )
     }
 

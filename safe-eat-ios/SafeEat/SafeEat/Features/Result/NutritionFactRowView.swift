@@ -16,39 +16,53 @@ struct NutritionFactRowView: View {
     let value: Double?
     let unit: String?
     let nrvPercent: Double?
+    /// 值级别标识：「估」= estimated；nil = 实测（不显示）。推测食物为整卡标识，不在行内
+    var badge: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top) {
-                Text(name)
-                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: 4) {
+                    Text(name)
+                        .font(SafeMealFont.custom(15, relativeTo: .subheadline))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
+                    if let badge {
+                        Text(badge)
+                            .font(SafeMealFont.custom(9, relativeTo: .caption2, weight: .bold))
+                            .foregroundStyle(SafeMealTheme.warning)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 1)
+                            .overlay(
+                                Capsule().stroke(SafeMealTheme.warning.opacity(0.55), lineWidth: 0.8)
+                            )
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 VStack(alignment: .trailing, spacing: 2) {
                     if let value, let unit {
                         HStack(spacing: 2) {
                             Text(String(format: "%.1f", value))
-                                .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
+                                .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                                .foregroundStyle(SafeMealTheme.textPrimary)
                             Text(unit)
-                                .font(SafeEatFont.custom(12, relativeTo: .caption))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                                .font(SafeMealFont.custom(12, relativeTo: .caption))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                     } else {
                         Text("--")
-                            .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                     }
 
                     if let nrv = nrvPercent {
                         Text(String(format: "%.0f%% NRV", nrv))
-                            .font(SafeEatFont.custom(11, relativeTo: .caption2))
+                            .font(SafeMealFont.custom(11, relativeTo: .caption2))
                             .foregroundStyle(nrvColor(nrv))
                     } else {
                         Text("- NRV")
-                            .font(SafeEatFont.custom(11, relativeTo: .caption2))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                     }
                 }
             }
@@ -78,10 +92,10 @@ struct NutritionFactRowView: View {
 
 extension NutritionFactRowView {
     func nrvColor(_ value: Double) -> Color {
-        if value <= 5 { return SafeEatTheme.textSecondary }
-        if value <= 20 { return SafeEatTheme.primary }
-        if value <= 50 { return SafeEatTheme.warning }
-        return SafeEatTheme.danger
+        if value <= 5 { return SafeMealTheme.textSecondary }
+        if value <= 20 { return SafeMealTheme.primary }
+        if value <= 50 { return SafeMealTheme.warning }
+        return SafeMealTheme.danger
     }
 }
 
@@ -97,19 +111,19 @@ struct NRVOnlyRowView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(name)
-                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(15, relativeTo: .subheadline))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
 
                 Spacer()
 
                 if let nrv = nrvPercent {
                     Text(String(format: "%.0f%% NRV", nrv))
-                        .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+                        .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
                         .foregroundStyle(nrvColor(nrv))
                 } else {
                     Text("- NRV")
-                        .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
             }
 
@@ -134,10 +148,10 @@ struct NRVOnlyRowView: View {
     }
 
     private func nrvColor(_ value: Double) -> Color {
-        if value <= 5 { return SafeEatTheme.textSecondary }
-        if value <= 20 { return SafeEatTheme.primary }
-        if value <= 50 { return SafeEatTheme.warning }
-        return SafeEatTheme.danger
+        if value <= 5 { return SafeMealTheme.textSecondary }
+        if value <= 20 { return SafeMealTheme.primary }
+        if value <= 50 { return SafeMealTheme.warning }
+        return SafeMealTheme.danger
     }
 }
 
@@ -176,7 +190,7 @@ let AllergenNameMap: [String: (zh: String, en: String)] = [
 
 func localizedAllergenName(_ key: String) -> String {
     if let mapping = AllergenNameMap[key.lowercased()] {
-        let storedLang = UserDefaults.standard.string(forKey: "safeeat.settings.language")
+        let storedLang = UserDefaults.standard.string(forKey: "safemeal.settings.language")
         switch storedLang {
         case "zh-Hans": return mapping.zh
         case "en": return mapping.en

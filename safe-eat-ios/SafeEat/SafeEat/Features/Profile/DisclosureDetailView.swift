@@ -21,19 +21,19 @@ struct DisclosureDetailView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 32))
-                        .foregroundStyle(SafeEatTheme.warning)
+                        .foregroundStyle(SafeMealTheme.warning)
                     Text(err)
-                        .font(SafeEatFont.textStyle(.body))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.textStyle(.body))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                         .multilineTextAlignment(.center)
                     Button {
                         errorMessage = nil
                         isLoading = true
                         Task { await loadDisclosure() }
                     } label: {
-                        Text(SafeEatL10n.text(L10nKey.Common.retry))
-                            .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.primary)
+                        Text(SafeMealL10n.text(L10nKey.Common.retry))
+                            .font(SafeMealFont.custom(15, relativeTo: .body, weight: .bold))
+                            .foregroundStyle(SafeMealTheme.primary)
                     }
                 }
                 .padding(20)
@@ -44,10 +44,10 @@ struct DisclosureDetailView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "doc.text.magnifyingglass")
                         .font(.system(size: 32))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
-                    Text(SafeEatL10n.text(L10nKey.Errors.invalidResponse))
-                        .font(SafeEatFont.textStyle(.body))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .foregroundStyle(SafeMealTheme.textSecondary)
+                    Text(SafeMealL10n.text(L10nKey.Errors.invalidResponse))
+                        .font(SafeMealFont.textStyle(.body))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
                 .padding(20)
             }

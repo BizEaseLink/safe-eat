@@ -103,29 +103,29 @@ struct LoginView: View {
         .sheet(isPresented: $showContactSupport) {
             ContactSupportSheet()
         }
-        .alert(SafeEatL10n.text(L10nKey.Auth.accountDeletingTitle), isPresented: $showAccountDeletingAlert) {
-            Button(SafeEatL10n.text(L10nKey.Auth.accountDeletingRecover)) {
+        .alert(SafeMealL10n.text(L10nKey.Auth.accountDeletingTitle), isPresented: $showAccountDeletingAlert) {
+            Button(SafeMealL10n.text(L10nKey.Auth.accountDeletingRecover)) {
                 loginRoute = .accountRecovery
             }
-            Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+            Button(SafeMealL10n.text(L10nKey.Common.cancel), role: .cancel) {}
         } message: {
-            Text(SafeEatL10n.text(L10nKey.Auth.accountDeletingMessage))
+            Text(SafeMealL10n.text(L10nKey.Auth.accountDeletingMessage))
         }
-        .alert(SafeEatL10n.text(L10nKey.Common.notice), isPresented: $showTermsNotAgreed) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) {}
+        .alert(SafeMealL10n.text(L10nKey.Common.notice), isPresented: $showTermsNotAgreed) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok), role: .cancel) {}
         } message: {
-            Text(SafeEatL10n.text(L10nKey.Auth.termsNotAgreed))
+            Text(SafeMealL10n.text(L10nKey.Auth.termsNotAgreed))
         }
-        .alert(SafeEatL10n.text(L10nKey.Auth.accountLockedTitle), isPresented: $showAccountLockedAlert) {
-            Button(SafeEatL10n.text(L10nKey.Auth.loginWithSms)) {
+        .alert(SafeMealL10n.text(L10nKey.Auth.accountLockedTitle), isPresented: $showAccountLockedAlert) {
+            Button(SafeMealL10n.text(L10nKey.Auth.loginWithSms)) {
                 loginRoute = .codeLogin
             }
-            Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+            Button(SafeMealL10n.text(L10nKey.Common.cancel), role: .cancel) {}
         } message: {
-            Text(SafeEatL10n.text(L10nKey.Auth.accountLockedMessage))
+            Text(SafeMealL10n.text(L10nKey.Auth.accountLockedMessage))
         }
-        .alert(SafeEatL10n.text(L10nKey.Common.notice), isPresented: showError) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) { store.errorMessage = nil }
+        .alert(SafeMealL10n.text(L10nKey.Common.notice), isPresented: showError) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok), role: .cancel) { store.errorMessage = nil }
         } message: {
             Text(store.errorMessage ?? "")
         }
@@ -148,10 +148,10 @@ struct LoginView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
                         Color.clear
-                            .frame(height: SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
+                            .frame(height: SafeMealSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
 
                         backButton
-                        heroBlock(title: SafeEatL10n.text(L10nKey.Auth.codeTitle))
+                        heroBlock(title: SafeMealL10n.text(L10nKey.Auth.codeTitle))
                         codeLoginContent
                     }
                     .padding(.horizontal, 20)
@@ -174,10 +174,10 @@ struct LoginView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
                         Color.clear
-                            .frame(height: SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
+                            .frame(height: SafeMealSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
 
                         backButton
-                        heroBlock(title: SafeEatL10n.text(L10nKey.Auth.passwordTitle))
+                        heroBlock(title: SafeMealL10n.text(L10nKey.Auth.passwordTitle))
                         passwordLoginContent
                     }
                     .padding(.horizontal, 20)
@@ -200,10 +200,10 @@ struct LoginView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
                         Color.clear
-                            .frame(height: SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
+                            .frame(height: SafeMealSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
 
                         backButton
-                        heroBlock(title: SafeEatL10n.text(L10nKey.Auth.registerTitle))
+                        heroBlock(title: SafeMealL10n.text(L10nKey.Auth.registerTitle))
                         registerContent
                     }
                     .padding(.horizontal, 20)
@@ -226,10 +226,10 @@ struct LoginView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
                         Color.clear
-                            .frame(height: SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
+                            .frame(height: SafeMealSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
 
                         backButton
-                        heroBlock(title: SafeEatL10n.text(L10nKey.Auth.bindTitle))
+                        heroBlock(title: SafeMealL10n.text(L10nKey.Auth.bindTitle))
                         bindPhoneContent
                     }
                     .padding(.horizontal, 20)
@@ -252,9 +252,9 @@ struct LoginView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
                         Color.clear
-                            .frame(height: SafeEatSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
+                            .frame(height: SafeMealSafeArea.resolvedTopInset(fallback: proxy.safeAreaInsets.top) + 12)
 
-                        heroBlock(title: SafeEatL10n.text(L10nKey.Auth.setPasswordTitle))
+                        heroBlock(title: SafeMealL10n.text(L10nKey.Auth.setPasswordTitle))
                         setPasswordContent
                     }
                     .padding(.horizontal, 20)
@@ -275,7 +275,7 @@ struct LoginView: View {
 
     private var authBackground: some View {
         ZStack {
-            SafeEatMainGradientBackground()
+            SafeMealMainGradientBackground()
 
             Circle()
                 .fill(Color(red: 0.89, green: 0.95, blue: 0.90).opacity(colorScheme == .dark ? 0.10 : 0.82))
@@ -302,7 +302,7 @@ struct LoginView: View {
                 .offset(x: -128, y: -38)
 
             Circle()
-                .fill(SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.08 : 0.35))
+                .fill(SafeMealTheme.primarySoft.opacity(colorScheme == .dark ? 0.08 : 0.35))
                 .frame(width: 280, height: 280)
                 .offset(x: 118, y: 320)
         }
@@ -315,7 +315,7 @@ struct LoginView: View {
         } label: {
             Image(systemName: "chevron.left")
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: 46, height: 46)
                 .background(
                     Circle()
@@ -323,7 +323,7 @@ struct LoginView: View {
                 )
                 .overlay(
                     Circle()
-                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -335,19 +335,19 @@ struct LoginView: View {
                 AppLogoView(size: 44, animate: false)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(SafeEatL10n.text(L10nKey.Brand.appName))
-                        .font(SafeEatFont.custom(22, relativeTo: .title2, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    Text(SafeMealL10n.text(L10nKey.Brand.appName))
+                        .font(SafeMealFont.custom(22, relativeTo: .title2, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
 
-                    Text(SafeEatL10n.text(L10nKey.Brand.slogan))
-                        .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.primaryDeep)
+                    Text(SafeMealL10n.text(L10nKey.Brand.slogan))
+                        .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.primaryDeep)
                 }
             }
 
             Text(title)
-                .font(SafeEatFont.custom(34, relativeTo: .largeTitle, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(34, relativeTo: .largeTitle, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
         }
     }
 
@@ -355,11 +355,11 @@ struct LoginView: View {
 
     private var codeLoginContent: some View {
         VStack(alignment: .leading, spacing: 16) {
-            authField(title: SafeEatL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
+            authField(title: SafeMealL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
             codeField
             smsHintView
 
-            authPrimaryButton(title: SafeEatL10n.text(L10nKey.Auth.actionCodeLogin), isLoading: store.isLoading) {
+            authPrimaryButton(title: SafeMealL10n.text(L10nKey.Auth.actionCodeLogin), isLoading: store.isLoading) {
                 Task {
                     await performSmsLogin()
                 }
@@ -369,104 +369,104 @@ struct LoginView: View {
             // 底部辅助入口：忘记密码 | 联系客服
             HStack {
                 Spacer()
-                miniLink(title: SafeEatL10n.text(L10nKey.Auth.forgotPassword)) {
+                miniLink(title: SafeMealL10n.text(L10nKey.Auth.forgotPassword)) {
                     loginRoute = .forgotPassword
                 }
                 Text("|")
-                    .font(SafeEatFont.custom(14, relativeTo: .footnote))
-                    .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.5))
-                miniLink(title: SafeEatL10n.text(L10nKey.Auth.contactSupport)) {
+                    .font(SafeMealFont.custom(14, relativeTo: .footnote))
+                    .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.5))
+                miniLink(title: SafeMealL10n.text(L10nKey.Auth.contactSupport)) {
                     showContactSupport = true
                 }
                 Spacer()
             }
 
             HStack {
-                miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToPassword)) {
+                miniLink(title: SafeMealL10n.text(L10nKey.Auth.switchToPassword)) {
                     loginRoute = .passwordLogin
                 }
                 Spacer()
-                miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToRegister)) {
+                miniLink(title: SafeMealL10n.text(L10nKey.Auth.switchToRegister)) {
                     loginRoute = .register
                 }
             }
         }
         .padding(24)
         .background(cardBackground)
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
+        .shadow(color: SafeMealTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
     }
 
     // MARK: - 密码登录内容
 
     private var passwordLoginContent: some View {
         VStack(alignment: .leading, spacing: 16) {
-            authField(title: SafeEatL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
-            authSecureField(title: SafeEatL10n.text(L10nKey.Auth.passwordLabel), text: $password)
+            authField(title: SafeMealL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
+            authSecureField(title: SafeMealL10n.text(L10nKey.Auth.passwordLabel), text: $password)
 
-            authPrimaryButton(title: SafeEatL10n.text(L10nKey.Auth.actionLogin), isLoading: store.isLoading) {
+            authPrimaryButton(title: SafeMealL10n.text(L10nKey.Auth.actionLogin), isLoading: store.isLoading) {
                 Task {
                     await performPasswordLogin()
                 }
             }
             .disabled(phone.trimmingCharacters(in: .whitespacesAndNewlines).count != 11 || password.count < 6 || store.isLoading)
-            .alert(SafeEatL10n.text(L10nKey.Auth.passwordLoginErrorTitle), isPresented: $showPasswordLoginError) {
-                Button(SafeEatL10n.text(L10nKey.Auth.switchToRegister)) {
+            .alert(SafeMealL10n.text(L10nKey.Auth.passwordLoginErrorTitle), isPresented: $showPasswordLoginError) {
+                Button(SafeMealL10n.text(L10nKey.Auth.switchToRegister)) {
                     loginRoute = .register
                 }
-                Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+                Button(SafeMealL10n.text(L10nKey.Common.cancel), role: .cancel) {}
             } message: {
-                Text(SafeEatL10n.text(L10nKey.Auth.passwordLoginErrorMessage))
+                Text(SafeMealL10n.text(L10nKey.Auth.passwordLoginErrorMessage))
             }
 
             // 底部辅助入口：忘记密码 | 联系客服
             HStack {
                 Spacer()
-                miniLink(title: SafeEatL10n.text(L10nKey.Auth.forgotPassword)) {
+                miniLink(title: SafeMealL10n.text(L10nKey.Auth.forgotPassword)) {
                     loginRoute = .forgotPassword
                 }
                 Text("|")
-                    .font(SafeEatFont.custom(14, relativeTo: .footnote))
-                    .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.5))
-                miniLink(title: SafeEatL10n.text(L10nKey.Auth.contactSupport)) {
+                    .font(SafeMealFont.custom(14, relativeTo: .footnote))
+                    .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.5))
+                miniLink(title: SafeMealL10n.text(L10nKey.Auth.contactSupport)) {
                     showContactSupport = true
                 }
                 Spacer()
             }
 
             HStack {
-                miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToCode)) {
+                miniLink(title: SafeMealL10n.text(L10nKey.Auth.switchToCode)) {
                     loginRoute = .codeLogin
                 }
                 Spacer()
-                miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToRegister)) {
+                miniLink(title: SafeMealL10n.text(L10nKey.Auth.switchToRegister)) {
                     loginRoute = .register
                 }
             }
         }
         .padding(24)
         .background(cardBackground)
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
+        .shadow(color: SafeMealTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
     }
 
     // MARK: - 注册内容
 
     private var registerContent: some View {
         VStack(alignment: .leading, spacing: 16) {
-            authField(title: SafeEatL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
+            authField(title: SafeMealL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
             codeField
-            authSecureField(title: SafeEatL10n.text(L10nKey.Auth.passwordLabel), text: $password)
+            authSecureField(title: SafeMealL10n.text(L10nKey.Auth.passwordLabel), text: $password)
             passwordRequirementHints(password)
-            authSecureField(title: SafeEatL10n.text(L10nKey.Auth.confirmPasswordLabel), text: $confirmPassword)
+            authSecureField(title: SafeMealL10n.text(L10nKey.Auth.confirmPasswordLabel), text: $confirmPassword)
             if !confirmPassword.isEmpty && password != confirmPassword {
-                Text(SafeEatL10n.text(L10nKey.Auth.passwordMismatch))
-                    .font(SafeEatFont.textStyle(.footnote))
-                    .foregroundStyle(SafeEatTheme.danger)
+                Text(SafeMealL10n.text(L10nKey.Auth.passwordMismatch))
+                    .font(SafeMealFont.textStyle(.footnote))
+                    .foregroundStyle(SafeMealTheme.danger)
             }
             smsHintView
 
             termsAgreementRow
 
-            authPrimaryButton(title: SafeEatL10n.text(L10nKey.Auth.actionRegister), isLoading: store.isLoading) {
+            authPrimaryButton(title: SafeMealL10n.text(L10nKey.Auth.actionRegister), isLoading: store.isLoading) {
                 Task {
                     await register()
                 }
@@ -474,36 +474,36 @@ struct LoginView: View {
             .disabled(!canSubmitRegistration || !agreedToTerms || store.isLoading)
 
             HStack {
-                miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToPassword)) {
+                miniLink(title: SafeMealL10n.text(L10nKey.Auth.switchToPassword)) {
                     loginRoute = .passwordLogin
                 }
                 Spacer()
-                miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchToCode)) {
+                miniLink(title: SafeMealL10n.text(L10nKey.Auth.switchToCode)) {
                     loginRoute = .codeLogin
                 }
             }
         }
         .padding(24)
         .background(cardBackground)
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
+        .shadow(color: SafeMealTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
     }
 
     // MARK: - 绑定手机内容
 
     private var bindPhoneContent: some View {
         VStack(alignment: .leading, spacing: 16) {
-            authField(title: SafeEatL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
+            authField(title: SafeMealL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
             codeField
             smsHintView
 
-            authPrimaryButton(title: SafeEatL10n.text(L10nKey.Auth.actionBind), isLoading: store.isLoading) {
+            authPrimaryButton(title: SafeMealL10n.text(L10nKey.Auth.actionBind), isLoading: store.isLoading) {
                 Task {
                     await store.bindApplePhone(phone: phone, code: code)
                 }
             }
             .disabled(phone.trimmingCharacters(in: .whitespacesAndNewlines).count != 11 || code.count < 4 || store.isLoading)
 
-            miniLink(title: SafeEatL10n.text(L10nKey.Auth.switchBackWelcome)) {
+            miniLink(title: SafeMealL10n.text(L10nKey.Auth.switchBackWelcome)) {
                 store.logout()
                 resetFields()
                 loginRoute = nil
@@ -511,7 +511,7 @@ struct LoginView: View {
         }
         .padding(24)
         .background(cardBackground)
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
+        .shadow(color: SafeMealTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
     }
 
     // MARK: - 设置密码内容
@@ -524,23 +524,23 @@ struct LoginView: View {
     private var setPasswordContent: some View {
         VStack(alignment: .leading, spacing: 16) {
             if isRegistrationFlow {
-                Text(SafeEatL10n.text(L10nKey.Auth.setPasswordSubtitle))
-                    .font(SafeEatFont.custom(15, relativeTo: .body))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                Text(SafeMealL10n.text(L10nKey.Auth.setPasswordSubtitle))
+                    .font(SafeMealFont.custom(15, relativeTo: .body))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
 
-                authField(title: SafeEatL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
+                authField(title: SafeMealL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
                     .disabled(true)
                 codeField
                 smsHintView
             }
 
-            authSecureField(title: SafeEatL10n.text(L10nKey.Auth.passwordLabel), text: $password)
+            authSecureField(title: SafeMealL10n.text(L10nKey.Auth.passwordLabel), text: $password)
             passwordRequirementHints(password)
-            authSecureField(title: SafeEatL10n.text(L10nKey.Auth.confirmPasswordLabel), text: $confirmPassword)
+            authSecureField(title: SafeMealL10n.text(L10nKey.Auth.confirmPasswordLabel), text: $confirmPassword)
             if !confirmPassword.isEmpty && password != confirmPassword {
-                Text(SafeEatL10n.text(L10nKey.Auth.passwordMismatch))
-                    .font(SafeEatFont.textStyle(.footnote))
-                    .foregroundStyle(SafeEatTheme.danger)
+                Text(SafeMealL10n.text(L10nKey.Auth.passwordMismatch))
+                    .font(SafeMealFont.textStyle(.footnote))
+                    .foregroundStyle(SafeMealTheme.danger)
             }
 
             // 注册需要同意协议
@@ -548,7 +548,7 @@ struct LoginView: View {
                 termsAgreementRow
             }
 
-            authPrimaryButton(title: SafeEatL10n.text(L10nKey.Auth.setPasswordTitle), isLoading: store.isLoading) {
+            authPrimaryButton(title: SafeMealL10n.text(L10nKey.Auth.setPasswordTitle), isLoading: store.isLoading) {
                 if isRegistrationFlow && !agreedToTerms {
                     showTermsNotAgreed = true
                     return
@@ -561,7 +561,7 @@ struct LoginView: View {
         }
         .padding(24)
         .background(cardBackground)
-        .shadow(color: SafeEatTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
+        .shadow(color: SafeMealTheme.primaryDeep.opacity(colorScheme == .dark ? 0.18 : 0.10), radius: 22, y: 16)
     }
 
     // MARK: - 共享子组件
@@ -575,21 +575,21 @@ struct LoginView: View {
         }
         .overlay(
             RoundedRectangle(cornerRadius: 32, style: .continuous)
-                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
         )
     }
 
     private var codeField: some View {
         HStack(spacing: 12) {
-            authField(title: SafeEatL10n.text(L10nKey.Auth.codeLabel), text: $code, keyboardType: .numberPad)
+            authField(title: SafeMealL10n.text(L10nKey.Auth.codeLabel), text: $code, keyboardType: .numberPad)
 
             Button {
                 Task {
                     await requestSMS()
                 }
             } label: {
-                Text(smsCountdownManager.countdown > 0 ? "\(smsCountdownManager.countdown)s" : (smsCountdownManager.isSending ? SafeEatL10n.text(L10nKey.Common.sending) : SafeEatL10n.text(L10nKey.Common.sendCode)))
-                    .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
+                Text(smsCountdownManager.countdown > 0 ? "\(smsCountdownManager.countdown)s" : (smsCountdownManager.isSending ? SafeMealL10n.text(L10nKey.Common.sending) : SafeMealL10n.text(L10nKey.Common.sendCode)))
+                    .font(SafeMealFont.custom(15, relativeTo: .body, weight: .bold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 18)
                     .frame(height: 56)
@@ -597,7 +597,7 @@ struct LoginView: View {
                         RoundedRectangle(cornerRadius: 18, style: .continuous)
                             .fill(
                                 LinearGradient(
-                                    colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                    colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
@@ -612,8 +612,8 @@ struct LoginView: View {
     @ViewBuilder
     private var smsHintView: some View {
         if let devCodeHint, !devCodeHint.isEmpty {
-            Text(SafeEatL10n.format(L10nKey.Auth.smsHintFormat, devCodeHint))
-                .font(SafeEatFont.textStyle(.footnote))
+            Text(SafeMealL10n.format(L10nKey.Auth.smsHintFormat, devCodeHint))
+                .font(SafeMealFont.textStyle(.footnote))
                 .foregroundStyle(Color(red: 0.82, green: 0.47, blue: 0.18))
         }
     }
@@ -623,11 +623,11 @@ struct LoginView: View {
         if !password.isEmpty {
             let result = PasswordValidator.validate(password)
             VStack(alignment: .leading, spacing: 4) {
-                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementLength), passed: result.isLengthValid)
-                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementUppercase), passed: result.hasUppercase)
-                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementLowercase), passed: result.hasLowercase)
-                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementDigit), passed: result.hasDigit)
-                requirementRow(text: SafeEatL10n.text(L10nKey.Auth.passwordRequirementSpecial), passed: result.hasSpecialChar)
+                requirementRow(text: SafeMealL10n.text(L10nKey.Auth.passwordRequirementLength), passed: result.isLengthValid)
+                requirementRow(text: SafeMealL10n.text(L10nKey.Auth.passwordRequirementUppercase), passed: result.hasUppercase)
+                requirementRow(text: SafeMealL10n.text(L10nKey.Auth.passwordRequirementLowercase), passed: result.hasLowercase)
+                requirementRow(text: SafeMealL10n.text(L10nKey.Auth.passwordRequirementDigit), passed: result.hasDigit)
+                requirementRow(text: SafeMealL10n.text(L10nKey.Auth.passwordRequirementSpecial), passed: result.hasSpecialChar)
             }
         }
     }
@@ -636,10 +636,10 @@ struct LoginView: View {
         HStack(spacing: 4) {
             Image(systemName: passed ? "checkmark.circle.fill" : "circle")
                 .font(.system(size: 12))
-                .foregroundStyle(passed ? SafeEatTheme.success : SafeEatTheme.textSecondary)
+                .foregroundStyle(passed ? SafeMealTheme.success : SafeMealTheme.textSecondary)
             Text(text)
-                .font(SafeEatFont.textStyle(.caption2))
-                .foregroundStyle(passed ? SafeEatTheme.success : SafeEatTheme.textSecondary)
+                .font(SafeMealFont.textStyle(.caption2))
+                .foregroundStyle(passed ? SafeMealTheme.success : SafeMealTheme.textSecondary)
         }
     }
 
@@ -653,12 +653,12 @@ struct LoginView: View {
             } label: {
                 Image(systemName: agreedToTerms ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 18))
-                    .foregroundStyle(agreedToTerms ? SafeEatTheme.primary : SafeEatTheme.textSecondary)
+                    .foregroundStyle(agreedToTerms ? SafeMealTheme.primary : SafeMealTheme.textSecondary)
             }
             .buttonStyle(.plain)
 
             termsFlowText
-                .font(SafeEatFont.custom(13, relativeTo: .caption))
+                .font(SafeMealFont.custom(13, relativeTo: .caption))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .sheet(item: $showDisclosureCategory) { link in
@@ -670,23 +670,23 @@ struct LoginView: View {
 
     private func linkText(_ display: String, url: String) -> AttributedString {
         var attr = AttributedString(display)
-        attr.foregroundColor = SafeEatTheme.primary
+        attr.foregroundColor = SafeMealTheme.primary
         attr.underlineStyle = .single
         attr.link = URL(string: url)
         return attr
     }
 
     private var termsFlowText: some View {
-        let ua = SafeEatL10n.text(L10nKey.Auth.termsUserAgreement)
-        let pp = SafeEatL10n.text(L10nKey.Auth.termsPrivacyPolicy)
+        let ua = SafeMealL10n.text(L10nKey.Auth.termsUserAgreement)
+        let pp = SafeMealL10n.text(L10nKey.Auth.termsPrivacyPolicy)
 
         return (
-            Text(SafeEatL10n.text(L10nKey.Auth.termsPrefix))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-            + Text(linkText(ua, url: "safeeat://user_agreement"))
-            + Text(SafeEatL10n.text(L10nKey.Auth.termsAnd))
-                .foregroundStyle(SafeEatTheme.textSecondary)
-            + Text(linkText(pp, url: "safeeat://privacy_policy"))
+            Text(SafeMealL10n.text(L10nKey.Auth.termsPrefix))
+                .foregroundStyle(SafeMealTheme.textSecondary)
+            + Text(linkText(ua, url: "safemeal://user_agreement"))
+            + Text(SafeMealL10n.text(L10nKey.Auth.termsAnd))
+                .foregroundStyle(SafeMealTheme.textSecondary)
+            + Text(linkText(pp, url: "safemeal://privacy_policy"))
         )
         .environment(\.openURL, OpenURLAction { url in
             guard let host = url.host() else { return .discarded }
@@ -726,8 +726,8 @@ struct LoginView: View {
         TextField(title, text: text)
             .keyboardType(keyboardType)
             .textInputAutocapitalization(.never)
-            .font(SafeEatFont.custom(16, relativeTo: .body))
-            .foregroundStyle(SafeEatTheme.textPrimary)
+            .font(SafeMealFont.custom(16, relativeTo: .body))
+            .foregroundStyle(SafeMealTheme.textPrimary)
             .padding(.horizontal, 16)
             .frame(height: 56)
             .background(
@@ -736,15 +736,15 @@ struct LoginView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                    .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
             )
     }
 
     private func authSecureField(title: String, text: Binding<String>) -> some View {
         SecureField(title, text: text)
             .textInputAutocapitalization(.never)
-            .font(SafeEatFont.custom(16, relativeTo: .body))
-            .foregroundStyle(SafeEatTheme.textPrimary)
+            .font(SafeMealFont.custom(16, relativeTo: .body))
+            .foregroundStyle(SafeMealTheme.textPrimary)
             .padding(.horizontal, 16)
             .frame(height: 56)
             .background(
@@ -753,7 +753,7 @@ struct LoginView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                    .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
             )
     }
 
@@ -769,14 +769,14 @@ struct LoginView: View {
                         .frame(maxWidth: .infinity)
                 }
             }
-            .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+            .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
             .foregroundStyle(.white)
             .padding(.vertical, 16)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                            colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -789,8 +789,8 @@ struct LoginView: View {
     private func miniLink(title: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(SafeEatFont.custom(14, relativeTo: .footnote, weight: .bold))
-                .foregroundStyle(SafeEatTheme.primaryDeep)
+                .font(SafeMealFont.custom(14, relativeTo: .footnote, weight: .bold))
+                .foregroundStyle(SafeMealTheme.primaryDeep)
         }
         .buttonStyle(.plain)
     }
@@ -868,7 +868,7 @@ struct LoginView: View {
             return
         }
         guard password == confirmPassword else {
-            store.errorMessage = SafeEatL10n.text(L10nKey.Auth.passwordMismatch)
+            store.errorMessage = SafeMealL10n.text(L10nKey.Auth.passwordMismatch)
             return
         }
 
@@ -882,7 +882,7 @@ struct LoginView: View {
             return
         }
         guard password == confirmPassword else {
-            store.errorMessage = SafeEatL10n.text(L10nKey.Auth.passwordMismatch)
+            store.errorMessage = SafeMealL10n.text(L10nKey.Auth.passwordMismatch)
             return
         }
 

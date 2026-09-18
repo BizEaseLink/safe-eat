@@ -11,14 +11,14 @@ final class AdConfigStore {
     private(set) var placements: [AdPlacementConfig] = []
     private(set) var configParams: AdsConfigParams?
 
-    private let api: SafeEatAPI
-    private static let cacheKey = "safeeat.adConfig.cache"
-    private static let cacheParamsKey = "safeeat.adConfig.params.cache"
-    private static let cacheTimestampKey = "safeeat.adConfig.cacheTimestamp"
+    private let api: SafeMealAPI
+    private static let cacheKey = "safemeal.adConfig.cache"
+    private static let cacheParamsKey = "safemeal.adConfig.params.cache"
+    private static let cacheTimestampKey = "safemeal.adConfig.cacheTimestamp"
 
     private var refreshInterval: TimeInterval { AppConfig.adConfigRefreshInterval }
 
-    init(api: SafeEatAPI = SafeEatAPI()) {
+    init(api: SafeMealAPI = SafeMealAPI()) {
         self.api = api
         loadCachedConfig()
     }

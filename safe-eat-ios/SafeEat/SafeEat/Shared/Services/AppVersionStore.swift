@@ -7,21 +7,21 @@ import UIKit
 final class AppVersionStore {
     static let shared = AppVersionStore()
 
-    private let api: SafeEatAPI
+    private let api: SafeMealAPI
 
     // 状态
     internal(set) var updateInfo: AppVersionCheckResponse?
     private(set) var isChecking = false
 
     // UserDefaults 缓存
-    private static let skippedVersionKey = "safeeat.skippedVersion"
-    private static let skippedDateKey = "safeeat.skippedDate"
-    private static let lastCheckedVersionKey = "safeeat.lastCheckedVersion"
+    private static let skippedVersionKey = "safemeal.skippedVersion"
+    private static let skippedDateKey = "safemeal.skippedDate"
+    private static let lastCheckedVersionKey = "safemeal.lastCheckedVersion"
 
     // 通知名：版本更新检测到时发送，object 为 AppVersionCheckResponse
     static let updateDetectedNotification = Notification.Name("AppVersionUpdateDetected")
 
-    init(api: SafeEatAPI = SafeEatAPI()) {
+    init(api: SafeMealAPI = SafeMealAPI()) {
         self.api = api
     }
 
