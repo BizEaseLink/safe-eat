@@ -7,11 +7,11 @@ final class FloatingIconAdManager: NSObject {
     private(set) var isShowing = false
 
     // MARK: - 每日弹出次数限制
-    private static let dailyCountKey = "safeeat.floatAd.dailyCount"
-    private static let dailyCountDateKey = "safeeat.floatAd.dailyCountDate"
+    private static let dailyCountKey = "safemeal.floatAd.dailyCount"
+    private static let dailyCountDateKey = "safemeal.floatAd.dailyCountDate"
 
     // MARK: - 间隔时间
-    private static let lastCloseTimeKey = "safeeat.floatAd.lastCloseTime"
+    private static let lastCloseTimeKey = "safemeal.floatAd.lastCloseTime"
 
     private override init() { super.init() }
 

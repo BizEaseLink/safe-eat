@@ -24,7 +24,7 @@ final class InterstitialAdManager: NSObject {
         enteredBackgroundAt = Date()
     }
 
-    /// 由 SafeEatApp 在 didBecomeActive 时调用（profile 刷新之后），
+    /// 由 SafeMealApp 在 didBecomeActive 时调用（profile 刷新之后），
     /// 避免会员因 profile 未更新而误看插屏广告
     func onAppBecameActive() {
         guard let enteredAt = enteredBackgroundAt else { return }

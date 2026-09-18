@@ -7,7 +7,7 @@ struct LoginPromptSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        SafeEatSettingsSheetContainer(
+        SafeMealSettingsSheetContainer(
             title: "需要登录",
             subtitle: featureHint ?? "登录后即可使用完整功能",
             contentHeight: 100,
@@ -25,22 +25,22 @@ struct LoginPromptSheet: View {
                 HStack(spacing: 14) {
                     ZStack {
                         Circle()
-                            .fill(SafeEatTheme.primary.opacity(0.12))
+                            .fill(SafeMealTheme.primary.opacity(0.12))
                             .frame(width: 46, height: 46)
 
                         Image(systemName: "person.crop.circle.badge.plus")
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(SafeEatTheme.primary)
+                            .foregroundStyle(SafeMealTheme.primary)
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("登录账号")
-                            .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
+                            .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
+                            .foregroundStyle(SafeMealTheme.textPrimary)
 
                         Text(featureHint ?? "登录后即可使用完整功能")
-                            .font(SafeEatFont.textStyle(.footnote))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .font(SafeMealFont.textStyle(.footnote))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                     }
                 }
             }

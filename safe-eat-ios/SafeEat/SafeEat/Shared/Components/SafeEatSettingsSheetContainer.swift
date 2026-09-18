@@ -29,7 +29,7 @@ private enum SheetLayout {
 
 /// 统一弹窗容器 — 所有设置/提示类 Sheet 的外框。
 /// 外部只需传入 contentHeight（内容区高度），容器自动计算标题+按钮+间距得到总高度。
-struct SafeEatSettingsSheetContainer<Content: View>: View {
+struct SafeMealSettingsSheetContainer<Content: View>: View {
     @Environment(\.colorScheme) private var colorScheme
 
     let title: String
@@ -78,20 +78,20 @@ struct SafeEatSettingsSheetContainer<Content: View>: View {
 
     var body: some View {
         ZStack {
-            SafeEatMainGradientBackground()
+            SafeMealMainGradientBackground()
                 .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
                 // 标题区
                 VStack(alignment: .leading, spacing: SheetLayout.titleSubtitleSpacing) {
                     Text(title)
-                        .font(SafeEatFont.custom(24, relativeTo: .title2, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .font(SafeMealFont.custom(24, relativeTo: .title2, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
 
                     if let subtitle {
                         Text(subtitle)
-                            .font(SafeEatFont.textStyle(.subheadline))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .font(SafeMealFont.textStyle(.subheadline))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                             .lineLimit(2)
                             .minimumScaleFactor(0.85)
                             .frame(height: SheetLayout.subtitleBlockHeight, alignment: .top)
@@ -138,14 +138,14 @@ struct SafeEatSettingsSheetContainer<Content: View>: View {
                                 .frame(maxWidth: .infinity)
                         }
                     }
-                    .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+                    .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
                     .foregroundStyle(.white)
                     .padding(.vertical, hasTwoButtons ? 14 : 16)
                     .background(
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
                             .fill(
                                 LinearGradient(
-                                    colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                                    colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
@@ -161,16 +161,16 @@ struct SafeEatSettingsSheetContainer<Content: View>: View {
                 Button(action: secondary.action) {
                     Text(secondary.title)
                         .frame(maxWidth: .infinity)
-                        .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.primary)
+                        .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .semibold))
+                        .foregroundStyle(SafeMealTheme.primary)
                         .padding(.vertical, 12)
                         .background(
                             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                .fill(SafeEatTheme.primarySoft)
+                                .fill(SafeMealTheme.primarySoft)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                .stroke(SafeEatTheme.primary.opacity(0.3), lineWidth: 1)
+                                .stroke(SafeMealTheme.primary.opacity(0.3), lineWidth: 1)
                         )
                 }
                 .buttonStyle(.plain)

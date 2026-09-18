@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct SafeEatReminderSettingsSheet: View {
+struct SafeMealReminderSettingsSheet: View {
     @EnvironmentObject private var settings: AppSettingsStore
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
@@ -13,11 +13,11 @@ struct SafeEatReminderSettingsSheet: View {
     private let timeOptions = AppSettingsStore.reminderTimeOptions
 
     var body: some View {
-        SafeEatSettingsSheetContainer(
-            title: SafeEatL10n.text(L10nKey.Reminder.sheetTitle),
-            subtitle: SafeEatL10n.text(L10nKey.Reminder.sheetSubtitle),
+        SafeMealSettingsSheetContainer(
+            title: SafeMealL10n.text(L10nKey.Reminder.sheetTitle),
+            subtitle: SafeMealL10n.text(L10nKey.Reminder.sheetSubtitle),
             contentHeight: 320,
-            primaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Reminder.saveAction), isLoading: isSaving) {
+            primaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Reminder.saveAction), isLoading: isSaving) {
                 Task { await saveSettings() }
             }
         ) {
@@ -27,8 +27,8 @@ struct SafeEatReminderSettingsSheet: View {
             if let message = settings.notificationMessage, !message.isEmpty {
                 ProfileSurfaceCard {
                     Text(message)
-                        .font(SafeEatFont.textStyle(.footnote))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.textStyle(.footnote))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
             }
         }
@@ -41,17 +41,17 @@ struct SafeEatReminderSettingsSheet: View {
         }
         // 推送通知权限被拒绝时的引导弹窗
         .alert(
-            SafeEatL10n.text(L10nKey.Reminder.deniedTitle),
+            SafeMealL10n.text(L10nKey.Reminder.deniedTitle),
             isPresented: $settings.showNotificationDenied,
             actions: {
-                Button(SafeEatL10n.text(L10nKey.Reminder.deniedOpenSettings)) {
+                Button(SafeMealL10n.text(L10nKey.Reminder.deniedOpenSettings)) {
                     guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
                     openURL(settingsURL)
                 }
-                Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+                Button(SafeMealL10n.text(L10nKey.Common.cancel), role: .cancel) {}
             },
             message: {
-                Text(SafeEatL10n.text(L10nKey.Reminder.deniedBody))
+                Text(SafeMealL10n.text(L10nKey.Reminder.deniedBody))
             }
         )
     }
@@ -61,28 +61,28 @@ struct SafeEatReminderSettingsSheet: View {
             HStack(spacing: 14) {
                 ZStack {
                     Circle()
-                        .fill(SafeEatTheme.primary.opacity(0.12))
+                        .fill(SafeMealTheme.primary.opacity(0.12))
                         .frame(width: 46, height: 46)
 
                     Image(systemName: draftEnabled ? "bell.fill" : "bell")
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.primary)
+                        .foregroundStyle(SafeMealTheme.primary)
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(SafeEatL10n.text(L10nKey.Reminder.toggleLabel))
-                        .font(SafeEatFont.textStyle(.headline))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    Text(SafeMealL10n.text(L10nKey.Reminder.toggleLabel))
+                        .font(SafeMealFont.textStyle(.headline))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
 
                     Text(draftEnabled ? selectedSummary : settings.reminderSummary)
-                        .font(SafeEatFont.textStyle(.footnote))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.textStyle(.footnote))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
 
                 Spacer()
 
                 Toggle("", isOn: $draftEnabled)
-                    .tint(SafeEatTheme.primary)
+                    .tint(SafeMealTheme.primary)
             }
         }
     }
@@ -90,8 +90,8 @@ struct SafeEatReminderSettingsSheet: View {
     private var scheduleCard: some View {
         ProfileSurfaceCard {
             ProfileFieldBlock(
-                label: SafeEatL10n.text(L10nKey.Reminder.timeLabel),
-                hint: draftEnabled ? nil : SafeEatL10n.text(L10nKey.Reminder.off)
+                label: SafeMealL10n.text(L10nKey.Reminder.timeLabel),
+                hint: draftEnabled ? nil : SafeMealL10n.text(L10nKey.Reminder.off)
             ) {
                 HStack(spacing: 0) {
                     Picker("", selection: $draftStartDayOffset) {
@@ -118,13 +118,13 @@ struct SafeEatReminderSettingsSheet: View {
             HStack {
                 Spacer()
                 Text(selectedSummary)
-                    .font(SafeEatFont.custom(14, relativeTo: .body, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .font(SafeMealFont.custom(14, relativeTo: .body, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.primary)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .background(
                         Capsule()
-                            .fill(SafeEatTheme.primarySoft)
+                            .fill(SafeMealTheme.primarySoft)
                     )
             }
         }
@@ -132,8 +132,8 @@ struct SafeEatReminderSettingsSheet: View {
 
     private var selectedSummary: String {
         let dayTitle = ReminderStartDay(rawValue: draftStartDayOffset)?.title
-            ?? SafeEatL10n.text(L10nKey.Reminder.optionToday)
-        return SafeEatL10n.format(L10nKey.Reminder.summaryFormat, dayTitle, timeText(draftTimeMinutes))
+            ?? SafeMealL10n.text(L10nKey.Reminder.optionToday)
+        return SafeMealL10n.format(L10nKey.Reminder.summaryFormat, dayTitle, timeText(draftTimeMinutes))
     }
 
     private func timeText(_ minutes: Int) -> String {

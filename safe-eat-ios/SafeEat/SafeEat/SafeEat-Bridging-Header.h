@@ -1,5 +1,5 @@
-#ifndef SafeEat_Bridging_Header_h
-#define SafeEat_Bridging_Header_h
+#ifndef SafeMeal_Bridging_Header_h
+#define SafeMeal_Bridging_Header_h
 
 #import <UMCommon/UMConfigure.h>
 #import <UMCommon/MobClick.h>

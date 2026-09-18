@@ -73,7 +73,7 @@ final class AppStore: ObservableObject {
         return status.firstPurchaseBonusClaimed == true
     }
 
-    let api: SafeEatAPI
+    let api: SafeMealAPI
     private let sessionStore: AuthSessionStore
     private let historyStore: LocalHistoryStore
     private let storeKitService: StoreKitServiceProtocol
@@ -91,7 +91,7 @@ final class AppStore: ObservableObject {
     private static let guestHomeKey = "safe-eat.onboarding.guest-home"
 
     init(
-        api: SafeEatAPI,
+        api: SafeMealAPI,
         sessionStore: AuthSessionStore,
         historyStore: LocalHistoryStore,
         storeKitService: StoreKitServiceProtocol = StoreKitService.shared,
@@ -124,7 +124,7 @@ final class AppStore: ObservableObject {
 
     convenience init() {
         self.init(
-            api: SafeEatAPI(),
+            api: SafeMealAPI(),
             sessionStore: AuthSessionStore(),
             historyStore: LocalHistoryStore(),
             storeKitService: StoreKitService.shared
@@ -343,7 +343,7 @@ final class AppStore: ObservableObject {
 
     func updateAvatar(_ image: UIImage) async throws -> UserProfile {
         guard let imageData = image.avatarUploadData() else {
-            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.avatarCompressionFailed), code: nil)
+            throw APIError.server(status: 0, message: SafeMealL10n.text(L10nKey.Errors.avatarCompressionFailed), code: nil)
         }
 
         let updated = try await authorizedRequest { token in
@@ -487,12 +487,12 @@ final class AppStore: ObservableObject {
         // 原图缩小到 720 再编码，减少磁盘写入量
         let uploadSource = originalImage.scaledDown(maxDimension: 720)
         guard let originalImageData = uploadSource.jpegData(compressionQuality: 0.78) else {
-            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveOriginalFailed), code: nil)
+            throw APIError.server(status: 0, message: SafeMealL10n.text(L10nKey.Errors.saveOriginalFailed), code: nil)
         }
         // raw 图进一步缩小和质量降低，仅用于旋转等降级场景
         let rawSource = (rawImage ?? originalImage).scaledDown(maxDimension: 540)
         guard let rawImageData = rawSource.jpegData(compressionQuality: 0.72) else {
-            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveHiddenOriginalFailed), code: nil)
+            throw APIError.server(status: 0, message: SafeMealL10n.text(L10nKey.Errors.saveHiddenOriginalFailed), code: nil)
         }
 
         // 预览图有透明背景（背景去除），必须用 PNG 保留 alpha 通道
@@ -559,15 +559,15 @@ final class AppStore: ObservableObject {
 
     func rotateHistoryItemClockwise(_ itemID: LocalHistoryItem.ID) throws {
         guard var item = historyItem(id: itemID) else {
-            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.localRecordMissing), code: nil)
+            throw APIError.server(status: 0, message: SafeMealL10n.text(L10nKey.Errors.localRecordMissing), code: nil)
         }
         guard let originalImage = LocalImageLoader.loadOriginalImage(for: item)?.rotated(clockwise: true) else {
-            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.localOriginalMissing), code: nil)
+            throw APIError.server(status: 0, message: SafeMealL10n.text(L10nKey.Errors.localOriginalMissing), code: nil)
         }
 
         let rotatedPreview = LocalImageLoader.loadImage(from: item.previewImageUri)?.rotated(clockwise: true)
         guard let originalImageData = originalImage.jpegDataForUpload() else {
-            throw APIError.server(status: 0, message: SafeEatL10n.text(L10nKey.Errors.saveRotatedOriginalFailed), code: nil)
+            throw APIError.server(status: 0, message: SafeMealL10n.text(L10nKey.Errors.saveRotatedOriginalFailed), code: nil)
         }
 
         let previewImageData = rotatedPreview?.pngDataForPreview()
@@ -655,7 +655,7 @@ final class AppStore: ObservableObject {
         do {
             membershipProducts = try await storeKitService.loadProducts()
         } catch {
-            purchaseError = SafeEatL10n.text(L10nKey.Errors.invalidResponse)
+            purchaseError = SafeMealL10n.text(L10nKey.Errors.invalidResponse)
         }
     }
 
@@ -706,7 +706,7 @@ final class AppStore: ObservableObject {
                 return .userCancelled
 
             case .pending:
-                purchaseError = SafeEatL10n.text(L10nKey.Membership.purchasePending)
+                purchaseError = SafeMealL10n.text(L10nKey.Membership.purchasePending)
                 return .pending
 
             case .failed(let error):
@@ -727,7 +727,7 @@ final class AppStore: ObservableObject {
         do {
             let transactions = try await storeKitService.restorePurchases()
             if transactions.isEmpty {
-                purchaseError = SafeEatL10n.text(L10nKey.Membership.restoreEmpty)
+                purchaseError = SafeMealL10n.text(L10nKey.Membership.restoreEmpty)
             } else {
                 // 对每个恢复的 transaction 发送到后端验证收据
                 for transaction in transactions {
@@ -819,10 +819,10 @@ final class AppStore: ObservableObject {
                 await refreshProfile()
                 await loadMembershipStatus()
             } else {
-                purchaseError = SafeEatL10n.text(L10nKey.Membership.verifyFailed)
+                purchaseError = SafeMealL10n.text(L10nKey.Membership.verifyFailed)
             }
         } catch {
-            purchaseError = SafeEatL10n.text(L10nKey.Membership.verifyError)
+            purchaseError = SafeMealL10n.text(L10nKey.Membership.verifyError)
             await refreshProfile()
         }
     }
@@ -912,7 +912,7 @@ final class AppStore: ObservableObject {
                 case "failed":
                     return .failed(APIError.server(
                         status: 0,
-                        message: SafeEatL10n.text(L10nKey.Membership.verifyFailed),
+                        message: SafeMealL10n.text(L10nKey.Membership.verifyFailed),
                         code: nil
                     ))
                 case "pending":
@@ -962,7 +962,7 @@ final class AppStore: ObservableObject {
     private func currentAccessToken() throws -> String {
         guard let token = session?.accessToken else {
             showLoginPrompt = true
-            throw APIError.server(status: 401, message: SafeEatL10n.text(L10nKey.Errors.sessionExpired), code: nil)
+            throw APIError.server(status: 401, message: SafeMealL10n.text(L10nKey.Errors.sessionExpired), code: nil)
         }
         return token
     }
@@ -973,7 +973,7 @@ final class AppStore: ObservableObject {
         }
 
         guard let currentSession = session else {
-            let expiredError = APIError.server(status: 401, message: SafeEatL10n.text(L10nKey.Errors.sessionExpired), code: nil)
+            let expiredError = APIError.server(status: 401, message: SafeMealL10n.text(L10nKey.Errors.sessionExpired), code: nil)
             logout(message: expiredError.localizedDescription)
             throw expiredError
         }
@@ -1000,7 +1000,7 @@ final class AppStore: ObservableObject {
             refreshTask = nil
 
             if isUnauthorizedError(error) {
-                logout(message: SafeEatL10n.text(L10nKey.Errors.sessionExpired))
+                logout(message: SafeMealL10n.text(L10nKey.Errors.sessionExpired))
             }
 
             throw error

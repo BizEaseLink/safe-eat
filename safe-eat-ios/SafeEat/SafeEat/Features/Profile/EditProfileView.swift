@@ -45,25 +45,25 @@ struct EditProfileView: View {
 
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.Profile.editTitle),
-            subtitle: SafeEatL10n.text(L10nKey.Profile.Edit.subtitle)
+            title: SafeMealL10n.text(L10nKey.Profile.editTitle),
+            subtitle: SafeMealL10n.text(L10nKey.Profile.Edit.subtitle)
         ) {
             // 基本信息
             ProfileSurfaceCard {
-                Text(SafeEatL10n.text(L10nKey.Profile.Edit.basicSection))
-                    .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                Text(SafeMealL10n.text(L10nKey.Profile.Edit.basicSection))
+                    .font(SafeMealFont.custom(15, relativeTo: .body, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
 
-                ProfileFieldBlock(label: SafeEatL10n.text(L10nKey.Profile.Edit.displayName)) {
+                ProfileFieldBlock(label: SafeMealL10n.text(L10nKey.Profile.Edit.displayName)) {
                     ProfileTextField(
-                        title: SafeEatL10n.text(L10nKey.Profile.Edit.displayName),
+                        title: SafeMealL10n.text(L10nKey.Profile.Edit.displayName),
                         text: $displayName
                     )
                 }
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
-                ProfileFieldBlock(label: SafeEatL10n.text(L10nKey.Profile.Edit.gender)) {
+                ProfileFieldBlock(label: SafeMealL10n.text(L10nKey.Profile.Edit.gender)) {
                     ProfileMenuField(
                         value: gender,
                         options: genderOptions.map { option in
@@ -76,25 +76,25 @@ struct EditProfileView: View {
                     )
                 }
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
-                ProfileFieldBlock(label: SafeEatL10n.text(L10nKey.Profile.Edit.age)) {
+                ProfileFieldBlock(label: SafeMealL10n.text(L10nKey.Profile.Edit.age)) {
                     ProfileTextField(
-                        title: SafeEatL10n.text(L10nKey.Profile.Edit.agePlaceholder),
+                        title: SafeMealL10n.text(L10nKey.Profile.Edit.agePlaceholder),
                         text: $ageText,
                         keyboardType: .numberPad
                     )
                 }
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
-                ProfileFieldBlock(label: SafeEatL10n.text(L10nKey.Profile.Edit.height)) {
+                ProfileFieldBlock(label: SafeMealL10n.text(L10nKey.Profile.Edit.height)) {
                     heightInputArea
                 }
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
-                ProfileFieldBlock(label: SafeEatL10n.text(L10nKey.Profile.Edit.weight)) {
+                ProfileFieldBlock(label: SafeMealL10n.text(L10nKey.Profile.Edit.weight)) {
                     inputWithUnitToggle(
                         text: $weightText,
                         placeholder: weightUnit == .kg ? "70" : "154",
@@ -105,9 +105,9 @@ struct EditProfileView: View {
                     )
                 }
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
-                ProfileFieldBlock(label: SafeEatL10n.text(L10nKey.Profile.Edit.activityLevel)) {
+                ProfileFieldBlock(label: SafeMealL10n.text(L10nKey.Profile.Edit.activityLevel)) {
                     ProfileMenuField(
                         value: activityLevel,
                         options: activityOptions.map { option in
@@ -124,24 +124,24 @@ struct EditProfileView: View {
             // BMI + TDEE 结果
             ProfileSurfaceCard {
                 ProfileFieldBlock(
-                    label: SafeEatL10n.text(L10nKey.Profile.bmiLabel),
+                    label: SafeMealL10n.text(L10nKey.Profile.bmiLabel),
                     onInfo: { showBmiInfo = true }
                 ) {
                     resultRow(value: bmiCache, icon: "figure.walk.circle.fill")
                 }
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
                 ProfileFieldBlock(
-                    label: SafeEatL10n.text(L10nKey.Profile.Edit.tdeeLabel),
+                    label: SafeMealL10n.text(L10nKey.Profile.Edit.tdeeLabel),
                     onInfo: { showTdeeInfo = true }
                 ) {
-                    resultRow(value: tdeeCache, icon: "flame.fill", suffix: SafeEatL10n.text(L10nKey.Profile.Edit.tdeeUnit))
+                    resultRow(value: tdeeCache, icon: "flame.fill", suffix: SafeMealL10n.text(L10nKey.Profile.Edit.tdeeUnit))
                 }
             }
         } footer: {
             ProfilePrimaryActionButton(
-                title: SafeEatL10n.text(L10nKey.Common.save),
+                title: SafeMealL10n.text(L10nKey.Common.save),
                 isLoading: isSaving
             ) {
                 Task {
@@ -174,30 +174,30 @@ struct EditProfileView: View {
             if heightUnit == .cm {
                 TextField("175", text: $heightText)
                     .keyboardType(.decimalPad)
-                    .font(SafeEatFont.custom(16, relativeTo: .body))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(16, relativeTo: .body))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
             } else {
                 // ft 输入框
                 TextField("5", text: $feetText)
                     .keyboardType(.numberPad)
-                    .font(SafeEatFont.custom(16, relativeTo: .body))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(16, relativeTo: .body))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
                     .frame(width: 48)
 
                 Text("′")
-                    .font(SafeEatFont.custom(18, relativeTo: .body, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.custom(18, relativeTo: .body, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
 
                 // in 输入框
                 TextField("9", text: $inchesText)
                     .keyboardType(.numberPad)
-                    .font(SafeEatFont.custom(16, relativeTo: .body))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.custom(16, relativeTo: .body))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
                     .frame(width: 48)
 
                 Text("″")
-                    .font(SafeEatFont.custom(18, relativeTo: .body, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.custom(18, relativeTo: .body, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
 
             Spacer(minLength: 4)
@@ -236,14 +236,14 @@ struct EditProfileView: View {
                     }
                 } label: {
                     Text(u)
-                        .font(SafeEatFont.custom(12, relativeTo: .caption2, weight: .bold))
-                        .foregroundStyle(unit == u ? .white : SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.custom(12, relativeTo: .caption2, weight: .bold))
+                        .foregroundStyle(unit == u ? .white : SafeMealTheme.textSecondary)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(
                             unit == u
                                 ? RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                    .fill(SafeEatTheme.primary)
+                                    .fill(SafeMealTheme.primary)
                                 : nil
                         )
                 }
@@ -271,8 +271,8 @@ struct EditProfileView: View {
         HStack(spacing: 8) {
             TextField(placeholder, text: text)
                 .keyboardType(keyboardType)
-                .font(SafeEatFont.custom(16, relativeTo: .body))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(16, relativeTo: .body))
+                .foregroundStyle(SafeMealTheme.textPrimary)
 
             unitToggleCapsule(unit: unit, units: units, onUnitChange: onUnitChange)
         }
@@ -379,21 +379,21 @@ struct EditProfileView: View {
 
     private func resultRow(value: String?, icon: String, suffix: String? = nil) -> some View {
         HStack {
-            Text(value ?? SafeEatL10n.text(L10nKey.Common.notSet))
-                .font(SafeEatFont.custom(20, relativeTo: .title3, weight: .bold))
-                .foregroundStyle(SafeEatTheme.primaryDeep)
+            Text(value ?? SafeMealL10n.text(L10nKey.Common.notSet))
+                .font(SafeMealFont.custom(20, relativeTo: .title3, weight: .bold))
+                .foregroundStyle(SafeMealTheme.primaryDeep)
 
             if let suffix, value != nil {
                 Text(suffix)
-                    .font(SafeEatFont.custom(13, relativeTo: .caption))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.custom(13, relativeTo: .caption))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
 
             Spacer()
 
             Image(systemName: icon)
                 .font(.system(size: 20))
-                .foregroundStyle(SafeEatTheme.primary.opacity(0.7))
+                .foregroundStyle(SafeMealTheme.primary.opacity(0.7))
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
@@ -411,12 +411,12 @@ struct EditProfileView: View {
 
     private func activityLevelTitle(_ code: String) -> String {
         switch code {
-        case "sedentary": return SafeEatL10n.text(L10nKey.Profile.Edit.activitySedentary)
-        case "light": return SafeEatL10n.text(L10nKey.Profile.Edit.activityLight)
-        case "moderate": return SafeEatL10n.text(L10nKey.Profile.Edit.activityModerate)
-        case "heavy": return SafeEatL10n.text(L10nKey.Profile.Edit.activityHeavy)
-        case "athlete": return SafeEatL10n.text(L10nKey.Profile.Edit.activityAthlete)
-        default: return SafeEatL10n.text(L10nKey.Common.notSet)
+        case "sedentary": return SafeMealL10n.text(L10nKey.Profile.Edit.activitySedentary)
+        case "light": return SafeMealL10n.text(L10nKey.Profile.Edit.activityLight)
+        case "moderate": return SafeMealL10n.text(L10nKey.Profile.Edit.activityModerate)
+        case "heavy": return SafeMealL10n.text(L10nKey.Profile.Edit.activityHeavy)
+        case "athlete": return SafeMealL10n.text(L10nKey.Profile.Edit.activityAthlete)
+        default: return SafeMealL10n.text(L10nKey.Common.notSet)
         }
     }
 
@@ -429,7 +429,7 @@ struct EditProfileView: View {
 
     private func updateBmiCache() {
         guard let height = heightCmInternal, let weight = weightKgInternal, height > 0, weight > 0 else {
-            bmiCache = SafeEatL10n.text(L10nKey.Common.notSet)
+            bmiCache = SafeMealL10n.text(L10nKey.Common.notSet)
             return
         }
         let bmi = weight / pow(height / 100, 2)
@@ -445,7 +445,7 @@ struct EditProfileView: View {
             !gender.isEmpty,
             !activityLevel.isEmpty
         else {
-            tdeeCache = SafeEatL10n.text(L10nKey.Common.notSet)
+            tdeeCache = SafeMealL10n.text(L10nKey.Common.notSet)
             return
         }
 
@@ -463,24 +463,24 @@ struct EditProfileView: View {
         case "moderate": factor = 1.55
         case "heavy": factor = 1.725
         case "athlete": factor = 1.9
-        default: tdeeCache = SafeEatL10n.text(L10nKey.Common.notSet); return
+        default: tdeeCache = SafeMealL10n.text(L10nKey.Common.notSet); return
         }
 
         tdeeCache = String(format: "%.0f", bmr * factor)
     }
 
-    // MARK: - 问号弹窗（SafeEatSettingsSheetContainer）
+    // MARK: - 问号弹窗（SafeMealSettingsSheetContainer）
 
     private var isZh: Bool {
-        SafeEatL10n.isZh
+        SafeMealL10n.isZh
     }
 
     private var bmiInfoSheet: some View {
-        SafeEatSettingsSheetContainer(
+        SafeMealSettingsSheetContainer(
             title: "BMI",
             subtitle: isZh ? "身体质量指数" : "Body Mass Index",
             contentHeight: nil,
-            primaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Common.ok)) { showBmiInfo = false }
+            primaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Common.ok)) { showBmiInfo = false }
         ) {
             ScrollView(showsIndicators: false) {
                 if isZh {
@@ -493,11 +493,11 @@ struct EditProfileView: View {
     }
 
     private var tdeeInfoSheet: some View {
-        SafeEatSettingsSheetContainer(
+        SafeMealSettingsSheetContainer(
             title: "TDEE",
             subtitle: isZh ? "每日总能量消耗" : "Total Daily Energy Expenditure",
             contentHeight: nil,
-            primaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Common.ok)) { showTdeeInfo = false }
+            primaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Common.ok)) { showTdeeInfo = false }
         ) {
             ScrollView(showsIndicators: false) {
                 if isZh {
@@ -609,32 +609,32 @@ struct EditProfileView: View {
 
     private func infoHeading(_ text: String) -> some View {
         Text(text)
-            .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
-            .foregroundStyle(SafeEatTheme.textPrimary)
+            .font(SafeMealFont.custom(15, relativeTo: .body, weight: .bold))
+            .foregroundStyle(SafeMealTheme.textPrimary)
             .padding(.top, 4)
     }
 
     private func infoBody(_ text: String) -> some View {
         Text(text)
-            .font(SafeEatFont.custom(14, relativeTo: .body))
-            .foregroundStyle(SafeEatTheme.textSecondary)
+            .font(SafeMealFont.custom(14, relativeTo: .body))
+            .foregroundStyle(SafeMealTheme.textSecondary)
             .fixedSize(horizontal: false, vertical: true)
     }
 
     private func formulaBlock(_ text: String) -> some View {
         Text(text)
-            .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .semibold))
-            .foregroundStyle(SafeEatTheme.primaryDeep)
+            .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .semibold))
+            .foregroundStyle(SafeMealTheme.primaryDeep)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(SafeEatTheme.primarySoft.opacity(0.5))
+                    .fill(SafeMealTheme.primarySoft.opacity(0.5))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(SafeEatTheme.primary.opacity(0.15), lineWidth: 1)
+                    .stroke(SafeMealTheme.primary.opacity(0.15), lineWidth: 1)
             )
     }
 
@@ -644,12 +644,12 @@ struct EditProfileView: View {
             HStack(spacing: 0) {
                 ForEach(Array(headers.enumerated()), id: \.offset) { _, header in
                     Text(header)
-                        .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 8)
-                        .background(SafeEatTheme.primarySoft.opacity(0.3))
+                        .background(SafeMealTheme.primarySoft.opacity(0.3))
                 }
             }
             .clipShape(UnevenRoundedRectangle(topLeadingRadius: 10, topTrailingRadius: 10))
@@ -657,25 +657,25 @@ struct EditProfileView: View {
             ForEach(Array(rows.enumerated()), id: \.offset) { rowIndex, row in
                 HStack(spacing: 0) {
                     Text(row.0)
-                        .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .semibold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 8)
 
                     Text(row.1)
-                        .font(SafeEatFont.custom(13, relativeTo: .caption))
-                        .foregroundStyle(SafeEatTheme.primaryDeep)
+                        .font(SafeMealFont.custom(13, relativeTo: .caption))
+                        .foregroundStyle(SafeMealTheme.primaryDeep)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 8)
                 }
-                .background(rowIndex % 2 == 0 ? Color.clear : SafeEatTheme.primarySoft.opacity(0.15))
+                .background(rowIndex % 2 == 0 ? Color.clear : SafeMealTheme.primarySoft.opacity(0.15))
             }
         }
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(SafeEatTheme.primary.opacity(0.12), lineWidth: 1)
+                .stroke(SafeMealTheme.primary.opacity(0.12), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
@@ -686,12 +686,12 @@ struct EditProfileView: View {
             HStack(spacing: 0) {
                 ForEach(Array(headers.enumerated()), id: \.offset) { _, header in
                     Text(header)
-                        .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 8)
-                        .background(SafeEatTheme.primarySoft.opacity(0.3))
+                        .background(SafeMealTheme.primarySoft.opacity(0.3))
                 }
             }
             .clipShape(UnevenRoundedRectangle(topLeadingRadius: 10, topTrailingRadius: 10))
@@ -699,31 +699,31 @@ struct EditProfileView: View {
             ForEach(Array(rows.enumerated()), id: \.offset) { rowIndex, row in
                 HStack(spacing: 0) {
                     Text(row.0)
-                        .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .semibold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 8)
 
                     Text(row.1)
-                        .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.primaryDeep)
+                        .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.primaryDeep)
                         .frame(width: 48, alignment: .center)
                         .padding(.vertical, 8)
 
                     Text(row.2)
-                        .font(SafeEatFont.custom(12, relativeTo: .caption))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.custom(12, relativeTo: .caption))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 8)
                 }
-                .background(rowIndex % 2 == 0 ? Color.clear : SafeEatTheme.primarySoft.opacity(0.15))
+                .background(rowIndex % 2 == 0 ? Color.clear : SafeMealTheme.primarySoft.opacity(0.15))
             }
         }
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(SafeEatTheme.primary.opacity(0.12), lineWidth: 1)
+                .stroke(SafeMealTheme.primary.opacity(0.12), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }

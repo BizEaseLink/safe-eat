@@ -12,12 +12,12 @@ struct OrderHistoryView: View {
 
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.Order.title),
-            subtitle: SafeEatL10n.text(L10nKey.Order.subtitle)
+            title: SafeMealL10n.text(L10nKey.Order.title),
+            subtitle: SafeMealL10n.text(L10nKey.Order.subtitle)
         ) {
             if isLoading {
                 ProgressView()
-                    .tint(SafeEatTheme.primary)
+                    .tint(SafeMealTheme.primary)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 24)
             } else if let error = loadError {
@@ -52,15 +52,15 @@ struct OrderHistoryView: View {
         VStack(spacing: 16) {
             Image(systemName: "doc.text.magnifyingglass")
                 .font(.system(size: 48))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .foregroundStyle(SafeMealTheme.textSecondary)
 
-            Text(SafeEatL10n.text(L10nKey.Order.emptyTitle))
-                .font(SafeEatFont.custom(20, relativeTo: .headline, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+            Text(SafeMealL10n.text(L10nKey.Order.emptyTitle))
+                .font(SafeMealFont.custom(20, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
 
-            Text(SafeEatL10n.text(L10nKey.Order.emptyMessage))
-                .font(SafeEatFont.custom(15, relativeTo: .body))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+            Text(SafeMealL10n.text(L10nKey.Order.emptyMessage))
+                .font(SafeMealFont.custom(15, relativeTo: .body))
+                .foregroundStyle(SafeMealTheme.textSecondary)
                 .multilineTextAlignment(.center)
         }
         .padding(.top, 48)
@@ -71,11 +71,11 @@ struct OrderHistoryView: View {
         VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 36))
-                .foregroundStyle(SafeEatTheme.warning)
+                .foregroundStyle(SafeMealTheme.warning)
 
             Text(message)
-                .font(SafeEatFont.custom(15, relativeTo: .body))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .font(SafeMealFont.custom(15, relativeTo: .body))
+                .foregroundStyle(SafeMealTheme.textSecondary)
                 .multilineTextAlignment(.center)
 
             Button {
@@ -83,14 +83,14 @@ struct OrderHistoryView: View {
                 orders = []
                 Task { await loadOrders(isInitial: true) }
             } label: {
-                Text(SafeEatL10n.text(L10nKey.Common.ok))
-                    .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.primary)
+                Text(SafeMealL10n.text(L10nKey.Common.ok))
+                    .font(SafeMealFont.custom(15, relativeTo: .body, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.primary)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
                     .background(
                         Capsule()
-                            .fill(SafeEatTheme.primarySoft)
+                            .fill(SafeMealTheme.primarySoft)
                     )
             }
             .buttonStyle(.plain)
@@ -168,13 +168,13 @@ private struct OrderRow: View {
     }
 
     var body: some View {
-        SafeEatSurfaceCard(cornerRadius: 26) {
+        SafeMealSurfaceCard(cornerRadius: 26) {
             VStack(alignment: .leading, spacing: 14) {
                 // 顶部：订单号 + 状态 badge
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
                     Text(order.orderNo)
-                        .font(SafeEatFont.custom(15, relativeTo: .body, weight: .semibold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .font(SafeMealFont.custom(15, relativeTo: .body, weight: .semibold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
                         .lineLimit(1)
                         .truncationMode(.middle)
 
@@ -185,30 +185,30 @@ private struct OrderRow: View {
 
                 // 付款时间（用户感知的购买时间）
                 Text(formatDate(displayDate))
-                    .font(SafeEatFont.custom(12, relativeTo: .caption))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.custom(12, relativeTo: .caption))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
 
                 // 细分割线
                 Rectangle()
-                    .fill(SafeEatTheme.line)
+                    .fill(SafeMealTheme.line)
                     .frame(height: 0.5)
 
                 // 底部：tier + 渠道 chip 组（左） / 金额（右，视觉焦点）
                 HStack(alignment: .center, spacing: 8) {
                     infoChip(
                         text: PlanTierMapper.title(order.currentPlanTier),
-                        color: SafeEatTheme.primary
+                        color: SafeMealTheme.primary
                     )
                     infoChip(
                         text: PaymentChannelMapper.title(order.channel),
-                        color: SafeEatTheme.textSecondary
+                        color: SafeMealTheme.textSecondary
                     )
 
                     Spacer()
 
-                    Text(SafeEatTheme.priceText(order.totalAmountFen))
-                        .font(SafeEatFont.custom(22, relativeTo: .title3, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    Text(SafeMealTheme.priceText(order.totalAmountFen))
+                        .font(SafeMealFont.custom(22, relativeTo: .title3, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
                         .monospacedDigit()
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -220,7 +220,7 @@ private struct OrderRow: View {
     /// 紧凑型信息 chip：低饱和背景 + 描边 + 12pt 文本
     private func infoChip(text: String, color: Color) -> some View {
         Text(text)
-            .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .semibold))
+            .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .semibold))
             .foregroundStyle(color)
             .lineLimit(1)
             .padding(.horizontal, 10)
@@ -239,7 +239,7 @@ private struct OrderRow: View {
         let statusText = OrderEventMapper.title(order.lastEvent)
         let color = statusColor
         return Text(statusText)
-            .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
+            .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
             .foregroundStyle(color)
             .lineLimit(1)
             .padding(.horizontal, 10)
@@ -256,17 +256,17 @@ private struct OrderRow: View {
     /// - textSecondary(=Admin secondary)：其余(grace_period/change_cycle/upgrade_scheduled 等)
     private var statusColor: Color {
         guard let event = order.lastEvent else {
-            return SafeEatTheme.textSecondary
+            return SafeMealTheme.textSecondary
         }
         switch event {
         case "initial_purchase", "renewal", "upgrade", "renewal_reenabled":
-            return SafeEatTheme.success
+            return SafeMealTheme.success
         case "renewal_failed", "expired", "refund", "revoke",
              "family_sharing_revoke", "cancel_renewal", "downgrade_scheduled":
-            return SafeEatTheme.danger
+            return SafeMealTheme.danger
         default:
             // grace_period / change_cycle / upgrade_scheduled / 未知事件 → 灰
-            return SafeEatTheme.textSecondary
+            return SafeMealTheme.textSecondary
         }
     }
 

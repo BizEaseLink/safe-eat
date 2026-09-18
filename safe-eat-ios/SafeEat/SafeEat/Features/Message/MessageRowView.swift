@@ -18,15 +18,15 @@ struct MessageRowView: View {
     private var cardStroke: Color {
         colorScheme == .dark
             ? Color.white.opacity(message.isRead ? 0.05 : 0.08)
-            : SafeEatTheme.line
+            : SafeMealTheme.line
     }
 
     private var titleColor: Color {
-        message.isRead ? SafeEatTheme.textSecondary : SafeEatTheme.textPrimary
+        message.isRead ? SafeMealTheme.textSecondary : SafeMealTheme.textPrimary
     }
 
     private var timeColor: Color {
-        SafeEatTheme.textSecondary.opacity(message.isRead ? 0.4 : 0.6)
+        SafeMealTheme.textSecondary.opacity(message.isRead ? 0.4 : 0.6)
     }
 
     // MARK: - Body
@@ -37,7 +37,7 @@ struct MessageRowView: View {
                 // 左侧：未读红点
                 VStack {
                     Circle()
-                        .fill(message.isRead ? Color.clear : SafeEatTheme.danger)
+                        .fill(message.isRead ? Color.clear : SafeMealTheme.danger)
                         .frame(width: 8, height: 8)
                     Spacer()
                 }
@@ -48,15 +48,15 @@ struct MessageRowView: View {
                     typeTag
 
                     // 标题
-                    Text(SafeEatL10n.isZh ? (message.title ?? "") : (message.titleEn ?? message.title ?? ""))
-                        .font(SafeEatFont.custom(16, relativeTo: .body, weight: message.isRead ? .regular : .semibold))
+                    Text(SafeMealL10n.isZh ? (message.title ?? "") : (message.titleEn ?? message.title ?? ""))
+                        .font(SafeMealFont.custom(16, relativeTo: .body, weight: message.isRead ? .regular : .semibold))
                         .foregroundStyle(titleColor)
                         .lineLimit(1)
 
                     // 时间
                     if let createdAt = message.createdAt {
                         Text(createdAt.notificationTimeText)
-                            .font(SafeEatFont.custom(12, relativeTo: .caption2))
+                            .font(SafeMealFont.custom(12, relativeTo: .caption2))
                             .foregroundStyle(timeColor)
                     }
                 }
@@ -66,7 +66,7 @@ struct MessageRowView: View {
                 // 右箭头
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.textSecondary.opacity(0.3))
+                    .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.3))
             }
             .padding(16)
             .background(
@@ -84,23 +84,23 @@ struct MessageRowView: View {
 
     private var typeTag: some View {
         let colors = message.typeColor
-        let label = SafeEatL10n.isZh ? message.typeLabel : message.enTypeLabel
+        let label = SafeMealL10n.isZh ? message.typeLabel : message.enTypeLabel
 
         if message.isRead {
             // 已读：灰色标签
             return AnyView(
                 Text(label)
-                    .font(SafeEatFont.custom(12, relativeTo: .caption2))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.custom(12, relativeTo: .caption2))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 3)
-                    .background(Capsule().fill(SafeEatTheme.line.opacity(colorScheme == .dark ? 0.12 : 0.6)))
+                    .background(Capsule().fill(SafeMealTheme.line.opacity(colorScheme == .dark ? 0.12 : 0.6)))
             )
         } else {
             // 未读：彩色标签
             return AnyView(
                 Text(label)
-                    .font(SafeEatFont.custom(12, relativeTo: .caption2, weight: .bold))
+                    .font(SafeMealFont.custom(12, relativeTo: .caption2, weight: .bold))
                     .foregroundStyle(Color(hex: colors.fg))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 3)
@@ -136,13 +136,13 @@ extension String {
         }
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: now),
            calendar.isDate(date, inSameDayAs: yesterday) {
-            return SafeEatL10n.isZh ? "昨天" : "Yesterday"
+            return SafeMealL10n.isZh ? "昨天" : "Yesterday"
         }
         if let daysDiff = calendar.dateComponents([.day], from: date, to: now).day, daysDiff < 7 {
             formatter.dateFormat = "EEEE"
             return formatter.string(from: date)
         }
-        formatter.dateFormat = SafeEatL10n.isZh ? "M月d日" : "MMM d"
+        formatter.dateFormat = SafeMealL10n.isZh ? "M月d日" : "MMM d"
         return formatter.string(from: date)
     }
 }

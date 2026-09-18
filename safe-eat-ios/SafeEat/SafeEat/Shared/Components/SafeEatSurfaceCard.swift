@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct SafeEatSurfaceCard<Content: View>: View {
+struct SafeMealSurfaceCard<Content: View>: View {
     @Environment(\.colorScheme) private var colorScheme
 
     private let cornerRadius: CGFloat
@@ -59,10 +59,10 @@ struct SafeEatSurfaceCard<Content: View>: View {
     }
 
     private var surfaceStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line
     }
 
     private var surfaceShadow: Color {
-        SafeEatTheme.primaryDeep.opacity(0.10)
+        SafeMealTheme.primaryDeep.opacity(0.10)
     }
 }

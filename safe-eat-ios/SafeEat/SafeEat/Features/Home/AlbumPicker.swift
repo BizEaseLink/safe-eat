@@ -7,7 +7,7 @@ import UIKit
 /// tint 控制图标和文案颜色，默认 textSecondary；深色背景（如拍摄页）传 .white。
 struct AlbumPicker: View {
     let onPick: (UIImage) -> Void
-    var tint: Color = SafeEatTheme.textSecondary
+    var tint: Color = SafeMealTheme.textSecondary
 
     @State private var selectedItem: PhotosPickerItem?
 
@@ -21,7 +21,7 @@ struct AlbumPicker: View {
                 Image(systemName: "photo.on.rectangle")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(tint)
-                Text(SafeEatL10n.text(L10nKey.Tab.album))
+                Text(SafeMealL10n.text(L10nKey.Tab.album))
                     .font(.system(size: 10, weight: .medium))
                     .foregroundColor(tint)
             }

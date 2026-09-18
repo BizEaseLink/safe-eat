@@ -20,18 +20,18 @@ struct QuotaExceededSheet: View {
     }
 
     var body: some View {
-        SafeEatSettingsSheetContainer(
+        SafeMealSettingsSheetContainer(
             title: isFreeUser
-                ? SafeEatL10n.text(L10nKey.Home.quotaExceededDailyTitle)
-                : SafeEatL10n.text(L10nKey.Home.quotaExceededMonthlyTitle),
+                ? SafeMealL10n.text(L10nKey.Home.quotaExceededDailyTitle)
+                : SafeMealL10n.text(L10nKey.Home.quotaExceededMonthlyTitle),
             subtitle: isFreeUser
-                ? SafeEatL10n.format(L10nKey.Home.quotaExceededDailyHintFormat, snapshot.totalQuota)
-                : SafeEatL10n.text(L10nKey.Home.quotaExceededUpgradeHint),
+                ? SafeMealL10n.format(L10nKey.Home.quotaExceededDailyHintFormat, snapshot.totalQuota)
+                : SafeMealL10n.text(L10nKey.Home.quotaExceededUpgradeHint),
             contentHeight: canWatchAd ? 200 : 150,
             primaryButton: SheetButton(title: "升级会员") {
                 onUpgrade?()
             },
-            secondaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Home.quotaExceededLater)) {
+            secondaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Home.quotaExceededLater)) {
                 onDismiss()
             }
         ) {
@@ -49,12 +49,12 @@ struct QuotaExceededSheet: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(isFreeUser ? "今日次数已用完" : "本月次数已用完")
-                            .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
+                            .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
+                            .foregroundStyle(SafeMealTheme.textPrimary)
 
                         Text(quotaHint)
-                            .font(SafeEatFont.textStyle(.footnote))
-                            .foregroundStyle(SafeEatTheme.textSecondary)
+                            .font(SafeMealFont.textStyle(.footnote))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
                     }
                 }
             }
@@ -66,29 +66,29 @@ struct QuotaExceededSheet: View {
                         HStack(spacing: 14) {
                             ZStack {
                                 Circle()
-                                    .fill(SafeEatTheme.primary.opacity(0.12))
+                                    .fill(SafeMealTheme.primary.opacity(0.12))
                                     .frame(width: 46, height: 46)
 
                                 Image(systemName: "play.circle.fill")
                                     .font(.system(size: 18, weight: .semibold))
-                                    .foregroundStyle(SafeEatTheme.primary)
+                                    .foregroundStyle(SafeMealTheme.primary)
                             }
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("看广告获取次数")
-                                    .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
-                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                                    .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
+                                    .foregroundStyle(SafeMealTheme.textPrimary)
 
-                                Text(SafeEatL10n.text(L10nKey.Home.quotaExceededWatchAdHint))
-                                    .font(SafeEatFont.textStyle(.footnote))
-                                    .foregroundStyle(SafeEatTheme.textSecondary)
+                                Text(SafeMealL10n.text(L10nKey.Home.quotaExceededWatchAdHint))
+                                    .font(SafeMealFont.textStyle(.footnote))
+                                    .foregroundStyle(SafeMealTheme.textSecondary)
                             }
 
                             Spacer()
 
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                     }
                 }
@@ -99,11 +99,11 @@ struct QuotaExceededSheet: View {
 
     private var quotaHint: String {
         if isFreeUser {
-            return SafeEatL10n.format(L10nKey.Home.quotaExceededDailyHintFormat, snapshot.totalQuota)
+            return SafeMealL10n.format(L10nKey.Home.quotaExceededDailyHintFormat, snapshot.totalQuota)
         }
         if let periodEnd = snapshot.periodEnd {
-            return SafeEatL10n.format(L10nKey.Home.quotaExceededMonthlyHintFormat, periodEnd)
+            return SafeMealL10n.format(L10nKey.Home.quotaExceededMonthlyHintFormat, periodEnd)
         }
-        return SafeEatL10n.text(L10nKey.Home.quotaExceededUpgradeHint)
+        return SafeMealL10n.text(L10nKey.Home.quotaExceededUpgradeHint)
     }
 }

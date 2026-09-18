@@ -363,37 +363,37 @@ struct OrderContainerItem: Codable {
 enum OrderEventMapper {
     static func title(_ event: String?) -> String {
         guard let event = event else {
-            return SafeEatL10n.text(L10nKey.Order.eventUnknown)
+            return SafeMealL10n.text(L10nKey.Order.eventUnknown)
         }
         switch event {
         case "initial_purchase":
-            return SafeEatL10n.text(L10nKey.Order.eventInitialPurchase)
+            return SafeMealL10n.text(L10nKey.Order.eventInitialPurchase)
         case "renewal":
-            return SafeEatL10n.text(L10nKey.Order.eventRenewal)
+            return SafeMealL10n.text(L10nKey.Order.eventRenewal)
         case "renewal_failed":
-            return SafeEatL10n.text(L10nKey.Order.eventRenewalFailed)
+            return SafeMealL10n.text(L10nKey.Order.eventRenewalFailed)
         case "expired":
-            return SafeEatL10n.text(L10nKey.Order.eventExpired)
+            return SafeMealL10n.text(L10nKey.Order.eventExpired)
         case "upgrade":
-            return SafeEatL10n.text(L10nKey.Order.eventUpgrade)
+            return SafeMealL10n.text(L10nKey.Order.eventUpgrade)
         case "upgrade_scheduled":
-            return SafeEatL10n.text(L10nKey.Order.eventUpgradeScheduled)
+            return SafeMealL10n.text(L10nKey.Order.eventUpgradeScheduled)
         case "change_cycle":
-            return SafeEatL10n.text(L10nKey.Order.eventChangeCycle)
+            return SafeMealL10n.text(L10nKey.Order.eventChangeCycle)
         case "downgrade_scheduled":
-            return SafeEatL10n.text(L10nKey.Order.eventDowngradeScheduled)
+            return SafeMealL10n.text(L10nKey.Order.eventDowngradeScheduled)
         case "refund":
-            return SafeEatL10n.text(L10nKey.Order.eventRefund)
+            return SafeMealL10n.text(L10nKey.Order.eventRefund)
         case "revoke":
-            return SafeEatL10n.text(L10nKey.Order.eventRevoke)
+            return SafeMealL10n.text(L10nKey.Order.eventRevoke)
         case "family_sharing_revoke":
-            return SafeEatL10n.text(L10nKey.Order.eventFamilySharingRevoke)
+            return SafeMealL10n.text(L10nKey.Order.eventFamilySharingRevoke)
         case "cancel_renewal":
-            return SafeEatL10n.text(L10nKey.Order.eventCancelRenewal)
+            return SafeMealL10n.text(L10nKey.Order.eventCancelRenewal)
         case "renewal_reenabled":
-            return SafeEatL10n.text(L10nKey.Order.eventRenewalReenabled)
+            return SafeMealL10n.text(L10nKey.Order.eventRenewalReenabled)
         case "grace_period":
-            return SafeEatL10n.text(L10nKey.Order.eventGracePeriod)
+            return SafeMealL10n.text(L10nKey.Order.eventGracePeriod)
         default:
             return event
         }
@@ -407,10 +407,10 @@ extension MembershipPlan {
         }
 
         let cycleTitle = billingCycle == "yearly"
-            ? SafeEatL10n.text(L10nKey.Membership.cycleYearly)
-            : SafeEatL10n.text(L10nKey.Membership.cycleMonthly)
+            ? SafeMealL10n.text(L10nKey.Membership.cycleYearly)
+            : SafeMealL10n.text(L10nKey.Membership.cycleMonthly)
 
-        return SafeEatL10n.format(L10nKey.Membership.planNameFormat, PlanTierMapper.title(tier), cycleTitle)
+        return SafeMealL10n.format(L10nKey.Membership.planNameFormat, PlanTierMapper.title(tier), cycleTitle)
     }
 }
 
@@ -420,7 +420,7 @@ extension UserProfile {
             return displayName
         }
 
-        return SafeEatL10n.text(L10nKey.User.unnamed)
+        return SafeMealL10n.text(L10nKey.User.unnamed)
     }
 
     var avatarRemoteURL: URL? {
@@ -445,26 +445,26 @@ enum PlanTierMapper {
     static func title(_ tier: String?) -> String {
         switch tier {
         case "lite":
-            return SafeEatL10n.text(L10nKey.User.tierLiteTitle)
+            return SafeMealL10n.text(L10nKey.User.tierLiteTitle)
         case "pro":
-            return SafeEatL10n.text(L10nKey.User.tierProTitle)
+            return SafeMealL10n.text(L10nKey.User.tierProTitle)
         case "premium":
-            return SafeEatL10n.text(L10nKey.User.tierPremiumTitle)
+            return SafeMealL10n.text(L10nKey.User.tierPremiumTitle)
         default:
-            return SafeEatL10n.text(L10nKey.User.tierFreeTitle)
+            return SafeMealL10n.text(L10nKey.User.tierFreeTitle)
         }
     }
 
     static func shortTitle(_ tier: String?) -> String {
         switch tier {
         case "lite":
-            return SafeEatL10n.text(L10nKey.User.tierLiteShort)
+            return SafeMealL10n.text(L10nKey.User.tierLiteShort)
         case "pro":
-            return SafeEatL10n.text(L10nKey.User.tierProShort)
+            return SafeMealL10n.text(L10nKey.User.tierProShort)
         case "premium":
-            return SafeEatL10n.text(L10nKey.User.tierPremiumShort)
+            return SafeMealL10n.text(L10nKey.User.tierPremiumShort)
         default:
-            return SafeEatL10n.text(L10nKey.User.tierFreeShort)
+            return SafeMealL10n.text(L10nKey.User.tierFreeShort)
         }
     }
 }
@@ -473,13 +473,13 @@ enum UserGenderMapper {
     static func title(_ gender: String?) -> String {
         switch gender {
         case "male":
-            return SafeEatL10n.text(L10nKey.User.genderMale)
+            return SafeMealL10n.text(L10nKey.User.genderMale)
         case "female":
-            return SafeEatL10n.text(L10nKey.User.genderFemale)
+            return SafeMealL10n.text(L10nKey.User.genderFemale)
         case "other":
-            return SafeEatL10n.text(L10nKey.User.genderOther)
+            return SafeMealL10n.text(L10nKey.User.genderOther)
         default:
-            return SafeEatL10n.text(L10nKey.Common.notSet)
+            return SafeMealL10n.text(L10nKey.Common.notSet)
         }
     }
 }
@@ -495,13 +495,13 @@ enum HealthTagMapper {
     static func title(_ tag: String) -> String {
         switch tag {
         case "high_blood_pressure":
-            return SafeEatL10n.text(L10nKey.User.healthPressure)
+            return SafeMealL10n.text(L10nKey.User.healthPressure)
         case "high_blood_sugar":
-            return SafeEatL10n.text(L10nKey.User.healthSugar)
+            return SafeMealL10n.text(L10nKey.User.healthSugar)
         case "high_blood_lipids":
-            return SafeEatL10n.text(L10nKey.User.healthLipids)
+            return SafeMealL10n.text(L10nKey.User.healthLipids)
         case "general_wellness":
-            return SafeEatL10n.text(L10nKey.User.healthWellness)
+            return SafeMealL10n.text(L10nKey.User.healthWellness)
         default:
             return tag
         }
@@ -519,15 +519,15 @@ enum FitnessGoalMapper {
     static func title(_ goal: String?) -> String {
         switch goal {
         case "fat_loss":
-            return SafeEatL10n.text(L10nKey.User.goalFatLoss)
+            return SafeMealL10n.text(L10nKey.User.goalFatLoss)
         case "muscle_gain":
-            return SafeEatL10n.text(L10nKey.User.goalMuscle)
+            return SafeMealL10n.text(L10nKey.User.goalMuscle)
         case "blood_sugar_control":
-            return SafeEatL10n.text(L10nKey.User.goalSugar)
+            return SafeMealL10n.text(L10nKey.User.goalSugar)
         case "balanced":
-            return SafeEatL10n.text(L10nKey.User.goalBalanced)
+            return SafeMealL10n.text(L10nKey.User.goalBalanced)
         default:
-            return SafeEatL10n.text(L10nKey.Common.notSet)
+            return SafeMealL10n.text(L10nKey.Common.notSet)
         }
     }
 }
@@ -538,11 +538,11 @@ enum PaymentChannelMapper {
     static func title(_ channel: String) -> String {
         switch channel {
         case "alipay":
-            return SafeEatL10n.text(L10nKey.User.paymentAlipay)
+            return SafeMealL10n.text(L10nKey.User.paymentAlipay)
         case "apple_iap":
-            return SafeEatL10n.text(L10nKey.User.paymentAppleIAP)
+            return SafeMealL10n.text(L10nKey.User.paymentAppleIAP)
         default:
-            return SafeEatL10n.text(L10nKey.User.paymentWechat)
+            return SafeMealL10n.text(L10nKey.User.paymentWechat)
         }
     }
 }

@@ -32,8 +32,8 @@ struct ChangePhoneView: View {
 
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.Profile.ChangePhone.title),
-            subtitle: SafeEatL10n.text(L10nKey.Profile.ChangePhone.subtitle)
+            title: SafeMealL10n.text(L10nKey.Profile.ChangePhone.title),
+            subtitle: SafeMealL10n.text(L10nKey.Profile.ChangePhone.subtitle)
         ) {
             if step == .verifyCurrent {
                 verifyCurrentPhoneContent
@@ -43,7 +43,7 @@ struct ChangePhoneView: View {
         } footer: {
             if step == .verifyCurrent {
                 ProfilePrimaryActionButton(
-                    title: SafeEatL10n.text(L10nKey.Profile.ChangePhone.stepVerifyCurrent),
+                    title: SafeMealL10n.text(L10nKey.Profile.ChangePhone.stepVerifyCurrent),
                     isLoading: isLoading,
                     isDisabled: currentCode.count < 4
                 ) {
@@ -51,7 +51,7 @@ struct ChangePhoneView: View {
                 }
             } else {
                 ProfilePrimaryActionButton(
-                    title: SafeEatL10n.text(L10nKey.Profile.ChangePhone.stepInputNew),
+                    title: SafeMealL10n.text(L10nKey.Profile.ChangePhone.stepInputNew),
                     isLoading: isLoading,
                     isDisabled: newCode.count < 4 || newPhone.count < 11
                 ) {
@@ -67,13 +67,13 @@ struct ChangePhoneView: View {
                 nextNewSmsNeedsCaptcha = true
             }
         }
-        .alert(SafeEatL10n.text(L10nKey.Common.notice), isPresented: showErrorMessage) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok), role: .cancel) { errorMessage = nil }
+        .alert(SafeMealL10n.text(L10nKey.Common.notice), isPresented: showErrorMessage) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok), role: .cancel) { errorMessage = nil }
         } message: {
             Text(errorMessage ?? "")
         }
-        .alert(SafeEatL10n.text(L10nKey.Profile.ChangePhone.success), isPresented: $showSuccess) {
-            Button(SafeEatL10n.text(L10nKey.Common.ok)) { dismiss() }
+        .alert(SafeMealL10n.text(L10nKey.Profile.ChangePhone.success), isPresented: $showSuccess) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok)) { dismiss() }
         }
         .onDisappear {
             currentTimer?.invalidate()
@@ -99,10 +99,10 @@ struct ChangePhoneView: View {
                     code: $currentCode,
                     isDisabled: oldSmsSent || currentCountdown > 0,
                     buttonText: oldSmsSent
-                        ? SafeEatL10n.text(L10nKey.Auth.smsSent)
+                        ? SafeMealL10n.text(L10nKey.Auth.smsSent)
                         : (currentCountdown > 0
                            ? "\(currentCountdown)s"
-                           : SafeEatL10n.text(L10nKey.Common.sendCode)),
+                           : SafeMealL10n.text(L10nKey.Common.sendCode)),
                     action: sendCurrentCode
                 )
 
@@ -117,7 +117,7 @@ struct ChangePhoneView: View {
         ProfileSurfaceCard {
             VStack(alignment: .leading, spacing: 16) {
                 ProfileTextField(
-                    title: SafeEatL10n.text(L10nKey.Profile.ChangePhone.newPhoneLabel),
+                    title: SafeMealL10n.text(L10nKey.Profile.ChangePhone.newPhoneLabel),
                     text: $newPhone,
                     keyboardType: .phonePad
                 )
@@ -127,7 +127,7 @@ struct ChangePhoneView: View {
                     isDisabled: newCountdown > 0 || newPhone.count < 11,
                     buttonText: newCountdown > 0
                         ? "\(newCountdown)s"
-                        : SafeEatL10n.text(L10nKey.Profile.ChangePhone.sendNewCode),
+                        : SafeMealL10n.text(L10nKey.Profile.ChangePhone.sendNewCode),
                     action: sendNewCode
                 )
 
@@ -139,8 +139,8 @@ struct ChangePhoneView: View {
     @ViewBuilder
     private var smsHintView: some View {
         if let devCodeHint, !devCodeHint.isEmpty {
-            Text(SafeEatL10n.format(L10nKey.Auth.smsHintFormat, devCodeHint))
-                .font(SafeEatFont.textStyle(.footnote))
+            Text(SafeMealL10n.format(L10nKey.Auth.smsHintFormat, devCodeHint))
+                .font(SafeMealFont.textStyle(.footnote))
                 .foregroundStyle(Color(red: 0.82, green: 0.47, blue: 0.18))
         }
     }

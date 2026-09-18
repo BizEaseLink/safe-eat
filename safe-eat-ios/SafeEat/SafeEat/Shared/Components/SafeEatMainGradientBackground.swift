@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct SafeEatMainGradientBackground: View {
+struct SafeMealMainGradientBackground: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -21,7 +21,7 @@ struct SafeEatMainGradientBackground: View {
 
             RadialGradient(
                 colors: [
-                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.16 : 0.55),
+                    SafeMealTheme.primarySoft.opacity(colorScheme == .dark ? 0.16 : 0.55),
                     Color.clear,
                 ],
                 center: .topLeading,
@@ -31,7 +31,7 @@ struct SafeEatMainGradientBackground: View {
 
             RadialGradient(
                 colors: [
-                    SafeEatTheme.primarySoft.opacity(colorScheme == .dark ? 0.12 : 0.42),
+                    SafeMealTheme.primarySoft.opacity(colorScheme == .dark ? 0.12 : 0.42),
                     Color.clear,
                 ],
                 center: .bottomTrailing,

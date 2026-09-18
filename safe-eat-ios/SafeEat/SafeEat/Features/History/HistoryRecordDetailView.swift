@@ -64,8 +64,8 @@ struct HistoryRecordDetailView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(record.recognizedName)
-                    .font(SafeEatFont.textStyle(.title3))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                    .font(SafeMealFont.textStyle(.title3))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
                 if let level = recommendationLabel {
                     Text(level)
                         .font(.caption.bold())
@@ -88,19 +88,19 @@ struct HistoryRecordDetailView: View {
 
     private var recognitionInfoCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label(SafeEatL10n.text(L10nKey.Result.recognitionInfoLabel), systemImage: "info.circle")
-                .font(SafeEatFont.textStyle(.subheadline).bold())
-                .foregroundStyle(SafeEatTheme.primary)
+            Label(SafeMealL10n.text(L10nKey.Result.recognitionInfoLabel), systemImage: "info.circle")
+                .font(SafeMealFont.textStyle(.subheadline).bold())
+                .foregroundStyle(SafeMealTheme.primary)
 
             if let createdAt = record.createdAt {
                 HStack {
-                    Text(SafeEatL10n.text(L10nKey.History.dateLabel))
-                        .font(SafeEatFont.textStyle(.subheadline))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                    Text(SafeMealL10n.text(L10nKey.History.dateLabel))
+                        .font(SafeMealFont.textStyle(.subheadline))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                     Spacer()
                     Text(createdAt.formatted(date: .abbreviated, time: .shortened))
-                        .font(SafeEatFont.textStyle(.subheadline))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .font(SafeMealFont.textStyle(.subheadline))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
                 }
             }
         }
@@ -113,22 +113,22 @@ struct HistoryRecordDetailView: View {
 
     private func metricImpactsCard(_ impacts: [MetricImpact]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label(SafeEatL10n.text(L10nKey.Result.metricImpactsLabel), systemImage: "chart.bar")
-                .font(SafeEatFont.textStyle(.subheadline).bold())
-                .foregroundStyle(SafeEatTheme.primary)
+            Label(SafeMealL10n.text(L10nKey.Result.metricImpactsLabel), systemImage: "chart.bar")
+                .font(SafeMealFont.textStyle(.subheadline).bold())
+                .foregroundStyle(SafeMealTheme.primary)
 
             ForEach(impacts) { impact in
                 HStack(spacing: 10) {
                     Circle()
                         .fill(impactDirectionColor(impact.impactDirection))
                         .frame(width: 8, height: 8)
-                    Text(SafeEatL10n.isZh ? (impact.label ?? impact.metric) : (impact.labelEn ?? impact.metric))
-                        .font(SafeEatFont.textStyle(.subheadline))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                    Text(SafeMealL10n.isZh ? (impact.label ?? impact.metric) : (impact.labelEn ?? impact.metric))
+                        .font(SafeMealFont.textStyle(.subheadline))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
                     Spacer()
                     if let score = impact.weightedScore {
                         Text(String(format: "%.0f", score))
-                            .font(SafeEatFont.textStyle(.caption).bold())
+                            .font(SafeMealFont.textStyle(.caption).bold())
                             .foregroundStyle(impactDirectionColor(impact.impactDirection))
                     }
                 }
@@ -143,8 +143,8 @@ struct HistoryRecordDetailView: View {
 
     private func riskFactsCard(_ risks: [RiskFact]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label(SafeEatL10n.text(L10nKey.Result.riskFactsLabel), systemImage: "exclamationmark.triangle")
-                .font(SafeEatFont.textStyle(.subheadline).bold())
+            Label(SafeMealL10n.text(L10nKey.Result.riskFactsLabel), systemImage: "exclamationmark.triangle")
+                .font(SafeMealFont.textStyle(.subheadline).bold())
                 .foregroundStyle(.orange)
 
             ForEach(risks) { risk in
@@ -154,12 +154,12 @@ struct HistoryRecordDetailView: View {
                         .foregroundStyle(riskSeverityColor(risk.severity))
                     VStack(alignment: .leading, spacing: 4) {
                         Text(risk.tag)
-                            .font(SafeEatFont.textStyle(.subheadline))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
+                            .font(SafeMealFont.textStyle(.subheadline))
+                            .foregroundStyle(SafeMealTheme.textPrimary)
                         if !risk.description.isEmpty {
                             Text(risk.description)
-                                .font(SafeEatFont.textStyle(.caption))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                                .font(SafeMealFont.textStyle(.caption))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                     }
                 }
@@ -178,19 +178,19 @@ struct HistoryRecordDetailView: View {
             if let summary = record.aiExplanation?.summary, !summary.isEmpty {
                 if canShowSummary {
                     VStack(alignment: .leading, spacing: 10) {
-                        Label(SafeEatL10n.text(L10nKey.Result.aiAdviceSummaryLabel), systemImage: "text.quote")
-                            .font(SafeEatFont.textStyle(.subheadline).bold())
-                            .foregroundStyle(SafeEatTheme.primary)
+                        Label(SafeMealL10n.text(L10nKey.Result.aiAdviceSummaryLabel), systemImage: "text.quote")
+                            .font(SafeMealFont.textStyle(.subheadline).bold())
+                            .foregroundStyle(SafeMealTheme.primary)
                         Text(summary)
-                            .font(SafeEatFont.textStyle(.subheadline))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
+                            .font(SafeMealFont.textStyle(.subheadline))
+                            .foregroundStyle(SafeMealTheme.textPrimary)
                     }
                     .padding(18)
                     .background(sectionCardBackground)
                     .overlay(sectionCardStroke)
                 } else {
                     tierGatedCard(
-                        title: SafeEatL10n.text(L10nKey.Result.aiAdviceSummaryLabel),
+                        title: SafeMealL10n.text(L10nKey.Result.aiAdviceSummaryLabel),
                         icon: "text.quote",
                         targetTier: "Lite"
                     )
@@ -201,19 +201,19 @@ struct HistoryRecordDetailView: View {
             if let detailed = record.aiExplanation?.detailedAdvice, !detailed.isEmpty {
                 if canShowDetailed {
                     VStack(alignment: .leading, spacing: 10) {
-                        Label(SafeEatL10n.text(L10nKey.Result.aiAdviceDetailedLabel), systemImage: "doc.text.fill")
-                            .font(SafeEatFont.textStyle(.subheadline).bold())
-                            .foregroundStyle(SafeEatTheme.primary)
+                        Label(SafeMealL10n.text(L10nKey.Result.aiAdviceDetailedLabel), systemImage: "doc.text.fill")
+                            .font(SafeMealFont.textStyle(.subheadline).bold())
+                            .foregroundStyle(SafeMealTheme.primary)
                         Text(detailed)
-                            .font(SafeEatFont.textStyle(.subheadline))
-                            .foregroundStyle(SafeEatTheme.textPrimary)
+                            .font(SafeMealFont.textStyle(.subheadline))
+                            .foregroundStyle(SafeMealTheme.textPrimary)
                     }
                     .padding(18)
                     .background(sectionCardBackground)
                     .overlay(sectionCardStroke)
                 } else {
                     tierGatedCard(
-                        title: SafeEatL10n.text(L10nKey.Result.aiAdviceDetailedLabel),
+                        title: SafeMealL10n.text(L10nKey.Result.aiAdviceDetailedLabel),
                         icon: "doc.text.fill",
                         targetTier: aiLevel == "free" ? "Lite" : "Pro"
                     )
@@ -224,17 +224,17 @@ struct HistoryRecordDetailView: View {
             if let tips = record.aiExplanation?.healthTips, !tips.isEmpty {
                 if canShowHealthTips {
                     VStack(alignment: .leading, spacing: 10) {
-                        Label(SafeEatL10n.text(L10nKey.Result.aiAdviceHealthTipsLabel), systemImage: "heart.text.square.fill")
-                            .font(SafeEatFont.textStyle(.subheadline).bold())
-                            .foregroundStyle(SafeEatTheme.primary)
+                        Label(SafeMealL10n.text(L10nKey.Result.aiAdviceHealthTipsLabel), systemImage: "heart.text.square.fill")
+                            .font(SafeMealFont.textStyle(.subheadline).bold())
+                            .foregroundStyle(SafeMealTheme.primary)
                         ForEach(Array(tips.enumerated()), id: \.offset) { _, tip in
                             HStack(alignment: .top, spacing: 8) {
                                 Image(systemName: "checkmark.circle.fill")
                                     .font(.system(size: 14))
                                     .foregroundStyle(.green)
                                 Text(tip)
-                                    .font(SafeEatFont.textStyle(.subheadline))
-                                    .foregroundStyle(SafeEatTheme.textPrimary)
+                                    .font(SafeMealFont.textStyle(.subheadline))
+                                    .foregroundStyle(SafeMealTheme.textPrimary)
                             }
                         }
                     }
@@ -243,7 +243,7 @@ struct HistoryRecordDetailView: View {
                     .overlay(sectionCardStroke)
                 } else {
                     tierGatedCard(
-                        title: SafeEatL10n.text(L10nKey.Result.aiAdviceHealthTipsLabel),
+                        title: SafeMealL10n.text(L10nKey.Result.aiAdviceHealthTipsLabel),
                         icon: "heart.text.square.fill",
                         targetTier: "Premium"
                     )
@@ -257,11 +257,11 @@ struct HistoryRecordDetailView: View {
     private func tierGatedCard(title: String, icon: String, targetTier: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label(title, systemImage: icon)
-                .font(SafeEatFont.textStyle(.subheadline).bold())
-                .foregroundStyle(SafeEatTheme.textSecondary)
-            Text(SafeEatL10n.format(L10nKey.Result.upgradeTierHintFormat, targetTier))
-                .font(SafeEatFont.textStyle(.caption))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .font(SafeMealFont.textStyle(.subheadline).bold())
+                .foregroundStyle(SafeMealTheme.textSecondary)
+            Text(SafeMealL10n.format(L10nKey.Result.upgradeTierHintFormat, targetTier))
+                .font(SafeMealFont.textStyle(.caption))
+                .foregroundStyle(SafeMealTheme.textSecondary)
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -271,7 +271,7 @@ struct HistoryRecordDetailView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(SafeEatTheme.line, style: StrokeStyle(lineWidth: 1, dash: [6, 4]))
+                .stroke(SafeMealTheme.line, style: StrokeStyle(lineWidth: 1, dash: [6, 4]))
         )
     }
 
@@ -296,9 +296,9 @@ struct HistoryRecordDetailView: View {
 
     private var recommendationLabel: String? {
         switch record.recommendationLevel {
-        case "recommended": return SafeEatL10n.text(L10nKey.Result.recommendYes)
-        case "moderate": return SafeEatL10n.text(L10nKey.Result.recommendModerate)
-        case "cautious": return SafeEatL10n.text(L10nKey.Result.recommendCautious)
+        case "recommended": return SafeMealL10n.text(L10nKey.Result.recommendYes)
+        case "moderate": return SafeMealL10n.text(L10nKey.Result.recommendModerate)
+        case "cautious": return SafeMealL10n.text(L10nKey.Result.recommendCautious)
         default: return nil
         }
     }
@@ -329,7 +329,7 @@ struct HistoryRecordDetailView: View {
 
     private var sectionCardStroke: some View {
         RoundedRectangle(cornerRadius: 22, style: .continuous)
-            .stroke(SafeEatTheme.line, lineWidth: 1)
+            .stroke(SafeMealTheme.line, lineWidth: 1)
     }
 }
 

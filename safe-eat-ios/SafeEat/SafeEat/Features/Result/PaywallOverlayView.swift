@@ -89,7 +89,7 @@ struct PaywallOverlayView: View {
             VStack(spacing: 10) {
                 Image(systemName: "lock.fill")
                     .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .foregroundStyle(SafeMealTheme.primary)
 
                 Button {
                     onUpgrade()
@@ -97,15 +97,15 @@ struct PaywallOverlayView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.system(size: 14))
-                        Text(SafeEatL10n.text(L10nKey.Result.paywallUpgradeAction))
-                            .font(SafeEatFont.custom(13, relativeTo: .footnote, weight: .semibold))
+                        Text(SafeMealL10n.text(L10nKey.Result.paywallUpgradeAction))
+                            .font(SafeMealFont.custom(13, relativeTo: .footnote, weight: .semibold))
                     }
                     .foregroundStyle(.white)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .background(
                         LinearGradient(
-                            colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                            colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -147,7 +147,7 @@ struct PaywallPartialRevealOverlay: View {
             VStack(spacing: 8) {
                 Image(systemName: "lock.fill")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .foregroundStyle(SafeMealTheme.primary)
 
                 Button {
                     onUpgrade()
@@ -155,15 +155,15 @@ struct PaywallPartialRevealOverlay: View {
                     HStack(spacing: 6) {
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.system(size: 13))
-                        Text(SafeEatL10n.text(L10nKey.Result.paywallUpgradeAction))
-                            .font(SafeEatFont.custom(12, relativeTo: .footnote, weight: .semibold))
+                        Text(SafeMealL10n.text(L10nKey.Result.paywallUpgradeAction))
+                            .font(SafeMealFont.custom(12, relativeTo: .footnote, weight: .semibold))
                     }
                     .foregroundStyle(.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
                     .background(
                         LinearGradient(
-                            colors: [SafeEatTheme.primaryDeep, SafeEatTheme.primary],
+                            colors: [SafeMealTheme.primaryDeep, SafeMealTheme.primary],
                             startPoint: .leading,
                             endPoint: .trailing
                         )

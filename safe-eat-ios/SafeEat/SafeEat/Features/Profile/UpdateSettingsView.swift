@@ -12,20 +12,20 @@ struct UpdateSettingsView: View {
 
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.Profile.Update.title),
-            subtitle: SafeEatL10n.text(L10nKey.Profile.Update.subtitle)
+            title: SafeMealL10n.text(L10nKey.Profile.Update.title),
+            subtitle: SafeMealL10n.text(L10nKey.Profile.Update.subtitle)
         ) {
             ProfileSurfaceCard {
                 ProfileStaticRow(
-                    label: SafeEatL10n.text(L10nKey.Profile.Update.versionLabel),
+                    label: SafeMealL10n.text(L10nKey.Profile.Update.versionLabel),
                     value: version
                 )
 
-                Divider().overlay(SafeEatTheme.line)
+                Divider().overlay(SafeMealTheme.line)
 
-                Text(SafeEatL10n.text(L10nKey.Profile.Update.latest))
-                    .font(SafeEatFont.textStyle(.body))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+                Text(SafeMealL10n.text(L10nKey.Profile.Update.latest))
+                    .font(SafeMealFont.textStyle(.body))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
             }
 
             ProfileSurfaceCard {
@@ -33,11 +33,11 @@ struct UpdateSettingsView: View {
                     HStack(spacing: 12) {
                         Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(SafeEatTheme.primary)
+                            .foregroundStyle(SafeMealTheme.primary)
 
-                        Text(SafeEatL10n.text(L10nKey.Profile.Update.checkAction))
-                            .font(SafeEatFont.textStyle(.body))
-                            .foregroundStyle(SafeEatTheme.primary)
+                        Text(SafeMealL10n.text(L10nKey.Profile.Update.checkAction))
+                            .font(SafeMealFont.textStyle(.body))
+                            .foregroundStyle(SafeMealTheme.primary)
                     }
                 }
                 .buttonStyle(.plain)

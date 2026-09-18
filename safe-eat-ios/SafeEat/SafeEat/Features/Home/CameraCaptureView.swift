@@ -41,7 +41,7 @@ struct CameraCaptureView: View {
                             )
                             .ignoresSafeArea()
                         } else if camera.authorizationStatus == .authorized {
-                            ProgressView(SafeEatL10n.text(L10nKey.Home.cameraStarting))
+                            ProgressView(SafeMealL10n.text(L10nKey.Home.cameraStarting))
                                 .tint(.white)
                                 .foregroundStyle(.white)
                         } else {
@@ -97,8 +97,8 @@ struct CameraCaptureView: View {
 
             Spacer()
 
-            Text(SafeEatL10n.text(L10nKey.Home.cameraTitle))
-                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
+            Text(SafeMealL10n.text(L10nKey.Home.cameraTitle))
+                .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
                 .foregroundStyle(.white)
                 .lineLimit(1)
 
@@ -109,7 +109,7 @@ struct CameraCaptureView: View {
             } label: {
                 Image(systemName: camera.isFlashEnabled ? "bolt.fill" : "bolt.slash.fill")
                     .font(.system(size: 24, weight: .semibold))
-                    .foregroundStyle(camera.isFlashEnabled ? SafeEatTheme.warning : .white)
+                    .foregroundStyle(camera.isFlashEnabled ? SafeMealTheme.warning : .white)
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
             }
@@ -117,7 +117,7 @@ struct CameraCaptureView: View {
             .opacity(camera.isFlashAvailable ? 1 : 0.35)
             .disabled(!camera.isFlashAvailable)
             .accessibilityLabel(
-                SafeEatL10n.text(
+                SafeMealL10n.text(
                     camera.isFlashEnabled ? L10nKey.Home.cameraFlashOn : L10nKey.Home.cameraFlashOff
                 )
             )
@@ -132,7 +132,7 @@ struct CameraCaptureView: View {
         VStack(spacing: 18) {
             if let errorMessage = camera.errorMessage {
                 Text(errorMessage)
-                    .font(SafeEatFont.textStyle(.footnote))
+                    .font(SafeMealFont.textStyle(.footnote))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
@@ -140,8 +140,8 @@ struct CameraCaptureView: View {
                     .clipShape(Capsule())
             }
 
-            Text(SafeEatL10n.text(L10nKey.Home.cameraBottomHint))
-                .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .semibold))
+            Text(SafeMealL10n.text(L10nKey.Home.cameraBottomHint))
+                .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: .semibold))
                 .foregroundStyle(Color(red: 1.0, green: 0.90, blue: 0.86))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
@@ -208,15 +208,15 @@ struct CameraCaptureView: View {
                 .font(.system(size: 42))
                 .foregroundStyle(.white.opacity(0.9))
 
-            Text(SafeEatL10n.text(L10nKey.Home.cameraPermissionTitle))
-                .font(SafeEatFont.textStyle(.headline))
+            Text(SafeMealL10n.text(L10nKey.Home.cameraPermissionTitle))
+                .font(SafeMealFont.textStyle(.headline))
                 .foregroundStyle(.white)
 
-            Text(SafeEatL10n.text(L10nKey.Home.cameraPermissionBody))
-                .font(SafeEatFont.textStyle(.footnote))
+            Text(SafeMealL10n.text(L10nKey.Home.cameraPermissionBody))
+                .font(SafeMealFont.textStyle(.footnote))
                 .foregroundStyle(.white.opacity(0.75))
 
-            Button(SafeEatL10n.text(L10nKey.Home.cameraOpenSettings)) {
+            Button(SafeMealL10n.text(L10nKey.Home.cameraOpenSettings)) {
                 guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
                 openURL(settingsURL)
             }
@@ -244,7 +244,7 @@ final class CameraSessionModel: NSObject, ObservableObject {
         videoDevice?.hasFlash ?? false
     }
 
-    private let sessionQueue = DispatchQueue(label: "bizeasylink.safeeat.camera.session")
+    private let sessionQueue = DispatchQueue(label: "bizeasylink.safemeal.camera.session")
     private let photoOutput = AVCapturePhotoOutput()
     private let guideRectLock = NSLock()
     private var hasConfiguredSession = false
@@ -266,12 +266,12 @@ final class CameraSessionModel: NSObject, ObservableObject {
             if granted {
                 startSession()
             } else {
-                errorMessage = SafeEatL10n.text(L10nKey.Home.cameraPermissionOff)
+                errorMessage = SafeMealL10n.text(L10nKey.Home.cameraPermissionOff)
             }
         case .denied, .restricted:
-            errorMessage = SafeEatL10n.text(L10nKey.Home.cameraPermissionOff)
+            errorMessage = SafeMealL10n.text(L10nKey.Home.cameraPermissionOff)
         @unknown default:
-            errorMessage = SafeEatL10n.text(L10nKey.Home.cameraUnsupported)
+            errorMessage = SafeMealL10n.text(L10nKey.Home.cameraUnsupported)
         }
     }
 
@@ -340,7 +340,7 @@ final class CameraSessionModel: NSObject, ObservableObject {
                 self.session.startRunning()
             } catch {
                 Task { @MainActor in
-                    self.errorMessage = SafeEatL10n.text(L10nKey.Home.cameraStartFailed)
+                    self.errorMessage = SafeMealL10n.text(L10nKey.Home.cameraStartFailed)
                 }
             }
         }
@@ -475,7 +475,7 @@ extension CameraSessionModel: AVCapturePhotoCaptureDelegate {
         if error != nil {
             Task { @MainActor in
                 self.isCapturingPhoto = false
-                self.errorMessage = SafeEatL10n.text(L10nKey.Home.cameraCaptureFailed)
+                self.errorMessage = SafeMealL10n.text(L10nKey.Home.cameraCaptureFailed)
             }
             return
         }
@@ -486,7 +486,7 @@ extension CameraSessionModel: AVCapturePhotoCaptureDelegate {
         else {
             Task { @MainActor in
                 self.isCapturingPhoto = false
-                self.errorMessage = SafeEatL10n.text(L10nKey.Home.cameraCaptureFailed)
+                self.errorMessage = SafeMealL10n.text(L10nKey.Home.cameraCaptureFailed)
             }
             return
         }

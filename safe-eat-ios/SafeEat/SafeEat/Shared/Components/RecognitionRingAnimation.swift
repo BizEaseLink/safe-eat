@@ -3,7 +3,7 @@ import SwiftUI
 /// 识别阶段枚举
 enum RecognitionPhase: Equatable {
     case identifying
-    case selecting(candidates: [IdentifyCandidate], dbMatches: [DbMatch], sessionId: String)
+    case selecting(groups: [MatchGroup], sessionId: String)
     case evaluating
     case nonFood
 
@@ -35,7 +35,7 @@ struct RecognitionRingAnimation: View {
             // 内圈：呼吸效果 + 缓慢逆时针旋转
             Circle()
                 .stroke(
-                    SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.18 : 0.22),
+                    SafeMealTheme.primary.opacity(colorScheme == .dark ? 0.18 : 0.22),
                     lineWidth: 2
                 )
                 .frame(width: ringSize - 20, height: ringSize - 20)
@@ -53,27 +53,27 @@ struct RecognitionRingAnimation: View {
             // 中心 Logo
             LottieLoadingView(size: logoSize)
                 .frame(width: logoSize + 8, height: logoSize + 8)
-                .shadow(color: SafeEatTheme.primaryDeep.opacity(0.3), radius: 8, y: 4)
+                .shadow(color: SafeMealTheme.primaryDeep.opacity(0.3), radius: 8, y: 4)
 
             // 3 个功能标签
             tagLabel(
                 icon: "square.grid.2x2",
-                title: SafeEatL10n.text(L10nKey.RecognitionPhase.tagIdentify),
-                detail: SafeEatL10n.text(L10nKey.RecognitionPhase.tagIdentifyDetail)
+                title: SafeMealL10n.text(L10nKey.RecognitionPhase.tagIdentify),
+                detail: SafeMealL10n.text(L10nKey.RecognitionPhase.tagIdentifyDetail)
             )
             .position(tagPosition(angle: 210))
 
             tagLabel(
                 icon: "chart.pie",
-                title: SafeEatL10n.text(L10nKey.RecognitionPhase.tagNutrition),
-                detail: SafeEatL10n.text(L10nKey.RecognitionPhase.tagNutritionDetail)
+                title: SafeMealL10n.text(L10nKey.RecognitionPhase.tagNutrition),
+                detail: SafeMealL10n.text(L10nKey.RecognitionPhase.tagNutritionDetail)
             )
             .position(tagPosition(angle: 330))
 
             tagLabel(
                 icon: "shield.checkmark",
-                title: SafeEatL10n.text(L10nKey.RecognitionPhase.tagSafety),
-                detail: SafeEatL10n.text(L10nKey.RecognitionPhase.tagSafetyDetail)
+                title: SafeMealL10n.text(L10nKey.RecognitionPhase.tagSafety),
+                detail: SafeMealL10n.text(L10nKey.RecognitionPhase.tagSafetyDetail)
             )
             .position(tagPosition(angle: 90))
         }
@@ -88,7 +88,7 @@ struct RecognitionRingAnimation: View {
             // 底层轨道
             Circle()
                 .stroke(
-                    SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.08 : 0.12),
+                    SafeMealTheme.primary.opacity(colorScheme == .dark ? 0.08 : 0.12),
                     lineWidth: 4
                 )
                 .frame(width: ringSize, height: ringSize)
@@ -99,8 +99,8 @@ struct RecognitionRingAnimation: View {
                 .stroke(
                     LinearGradient(
                         colors: [
-                            SafeEatTheme.primary.opacity(0.1),
-                            SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.6 : 0.8),
+                            SafeMealTheme.primary.opacity(0.1),
+                            SafeMealTheme.primary.opacity(colorScheme == .dark ? 0.6 : 0.8),
                         ],
                         startPoint: .top,
                         endPoint: .bottom
@@ -112,9 +112,9 @@ struct RecognitionRingAnimation: View {
 
             // 发光圆点（弧线末端）
             Circle()
-                .fill(SafeEatTheme.primary)
+                .fill(SafeMealTheme.primary)
                 .frame(width: 8, height: 8)
-                .shadow(color: SafeEatTheme.primary.opacity(0.6), radius: 6)
+                .shadow(color: SafeMealTheme.primary.opacity(0.6), radius: 6)
                 .offset(y: -ringSize / 2)
                 .rotationEffect(.degrees(outerRotation + 252)) // 0.7 * 360 ≈ 252
         }
@@ -141,7 +141,7 @@ struct RecognitionRingAnimation: View {
             path.addLine(to: end)
         }
         .stroke(
-            SafeEatTheme.primary.opacity(colorScheme == .dark ? 0.25 : 0.35),
+            SafeMealTheme.primary.opacity(colorScheme == .dark ? 0.25 : 0.35),
             style: StrokeStyle(lineWidth: 1.5, lineCap: .round)
         )
     }
@@ -152,16 +152,16 @@ struct RecognitionRingAnimation: View {
         HStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(SafeEatTheme.primary)
+                .foregroundStyle(SafeMealTheme.primary)
                 .frame(width: 18)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
-                    .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.primary)
                 Text(detail)
-                    .font(SafeEatFont.custom(10, relativeTo: .caption2))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.custom(10, relativeTo: .caption2))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
         }
         .padding(.horizontal, 8)
@@ -172,7 +172,7 @@ struct RecognitionRingAnimation: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(SafeEatTheme.line.opacity(0.5), lineWidth: 0.5)
+                .stroke(SafeMealTheme.line.opacity(0.5), lineWidth: 0.5)
         )
     }
 

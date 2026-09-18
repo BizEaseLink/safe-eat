@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-enum SafeEatTheme {
+enum SafeMealTheme {
     static let primaryDeep = Color(hex: 0x1D5D43)
     static let primary = Color(hex: 0x2E7D5A)
     static let primarySoft = Color(hex: 0xDFF2E7)

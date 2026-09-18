@@ -49,8 +49,8 @@ struct LottieLoadingContent: View {
             LottieLoadingView(size: size)
             if let text {
                 Text(text)
-                    .font(SafeEatFont.custom(15, relativeTo: .subheadline))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .font(SafeMealFont.custom(15, relativeTo: .subheadline))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
         }
     }

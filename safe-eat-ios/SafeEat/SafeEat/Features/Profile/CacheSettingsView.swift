@@ -7,35 +7,35 @@ struct CacheSettingsView: View {
 
     var body: some View {
         ProfileSecondaryPage(
-            title: SafeEatL10n.text(L10nKey.Profile.Cache.title),
-            subtitle: SafeEatL10n.text(L10nKey.Profile.Cache.subtitle)
+            title: SafeMealL10n.text(L10nKey.Profile.Cache.title),
+            subtitle: SafeMealL10n.text(L10nKey.Profile.Cache.subtitle)
         ) {
-            ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.Cache.currentSection)) {
-                ProfileStaticRow(label: SafeEatL10n.text(L10nKey.Profile.Cache.localRecords), value: "\(store.localCacheCount)")
-                Divider().overlay(SafeEatTheme.line)
-                ProfileStaticRow(label: SafeEatL10n.text(L10nKey.Profile.Cache.cacheSize), value: store.localCacheSizeText)
+            ProfileSectionBlock(title: SafeMealL10n.text(L10nKey.Profile.Cache.currentSection)) {
+                ProfileStaticRow(label: SafeMealL10n.text(L10nKey.Profile.Cache.localRecords), value: "\(store.localCacheCount)")
+                Divider().overlay(SafeMealTheme.line)
+                ProfileStaticRow(label: SafeMealL10n.text(L10nKey.Profile.Cache.cacheSize), value: store.localCacheSizeText)
             }
 
-            ProfileSectionBlock(title: SafeEatL10n.text(L10nKey.Profile.Cache.actionSection)) {
+            ProfileSectionBlock(title: SafeMealL10n.text(L10nKey.Profile.Cache.actionSection)) {
                 Button(role: .destructive) {
                     showClearConfirm = true
                 } label: {
                     HStack {
-                        Text(SafeEatL10n.text(L10nKey.Profile.Cache.clearAction))
-                            .foregroundStyle(SafeEatTheme.danger)
+                        Text(SafeMealL10n.text(L10nKey.Profile.Cache.clearAction))
+                            .foregroundStyle(SafeMealTheme.danger)
                         Spacer()
                     }
                 }
                 .buttonStyle(.plain)
             }
         }
-        .alert(SafeEatL10n.text(L10nKey.Profile.Cache.confirmTitle), isPresented: $showClearConfirm) {
-            Button(SafeEatL10n.text(L10nKey.Common.cancel), role: .cancel) {}
-            Button(SafeEatL10n.text(L10nKey.Common.clear), role: .destructive) {
+        .alert(SafeMealL10n.text(L10nKey.Profile.Cache.confirmTitle), isPresented: $showClearConfirm) {
+            Button(SafeMealL10n.text(L10nKey.Common.cancel), role: .cancel) {}
+            Button(SafeMealL10n.text(L10nKey.Common.clear), role: .destructive) {
                 store.clearLocalCache()
             }
         } message: {
-            Text(SafeEatL10n.text(L10nKey.Profile.Cache.confirmMessage))
+            Text(SafeMealL10n.text(L10nKey.Profile.Cache.confirmMessage))
         }
     }
 }

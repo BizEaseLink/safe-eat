@@ -47,7 +47,7 @@ struct WeekDatePicker: View {
                 date: date,
                 weekdaySymbol: reorderedSymbols[symbolIndex],
                 dayNumber: calendar.isDateInToday(date)
-                    ? SafeEatL10n.text(L10nKey.Menu.todayMarker)
+                    ? SafeMealL10n.text(L10nKey.Menu.todayMarker)
                     : "\(calendar.component(.day, from: date))",
                 isToday: calendar.isDateInToday(date),
                 isSelected: calendar.isDate(date, inSameDayAs: selectedDate),
@@ -85,17 +85,17 @@ struct WeekDatePicker: View {
             // Week range title row with optional "back to today"
             HStack(spacing: 12) {
                 Text(weekRangeString)
-//                    .font(SafeEatFont.textStyle(.headline))
-                    .font(SafeEatFont.custom(20, relativeTo: .title))
-                    .foregroundStyle(SafeEatTheme.textPrimary)
+//                    .font(SafeMealFont.textStyle(.headline))
+                    .font(SafeMealFont.custom(20, relativeTo: .title))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
 
                 Spacer()
 
                 if isNotCurrentWeek {
                     Button(action: backToToday) {
-                        Text(SafeEatL10n.text(L10nKey.Menu.backToToday))
-                            .font(SafeEatFont.custom(13, relativeTo: .caption, weight: .bold))
-                            .foregroundStyle(SafeEatTheme.primary)
+                        Text(SafeMealL10n.text(L10nKey.Menu.backToToday))
+                            .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .bold))
+                            .foregroundStyle(SafeMealTheme.primary)
                     }
                     .buttonStyle(.plain)
                 } else {
@@ -162,17 +162,17 @@ struct WeekDatePicker: View {
     private func dayCell(for item: WeekDayItem, cellWidth: CGFloat) -> some View {
         VStack(spacing: 6) {
             Text(item.weekdaySymbol)
-                .font(SafeEatFont.custom(13, relativeTo: .caption2))
+                .font(SafeMealFont.custom(13, relativeTo: .caption2))
                 .foregroundStyle(
-                    item.isFuture ? SafeEatTheme.textSecondary.opacity(0.4)
-                    : item.isSelected ? SafeEatTheme.primary
-                    : SafeEatTheme.textSecondary
+                    item.isFuture ? SafeMealTheme.textSecondary.opacity(0.4)
+                    : item.isSelected ? SafeMealTheme.primary
+                    : SafeMealTheme.textSecondary
                 )
 
             ZStack {
                 if item.isSelected && !item.isFuture {
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(item.isToday ? SafeEatTheme.primary : SafeEatTheme.primarySoft)
+                        .fill(item.isToday ? SafeMealTheme.primary : SafeMealTheme.primarySoft)
                         .animation(.easeInOut(duration: 0.2), value: item.isSelected)
                 }
 
@@ -180,13 +180,13 @@ struct WeekDatePicker: View {
                     Text(item.dayNumber)
                         .font(
                             item.isSelected && !item.isFuture
-                                ? SafeEatFont.custom(20, relativeTo: .body, weight: .bold)
-                                : SafeEatFont.custom(16, relativeTo: .body, weight: .bold)
+                                ? SafeMealFont.custom(20, relativeTo: .body, weight: .bold)
+                                : SafeMealFont.custom(16, relativeTo: .body, weight: .bold)
                         )
                         .foregroundStyle(
-                            item.isFuture ? SafeEatTheme.textSecondary.opacity(0.4)
-                            : item.isSelected ? (item.isToday ? .white : SafeEatTheme.primary)
-                            : SafeEatTheme.textPrimary
+                            item.isFuture ? SafeMealTheme.textSecondary.opacity(0.4)
+                            : item.isSelected ? (item.isToday ? .white : SafeMealTheme.primary)
+                            : SafeMealTheme.textPrimary
                         )
                         .animation(.easeInOut(duration: 0.2), value: item.isSelected)
                 }
@@ -223,13 +223,13 @@ struct MenuWeekView: View {
     }
 
     private var headerSubtitle: String {
-        SafeEatL10n.format(L10nKey.Menu.headerSubtitleFormat, todayItems.count, weekItems.count)
+        SafeMealL10n.format(L10nKey.Menu.headerSubtitleFormat, todayItems.count, weekItems.count)
     }
 
     // MARK: - Page Background (Light/Dark)
     
     private var homeBackground: some View {
-        SafeEatMainGradientBackground()
+        SafeMealMainGradientBackground()
     }
 
 
@@ -266,9 +266,9 @@ struct MenuWeekView: View {
                     // 未登录时显示空内容模板
                     EmptyStateView(
                         icon: "fork.knife",
-                        title: SafeEatL10n.text(L10nKey.Menu.notLoggedInTitle),
-                        message: SafeEatL10n.text(L10nKey.Menu.notLoggedInMessage),
-                        actionTitle: SafeEatL10n.text(L10nKey.Auth.goLogin),
+                        title: SafeMealL10n.text(L10nKey.Menu.notLoggedInTitle),
+                        message: SafeMealL10n.text(L10nKey.Menu.notLoggedInMessage),
+                        actionTitle: SafeMealL10n.text(L10nKey.Auth.goLogin),
                         action: { store.goToLogin() }
                     )
                 } else {
@@ -325,7 +325,7 @@ struct MenuWeekView: View {
         .background(homeBackground.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showNotificationSheet) {
-            SafeEatReminderSettingsSheet()
+            SafeMealReminderSettingsSheet()
         }
         .sheet(isPresented: $showSearch) {
             HistorySearchView(dateRange: nil, scopeTitle: nil) { item in
@@ -364,28 +364,28 @@ struct MenuWeekView: View {
             HStack(alignment: .top, spacing: 16) {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(selectedDate.menuHeroDateText)
-                        .font(SafeEatFont.custom(30, relativeTo: .title, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .font(SafeMealFont.custom(30, relativeTo: .title, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
 
                     Text(selectedDate.menuHeroWeekdayText)
-                        .font(SafeEatFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.primary)
+                        .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.primary)
 
                     Text(
                         todayItems.isEmpty
-                            ? SafeEatL10n.text(L10nKey.Menu.heroEmptySummary)
-                            : SafeEatL10n.format(L10nKey.Menu.heroFilledSummary, todayItems.count, weekItems.count)
+                            ? SafeMealL10n.text(L10nKey.Menu.heroEmptySummary)
+                            : SafeMealL10n.format(L10nKey.Menu.heroFilledSummary, todayItems.count, weekItems.count)
                     )
-                        .font(SafeEatFont.custom(15, relativeTo: .body))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.custom(15, relativeTo: .body))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
                 Spacer(minLength: 0)
 
                 VStack(alignment: .trailing, spacing: 10) {
-                    heroMetricChip(title: SafeEatL10n.text(L10nKey.Menu.metricToday), value: "\(todayItems.count)")
-                    heroMetricChip(title: SafeEatL10n.text(L10nKey.Menu.metricWeek), value: "\(weekItems.count)")
+                    heroMetricChip(title: SafeMealL10n.text(L10nKey.Menu.metricToday), value: "\(todayItems.count)")
+                    heroMetricChip(title: SafeMealL10n.text(L10nKey.Menu.metricWeek), value: "\(weekItems.count)")
                 }
             }
 
@@ -414,7 +414,7 @@ struct MenuWeekView: View {
 
     private var topBar: some View {
         HStack(spacing: 12) {
-            SafeEatPageHeader(title: SafeEatL10n.text(L10nKey.Menu.title), subtitle: headerSubtitle)
+            SafeMealPageHeader(title: SafeMealL10n.text(L10nKey.Menu.title), subtitle: headerSubtitle)
 
             Spacer()
 
@@ -427,12 +427,12 @@ struct MenuWeekView: View {
     private func heroMetricChip(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(SafeEatFont.custom(12, relativeTo: .caption, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textSecondary)
+                .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textSecondary)
 
             Text(value)
-                .font(SafeEatFont.custom(18, relativeTo: .headline, weight: .bold))
-                .foregroundStyle(SafeEatTheme.textPrimary)
+                .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
         }
         .frame(minWidth: 68, alignment: .leading)
         .padding(.horizontal, 14)
@@ -463,7 +463,7 @@ struct MenuWeekView: View {
     }
 
     private var heroCardStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line
+        colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line
     }
 }
 

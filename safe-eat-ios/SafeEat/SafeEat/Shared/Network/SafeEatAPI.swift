@@ -8,11 +8,11 @@ enum APIError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidResponse:
-            return SafeEatL10n.text(L10nKey.Errors.invalidResponse)
+            return SafeMealL10n.text(L10nKey.Errors.invalidResponse)
         case let .server(_, message, _):
             return message
         case .invalidURL:
-            return SafeEatL10n.text(L10nKey.Errors.invalidURL)
+            return SafeMealL10n.text(L10nKey.Errors.invalidURL)
         }
     }
 
@@ -39,13 +39,13 @@ struct PaginatedResult<T> {
     var hasMore: Bool { items.count < total }
 }
 
-final class SafeEatAPI {
+final class SafeMealAPI {
     private let baseURL: URL
     private let decoder: JSONDecoder
 
     init(baseURL: URL = AppConfig.apiBaseURL) {
         self.baseURL = baseURL
-        self.decoder = SafeEatAPI.makeDecoder()
+        self.decoder = SafeMealAPI.makeDecoder()
     }
 
     func sendSMS(phone: String, scene: String? = nil, templateCode: String? = nil) async throws -> SendSmsResponse {
@@ -447,7 +447,7 @@ final class SafeEatAPI {
 
         let result = try await sendPaginated(request, as: RecognitionRecord.self)
         guard let first = result.items.first else {
-            throw APIError.server(status: 200, message: SafeEatL10n.text(L10nKey.Errors.invalidResponse), code: nil)
+            throw APIError.server(status: 200, message: SafeMealL10n.text(L10nKey.Errors.invalidResponse), code: nil)
         }
         return first
     }
@@ -497,6 +497,27 @@ final class SafeEatAPI {
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         // getRecognition 返回 data 为单个对象（不是数组），用 send 直接解码
         return try await send(request, as: RecognitionRecord.self)
+    }
+
+
+    /// 反馈营养核对器的可选项（过敏原/饮食标签，来自后台规则表，前后端一致）
+    struct FeedbackMetaItem: Codable {
+        let key: String
+        let en: String
+        let zh: String
+    }
+    struct FeedbackMeta: Codable {
+        let allergens: [FeedbackMetaItem]
+        let dietaryTags: [FeedbackMetaItem]
+    }
+
+    func getFeedbackMeta(accessToken: String) async throws -> FeedbackMeta {
+        var request = try buildRequest(
+            path: "/v1/apps/\(AppConfig.appCode)/feedback-meta",
+            method: "GET"
+        )
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return try await send(request, as: FeedbackMeta.self)
     }
 
     func getPendingFeedbacks(accessToken: String) async throws -> [PendingFeedbackItem] {
@@ -615,6 +636,7 @@ final class SafeEatAPI {
         proposedName: String,
         comment: String,
         feedbackType: FeedbackType? = nil,
+        proposedChanges: String? = nil,
         evidenceImage: (data: Data, fileName: String)? = nil
     ) async throws -> [RecognitionRecord] {
         // 后端路由: POST /v1/apps/:appCode/recognitions/:recognitionId/feedback
@@ -636,6 +658,11 @@ final class SafeEatAPI {
             textFields["feedbackType"] = ft.rawValue
         }
 
+        // 结构化修改内容（JSON 字符串）：后端存 recognition_feedbacks.proposed_changes
+        if let pc = proposedChanges {
+            textFields["proposedChanges"] = pc
+        }
+
         if let image = evidenceImage {
             request.httpBody = MultipartFormDataBuilder.build(
                 boundary: boundary,
@@ -653,7 +680,7 @@ final class SafeEatAPI {
         }
 
         #if DEBUG
-        print("[SafeEatAPI] submitFeedback fields: \(textFields), hasImage: \(evidenceImage != nil)")
+        print("[SafeMealAPI] submitFeedback fields: \(textFields), hasImage: \(evidenceImage != nil)")
         #endif
 
         return try await send(request, as: [RecognitionRecord].self)
@@ -663,7 +690,7 @@ final class SafeEatAPI {
     private func sendVoid(_ request: URLRequest) async throws {
         #if DEBUG
         if let url = request.url?.absoluteString {
-            print("[SafeEatAPI] \(request.httpMethod ?? "REQUEST") \(url)")
+            print("[SafeMealAPI] \(request.httpMethod ?? "REQUEST") \(url)")
         }
         #endif
 
@@ -677,7 +704,7 @@ final class SafeEatAPI {
         {
             if status == 1 { return }
             let errorMessage = json["message"] as? String
-                ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
+                ?? SafeMealL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
             let errorCode = json["code"] as? String
             throw APIError.server(
                 status: httpResponse.statusCode,
@@ -704,7 +731,7 @@ final class SafeEatAPI {
     private func send<T: Decodable>(_ request: URLRequest, as type: T.Type) async throws -> T {
         #if DEBUG
         if let url = request.url?.absoluteString {
-            print("[SafeEatAPI] \(request.httpMethod ?? "REQUEST") \(url)")
+            print("[SafeMealAPI] \(request.httpMethod ?? "REQUEST") \(url)")
         }
         #endif
 
@@ -714,9 +741,9 @@ final class SafeEatAPI {
         }
 
         #if DEBUG
-        print("[SafeEatAPI] status=\(httpResponse.statusCode)")
+        print("[SafeMealAPI] status=\(httpResponse.statusCode)")
         if !(200..<300).contains(httpResponse.statusCode), let responseStr = String(data: data, encoding: .utf8) {
-            print("[SafeEatAPI] error response body: \(responseStr)")
+            print("[SafeMealAPI] error response body: \(responseStr)")
         }
         #endif
 
@@ -728,7 +755,7 @@ final class SafeEatAPI {
                 guard let responseData = json["data"] else {
                     throw APIError.server(
                         status: httpResponse.statusCode,
-                        message: SafeEatL10n.text(L10nKey.Errors.invalidResponse),
+                        message: SafeMealL10n.text(L10nKey.Errors.invalidResponse),
                         code: nil)
                 }
                 let dataJSON = try JSONSerialization.data(withJSONObject: responseData)
@@ -736,19 +763,19 @@ final class SafeEatAPI {
                     return try decoder.decode(type, from: dataJSON)
                 } catch {
                     #if DEBUG
-                    print("[SafeEatAPI] Decode failed for type \(type): \(error)")
+                    print("[SafeMealAPI] Decode failed for type \(type): \(error)")
                     if let dataStr = String(data: dataJSON, encoding: .utf8) {
-                        print("[SafeEatAPI] Data JSON (first 500 chars): \(String(dataStr.prefix(500)))")
+                        print("[SafeMealAPI] Data JSON (first 500 chars): \(String(dataStr.prefix(500)))")
                     }
                     #endif
                     throw APIError.server(
                         status: httpResponse.statusCode,
-                        message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription),
+                        message: SafeMealL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription),
                         code: nil)
                 }
             } else {
                 let errorMessage = json["message"] as? String
-                    ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
+                    ?? SafeMealL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
                 let errorCode = json["code"] as? String
                 throw APIError.server(
                     status: httpResponse.statusCode,
@@ -774,7 +801,7 @@ final class SafeEatAPI {
         } catch {
             throw APIError.server(
                 status: httpResponse.statusCode,
-                message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription),
+                message: SafeMealL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription),
                         code: nil)
         }
     }
@@ -786,7 +813,7 @@ final class SafeEatAPI {
         guard let first = array.first else {
             throw APIError.server(
                 status: 200,
-                message: SafeEatL10n.text(L10nKey.Errors.invalidResponse),
+                message: SafeMealL10n.text(L10nKey.Errors.invalidResponse),
                         code: nil)
         }
         return first
@@ -796,7 +823,7 @@ final class SafeEatAPI {
     private func sendPaginated<T: Decodable>(_ request: URLRequest, as type: T.Type) async throws -> PaginatedResult<T> {
         #if DEBUG
         if let url = request.url?.absoluteString {
-            print("[SafeEatAPI] \(request.httpMethod ?? "REQUEST") \(url)")
+            print("[SafeMealAPI] \(request.httpMethod ?? "REQUEST") \(url)")
         }
         #endif
 
@@ -810,7 +837,7 @@ final class SafeEatAPI {
               let responseData = json["data"]
         else {
             let errorMessage = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["message"] as? String
-                ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
+                ?? SafeMealL10n.format(L10nKey.Errors.requestFailed, httpResponse.statusCode)
             throw APIError.server(status: httpResponse.statusCode, message: errorMessage, code: nil)
         }
 
@@ -831,14 +858,14 @@ final class SafeEatAPI {
             return PaginatedResult(items: items, total: total, page: page, pageSize: pageSize, extra: extra)
         } catch {
             #if DEBUG
-            print("[SafeEatAPI] sendPaginated decode failed for type \(T.self): \(error)")
+            print("[SafeMealAPI] sendPaginated decode failed for type \(T.self): \(error)")
             if let dataStr = String(data: try JSONSerialization.data(withJSONObject: responseData), encoding: .utf8) {
-                print("[SafeEatAPI] Data JSON (first 1000 chars): \(String(dataStr.prefix(1000)))")
+                print("[SafeMealAPI] Data JSON (first 1000 chars): \(String(dataStr.prefix(1000)))")
             }
             #endif
             throw APIError.server(
                 status: httpResponse.statusCode,
-                message: SafeEatL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription),
+                message: SafeMealL10n.format(L10nKey.Errors.decodeFailed, error.localizedDescription),
                         code: nil)
         }
     }
@@ -858,7 +885,7 @@ final class SafeEatAPI {
         }
         var request = URLRequest(url: url)
         request.httpMethod = method
-        request.setValue(SafeEatL10n.isZh ? "zh" : "en", forHTTPHeaderField: "Accept-Language")
+        request.setValue(SafeMealL10n.isZh ? "zh" : "en", forHTTPHeaderField: "Accept-Language")
         return request
     }
 
@@ -877,11 +904,11 @@ final class SafeEatAPI {
     private func localizedMessage(for serverMessage: String?, statusCode: Int) -> String {
         switch serverMessage {
         case "Daily recognition quota has been used up.":
-            return SafeEatL10n.text(L10nKey.Errors.requestQuotaExceeded)
+            return SafeMealL10n.text(L10nKey.Errors.requestQuotaExceeded)
         case "Bad Request":
-            return SafeEatL10n.text(L10nKey.Errors.invalidResponse)
+            return SafeMealL10n.text(L10nKey.Errors.invalidResponse)
         default:
-            return serverMessage ?? SafeEatL10n.format(L10nKey.Errors.requestFailed, statusCode)
+            return serverMessage ?? SafeMealL10n.format(L10nKey.Errors.requestFailed, statusCode)
         }
     }
 

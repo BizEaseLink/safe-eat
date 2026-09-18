@@ -45,7 +45,7 @@ struct CaptchaSheet: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        SafeEatSettingsSheetContainer(
+        SafeMealSettingsSheetContainer(
             title: "安全验证",
             subtitle: "请输入图片中的字符",
             contentHeight: 160,
@@ -66,8 +66,8 @@ struct CaptchaSheet: View {
 
             if let errorMessage {
                 Text(errorMessage)
-                    .font(SafeEatFont.custom(12, relativeTo: .caption))
-                    .foregroundStyle(SafeEatTheme.danger)
+                    .font(SafeMealFont.custom(12, relativeTo: .caption))
+                    .foregroundStyle(SafeMealTheme.danger)
             }
         }
         .task {
@@ -101,8 +101,8 @@ struct CaptchaSheet: View {
 
             Button(action: { Task { await loadCaptcha() } }) {
                 Label("看不清？换一张", systemImage: "arrow.clockwise")
-                    .font(SafeEatFont.custom(13, relativeTo: .caption))
-                    .foregroundStyle(SafeEatTheme.primary)
+                    .font(SafeMealFont.custom(13, relativeTo: .caption))
+                    .foregroundStyle(SafeMealTheme.primary)
             }
             .buttonStyle(.plain)
         }
@@ -112,7 +112,7 @@ struct CaptchaSheet: View {
 
     private var inputField: some View {
         TextField("请输入验证码", text: $inputCode)
-            .font(SafeEatFont.custom(16, relativeTo: .body))
+            .font(SafeMealFont.custom(16, relativeTo: .body))
             .textInputAutocapitalization(.never)
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
@@ -122,7 +122,7 @@ struct CaptchaSheet: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(SafeEatTheme.line, lineWidth: 1)
+                    .stroke(SafeMealTheme.line, lineWidth: 1)
             )
     }
 

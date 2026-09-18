@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// 联系客服弹窗：展示小红书号、邮箱等联系方式
-/// 使用 SafeEatSettingsSheetContainer 公共弹窗组件
+/// 使用 SafeMealSettingsSheetContainer 公共弹窗组件
 struct ContactSupportSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
@@ -10,19 +10,19 @@ struct ContactSupportSheet: View {
     @State private var showCopiedToast = false
 
     private var displayXhs: String {
-        ConfigParamStore.shared.getString("contact_xhs", fallback: "食安安SafeEat")
+        ConfigParamStore.shared.getString("contact_xhs", fallback: "食必安-SafeMeal")
     }
 
     private var displayEmail: String {
-        ConfigParamStore.shared.getString("contact_email", fallback: "bizeaselink_SE@163.com")
+        ConfigParamStore.shared.getString("contact_email", fallback: "bel_safemeal@163.com")
     }
 
     var body: some View {
-        SafeEatSettingsSheetContainer(
-            title: SafeEatL10n.text(L10nKey.Auth.contactSupport),
-            subtitle: SafeEatL10n.text(L10nKey.Auth.contactSupportSubtitle),
+        SafeMealSettingsSheetContainer(
+            title: SafeMealL10n.text(L10nKey.Auth.contactSupport),
+            subtitle: SafeMealL10n.text(L10nKey.Auth.contactSupportSubtitle),
             contentHeight: 140,
-            primaryButton: SheetButton(title: SafeEatL10n.text(L10nKey.Common.ok)) { dismiss() }
+            primaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Common.ok)) { dismiss() }
         ) {
             VStack(spacing: 12) {
                 // 小红书号：点击复制 + toast
@@ -34,7 +34,7 @@ struct ContactSupportSheet: View {
                             .frame(width: 24, height: 24)
                     ),
                     iconColor: Color(red: 1.0, green: 0.24, blue: 0.24),
-                    title: SafeEatL10n.text(L10nKey.Auth.contactXhs),
+                    title: SafeMealL10n.text(L10nKey.Auth.contactXhs),
                     value: displayXhs,
                     trailingIcon: "doc.on.doc"
                 ) {
@@ -46,10 +46,10 @@ struct ContactSupportSheet: View {
                     iconView: AnyView(
                         Image(systemName: "envelope.circle.fill")
                             .font(.system(size: 22))
-                            .foregroundStyle(SafeEatTheme.primary)
+                            .foregroundStyle(SafeMealTheme.primary)
                     ),
-                    iconColor: SafeEatTheme.primary,
-                    title: SafeEatL10n.text(L10nKey.Auth.contactEmail),
+                    iconColor: SafeMealTheme.primary,
+                    title: SafeMealL10n.text(L10nKey.Auth.contactEmail),
                     value: displayEmail,
                     trailingIcon: "arrow.up.right.square"
                 ) {
@@ -59,8 +59,8 @@ struct ContactSupportSheet: View {
         }
         .overlay(alignment: .top) {
             if showCopiedToast {
-                Text(SafeEatL10n.text(L10nKey.Auth.contactCopied))
-                    .font(SafeEatFont.custom(14, relativeTo: .subheadline, weight: .semibold))
+                Text(SafeMealL10n.text(L10nKey.Auth.contactCopied))
+                    .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .semibold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
@@ -92,18 +92,18 @@ struct ContactSupportSheet: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(SafeEatFont.custom(12, relativeTo: .caption))
-                        .foregroundStyle(SafeEatTheme.textSecondary)
+                        .font(SafeMealFont.custom(12, relativeTo: .caption))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                     Text(value)
-                        .font(SafeEatFont.custom(15, relativeTo: .body, weight: .bold))
-                        .foregroundStyle(SafeEatTheme.textPrimary)
+                        .font(SafeMealFont.custom(15, relativeTo: .body, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
                 }
 
                 Spacer()
 
                 Image(systemName: trailingIcon)
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(SafeEatTheme.textSecondary)
+                    .foregroundStyle(SafeMealTheme.textSecondary)
             }
             .padding(12)
             .background(
@@ -112,7 +112,7 @@ struct ContactSupportSheet: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeEatTheme.line, lineWidth: 1)
+                    .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)

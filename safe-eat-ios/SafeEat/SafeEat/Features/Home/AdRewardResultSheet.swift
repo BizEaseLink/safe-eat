@@ -18,7 +18,7 @@ struct AdRewardResultSheet: View {
     }
 
     var body: some View {
-        SafeEatSettingsSheetContainer(
+        SafeMealSettingsSheetContainer(
             title: titleText,
             subtitle: messageText,
             contentHeight: 110,
@@ -32,22 +32,22 @@ struct AdRewardResultSheet: View {
                     HStack(spacing: 14) {
                         ZStack {
                             Circle()
-                                .fill(SafeEatTheme.success.opacity(0.12))
+                                .fill(SafeMealTheme.success.opacity(0.12))
                                 .frame(width: 46, height: 46)
 
                             Image(systemName: "plus.circle.fill")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(SafeEatTheme.success)
+                                .foregroundStyle(SafeMealTheme.success)
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
                             Text("+\(quota) 次扫描")
-                                .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
+                                .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
+                                .foregroundStyle(SafeMealTheme.textPrimary)
 
-                            Text(SafeEatL10n.text(L10nKey.Home.quotaExceededTomorrow))
-                                .font(SafeEatFont.textStyle(.footnote))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                            Text(SafeMealL10n.text(L10nKey.Home.quotaExceededTomorrow))
+                                .font(SafeMealFont.textStyle(.footnote))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                     }
                 }
@@ -57,22 +57,22 @@ struct AdRewardResultSheet: View {
                     HStack(spacing: 14) {
                         ZStack {
                             Circle()
-                                .fill(SafeEatTheme.warning.opacity(0.12))
+                                .fill(SafeMealTheme.warning.opacity(0.12))
                                 .frame(width: 46, height: 46)
 
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(SafeEatTheme.warning)
+                                .foregroundStyle(SafeMealTheme.warning)
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
                             Text("获取失败")
-                                .font(SafeEatFont.custom(16, relativeTo: .headline, weight: .bold))
-                                .foregroundStyle(SafeEatTheme.textPrimary)
+                                .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
+                                .foregroundStyle(SafeMealTheme.textPrimary)
 
-                            Text(SafeEatL10n.text(L10nKey.Home.adRewardRetry))
-                                .font(SafeEatFont.textStyle(.footnote))
-                                .foregroundStyle(SafeEatTheme.textSecondary)
+                            Text(SafeMealL10n.text(L10nKey.Home.adRewardRetry))
+                                .font(SafeMealFont.textStyle(.footnote))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                     }
                 }
@@ -82,17 +82,17 @@ struct AdRewardResultSheet: View {
 
     private var titleText: String {
         switch resultType {
-        case .success: return SafeEatL10n.text(L10nKey.Home.adRewardSuccessTitle)
-        case .claimFailed: return SafeEatL10n.text(L10nKey.Home.adRewardClaimFailedTitle)
-        case .loadFailed: return SafeEatL10n.text(L10nKey.Home.adLoadFailedTitle)
+        case .success: return SafeMealL10n.text(L10nKey.Home.adRewardSuccessTitle)
+        case .claimFailed: return SafeMealL10n.text(L10nKey.Home.adRewardClaimFailedTitle)
+        case .loadFailed: return SafeMealL10n.text(L10nKey.Home.adLoadFailedTitle)
         }
     }
 
     private var messageText: String {
         switch resultType {
-        case .success: return SafeEatL10n.text(L10nKey.Home.adRewardSuccess)
-        case .claimFailed: return SafeEatL10n.text(L10nKey.Home.adRewardClaimFailed)
-        case .loadFailed: return SafeEatL10n.text(L10nKey.Home.adLoadFailed)
+        case .success: return SafeMealL10n.text(L10nKey.Home.adRewardSuccess)
+        case .claimFailed: return SafeMealL10n.text(L10nKey.Home.adRewardClaimFailed)
+        case .loadFailed: return SafeMealL10n.text(L10nKey.Home.adLoadFailed)
         }
     }
 }
