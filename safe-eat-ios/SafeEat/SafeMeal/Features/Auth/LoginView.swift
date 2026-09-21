@@ -33,7 +33,7 @@ struct LoginView: View {
     @State private var showAccountDeletingAlert = false
     @State private var showAccountLockedAlert = false
     @State private var showContactSupport = false
-    @State private var showTermsNotAgreed = false
+    @State private var showTermsToast = false
 
     var body: some View {
         NavigationStack {
@@ -111,11 +111,13 @@ struct LoginView: View {
         } message: {
             Text(SafeMealL10n.text(L10nKey.Auth.accountDeletingMessage))
         }
-        .alert(SafeMealL10n.text(L10nKey.Common.notice), isPresented: $showTermsNotAgreed) {
-            Button(SafeMealL10n.text(L10nKey.Common.ok), role: .cancel) {}
-        } message: {
-            Text(SafeMealL10n.text(L10nKey.Auth.termsNotAgreed))
+        .overlay(alignment: .top) {
+            if showTermsToast {
+                termsToastView
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
         }
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showTermsToast)
         .alert(SafeMealL10n.text(L10nKey.Auth.accountLockedTitle), isPresented: $showAccountLockedAlert) {
             Button(SafeMealL10n.text(L10nKey.Auth.loginWithSms)) {
                 loginRoute = .codeLogin
@@ -155,7 +157,14 @@ struct LoginView: View {
                         codeLoginContent
                     }
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 36)
+                    .padding(.bottom, 88)
+                }
+
+                VStack {
+                    Spacer()
+                    bottomSupportLinks
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, proxy.safeAreaInsets.bottom + 14)
                 }
             }
             .contentShape(Rectangle())
@@ -181,7 +190,14 @@ struct LoginView: View {
                         passwordLoginContent
                     }
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 36)
+                    .padding(.bottom, 88)
+                }
+
+                VStack {
+                    Spacer()
+                    bottomSupportLinks
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, proxy.safeAreaInsets.bottom + 14)
                 }
             }
             .contentShape(Rectangle())
@@ -359,6 +375,8 @@ struct LoginView: View {
             codeField
             smsHintView
 
+            termsAgreementRow
+
             authPrimaryButton(title: SafeMealL10n.text(L10nKey.Auth.actionCodeLogin), isLoading: store.isLoading) {
                 Task {
                     await performSmsLogin()
@@ -366,20 +384,7 @@ struct LoginView: View {
             }
             .disabled(phone.trimmingCharacters(in: .whitespacesAndNewlines).count != 11 || code.count < 4 || store.isLoading)
 
-            // 底部辅助入口：忘记密码 | 联系客服
-            HStack {
-                Spacer()
-                miniLink(title: SafeMealL10n.text(L10nKey.Auth.forgotPassword)) {
-                    loginRoute = .forgotPassword
-                }
-                Text("|")
-                    .font(SafeMealFont.custom(14, relativeTo: .footnote))
-                    .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.5))
-                miniLink(title: SafeMealL10n.text(L10nKey.Auth.contactSupport)) {
-                    showContactSupport = true
-                }
-                Spacer()
-            }
+            
 
             HStack {
                 miniLink(title: SafeMealL10n.text(L10nKey.Auth.switchToPassword)) {
@@ -403,6 +408,8 @@ struct LoginView: View {
             authField(title: SafeMealL10n.text(L10nKey.Auth.phoneLabel), text: $phone, keyboardType: .numberPad)
             authSecureField(title: SafeMealL10n.text(L10nKey.Auth.passwordLabel), text: $password)
 
+            termsAgreementRow
+
             authPrimaryButton(title: SafeMealL10n.text(L10nKey.Auth.actionLogin), isLoading: store.isLoading) {
                 Task {
                     await performPasswordLogin()
@@ -418,20 +425,7 @@ struct LoginView: View {
                 Text(SafeMealL10n.text(L10nKey.Auth.passwordLoginErrorMessage))
             }
 
-            // 底部辅助入口：忘记密码 | 联系客服
-            HStack {
-                Spacer()
-                miniLink(title: SafeMealL10n.text(L10nKey.Auth.forgotPassword)) {
-                    loginRoute = .forgotPassword
-                }
-                Text("|")
-                    .font(SafeMealFont.custom(14, relativeTo: .footnote))
-                    .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.5))
-                miniLink(title: SafeMealL10n.text(L10nKey.Auth.contactSupport)) {
-                    showContactSupport = true
-                }
-                Spacer()
-            }
+            
 
             HStack {
                 miniLink(title: SafeMealL10n.text(L10nKey.Auth.switchToCode)) {
@@ -550,7 +544,7 @@ struct LoginView: View {
 
             authPrimaryButton(title: SafeMealL10n.text(L10nKey.Auth.setPasswordTitle), isLoading: store.isLoading) {
                 if isRegistrationFlow && !agreedToTerms {
-                    showTermsNotAgreed = true
+                    showTermsHint()
                     return
                 }
                 Task {
@@ -653,7 +647,7 @@ struct LoginView: View {
             } label: {
                 Image(systemName: agreedToTerms ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 18))
-                    .foregroundStyle(agreedToTerms ? SafeMealTheme.primary : SafeMealTheme.textSecondary)
+                    .foregroundStyle(showTermsToast ? SafeMealTheme.warning : (agreedToTerms ? SafeMealTheme.primary : SafeMealTheme.textSecondary))
             }
             .buttonStyle(.plain)
 
@@ -795,6 +789,23 @@ struct LoginView: View {
         .buttonStyle(.plain)
     }
 
+    /// 底部固定的"忘记密码 | 联系客服"入口
+    private var bottomSupportLinks: some View {
+        HStack {
+            Spacer()
+            miniLink(title: SafeMealL10n.text(L10nKey.Auth.forgotPassword)) {
+                loginRoute = .forgotPassword
+            }
+            Text("|")
+                .font(SafeMealFont.custom(14, relativeTo: .footnote))
+                .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.5))
+            miniLink(title: SafeMealL10n.text(L10nKey.Auth.contactSupport)) {
+                showContactSupport = true
+            }
+            Spacer()
+        }
+    }
+
     // MARK: - 倒计时管理器
 
     @ObservedObject private var smsCountdownManager = SMSCountdownManager.shared
@@ -803,6 +814,10 @@ struct LoginView: View {
 
     /// 统一登录入口：检测 ACCOUNT_DELETING 错误码
     private func performSmsLogin() async {
+        guard agreedToTerms else {
+            showTermsHint()
+            return
+        }
         await store.login(phone: phone, code: code)
         if store.accountDeletingDetected {
             showAccountDeletingAlert = true
@@ -812,6 +827,10 @@ struct LoginView: View {
 
     /// 统一密码登录入口：检测 ACCOUNT_DELETING / ACCOUNT_LOCKED 错误码
     private func performPasswordLogin() async {
+        guard agreedToTerms else {
+            showTermsHint()
+            return
+        }
         await store.loginWithPassword(phone: phone, password: password)
         if store.accountDeletingDetected {
             showAccountDeletingAlert = true
@@ -927,6 +946,33 @@ struct LoginView: View {
         password = ""
         confirmPassword = ""
         devCodeHint = nil
+    }
+
+    // MARK: - 协议未勾选提示
+
+    private func showTermsHint() {
+        showTermsToast = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            showTermsToast = false
+        }
+    }
+
+    private var termsToastView: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "exclamationmark.circle.fill")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(SafeMealTheme.warning)
+            Text(SafeMealL10n.text(L10nKey.Auth.termsNotAgreed))
+                .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .semibold))
+                .foregroundStyle(.white)
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 11)
+        .background(
+            Capsule(style: .continuous)
+                .fill(colorScheme == .dark ? Color.black.opacity(0.9) : Color.black.opacity(0.78))
+        )
+        .padding(.top, 8)
     }
 }
 

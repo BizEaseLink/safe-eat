@@ -29,7 +29,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		43CDC115305D872D00522197 /* Embed Frameworks */ = {
+		439BF4473060C9DD00DBB845 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
@@ -60,27 +60,26 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				ThirdParty/UMeng/UMCommonLog.framework,
+				ThirdParty/UMeng/UMRemoteConfig.framework,
+				ThirdParty/UMeng/UTDID.framework,
 			);
 			target = 43604B552F87D83A009131CE /* SafeMeal */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		43CDC12E305D88C800522197 /* Exceptions for "SafeMeal" folder in "Embed Frameworks" phase from "SafeMeal" target */ = {
+		439BF4483060C9DE00DBB845 /* Exceptions for "SafeMeal" folder in "Embed Frameworks" phase from "SafeMeal" target */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			attributesByRelativePath = {
 				ThirdParty/UMeng/UMCommon.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-				ThirdParty/UMeng/UMCommonLog.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
 				ThirdParty/UMeng/UMDevice.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-				ThirdParty/UMeng/UMRemoteConfig.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
 				ThirdParty/UMeng/UMUnionSDK.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
 			};
-			buildPhase = 43CDC115305D872D00522197 /* Embed Frameworks */;
+			buildPhase = 439BF4473060C9DD00DBB845 /* Embed Frameworks */;
 			membershipExceptions = (
 				ThirdParty/UMeng/UMCommon.xcframework,
-				ThirdParty/UMeng/UMCommonLog.xcframework,
 				ThirdParty/UMeng/UMDevice.xcframework,
-				ThirdParty/UMeng/UMRemoteConfig.xcframework,
 				ThirdParty/UMeng/UMUnionSDK.xcframework,
 			);
 		};
@@ -91,7 +90,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				43604B632F87D83D009131CE /* Exceptions for "SafeMeal" folder in "SafeMeal" target */,
-				43CDC12E305D88C800522197 /* Exceptions for "SafeMeal" folder in "Embed Frameworks" phase from "SafeMeal" target */,
+				439BF4483060C9DE00DBB845 /* Exceptions for "SafeMeal" folder in "Embed Frameworks" phase from "SafeMeal" target */,
 			);
 			path = SafeMeal;
 			sourceTree = "<group>";
@@ -168,7 +167,7 @@
 				43604B522F87D83A009131CE /* Sources */,
 				43604B532F87D83A009131CE /* Frameworks */,
 				43604B542F87D83A009131CE /* Resources */,
-				43CDC115305D872D00522197 /* Embed Frameworks */,
+				439BF4473060C9DD00DBB845 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
