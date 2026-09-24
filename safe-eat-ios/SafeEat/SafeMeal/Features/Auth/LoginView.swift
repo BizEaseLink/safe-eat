@@ -34,6 +34,8 @@ struct LoginView: View {
     @State private var showAccountLockedAlert = false
     @State private var showContactSupport = false
     @State private var showTermsToast = false
+    /// 手动键盘高度（避免 iOS 17 键盘避让把底部链接顶上去）
+    @State private var keyboardInset: CGFloat = 0
 
     var body: some View {
         NavigationStack {
@@ -56,6 +58,13 @@ struct LoginView: View {
                         setPasswordPage
                     }
                 }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { note in
+            let h = (note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect)?.height ?? 0
+            if h != keyboardInset { keyboardInset = h }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            if keyboardInset != 0 { keyboardInset = 0 }
         }
         .onChange(of: store.requiresPhoneBinding) { _ in
             syncRouteWithSession()
@@ -157,15 +166,17 @@ struct LoginView: View {
                         codeLoginContent
                     }
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 88)
+                    .padding(.bottom, 88 + keyboardInset)
                 }
+                .ignoresSafeArea(.keyboard)
 
                 VStack {
                     Spacer()
                     bottomSupportLinks
                         .padding(.horizontal, 20)
-                        .padding(.bottom, proxy.safeAreaInsets.bottom + 14)
+                        .padding(.bottom, 48)
                 }
+                .ignoresSafeArea()
             }
             .contentShape(Rectangle())
             .onTapGesture { hideKeyboard() }
@@ -190,15 +201,17 @@ struct LoginView: View {
                         passwordLoginContent
                     }
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 88)
+                    .padding(.bottom, 88 + keyboardInset)
                 }
+                .ignoresSafeArea(.keyboard)
 
                 VStack {
                     Spacer()
                     bottomSupportLinks
                         .padding(.horizontal, 20)
-                        .padding(.bottom, proxy.safeAreaInsets.bottom + 14)
+                        .padding(.bottom, 48)
                 }
+                .ignoresSafeArea()
             }
             .contentShape(Rectangle())
             .onTapGesture { hideKeyboard() }
