@@ -1106,3 +1106,9 @@
 "auth.terms.not_agreed" = "请先同意用户协议和隐私政策";
 "auth.set_password.title" = "设置密码";
 "auth.set_password.subtitle" = "设置密码以保护您的账户安全";
+
+// P1: 结果页 3 tab
+"result.tab.overview" = "概览";
+"result.tab.nutrition" = "营养";
+"result.tab.advice" = "建议";
+"result.recommendation.title" = "建议";

@@ -1252,3 +1252,9 @@
 "auth.terms.not_agreed" = "Please agree to the User Agreement and Privacy Policy first";
 "auth.set_password.title" = "Set Password";
 "auth.set_password.subtitle" = "Set a password to secure your account";
+
+// P1: Result 3 tabs
+"result.tab.overview" = "Overview";
+"result.tab.nutrition" = "Nutrition";
+"result.tab.advice" = "Advice";
+"result.recommendation.title" = "Advice";

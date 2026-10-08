@@ -885,6 +885,11 @@ enum L10nKey {
         static let perServing = "result.nutrition.per_serving"
         static let actionAnalysisDetail = "result.action.analysis_detail"
         static let emptyDataHint = "result.empty_data_hint"
+        // P1: 结果页 3 tab
+        static let tabOverview = "result.tab.overview"
+        static let tabNutrition = "result.tab.nutrition"
+        static let tabAdvice = "result.tab.advice"
+        static let recommendationTitle = "result.recommendation.title"
     }
 
     enum Feedback {

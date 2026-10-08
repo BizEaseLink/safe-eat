@@ -15,6 +15,7 @@ struct ResultView: View {
     @State private var showAiDisclaimer = false
     @State private var flipDirection: Double = -1
     @State private var scrollOffset: CGFloat = 0
+    @State private var selectedTab: ResultTab = .overview
 
     private var isPaidMember: Bool {
         guard let tier = store.profile?.currentPlanTier else { return false }
@@ -333,62 +334,293 @@ struct ResultView: View {
 
     private func resultPage(item: LocalHistoryItem, recognition: RecognitionRecord) -> some View {
         GeometryReader { proxy in
-            let contentHeight = proxy.size.height - proxy.safeAreaInsets.top - proxy.safeAreaInsets.bottom
+            let topInset = proxy.safeAreaInsets.top
 
             ZStack(alignment: .topLeading) {
                 pageBackground
 
-                ZStack {
-                    ScrollView(showsIndicators: false) {
-                        VStack(alignment: .leading, spacing: 22) {
-                            Color.clear
-                                .frame(height: proxy.safeAreaInsets.top + 36)
-
-                            frontCard(item: item)
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 40)
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        heroSection(item: item)
+                        detailSheet(item: item, recognition: recognition)
+                        resultTabBar
+                        resultTabContent(item: item, recognition: recognition)
+                        bottomActionsSection(item: item, recognition: recognition)
                     }
-                    .opacity(isFlipped ? 0 : 1)
-                    .rotation3DEffect(
-                        .degrees(isFlipped ? 180 * flipDirection : 0),
-                        axis: (x: 0, y: 1, z: 0),
-                        perspective: 0.9
-                    )
-
-                    ScrollView(showsIndicators: false) {
-                        VStack(alignment: .leading, spacing: 22) {
-                            Color.clear
-                                .frame(height: proxy.safeAreaInsets.top + 36)
-
-                            backCard(recognition: recognition)
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 40)
-                    }
-                    .opacity(isFlipped ? 1 : 0)
-                    .rotation3DEffect(
-                        .degrees(isFlipped ? 0 : -180 * flipDirection),
-                        axis: (x: 0, y: 1, z: 0),
-                        perspective: 0.9
-                    )
+                    .padding(.bottom, 40)
                 }
-                .animation(.spring(response: 0.42, dampingFraction: 0.84), value: isFlipped)
 
-                SafeMealTopBackChrome(
-                    title: isFlipped
-                        ? SafeMealL10n.text(L10nKey.Result.analysisTitle)
-                        : SafeMealL10n.text(L10nKey.Result.title),
-                    scrollOffset: scrollOffset,
-                    topInset: proxy.safeAreaInsets.top,
-                    onBack: { dismiss() }
-                )
+                // hero 左上返回浮钮（避开状态栏；收藏/分享隐藏）
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
+                        .frame(width: 40, height: 40)
+                        .background(
+                            Circle().fill(.ultraThinMaterial)
+                        )
+                        .overlay(
+                            Circle().stroke(colorScheme == .dark ? Color.white.opacity(0.18) : Color.black.opacity(0.10), lineWidth: 0.8)
+                        )
+                }
+                .padding(.top, topInset + 8)
+                .padding(.leading, 16)
             }
             .ignoresSafeArea()
         }
         .onAppear {
             scrollOffset = 0
         }
+    }
+
+    // MARK: - P1 hero（原图满宽 + 黑渐变，底部圆角）
+    private func heroSection(item: LocalHistoryItem) -> some View {
+        ZStack {
+            if let image = LocalImageLoader.loadOriginalImage(for: item) ?? LocalImageLoader.loadDisplayImage(for: item) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                Rectangle()
+                    .fill(SafeMealTheme.primarySoft.opacity(0.4))
+                    .overlay(
+                        Image(systemName: "photo")
+                            .font(.system(size: 28))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
+                    )
+            }
+            // 黑渐变遮罩（顶部深 → 中透明 → 底 10%）
+            LinearGradient(
+                colors: [
+                    Color.black.opacity(0.45),
+                    Color.black.opacity(0.05),
+                    Color.black.opacity(0.10),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+        .frame(height: 318)
+        .frame(maxWidth: .infinity)
+        .clipShape(
+            UnevenRoundedRectangle(
+                topLeadingRadius: 0,
+                bottomLeadingRadius: 34,
+                bottomTrailingRadius: 34,
+                topTrailingRadius: 0
+            )
+        )
+        .ignoresSafeArea(edges: .top)
+    }
+
+    // MARK: - P1 上浮 sheet：食物名 + AI 摘要 + statbox
+    private func detailSheet(item: LocalHistoryItem, recognition: RecognitionRecord) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            // 食物名
+            Text(displayName)
+                .font(SafeMealFont.custom(27, relativeTo: .title, weight: .bold))
+                .foregroundStyle(SafeMealTheme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            // AI 一句摘要
+            Text(frontSummaryText)
+                .font(SafeMealFont.custom(13.5, relativeTo: .subheadline))
+                .foregroundStyle(SafeMealTheme.textSecondary)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+
+            // statbox 三列
+            HStack(spacing: 0) {
+                statboxCell(
+                    value: "\(scoreValue)",
+                    label: SafeMealL10n.text(L10nKey.Result.scoreSectionTitle),
+                    icon: "star.fill",
+                    color: scoreColor
+                )
+                statboxDivider
+                statboxCell(
+                    value: statusText,
+                    label: SafeMealL10n.text(L10nKey.Result.recommendationTitle),
+                    icon: recommendation.icon,
+                    color: recommendation.color
+                )
+                statboxDivider
+                statboxCell(
+                    value: calorieText,
+                    label: SafeMealL10n.text(L10nKey.Result.metricCalories),
+                    icon: "flame.fill",
+                    color: SafeMealTheme.warning
+                )
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, -60) // 上浮叠 hero 下缘
+        .padding(.bottom, 4)
+        .background(
+            pageBackground
+        )
+    }
+
+    private var statboxDivider: some View {
+        Rectangle()
+            .fill(SafeMealTheme.line.opacity(0.5))
+            .frame(width: 1, height: 40)
+    }
+
+    private func statboxCell(value: String, label: String, icon: String, color: Color) -> some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(color)
+                Text(value)
+                    .font(SafeMealFont.custom(19, relativeTo: .title3, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+            }
+            Text(label)
+                .font(SafeMealFont.custom(11, relativeTo: .caption))
+                .foregroundStyle(SafeMealTheme.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+    }
+
+    private var calorieText: String {
+        let cal = recognition?.effectiveNutrition?.nutrients?.calories.value
+        if let cal { return String(format: "%.0f", cal) }
+        return "--"
+    }
+
+    // MARK: - P1 分段 tab
+    private var resultTabBar: some View {
+        HStack(spacing: 4) {
+            tabButton(.overview, title: SafeMealL10n.text(L10nKey.Result.tabOverview))
+            tabButton(.nutrition, title: SafeMealL10n.text(L10nKey.Result.tabNutrition))
+            tabButton(.advice, title: SafeMealL10n.text(L10nKey.Result.tabAdvice))
+        }
+        .padding(4)
+        .background(
+            Capsule().fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color(red: 0.94, green: 0.95, blue: 0.955))
+        )
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+    }
+
+    private func tabButton(_ tab: ResultTab, title: String) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                selectedTab = tab
+            }
+        } label: {
+            Text(title)
+                .font(SafeMealFont.custom(12.5, relativeTo: .subheadline, weight: .bold))
+                .foregroundStyle(selectedTab == tab ? SafeMealTheme.textPrimary : SafeMealTheme.textSecondary)
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
+                .background(
+                    Capsule().fill(selectedTab == tab
+                        ? (colorScheme == .dark ? Color.white.opacity(0.10) : Color.white)
+                        : Color.clear)
+                )
+                .shadow(color: selectedTab == tab ? Color.black.opacity(0.08) : Color.clear, radius: 6, y: 2)
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - P1 tab 内容
+    @ViewBuilder
+    private func resultTabContent(item: LocalHistoryItem, recognition: RecognitionRecord) -> some View {
+        switch selectedTab {
+        case .overview:
+            overviewTab(item: item, recognition: recognition)
+        case .nutrition:
+            nutritionTab(recognition: recognition)
+        case .advice:
+            adviceTab(recognition: recognition)
+        }
+    }
+
+    private func overviewTab(item: LocalHistoryItem, recognition: RecognitionRecord) -> some View {
+        VStack(alignment: .leading, spacing: 22) {
+            scoreCardSection
+            quickMetricsGrid
+            Text(frontSummaryText)
+                .font(SafeMealFont.custom(16, relativeTo: .body))
+                .foregroundStyle(SafeMealTheme.textPrimary.opacity(0.94))
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+            allergenTagsSection
+            satietyIndexSection
+            if let risks = recognition.riskFacts, !risks.isEmpty {
+                riskFactsSection(risks)
+            } else {
+                emptyDataCard
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        .padding(.bottom, 8)
+    }
+
+    private func nutritionTab(recognition: RecognitionRecord) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // 评分环头部
+            HStack(spacing: 12) {
+                MiniScoreRingView(score: scoreValue, size: 64)
+                    .frame(width: 64, height: 64)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(displayName)
+                        .font(SafeMealFont.custom(16, relativeTo: .subheadline, weight: .bold))
+                        .foregroundStyle(SafeMealTheme.textPrimary)
+                    Text(SafeMealL10n.text(L10nKey.Result.analysisTitle))
+                        .font(SafeMealFont.custom(12, relativeTo: .caption))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
+                }
+            }
+            paywallWrapped(.s1BasicNutrients) { basicNutrientsSection }
+            paywallWrapped(.s3Vitamins) { vitaminsSection }
+            paywallWrapped(.s4Minerals) { mineralsSection }
+            paywallWrapped(.s6Glycemic) { glycemicSection }
+            paywallWrapped(.s8Dietary) { dietaryInfoSection }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        .padding(.bottom, 8)
+    }
+
+    private func adviceTab(recognition: RecognitionRecord) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            aiAdviceSection
+            if membershipTier >= .pro, let impacts = recognition.metricImpacts, !impacts.isEmpty {
+                metricImpactsList(impacts)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        .padding(.bottom, 8)
+    }
+
+    // MARK: - P1 底部操作
+    private func bottomActionsSection(item: LocalHistoryItem, recognition: RecognitionRecord) -> some View {
+        VStack(spacing: 12) {
+            HStack {
+                inlineActionWithIcon(icon: "camera.rotate", title: SafeMealL10n.text(L10nKey.Result.actionRetake)) {
+                    dismiss()
+                }
+                Spacer()
+                inlineActionWithIcon(icon: "info.circle", title: SafeMealL10n.text(L10nKey.Result.actionFeedback)) {
+                    showFeedback = true
+                }
+            }
+            MembershipBannerView(tier: membershipTier, isFront: true, onUpgrade: { showMembership = true })
+            medicalDisclaimerView
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
     }
 
     private var pageBackground: some View {
@@ -1905,4 +2137,11 @@ private struct MiniScoreRingView: View {
         }
         .frame(width: size, height: size)
     }
+}
+
+// MARK: - P1 结果页 tab
+enum ResultTab: CaseIterable {
+    case overview
+    case nutrition
+    case advice
 }
