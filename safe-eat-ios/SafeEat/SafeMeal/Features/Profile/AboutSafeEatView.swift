@@ -77,16 +77,6 @@ struct AboutSafeMealView: View {
 
                 Divider().overlay(SafeMealTheme.line)
 
-                NavigationLink(value: ProfileRoute.adServiceNotice) {
-                    ProfileNavigationRow(
-                        icon: "megaphone",
-                        title: SafeMealL10n.text(L10nKey.Profile.About.adServiceNotice)
-                    )
-                }
-                .buttonStyle(.plain)
-
-                Divider().overlay(SafeMealTheme.line)
-
                 NavigationLink(value: ProfileRoute.cancellationGuide) {
                     ProfileNavigationRow(
                         icon: "person.crop.circle.badge.minus",

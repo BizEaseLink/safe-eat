@@ -166,11 +166,6 @@ struct ProfileView: View {
                 title: SafeMealL10n.text(L10nKey.Profile.About.aiDisclaimer),
                 category: "ai_disclaimer"
             )
-        case .adServiceNotice:
-            DisclosureDetailView(
-                title: SafeMealL10n.text(L10nKey.Profile.About.adServiceNotice),
-                category: "ad_service_notice"
-            )
         case .cancellationGuide:
             DisclosureDetailView(
                 title: SafeMealL10n.text(L10nKey.Profile.About.cancellationGuide),
@@ -783,7 +778,6 @@ enum ProfileRoute: Hashable {
     case autoRenewalNotice
     case permissionUsage
     case aiDisclaimer
-    case adServiceNotice
     case cancellationGuide
     case certificate
     case helpCenter

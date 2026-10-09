@@ -497,7 +497,6 @@
 "membership.purchase.trial_prompt_title" = "Free Trial";
 "membership.purchase.trial_prompt_body" = "You have one free trial opportunity. Try now?";
 "membership.purchase.trial_prompt_action" = "Start Trial";
-"membership.purchase.free_plan_description" = "3 free recognitions per day. Great for trying out basic features.";
 "membership.purchase.new_user_gift_banner" = "New users get 10 free scans on sign-up";
 "membership.purchase.badge.lite" = "Lite";
 "membership.purchase.badge.current" = "Current";
@@ -540,25 +539,10 @@
 "home.quota_exceeded.progress_label" = "Free recognitions";
 "home.quota_exceeded.member_hint" = "Members can continue recognizing this food and view complete nutrition and risk analysis";
 "home.quota_exceeded.upgrade" = "Upgrade to continue";
-"home.quota_exceeded.watch_ad" = "Watch an ad for 1 more scan";
-"home.quota_exceeded.watch_ad_recover_format" = "Watch an ad to restore %d scans";
-"home.quota_exceeded.watch_ad_with_count" = "Watch an ad (%d left today)";
-"home.quota_exceeded.ad_reward_format" = "Watch ads to get %d more scans, %d ads left today";
 "home.quota_exceeded.tomorrow" = "3 free recognitions restore after midnight";
 "home.quota_exceeded.total_title" = "Total recognition quota today";
 "home.quota_exceeded.total_footnote_format" = "%d used, %d available after recovery";
 "home.quota_exceeded.free_quota_title" = "Free recognitions";
-"home.quota_exceeded.ad_quota_title" = "Ad recovery quota";
-"home.quota_exceeded.ad_remaining_format" = "%d ad chances left today";
-"home.quota_exceeded.rule_format" = "You can watch %d ads per day, and each ad restores %d scans";
-"home.ad_reward.claim_failed" = "Failed to claim reward. Please try again later";
-"home.ad_reward.load_failed" = "Failed to load ad. Please try again later";
-"home.ad_reward.success" = "Scan quota restored";
-"home.ad_reward.success_title" = "Reward Claimed";
-"home.ad_reward.claim_failed_title" = "Claim Failed";
-"home.ad_reward.load_failed_title" = "Ad Load Failed";
-"home.ad_reward.retry" = "Got it";
-"home.ad_reward.success_quota_format" = "%d scan quota recovered";
 "home.quota_remaining.format" = "%d remaining today";
 
 "user.unnamed" = "Unnamed User";
@@ -1107,10 +1091,9 @@
 
 "home.quota_exceeded.daily_title" = "Daily limit reached";
 "home.quota_exceeded.monthly_title" = "Monthly limit reached";
-"home.quota_exceeded.daily_hint_format" = "%d scans per day. Watch ads to recover quota";
+"home.quota_exceeded.daily_hint_format" = "%d scans per day";
 "home.quota_exceeded.monthly_hint_format" = "Monthly cycle ends %@. Upgrade for more quota";
 "home.quota_exceeded.upgrade_hint" = "Upgrade your plan for more quota";
-"home.quota_exceeded.watch_ad_action" = "Watch ad to recover quota";
 "home.quota_exceeded.upgrade_membership" = "Upgrade membership";
 "home.quota_exceeded.upgrade_plan" = "Upgrade plan";
 "home.quota_exceeded.later" = "Later";
@@ -1118,7 +1101,6 @@
 "home.quota_status_bar.daily_label" = "Remaining today";
 "home.quota_status_bar.monthly_label" = "Remaining this month";
 "home.quota_status_bar.count_format" = "%d scans";
-"home.quota_status_bar.ad_reward_format" = "Watch ad +%d";
 "home.quota_status_bar.cycle_end_format" = "Cycle ends %@";
 "result.feedback_pending" = "Feedback pending";
 
@@ -1129,7 +1111,6 @@
 "candidate.search_placeholder" = "Search food name";
 "candidate.no_result" = "No matching foods found";
 "candidate.empty_hint" = "No candidates recognized, please search the food database";
-"home.quota_exceeded.watch_ad_hint" = "Watch a short video to earn extra scans";
 
 // Recognition phases
 "recognition_phase.identifying" = "Identifying";
@@ -1202,7 +1183,6 @@
 "profile.about.auto_renewal_notice" = "Auto-Renewal Notice";
 "profile.about.permission_usage" = "Permission Usage";
 "profile.about.ai_disclaimer" = "AI Disclaimer";
-"profile.about.ad_service_notice" = "Ad Service Notice";
 "profile.about.cancellation_guide" = "Account Cancellation Guide";
 
 // Profile - Redeem

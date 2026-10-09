@@ -114,17 +114,17 @@ private let faqSectionsZh: [FAQSection] = [
         FAQItem(question: "拍照识别支持哪些食物？", answer: "支持大多数常见中餐、西餐、日料、韩餐等菜品，以及水果、零食、饮品等。识别准确度受拍摄角度、光线、遮挡等因素影响，建议正对食物、光线充足时拍摄。"),
         FAQItem(question: "识别结果不准确怎么办？", answer: "AI 识别受拍摄条件影响，可能存在偏差。结果仅供参考，不构成医疗或专业营养建议。如发现明显错误，可通过「意见反馈」告知我们。"),
         FAQItem(question: "免费用户可以拍照识别吗？", answer: "免费用户享有基础识别次数，具体额度以应用内实时展示为准。开通会员可获得更多次数。"),
-        FAQItem(question: "看广告获得的识别次数可以累积吗？", answer: "广告兑换的识别次数仅限当日使用，不可跨天累积，每日补次上限以应用内提示为准。"),
+        FAQItem(question: "免费识别次数用完了怎么办？", answer: "免费用户每日享有基础识别次数，用完可在次日自动刷新，或开通会员获得更多识别次数。"),
     ]),
     FAQSection(title: "会员与订阅", items: [
-        FAQItem(question: "会员有哪些等级？", answer: "共三个付费等级：轻享版（Lite）适合日常管理入门，专业版（Pro）提供深度营养分析，至尊版（Premium）全功能解锁且无广告。"),
+        FAQItem(question: "会员有哪些等级？", answer: "共三个付费等级：轻享版（Lite）适合日常管理入门，专业版（Pro）提供深度营养分析，至尊版（Premium）全功能解锁，畅享完整服务。"),
         FAQItem(question: "如何取消自动续费？", answer: "iOS：设置 → Apple ID → 订阅 → 选择食必安 → 取消订阅。鸿蒙/华为：华为应用市场 → 订阅管理 → 取消。微信/支付宝：在对应支付平台的自动扣款管理中关闭。取消后当前周期权益不受影响。"),
         FAQItem(question: "如何申请退款？", answer: "iOS/Apple 内购：访问 reportaproblem.apple.com 申请退款，由 Apple 审核。鸿蒙/华为：在应用市场订单管理中申请。微信/支付宝代扣：联系 bel_safemeal@163.com 处理。"),
         FAQItem(question: "免费试用到期会自动扣费吗？", answer: "是的，3天免费试用到期后会自动转为付费订阅并扣款。如不想继续，请在试用期内取消订阅。"),
     ]),
     FAQSection(title: "账号与数据", items: [
         FAQItem(question: "如何注销账号？", answer: "个人中心 → 账号与安全 → 删除账号。提交后进入7天冷静期，冷静期内可撤回。期满后账号永久注销，数据不可恢复。详见《账号注销指引》。"),
-        FAQItem(question: "我的饮食数据安全吗？", answer: "所有数据传输使用 HTTPS/TLS 加密，敏感信息在数据库中加密存储。我们不会出售您的个人数据，不会用于精准广告投放。详见《隐私政策》。"),
+        FAQItem(question: "我的饮食数据安全吗？", answer: "所有数据传输使用 HTTPS/TLS 加密，敏感信息在数据库中加密存储。我们不会出售您的个人数据，所有数据仅用于提供识别与记录服务。详见《隐私政策》。"),
         FAQItem(question: "食物照片会被用于其他用途吗？", answer: "不会。照片仅用于食物识别分析，不会用于人脸识别或其他非声明用途。您可随时在历史记录中删除照片数据。"),
     ]),
     FAQSection(title: "其他", items: [
@@ -140,10 +140,10 @@ private let faqSectionsEn: [FAQSection] = [
         FAQItem(question: "What foods can be recognized by photo?", answer: "Most common Chinese, Western, Japanese, and Korean dishes are supported, as well as fruits, snacks, and beverages. Accuracy may vary depending on shooting angle, lighting, and obstructions. For best results, photograph the food directly from above with adequate lighting."),
         FAQItem(question: "What if the recognition result is inaccurate?", answer: "AI recognition can be affected by shooting conditions and may have deviations. Results are for reference only and do not constitute medical or professional nutritional advice. If you notice obvious errors, please let us know through Feedback."),
         FAQItem(question: "Can free users use photo recognition?", answer: "Free users have a basic number of recognition attempts. The exact quota is displayed in real time within the app. Upgrade to a membership for more attempts."),
-        FAQItem(question: "Can recognition attempts from watching ads be accumulated?", answer: "Recognition attempts earned from ads are valid only on the day they are earned and cannot be carried over. The daily ad-reward limit is shown in the app."),
+        FAQItem(question: "What happens when I use up my daily free recognition attempts?", answer: "Free users get a basic number of recognition attempts each day. When used up, you can wait for the next day's refresh or upgrade to a membership for more attempts."),
     ]),
     FAQSection(title: "Membership & Subscription", items: [
-        FAQItem(question: "What membership tiers are available?", answer: "Three paid tiers: Lite for everyday management basics, Pro for in-depth nutritional analysis, and Premium for full access with no ads."),
+        FAQItem(question: "What membership tiers are available?", answer: "Three paid tiers: Lite for everyday management basics, Pro for in-depth nutritional analysis, and Premium for full access."),
         FAQItem(question: "How do I cancel auto-renewal?", answer: "iOS: Settings → Apple ID → Subscriptions → select SafeMeal → Cancel Subscription. HarmonyOS/Huawei: Huawei AppMarket → Subscription Management → Cancel. WeChat/Alipay: Disable auto-deduction in the respective payment platform. Your current period benefits remain unaffected after cancellation."),
         FAQItem(question: "How do I request a refund?", answer: "iOS/Apple in-app purchase: Visit reportaproblem.apple.com to request a refund, reviewed by Apple. HarmonyOS/Huawei: Apply through the app store order management. WeChat/Alipay: Contact bel_safemeal@163.com."),
         FAQItem(question: "Will I be charged automatically after the free trial ends?", answer: "Yes, after the 3-day free trial ends, it will automatically convert to a paid subscription and be charged. If you don't wish to continue, please cancel before the trial expires."),

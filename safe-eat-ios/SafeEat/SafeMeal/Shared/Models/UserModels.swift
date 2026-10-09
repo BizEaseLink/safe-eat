@@ -275,33 +275,6 @@ struct ClaimCampaignPayload: Encodable {
     let discountCode: String?
 }
 
-// MARK: - 广告奖励领取
-
-struct ClaimAdRewardPayload: Encodable {
-    let placementCode: String
-    let proofToken: String
-}
-
-struct ClaimAdRewardResult: Decodable {
-    let rewardLog: AdRewardLog
-    let quota: AdRewardQuota
-}
-
-struct AdRewardLog: Decodable {
-    let id: String
-    let placementId: String
-    let proofToken: String
-    let rewardQuota: Int
-    let claimedOn: String
-}
-
-struct AdRewardQuota: Decodable {
-    let id: String
-    let totalQuota: Int
-    let usedCount: Int
-    let adClaimsCount: Int
-}
-
 // MARK: - 每日配额快照
 
 struct DailyQuotaSnapshot: Decodable {

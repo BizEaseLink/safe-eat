@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - 会员引导横幅
 
-/// 正面（替换 NativeAdView）和背面（所有 section 之后）复用
+/// 正面和背面（所有 section 之后）复用
 /// 根据用户 tier 传入不同文案
 
 struct MembershipBannerView: View {

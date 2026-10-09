@@ -60,37 +60,16 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				ThirdParty/UMeng/UMCommonLog.framework,
-				ThirdParty/UMeng/UMRemoteConfig.framework,
-				ThirdParty/UMeng/UTDID.framework,
 			);
 			target = 43604B552F87D83A009131CE /* SafeMeal */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		439BF4483060C9DE00DBB845 /* Exceptions for "SafeMeal" folder in "Embed Frameworks" phase from "SafeMeal" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			attributesByRelativePath = {
-				ThirdParty/UMeng/UMCommon.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-				ThirdParty/UMeng/UMDevice.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-				ThirdParty/UMeng/UMUnionSDK.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-			};
-			buildPhase = 439BF4473060C9DD00DBB845 /* Embed Frameworks */;
-			membershipExceptions = (
-				ThirdParty/UMeng/UMCommon.xcframework,
-				ThirdParty/UMeng/UMDevice.xcframework,
-				ThirdParty/UMeng/UMUnionSDK.xcframework,
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		43604B582F87D83A009131CE /* SafeMeal */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				43604B632F87D83D009131CE /* Exceptions for "SafeMeal" folder in "SafeMeal" target */,
-				439BF4483060C9DE00DBB845 /* Exceptions for "SafeMeal" folder in "Embed Frameworks" phase from "SafeMeal" target */,
 			);
 			path = SafeMeal;
 			sourceTree = "<group>";
@@ -304,19 +283,15 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/SafeMeal/ThirdParty/UMeng",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SafeMeal/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "食必安";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "SafeMeal 需要使用相机来拍摄食物照片进行识别";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "SafeMeal 需要访问本地网络以连接开发服务器";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "SafeMeal 需要访问本地网络以连接食物识别服务";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "SafeMeal 需要保存图片到相册";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "SafeMeal 需要访问相册以选择食物照片进行识别";
-				INFOPLIST_KEY_NSUserTrackingUsageDescription = "食必安需要使用广告标识来为您提供个性化的广告体验，您可以选择允许或拒绝。";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -363,19 +338,15 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/SafeMeal/ThirdParty/UMeng",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SafeMeal/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "食必安";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "SafeMeal 需要使用相机来拍摄食物照片进行识别";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "SafeMeal 需要访问本地网络以连接开发服务器";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "SafeMeal 需要访问本地网络以连接食物识别服务";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "SafeMeal 需要保存图片到相册";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "SafeMeal 需要访问相册以选择食物照片进行识别";
-				INFOPLIST_KEY_NSUserTrackingUsageDescription = "食必安需要使用广告标识来为您提供个性化的广告体验，您可以选择允许或拒绝。";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

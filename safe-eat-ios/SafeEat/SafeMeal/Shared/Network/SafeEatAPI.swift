@@ -421,16 +421,6 @@ final class SafeMealAPI {
         return try await sendPaginated(request, as: OrderContainer.self)
     }
 
-    func claimAdReward(accessToken: String, payload: ClaimAdRewardPayload) async throws -> ClaimAdRewardResult {
-        var request = try buildJSONRequest(
-            path: "/v1/apps/\(AppConfig.appCode)/ads/rewards/claim",
-            method: "POST",
-            body: payload
-        )
-        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        return try await send(request, as: ClaimAdRewardResult.self)
-    }
-
     func createRecognition(accessToken: String, imageData: Data, fileName: String) async throws -> RecognitionRecord {
         let boundary = "Boundary-\(UUID().uuidString)"
         var request = try buildRequest(path: "/v1/apps/\(AppConfig.appCode)/recognitions", method: "POST")

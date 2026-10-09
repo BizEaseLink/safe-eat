@@ -34,8 +34,6 @@ struct MainTabView: View {
     @State private var recognitionPhase: RecognitionPhase?
     @State private var recognizingPreviewImage: UIImage?
     @State private var resultRoute: ResultRoute?
-    @State private var showAdRewardResult = false
-    @State private var adRewardResultType: AdRewardResultType = .claimFailed
     // 识别流程中间数据
     @State private var identifySession: IdentifySessionData?
     @Environment(\.colorScheme) private var colorScheme
@@ -46,13 +44,6 @@ struct MainTabView: View {
     // @State private var trendPath = NavigationPath()  // v1.3.0 启用
     @State private var profilePath = NavigationPath()
     @State private var showNotificationCenter = false
-
-    private var adConfig: AdConfigStore { AdConfigStore.shared }
-
-    private var isPaidMember: Bool {
-        guard let tier = store.profile?.currentPlanTier else { return false }
-        return tier != "free"
-    }
 
     private var isFreeQuotaExceeded: Bool {
         guard store.profile?.currentPlanTier == nil || store.profile?.currentPlanTier == "free" else { return false }
@@ -199,13 +190,9 @@ struct MainTabView: View {
                     periodStart: nil,
                     periodEnd: nil
                 ),
-                onWatchAd: adConfig.rewardVideoEnabled ? { watchRewardAd() } : nil,
                 onUpgrade: { showQuotaExceeded = false; showMembership = true },
                 onDismiss: { showQuotaExceeded = false }
             )
-        }
-        .sheet(isPresented: $showAdRewardResult) {
-            AdRewardResultSheet(resultType: adRewardResultType)
         }
         .alert(
             SafeMealL10n.text(L10nKey.Common.notice),
@@ -238,26 +225,11 @@ struct MainTabView: View {
         .task {
             await store.refreshDailyQuota()
         }
-        // 初始化配置：进入首页 2 秒后后台拉取广告配置和参数配置
-        // 仅在初始化时检查缓存过期，使用时直接读内存不检查过期
+        // 初始化配置：进入首页 2 秒后后台拉取参数配置
         .task {
             try? await Task.sleep(for: .seconds(2))
-            async let adConfigTask: Void = AdConfigStore.shared.fetchConfig()
             if let token = store.session?.accessToken {
-                async let paramConfigTask: Void = ConfigParamStore.shared.fetchConfig(accessToken: token)
-                _ = await (adConfigTask, paramConfigTask)
-            } else {
-                await adConfigTask
-            }
-            // 配置拉取完成后，执行依赖配置的动作
-            if !isPaidMember && adConfig.interstitialEnabled {
-                InterstitialAdManager.shared.preloadAd()
-            }
-            if !isPaidMember && adConfig.floatWindowEnabled {
-                let scenes = UIApplication.shared.connectedScenes
-                let windowScene = scenes.first as? UIWindowScene
-                let window = windowScene?.windows.first(where: { $0.isKeyWindow })
-                FloatingIconAdManager.shared.loadAndShow(from: window?.rootViewController)
+                await ConfigParamStore.shared.fetchConfig(accessToken: token)
             }
         }
     }
@@ -535,48 +507,6 @@ struct MainTabView: View {
         return status == 400 && message == SafeMealL10n.text(L10nKey.Errors.requestQuotaExceeded)
     }
 
-    private func watchRewardAd() {
-        guard let vc = AdTopVC.resolve() else {
-            print("[UMeng] 无法获取 rootViewController")
-            return
-        }
-        print("[UMeng] 开始加载激励视频，vc=\(vc)")
-        RewardAdManager.shared.loadAndShow(from: vc,
-            onReward: { proofToken in
-                Task {
-                    do {
-                        _ = try await store.authorizedRequest { token in
-                            try await store.api.claimAdReward(
-                                accessToken: token,
-                                payload: ClaimAdRewardPayload(
-                                    placementCode: "reward_video",
-                                    proofToken: proofToken
-                                )
-                            )
-                        }
-                        await store.refreshProfile()
-                        await store.refreshDailyQuota()
-                        adRewardResultType = .success(rewardQuota: store.dailyQuota?.adRewardPerWatch ?? Int(ConfigParamStore.shared.getNumber("ads_reward_video_quota", fallback: 3)))
-                        showQuotaExceeded = false
-                        showAdRewardResult = true
-                    } catch {
-                        print("[UMeng] claimReward 失败: \(error)")
-                        await store.refreshProfile()
-                        await store.refreshDailyQuota()
-                        adRewardResultType = .claimFailed
-                        showQuotaExceeded = false
-                        showAdRewardResult = true
-                    }
-                }
-            },
-            onClose: { normalClose in
-                if !normalClose {
-                    adRewardResultType = .loadFailed
-                    showAdRewardResult = true
-                }
-            }
-        )
-    }
 
     @ViewBuilder
     private func profileDestination(for route: ProfileRoute) -> some View {

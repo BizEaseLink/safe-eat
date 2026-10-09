@@ -5,7 +5,15 @@
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
-		<true/>
+		<false/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>bizeaselink.cn</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
 	</dict>
 	<key>UIAppFonts</key>
 	<array>
@@ -16,7 +24,5 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
-	<key>UMengAppKey</key>
-	<string>69f4675e9a7f376488d17f59</string>
 </dict>
 </plist>

@@ -300,7 +300,7 @@ struct CandidateSelectView: View {
                 IdentifyCandidate(name: "东坡肉", confidence: 0.78, type: nil, source: nil),
                 IdentifyCandidate(name: "扣肉", confidence: 0.45, type: nil, source: nil)
             ],
-            sessionId: "test-session",
+            sessionId: "preview-session",
             onSelect: { _, _ in }
         )
     }

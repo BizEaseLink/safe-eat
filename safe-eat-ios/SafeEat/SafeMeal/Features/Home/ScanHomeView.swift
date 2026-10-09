@@ -6,7 +6,6 @@ import UIKit
 struct ScanHomeView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var settings: AppSettingsStore
-    private var adConfig: AdConfigStore { AdConfigStore.shared }
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var scrollOffset: CGFloat = 0
@@ -16,11 +15,6 @@ struct ScanHomeView: View {
     var onOpenResult: ((String) -> Void)?
 
     let scrollCoordinateSpace = "safemeal.home.scroll"
-
-    private var isPaidMember: Bool {
-        guard let tier = store.profile?.currentPlanTier else { return false }
-        return tier != "free"
-    }
 
     private var latestRecord: LocalHistoryItem? {
         store.localHistory.first
@@ -94,10 +88,6 @@ struct ScanHomeView: View {
                             recentRecordSection
                         }
 
-                        if !isPaidMember && adConfig.bannerEnabled {
-                            BannerAdView()
-                                .frame(maxWidth: .infinity, minHeight: 50, idealHeight: 50, maxHeight: 50)
-                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
