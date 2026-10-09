@@ -51,8 +51,7 @@ struct FeedbackProblemView: View {
 
                     Button(action: { showMailComposer = true }) {
                         HStack(spacing: 12) {
-                            Image(systemName: "envelope.fill")
-                                .font(.system(size: 16, weight: .semibold))
+                            HugeIcon(glyph: .mail01, size: 16)
                                 .foregroundStyle(SafeMealTheme.primary)
 
                             Text(SafeMealL10n.text(L10nKey.Profile.Feedback.emailAction))

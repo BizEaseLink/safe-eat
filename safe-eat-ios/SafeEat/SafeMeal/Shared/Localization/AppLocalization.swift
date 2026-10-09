@@ -833,6 +833,7 @@ enum L10nKey {
         static let sectionGlycemic = "result.section.glycemic"
         static let sectionDietary = "result.section.dietary"
         static let sectionIngredients = "result.section.ingredients"
+        static let sectionInstructions = "result.section.instructions"
         static let glycemicIndex = "result.glycemic.index"
         static let glycemicLoad = "result.glycemic.load"
         static let insulinIndex = "result.glycemic.insulin_index"

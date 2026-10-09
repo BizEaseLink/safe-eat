@@ -28,8 +28,7 @@ struct LoginPromptSheet: View {
                             .fill(SafeMealTheme.primary.opacity(0.12))
                             .frame(width: 46, height: 46)
 
-                        Image(systemName: "person.crop.circle.badge.plus")
-                            .font(.system(size: 18, weight: .semibold))
+                        HugeIcon(glyph: .userAdd01, size: 18)
                             .foregroundStyle(SafeMealTheme.primary)
                     }
 

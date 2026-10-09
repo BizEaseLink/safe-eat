@@ -28,8 +28,7 @@ struct NewUserWelcomeSheet: View {
                             .fill(SafeMealTheme.primary.opacity(0.12))
                             .frame(width: 46, height: 46)
 
-                        Image(systemName: "leaf.fill")
-                            .font(.system(size: 18, weight: .semibold))
+                        HugeIcon(glyph: .leaf01, size: 18)
                             .foregroundStyle(SafeMealTheme.primary)
                     }
 
@@ -120,8 +119,7 @@ struct NewUserWelcomeSheet: View {
                             .fill(SafeMealTheme.primary.opacity(0.12))
                             .frame(width: 46, height: 46)
 
-                        Image(systemName: "crown.fill")
-                            .font(.system(size: 18, weight: .semibold))
+                        HugeIcon(glyph: .crown03, size: 18)
                             .foregroundStyle(SafeMealTheme.warning)
                     }
 
@@ -157,8 +155,7 @@ struct NewUserWelcomeSheet: View {
 
     private func featureRow(icon: String, title: String, detail: String) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 14, weight: .semibold))
+            HugeIcon(sf: icon, size: 14)
                 .foregroundStyle(SafeMealTheme.primary)
                 .frame(width: 24)
 

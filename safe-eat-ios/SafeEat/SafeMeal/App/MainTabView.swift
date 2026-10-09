@@ -307,8 +307,7 @@ struct MainTabView: View {
             startScan()
         } label: {
             VStack(spacing: 6) {
-                Image(systemName: "camera.fill")
-                    .font(.system(size: 18, weight: .semibold))
+                HugeIcon(glyph: .camera01, size: 18)
                     .foregroundColor(scanPressed ? SafeMealTheme.primary : SafeMealTheme.textSecondary)
                 Text(SafeMealL10n.text(L10nKey.Tab.scan))
                     .font(.system(size: 10, weight: .medium))
@@ -333,8 +332,7 @@ struct MainTabView: View {
             store.selectedRootTab = tab
         } label: {
             VStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 18, weight: isSelected ? .semibold : .regular))
+                HugeIcon(sf: icon, size: 18)
                     .foregroundColor(iconColor)
                 Text(label)
                     .font(.system(size: 10, weight: .medium))

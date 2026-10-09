@@ -14,8 +14,7 @@ struct QuotaStatusBar: View {
         VStack(spacing: 14) {
             // 标题行：图标 + 标签 + 次数
             HStack(spacing: 10) {
-                Image(systemName: isFreeUser ? "sun.max.fill" : "calendar.badge.clock")
-                    .font(.system(size: 18, weight: .medium))
+                HugeIcon(sf: isFreeUser ? "sun.max.fill" : "calendar.badge.clock", size: 18)
                     .foregroundStyle(isFreeUser ? .orange : .blue)
 
                 Text(isFreeUser
@@ -46,8 +45,7 @@ struct QuotaStatusBar: View {
                     onShowMembership?()
                 } label: {
                     HStack(spacing: 4) {
-                        Image(systemName: "military_tech")
-                            .font(.system(size: 12, weight: .semibold))
+                        HugeIcon(glyph: .crown03, size: 12)
                         Text(SafeMealL10n.text(L10nKey.Home.memberAction))
                             .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
                     }

@@ -184,7 +184,7 @@ struct MembershipPurchaseView: View {
 
     private var newUserGiftBanner: some View {
         HStack(spacing: 8) {
-            Image(systemName: "gift.fill")
+            HugeIcon(glyph: .gift, size: 16)
                 .foregroundStyle(SafeMealTheme.warning)
             Text(SafeMealL10n.text(L10nKey.Membership.newUserGiftBanner))
                 .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .bold))
@@ -203,8 +203,7 @@ struct MembershipPurchaseView: View {
 
     private var plansLoadErrorView: some View {
         VStack(spacing: 12) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 32))
+            HugeIcon(glyph: .alert02, size: 32)
                 .foregroundStyle(.orange)
             Text(SafeMealL10n.text(L10nKey.Membership.plansLoadError))
                 .font(SafeMealFont.textStyle(.body))
@@ -224,8 +223,7 @@ struct MembershipPurchaseView: View {
 
     private var noPlansView: some View {
         VStack(spacing: 12) {
-            Image(systemName: "tray")
-                .font(.system(size: 32))
+            HugeIcon(glyph: .inboxCheck, size: 32)
                 .foregroundStyle(SafeMealTheme.textSecondary)
             Text(SafeMealL10n.text(L10nKey.Membership.noPlansAvailable))
                 .font(SafeMealFont.textStyle(.body))
@@ -245,7 +243,7 @@ struct MembershipPurchaseView: View {
 
             if let error = plansLoadError {
                 HStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle.fill")
+                    HugeIcon(glyph: .alert02, size: 16)
                         .foregroundColor(.orange)
                     Text(error)
                         .font(.footnote)
@@ -288,11 +286,14 @@ struct MembershipPurchaseView: View {
                         selectedPlanID = plan.id
                     }
                 } label: {
-                    let imageName = (downgrade || currentExact) ? "minus.circle"
-                        : isSelected ? "checkmark.circle.fill" : "circle"
-                    Image(systemName: imageName)
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(isSelected ? SafeMealTheme.primary : SafeMealTheme.textSecondary.opacity(0.6))
+                    Group {
+                        if downgrade || currentExact {
+                            HugeIcon(glyph: .minusSignCircle, size: 22, stroke: true)
+                        } else {
+                            CheckCircle(isOn: isSelected, size: 22)
+                        }
+                    }
+                    .foregroundStyle(isSelected ? SafeMealTheme.primary : SafeMealTheme.textSecondary.opacity(0.6))
                 }
                 .buttonStyle(.plain)
                 .disabled(downgrade || currentExact)
@@ -406,8 +407,7 @@ struct MembershipPurchaseView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(desc.split(separator: "\n"), id: \.self) { line in
                         HStack(alignment: .top, spacing: 6) {
-                            Image(systemName: "star.fill")
-                                .font(SafeMealFont.custom(9, relativeTo: .caption2))
+                            HugeIcon(glyph: .star, size: 9)
                                 .foregroundStyle(SafeMealTheme.primary)
                                 .padding(.top, 3)
                             Text(String(line))
@@ -433,8 +433,7 @@ struct MembershipPurchaseView: View {
 
     private func benefitRow(_ text: String) -> some View {
         HStack(alignment: .top, spacing: 6) {
-            Image(systemName: "star.fill")
-                .font(SafeMealFont.custom(9, relativeTo: .caption2))
+            HugeIcon(glyph: .star, size: 9)
                 .foregroundStyle(SafeMealTheme.primary)
                 .padding(.top, 3)
             Text(text)
@@ -450,8 +449,7 @@ struct MembershipPurchaseView: View {
         Group {
             ForEach(campaignBenefitsForPlan(plan)) { benefit in
                 HStack(spacing: 4) {
-                    Image(systemName: "gift")
-                        .font(SafeMealFont.custom(10, relativeTo: .caption2))
+                    HugeIcon(glyph: .gift, size: 10)
                     Text(campaignBenefitText(benefit))
                         .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
                 }
@@ -565,8 +563,7 @@ struct MembershipPurchaseView: View {
                                 .fill(SafeMealTheme.primary.opacity(0.12))
                                 .frame(width: 46, height: 46)
 
-                            Image(systemName: "crown.fill")
-                                .font(.system(size: 18, weight: .semibold))
+                            HugeIcon(glyph: .crown03, size: 18)
                                 .foregroundStyle(SafeMealTheme.warning)
                         }
 
@@ -651,8 +648,7 @@ struct MembershipPurchaseView: View {
 
                         ForEach(benefits) { benefit in
                             HStack(spacing: 8) {
-                                Image(systemName: "gift.fill")
-                                    .font(SafeMealFont.custom(12, relativeTo: .caption))
+                                HugeIcon(glyph: .gift, size: 12)
                                     .foregroundStyle(SafeMealTheme.warning)
                                 Text(benefit.name)
                                 Spacer()
@@ -670,8 +666,7 @@ struct MembershipPurchaseView: View {
                         Divider().overlay(SafeMealTheme.line)
 
                         HStack(spacing: 8) {
-                            Image(systemName: "tag.fill")
-                                .font(SafeMealFont.custom(12, relativeTo: .caption))
+                            HugeIcon(glyph: .tag01, size: 12)
                                 .foregroundStyle(SafeMealTheme.primary)
                             Text(SafeMealL10n.text(L10nKey.Membership.confirmAppleOffer))
                             Spacer()
@@ -698,8 +693,7 @@ struct MembershipPurchaseView: View {
                            let intro = product.subscription?.introductoryOffer,
                            intro.paymentMode == .freeTrial {
                             HStack(spacing: 6) {
-                                Image(systemName: "gift.fill")
-                                    .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                                HugeIcon(glyph: .gift, size: 11)
                                     .foregroundStyle(SafeMealTheme.primary)
                                 Text(SafeMealL10n.format(L10nKey.Membership.confirmTrialInfo, trialDays(for: intro)))
                                     .font(SafeMealFont.custom(12, relativeTo: .caption2))
@@ -709,8 +703,7 @@ struct MembershipPurchaseView: View {
 
                         // 自动续费提示
                         HStack(spacing: 6) {
-                            Image(systemName: "arrow.triangle.2.circlepath")
-                                .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                            HugeIcon(glyph: .refresh01, size: 11)
                                 .foregroundStyle(SafeMealTheme.textSecondary)
                             Text(SafeMealL10n.text(L10nKey.Membership.confirmAutoRenewal))
                                 .font(SafeMealFont.custom(12, relativeTo: .caption2))
@@ -719,8 +712,7 @@ struct MembershipPurchaseView: View {
 
                         // 取消路径提示
                         HStack(spacing: 6) {
-                            Image(systemName: "xmark.circle")
-                                .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                            HugeIcon(glyph: .cancelCircle, size: 11)
                                 .foregroundStyle(SafeMealTheme.textSecondary)
                             Text(SafeMealL10n.text(L10nKey.Membership.confirmCancelPath))
                                 .font(SafeMealFont.custom(12, relativeTo: .caption2))
@@ -757,7 +749,7 @@ struct MembershipPurchaseView: View {
                     // AI 建议等级
                     if let level = plan.aiAdviceLevel, !level.isEmpty {
                         HStack {
-                            Label(SafeMealL10n.text(L10nKey.Membership.detailAiAdviceLevelLabel), systemImage: "brain.head.profile")
+                            Label { Text(SafeMealL10n.text(L10nKey.Membership.detailAiAdviceLevelLabel)) } icon: { HugeIcon(sf: "brain.head.profile", size: 14) }
                                 .foregroundStyle(SafeMealTheme.textSecondary)
                             Spacer()
                             Text(AiAdviceLevelMapper.title(level))
@@ -769,7 +761,7 @@ struct MembershipPurchaseView: View {
                     // 识别次数
                     if let quota = plan.recognitionQuotaMonthly {
                         HStack {
-                            Label(SafeMealL10n.text(L10nKey.Membership.detailRecognitionMonthlyLabel), systemImage: "camera.viewfinder")
+                            Label { Text(SafeMealL10n.text(L10nKey.Membership.detailRecognitionMonthlyLabel)) } icon: { HugeIcon(sf: "camera.viewfinder", size: 14) }
                                 .foregroundStyle(SafeMealTheme.textSecondary)
                             Spacer()
                             Text(SafeMealL10n.format(L10nKey.Membership.detailCountFormat, quota))
@@ -791,8 +783,7 @@ struct MembershipPurchaseView: View {
                         VStack(alignment: .leading, spacing: 6) {
                             ForEach(desc.split(separator: "\n"), id: \.self) { line in
                                 HStack(alignment: .top, spacing: 6) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                                    HugeIcon(glyph: .checkmarkCircle01, size: 11)
                                         .foregroundStyle(SafeMealTheme.primary)
                                     Text(String(line))
                                         .font(SafeMealFont.textStyle(.footnote))
@@ -892,8 +883,7 @@ struct MembershipPurchaseView: View {
         }
 
         return HStack(alignment: .top, spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 14))
+            HugeIcon(sf: icon, size: 14)
                 .foregroundStyle(color)
                 .padding(.top, 2)
             Text(text)
@@ -1166,8 +1156,7 @@ struct MembershipPurchaseView: View {
             Button {
                 agreedToPurchaseTerms.toggle()
             } label: {
-                Image(systemName: agreedToPurchaseTerms ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 18))
+                CheckCircle(isOn: agreedToPurchaseTerms, size: 18)
                     .foregroundStyle(agreedToPurchaseTerms ? SafeMealTheme.primary : SafeMealTheme.textSecondary)
             }
             .buttonStyle(.plain)

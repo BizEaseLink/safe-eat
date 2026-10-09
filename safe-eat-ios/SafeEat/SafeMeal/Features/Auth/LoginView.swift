@@ -342,8 +342,7 @@ struct LoginView: View {
         Button {
             handleBack()
         } label: {
-            Image(systemName: "chevron.left")
-                .font(.system(size: 18, weight: .semibold))
+            HugeIcon(glyph: .arrowLeft01, size: 18)
                 .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: 46, height: 46)
                 .background(
@@ -641,8 +640,7 @@ struct LoginView: View {
 
     private func requirementRow(text: String, passed: Bool) -> some View {
         HStack(spacing: 4) {
-            Image(systemName: passed ? "checkmark.circle.fill" : "circle")
-                .font(.system(size: 12))
+            CheckCircle(isOn: passed, size: 12)
                 .foregroundStyle(passed ? SafeMealTheme.success : SafeMealTheme.textSecondary)
             Text(text)
                 .font(SafeMealFont.textStyle(.caption2))
@@ -658,8 +656,7 @@ struct LoginView: View {
             Button {
                 agreedToTerms.toggle()
             } label: {
-                Image(systemName: agreedToTerms ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 18))
+                CheckCircle(isOn: agreedToTerms, size: 18)
                     .foregroundStyle(showTermsToast ? SafeMealTheme.warning : (agreedToTerms ? SafeMealTheme.primary : SafeMealTheme.textSecondary))
             }
             .buttonStyle(.plain)
@@ -972,8 +969,7 @@ struct LoginView: View {
 
     private var termsToastView: some View {
         HStack(spacing: 6) {
-            Image(systemName: "exclamationmark.circle.fill")
-                .font(.system(size: 15, weight: .semibold))
+            HugeIcon(glyph: .alertCircle, size: 15)
                 .foregroundStyle(SafeMealTheme.warning)
             Text(SafeMealL10n.text(L10nKey.Auth.termsNotAgreed))
                 .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .semibold))

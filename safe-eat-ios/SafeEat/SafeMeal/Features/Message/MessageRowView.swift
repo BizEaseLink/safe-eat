@@ -64,8 +64,7 @@ struct MessageRowView: View {
                 Spacer()
 
                 // 右箭头
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
+                HugeIcon(glyph: .arrowRight01, size: 14)
                     .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.3))
             }
             .padding(16)

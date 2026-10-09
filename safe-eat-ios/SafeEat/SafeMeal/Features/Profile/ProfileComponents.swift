@@ -62,8 +62,7 @@ struct ProfileNavigationRow: View {
                 Circle()
                     .fill(tint.opacity(0.12))
                     .frame(width: 46, height: 46)
-                Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
+                HugeIcon(sf: icon, size: 16)
                     .foregroundStyle(tint)
             }
 
@@ -87,8 +86,7 @@ struct ProfileNavigationRow: View {
                     .foregroundStyle(SafeMealTheme.textSecondary)
             }
 
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .semibold))
+            HugeIcon(glyph: .arrowRight01, size: 12)
                 .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.75))
         }
         .frame(minHeight: 48)
@@ -138,8 +136,7 @@ struct ProfileSelectionRow: View {
                 Spacer()
 
                 if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 18, weight: .semibold))
+                    HugeIcon(glyph: .checkmarkCircle01, size: 18)
                         .foregroundStyle(SafeMealTheme.primary)
                 } else {
                     Circle()
@@ -203,10 +200,20 @@ struct ProfileAvatarView: View {
             Circle()
                 .fill(gradientForGender)
 
-            Image(systemName: iconForGender)
-                .font(.system(size: size * 0.38, weight: .medium))
+            // 默认显示名称第一个字（无头像时）
+            Text(firstCharacterOfName)
+                .font(SafeMealFont.custom(size * 0.4, relativeTo: .title, weight: .bold))
                 .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
         }
+    }
+
+    private var firstCharacterOfName: String {
+        let name = profile?.displayName ?? ""
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let first = trimmed.first else { return "食" }
+        return String(first)
     }
 
     /// 根据性别返回不同的 SF Symbol
@@ -360,8 +367,7 @@ struct ProfileFieldBlock<Content: View>: View {
                     Button {
                         onInfo()
                     } label: {
-                        Image(systemName: "questionmark.circle")
-                            .font(.system(size: 16))
+                        HugeIcon(glyph: .helpCircle, size: 16)
                             .foregroundStyle(SafeMealTheme.textSecondary)
                     }
                     .buttonStyle(.plain)
@@ -433,7 +439,7 @@ struct ProfileMenuField: View {
                     onSelect(option.id)
                 } label: {
                     if option.id == value {
-                        Label(option.title, systemImage: "checkmark")
+                        Label { Text(option.title) } icon: { HugeIcon(sf: "checkmark", size: 14) }
                     } else {
                         Text(option.title)
                     }
@@ -447,8 +453,7 @@ struct ProfileMenuField: View {
 
                 Spacer()
 
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 14, weight: .semibold))
+                HugeIcon(glyph: .arrowDown01, size: 14)
                     .foregroundStyle(SafeMealTheme.textSecondary)
             }
             .padding(.horizontal, 16)
@@ -587,8 +592,7 @@ struct ProfileSecondaryChrome: View {
 
     private var backButton: some View {
         Button(action: onBack) {
-            Image(systemName: "chevron.left")
-                .font(.system(size: 20, weight: .semibold))
+            HugeIcon(glyph: .arrowLeft01, size: 20)
                 .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: 48, height: 48)
                 .background(
@@ -719,8 +723,7 @@ struct CancelledRenewalBanner: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            Image(systemName: "info.circle.fill")
-                .font(.system(size: 16))
+            HugeIcon(glyph: .informationCircle, size: 16)
                 .foregroundStyle(SafeMealTheme.warning)
                 .padding(.top, 2)
 
@@ -759,8 +762,7 @@ struct ExpiryUrgentReminderView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            Image(systemName: "exclamationmark.circle.fill")
-                .font(.system(size: 16))
+            HugeIcon(glyph: .alertCircle, size: 16)
                 .foregroundStyle(SafeMealTheme.danger)
                 .padding(.top, 2)
 
@@ -861,8 +863,7 @@ struct ProfileHeaderIconButton: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        Image(systemName: systemName)
-            .font(.system(size: 20, weight: .medium))
+        HugeIcon(sf: systemName, size: 20)
             .foregroundStyle(SafeMealTheme.textPrimary)
             .frame(width: 44, height: 44)
             .background(

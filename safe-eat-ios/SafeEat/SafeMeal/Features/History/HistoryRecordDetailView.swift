@@ -88,7 +88,7 @@ struct HistoryRecordDetailView: View {
 
     private var recognitionInfoCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label(SafeMealL10n.text(L10nKey.Result.recognitionInfoLabel), systemImage: "info.circle")
+            Label { Text(SafeMealL10n.text(L10nKey.Result.recognitionInfoLabel)) } icon: { HugeIcon(sf: "info.circle", size: 14) }
                 .font(SafeMealFont.textStyle(.subheadline).bold())
                 .foregroundStyle(SafeMealTheme.primary)
 
@@ -113,7 +113,7 @@ struct HistoryRecordDetailView: View {
 
     private func metricImpactsCard(_ impacts: [MetricImpact]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label(SafeMealL10n.text(L10nKey.Result.metricImpactsLabel), systemImage: "chart.bar")
+            Label { Text(SafeMealL10n.text(L10nKey.Result.metricImpactsLabel)) } icon: { HugeIcon(sf: "chart.bar", size: 14) }
                 .font(SafeMealFont.textStyle(.subheadline).bold())
                 .foregroundStyle(SafeMealTheme.primary)
 
@@ -143,14 +143,13 @@ struct HistoryRecordDetailView: View {
 
     private func riskFactsCard(_ risks: [RiskFact]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label(SafeMealL10n.text(L10nKey.Result.riskFactsLabel), systemImage: "exclamationmark.triangle")
+            Label { Text(SafeMealL10n.text(L10nKey.Result.riskFactsLabel)) } icon: { HugeIcon(sf: "exclamationmark.triangle", size: 14) }
                 .font(SafeMealFont.textStyle(.subheadline).bold())
                 .foregroundStyle(.orange)
 
             ForEach(risks) { risk in
                 HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: "exclamationmark.circle")
-                        .font(.system(size: 14))
+                    HugeIcon(glyph: .alertCircle, size: 14)
                         .foregroundStyle(riskSeverityColor(risk.severity))
                     VStack(alignment: .leading, spacing: 4) {
                         Text(risk.tag)
@@ -178,7 +177,7 @@ struct HistoryRecordDetailView: View {
             if let summary = record.aiExplanation?.summary, !summary.isEmpty {
                 if canShowSummary {
                     VStack(alignment: .leading, spacing: 10) {
-                        Label(SafeMealL10n.text(L10nKey.Result.aiAdviceSummaryLabel), systemImage: "text.quote")
+                        Label { Text(SafeMealL10n.text(L10nKey.Result.aiAdviceSummaryLabel)) } icon: { HugeIcon(sf: "text.quote", size: 14) }
                             .font(SafeMealFont.textStyle(.subheadline).bold())
                             .foregroundStyle(SafeMealTheme.primary)
                         Text(summary)
@@ -201,7 +200,7 @@ struct HistoryRecordDetailView: View {
             if let detailed = record.aiExplanation?.detailedAdvice, !detailed.isEmpty {
                 if canShowDetailed {
                     VStack(alignment: .leading, spacing: 10) {
-                        Label(SafeMealL10n.text(L10nKey.Result.aiAdviceDetailedLabel), systemImage: "doc.text.fill")
+                        Label { Text(SafeMealL10n.text(L10nKey.Result.aiAdviceDetailedLabel)) } icon: { HugeIcon(sf: "doc.text.fill", size: 14) }
                             .font(SafeMealFont.textStyle(.subheadline).bold())
                             .foregroundStyle(SafeMealTheme.primary)
                         Text(detailed)
@@ -224,13 +223,12 @@ struct HistoryRecordDetailView: View {
             if let tips = record.aiExplanation?.healthTips, !tips.isEmpty {
                 if canShowHealthTips {
                     VStack(alignment: .leading, spacing: 10) {
-                        Label(SafeMealL10n.text(L10nKey.Result.aiAdviceHealthTipsLabel), systemImage: "heart.text.square.fill")
+                        Label { Text(SafeMealL10n.text(L10nKey.Result.aiAdviceHealthTipsLabel)) } icon: { HugeIcon(sf: "heart.text.square.fill", size: 14) }
                             .font(SafeMealFont.textStyle(.subheadline).bold())
                             .foregroundStyle(SafeMealTheme.primary)
                         ForEach(Array(tips.enumerated()), id: \.offset) { _, tip in
                             HStack(alignment: .top, spacing: 8) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 14))
+                                HugeIcon(glyph: .checkmarkCircle01, size: 14)
                                     .foregroundStyle(.green)
                                 Text(tip)
                                     .font(SafeMealFont.textStyle(.subheadline))
@@ -256,7 +254,7 @@ struct HistoryRecordDetailView: View {
 
     private func tierGatedCard(title: String, icon: String, targetTier: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label(title, systemImage: icon)
+            Label { Text(title) } icon: { HugeIcon(sf: icon, size: 14) }
                 .font(SafeMealFont.textStyle(.subheadline).bold())
                 .foregroundStyle(SafeMealTheme.textSecondary)
             Text(SafeMealL10n.format(L10nKey.Result.upgradeTierHintFormat, targetTier))

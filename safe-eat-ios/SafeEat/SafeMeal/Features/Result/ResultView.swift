@@ -221,7 +221,7 @@ struct ResultView: View {
                     if let summary = aiSummaryText(for: explanation) {
                         sectionCard {
                             VStack(alignment: .leading, spacing: 8) {
-                                Label(SafeMealL10n.text(L10nKey.Result.aiAdviceSummaryLabel), systemImage: "text.quote")
+                                Label { Text(SafeMealL10n.text(L10nKey.Result.aiAdviceSummaryLabel)) } icon: { HugeIcon(sf: "text.quote", size: 14) }
                                     .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: .bold))
                                     .foregroundStyle(SafeMealTheme.primary)
                                 Text(summary)
@@ -237,7 +237,7 @@ struct ResultView: View {
                         if let detailed = aiDetailedText(for: explanation) {
                             sectionCard {
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Label(SafeMealL10n.text(L10nKey.Result.aiAdviceDetailedLabel), systemImage: "doc.text.fill")
+                                    Label { Text(SafeMealL10n.text(L10nKey.Result.aiAdviceDetailedLabel)) } icon: { HugeIcon(sf: "doc.text.fill", size: 14) }
                                         .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: .bold))
                                         .foregroundStyle(SafeMealTheme.primary)
                                     Text(detailed)
@@ -254,13 +254,12 @@ struct ResultView: View {
                         if let tips = aiHealthTips(for: explanation), !tips.isEmpty {
                             sectionCard {
                                 VStack(alignment: .leading, spacing: 10) {
-                                    Label(SafeMealL10n.text(L10nKey.Result.healthTipsTitle), systemImage: "heart.text.square.fill")
+                                    Label { Text(SafeMealL10n.text(L10nKey.Result.healthTipsTitle)) } icon: { HugeIcon(sf: "heart.text.square.fill", size: 14) }
                                         .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: .bold))
                                         .foregroundStyle(SafeMealTheme.success)
                                     ForEach(tips, id: \.self) { tip in
                                         HStack(alignment: .top, spacing: 8) {
-                                            Image(systemName: "checkmark.circle.fill")
-                                                .font(.system(size: 16))
+                                            HugeIcon(glyph: .checkmarkCircle01, size: 16)
                                                 .foregroundStyle(SafeMealTheme.success)
                                             Text(tip)
                                                 .font(SafeMealFont.custom(15, relativeTo: .subheadline))
@@ -348,25 +347,27 @@ struct ResultView: View {
                         bottomActionsSection(item: item, recognition: recognition)
                     }
                     .padding(.bottom, 40)
+                    .background(DisableScrollBounce())
                 }
+                .ignoresSafeArea(edges: .top)
 
                 // hero 左上返回浮钮（避开状态栏；收藏/分享隐藏）
                 Button {
                     dismiss()
                 } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 17, weight: .semibold))
+                    HugeIcon(glyph: .arrowLeft01, size: 20)
                         .foregroundStyle(SafeMealTheme.textPrimary)
-                        .frame(width: 40, height: 40)
+                        .frame(width: 50, height: 50)
                         .background(
-                            Circle().fill(.ultraThinMaterial)
+                            Circle().fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.76))
                         )
                         .overlay(
-                            Circle().stroke(colorScheme == .dark ? Color.white.opacity(0.18) : Color.black.opacity(0.10), lineWidth: 0.8)
+                            Circle().stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
                         )
                 }
+                .buttonStyle(.plain)
                 .padding(.top, topInset + 8)
-                .padding(.leading, 16)
+                .padding(.leading, 20)
             }
             .ignoresSafeArea()
         }
@@ -386,24 +387,25 @@ struct ResultView: View {
                 Rectangle()
                     .fill(SafeMealTheme.primarySoft.opacity(0.4))
                     .overlay(
-                        Image(systemName: "photo")
-                            .font(.system(size: 28))
+                        HugeIcon(glyph: .image01, size: 28)
                             .foregroundStyle(SafeMealTheme.textSecondary)
                     )
             }
-            // 黑渐变遮罩（顶部深 → 中透明 → 底 10%）
+            // 顶部轻渐变遮罩：仅从头部向下淡出，图片主体干净（保证状态栏/返回键可读）
             LinearGradient(
-                colors: [
-                    Color.black.opacity(0.45),
-                    Color.black.opacity(0.05),
-                    Color.black.opacity(0.10),
+                stops: [
+                    .init(color: Color.black.opacity(0.42), location: 0),
+                    .init(color: Color.black.opacity(0.14), location: 0.3),
+                    .init(color: .clear, location: 0.62),
                 ],
                 startPoint: .top,
                 endPoint: .bottom
             )
+
         }
         .frame(height: 318)
         .frame(maxWidth: .infinity)
+        .clipped()
         .clipShape(
             UnevenRoundedRectangle(
                 topLeadingRadius: 0,
@@ -412,55 +414,118 @@ struct ResultView: View {
                 topTrailingRadius: 0
             )
         )
-        .ignoresSafeArea(edges: .top)
     }
 
     // MARK: - P1 上浮 sheet：食物名 + AI 摘要 + statbox
     private func detailSheet(item: LocalHistoryItem, recognition: RecognitionRecord) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // 食物名
-            Text(displayName)
-                .font(SafeMealFont.custom(27, relativeTo: .title, weight: .bold))
-                .foregroundStyle(SafeMealTheme.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 12) {
+            // 食物名（3 行内自适应缩字号，超长省略；英文字号更小）+ 右上角建议徽章
+            HStack(alignment: .center, spacing: 10) {
+                Text(displayName)
+                    .font(SafeMealFont.custom(SafeMealL10n.isZh ? 26 : 21, relativeTo: .title, weight: .bold))
+                    .foregroundStyle(SafeMealTheme.textPrimary)
+                    .lineLimit(3)
+                    .minimumScaleFactor(SafeMealL10n.isZh ? 0.72 : 0.62)
+                    .multilineTextAlignment(.leading)
+                    .frame(minHeight: 68, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 6)
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { selectedTab = .advice }
+                } label: {
+                    recommendationBadge
+                }
+                .buttonStyle(.plain)
+            }
 
-            // AI 一句摘要
-            Text(frontSummaryText)
-                .font(SafeMealFont.custom(13.5, relativeTo: .subheadline))
+            // AI 摘要（描述性，避免与建议徽章重复）
+            Text(sheetSummaryText)
+                .font(SafeMealFont.textStyle(.subheadline))
                 .foregroundStyle(SafeMealTheme.textSecondary)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
 
-            // statbox 三列
+            // statbox 三列（评分列可点击展开评分逻辑）
             HStack(spacing: 0) {
-                statboxCell(
-                    value: "\(scoreValue)",
-                    label: SafeMealL10n.text(L10nKey.Result.scoreSectionTitle),
-                    icon: "star.fill",
-                    color: scoreColor
-                )
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showScoreLogicDetail.toggle()
+                    }
+                } label: {
+                    statboxCell(
+                        value: "\(scoreValue)",
+                        label: SafeMealL10n.text(L10nKey.Result.scoreSectionTitle),
+                        icon: "star.fill",
+                        color: SafeMealTheme.warning
+                    )
+                }
+                .buttonStyle(.plain)
                 statboxDivider
-                statboxCell(
-                    value: statusText,
-                    label: SafeMealL10n.text(L10nKey.Result.recommendationTitle),
-                    icon: recommendation.icon,
-                    color: recommendation.color
-                )
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { selectedTab = .nutrition }
+                } label: {
+                    statboxCell(
+                        value: calorieText,
+                        label: SafeMealL10n.text(L10nKey.Result.metricCalories),
+                        icon: "flame.fill",
+                        color: SafeMealTheme.warning,
+                        unit: "kcal"
+                    )
+                }
+                .buttonStyle(.plain)
                 statboxDivider
-                statboxCell(
-                    value: calorieText,
-                    label: SafeMealL10n.text(L10nKey.Result.metricCalories),
-                    icon: "flame.fill",
-                    color: SafeMealTheme.warning
-                )
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { selectedTab = .nutrition }
+                } label: {
+                    statboxCell(
+                        value: proteinText,
+                        label: SafeMealL10n.text(L10nKey.Result.metricProtein),
+                        icon: "fork.knife",
+                        color: SafeMealTheme.primary,
+                        unit: "g"
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+
+            // 评分逻辑（默认隐藏，点评分展开；内容在 sheet 最下方）
+            if showScoreLogicDetail {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(scoreLogicText)
+                        .font(SafeMealFont.custom(13, relativeTo: .footnote))
+                        .foregroundStyle(SafeMealTheme.textPrimary.opacity(0.90))
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(scoreLogicFill)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    // 指标评分列表：Pro+ 可见
+                    if membershipTier >= .pro {
+                        if let impacts = recognition.metricImpacts, !impacts.isEmpty {
+                            metricImpactsList(impacts)
+                        }
+                    }
+                }
+                .transition(.opacity)
             }
         }
         .padding(.horizontal, 20)
-        .padding(.top, -60) // 上浮叠 hero 下缘
-        .padding(.bottom, 4)
+        .padding(.top, 22)
+        .padding(.bottom, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            pageBackground
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(colorScheme == .dark ? Color(red: 0.16, green: 0.17, blue: 0.19) : Color.white)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(SafeMealTheme.line.opacity(0.4), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.07), radius: 14, y: -5)
+        .padding(.horizontal, 14)
+        .padding(.top, -52) // 布局真上移：后续 tab 自动贴 sheet 底部
+        .zIndex(2)
     }
 
     private var statboxDivider: some View {
@@ -469,24 +534,61 @@ struct ResultView: View {
             .frame(width: 1, height: 40)
     }
 
-    private func statboxCell(value: String, label: String, icon: String, color: Color) -> some View {
+    // sheet 右上角建议等级（大表情 + 下方文字，同色，无胶囊）
+    private var recommendationBadge: some View {
+        VStack(spacing: 2) {
+            HugeIcon(glyph: .forAdviceLevel(recognition?.adviceLevel ?? item?.adviceLevel), size: 35)
+            Text(statusText)
+                .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .foregroundStyle(recommendation.color)
+    }
+
+    private func statboxCell(value: String, label: String, icon: String, color: Color, unit: String = "") -> some View {
         VStack(spacing: 4) {
             HStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 11, weight: .semibold))
+                HugeIcon(sf: icon, size: 15)
                     .foregroundStyle(color)
                 Text(value)
-                    .font(SafeMealFont.custom(19, relativeTo: .title3, weight: .bold))
+                    .font(SafeMealFont.custom(16, relativeTo: .title3, weight: .bold))
                     .foregroundStyle(SafeMealTheme.textPrimary)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.6)
+                    .minimumScaleFactor(0.7)
+                if !unit.isEmpty {
+                    Text(unit)
+                        .font(SafeMealFont.textStyle(.caption))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
+                }
             }
             Text(label)
-                .font(SafeMealFont.custom(11, relativeTo: .caption))
+                .font(SafeMealFont.textStyle(.caption))
                 .foregroundStyle(SafeMealTheme.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
+    }
+
+    // sheet 摘要：优先 AI 描述性摘要（aiSummary），避免与「建议使用」徽章重复
+    private var proteinText: String {
+        let p = recognition?.effectiveNutrition?.nutrients?.protein.value
+        if let p { return String(format: "%.1f", p) }
+        return "--"
+    }
+
+    // sheet 摘要 = 一句话食用建议（adviceText / 档位句）——不用 AI 摘要，避免与「AI建议」tab 重复
+    private var sheetSummaryText: String {
+        // ① 后端针对性建议句（中文环境）
+        if SafeMealL10n.isZh, let advice = recognition?.adviceText ?? item?.adviceText,
+           !advice.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return advice
+        }
+        // ② 本地化档位建议句（中英均有；英文环境 adviceText 无译，落这里）
+        if !hasFullRecognitionDetail {
+            return SafeMealL10n.text(L10nKey.Result.incompleteSummary)
+        }
+        return AdviceLevelMapper.menuSummary(level: recognition?.adviceLevel ?? item?.adviceLevel, adviceText: nil)
     }
 
     private var calorieText: String {
@@ -544,21 +646,94 @@ struct ResultView: View {
         }
     }
 
+
+    // MARK: - P1 评分/指标折叠卡（恢复之前 backCard 做法：展开折叠，Pro+ 见指标列表）
+    private func scoreLogicCard(recognition: RecognitionRecord) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                showScoreLogicDetail.toggle()
+            }
+        } label: {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .top, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(SafeMealL10n.text(L10nKey.Result.scoreLogicTitle))
+                            .font(SafeMealFont.custom(14, relativeTo: .subheadline))
+                            .foregroundStyle(SafeMealTheme.textSecondary)
+                        Text(SafeMealL10n.format(L10nKey.Result.scoreLogicFormat, scoreValue))
+                            .font(SafeMealFont.custom(26, relativeTo: .title2, weight: .bold))
+                            .foregroundStyle(scoreColor)
+                    }
+                    Spacer(minLength: 10)
+                    HugeIcon(sf: showScoreLogicDetail ? "chevron.up.circle.fill" : "chevron.down.circle.fill", size: 18)
+                        .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.84))
+                }
+                Text(SafeMealL10n.text(L10nKey.Result.scoreLogicHint))
+                    .font(SafeMealFont.custom(13, relativeTo: .footnote))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
+                if showScoreLogicDetail {
+                    Text(scoreLogicText)
+                        .font(SafeMealFont.custom(13, relativeTo: .footnote))
+                        .foregroundStyle(SafeMealTheme.textPrimary.opacity(0.90))
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(scoreLogicFill)
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    // 指标评分列表：Pro+ 可见，Free/Lite 不显示
+                    if membershipTier >= .pro {
+                        if let impacts = recognition.metricImpacts, !impacts.isEmpty {
+                            metricImpactsList(impacts)
+                        } else {
+                            Text(SafeMealL10n.text(L10nKey.Result.emptyDataHint))
+                                .font(SafeMealFont.textStyle(.subheadline))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
+                                .padding(.top, 4)
+                        }
+                    }
+                }
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(sectionCardFill)
+            .overlay(sectionCardStroke(cornerRadius: 24))
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
     private func overviewTab(item: LocalHistoryItem, recognition: RecognitionRecord) -> some View {
-        VStack(alignment: .leading, spacing: 22) {
-            scoreCardSection
-            quickMetricsGrid
-            Text(frontSummaryText)
-                .font(SafeMealFont.custom(16, relativeTo: .body))
-                .foregroundStyle(SafeMealTheme.textPrimary.opacity(0.94))
-                .lineSpacing(2)
-                .fixedSize(horizontal: false, vertical: true)
-            allergenTagsSection
-            satietyIndexSection
+        VStack(alignment: .leading, spacing: 20) {
+            // 配料（外部标题，有数据显示）
+            if hasIngredients(recognition) {
+                sectionHeader(SafeMealL10n.text(L10nKey.Result.sectionIngredients), icon: "list.bullet")
+                ingredientsSection(recognition: recognition)
+            }
+
+            // 做法（外部标题，有数据显示）
+            if hasInstructions(recognition) {
+                sectionHeader(SafeMealL10n.text(L10nKey.Result.sectionInstructions), icon: "list.number")
+                instructionsSection(recognition: recognition)
+            }
+
+            // 过敏原（外部标题，含有/可能含有）
+            if allergensData != nil {
+                sectionHeader(SafeMealL10n.text(L10nKey.Result.allergenTitle), icon: "exclamationmark.shield.fill")
+                allergenTagsSection
+            }
+
+            // 饮食标签（S8，paywallWrapped 自带外部标题）
+            paywallWrapped(.s8Dietary) { dietaryInfoSection }
+
+            // 饱腹感（外部标题，形象化占比）
+            if recognition.effectiveNutrition?.nutrients != nil {
+                sectionHeader(SafeMealL10n.text(L10nKey.Result.satietyTitle), icon: "fork.knife")
+                satietyIndexSection
+            }
+
+            // 风险分析（无风险数据时连同标题一起消失，与配料/做法「有则显示」逻辑一致）
             if let risks = recognition.riskFacts, !risks.isEmpty {
+                sectionHeader(SafeMealL10n.text(L10nKey.Result.riskSectionTitle), icon: "exclamationmark.triangle.fill")
                 riskFactsSection(risks)
-            } else {
-                emptyDataCard
             }
         }
         .padding(.horizontal, 20)
@@ -566,26 +741,100 @@ struct ResultView: View {
         .padding(.bottom, 8)
     }
 
-    private func nutritionTab(recognition: RecognitionRecord) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // 评分环头部
-            HStack(spacing: 12) {
-                MiniScoreRingView(score: scoreValue, size: 64)
-                    .frame(width: 64, height: 64)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(displayName)
-                        .font(SafeMealFont.custom(16, relativeTo: .subheadline, weight: .bold))
-                        .foregroundStyle(SafeMealTheme.textPrimary)
-                    Text(SafeMealL10n.text(L10nKey.Result.analysisTitle))
-                        .font(SafeMealFont.custom(12, relativeTo: .caption))
-                        .foregroundStyle(SafeMealTheme.textSecondary)
+    // MARK: - P1 Ingredients 配料（有数据显示，无则隐藏）
+    // 是否有配料数据（外部标题条件显示）
+    private func hasIngredients(_ recognition: RecognitionRecord) -> Bool {
+        let breakdown = recognition.nutritionMetrics?.ingredientBreakdown
+        let plain = recognition.nutritionMetrics?.ingredients ?? []
+        return !((breakdown?.compactMap { $0.name } ?? plain).isEmpty)
+    }
+
+    // 是否有做法数据
+    private func hasInstructions(_ recognition: RecognitionRecord) -> Bool {
+        let prep = recognition.nutritionMetrics?.preparation
+        let stepsText = prep?.cookingSteps ?? prep?.cookingMethod
+        return !(stepsText ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private func ingredientsSection(recognition: RecognitionRecord) -> some View {
+        let breakdown = recognition.nutritionMetrics?.ingredientBreakdown
+        let plain = recognition.nutritionMetrics?.ingredients ?? []
+        let names = breakdown?.compactMap { $0.name } ?? plain
+        guard !names.isEmpty else {
+            return AnyView(EmptyView())
+        }
+        return AnyView(
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(names.prefix(12), id: \.self) { name in
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(SafeMealTheme.primary.opacity(0.14))
+                            .frame(width: 6, height: 6)
+                        Text(name)
+                            .font(SafeMealFont.textStyle(.subheadline))
+                            .foregroundStyle(SafeMealTheme.textPrimary)
+                        Spacer()
+                        if let amt = breakdown?.first(where: { $0.name == name })?.amount {
+                            Text(amt)
+                                .font(SafeMealFont.textStyle(.caption))
+                                .foregroundStyle(SafeMealTheme.textSecondary)
+                        }
+                    }
                 }
             }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(sectionCardFill)
+            .overlay(sectionCardStroke(cornerRadius: 24))
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        )
+    }
+
+    // MARK: - P1 Instructions / 做法步骤（有数据显示，无则隐藏）
+    private func instructionsSection(recognition: RecognitionRecord) -> some View {
+        let prep = recognition.nutritionMetrics?.preparation
+        // 优先 cookingSteps（HTML Instructions 步骤式），回退 cookingMethod
+        let stepsText = prep?.cookingSteps ?? prep?.cookingMethod
+        let steps: [String] = (stepsText ?? "")
+            .split(whereSeparator: { "\n；;。".contains($0) })
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        guard !steps.isEmpty else {
+            return AnyView(EmptyView())
+        }
+        return AnyView(
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(Array(steps.enumerated()), id: \.offset) { pair in
+                    HStack(alignment: .top, spacing: 10) {
+                        Text("\(pair.offset + 1)")
+                            .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
+                            .foregroundStyle(SafeMealTheme.primary)
+                            .frame(width: 22, height: 22)
+                            .background(
+                                Circle().fill(SafeMealTheme.primary.opacity(0.12))
+                            )
+                        Text(pair.element)
+                            .font(SafeMealFont.textStyle(.subheadline))
+                            .foregroundStyle(SafeMealTheme.textPrimary.opacity(0.9))
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(sectionCardFill)
+            .overlay(sectionCardStroke(cornerRadius: 24))
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        )
+    }
+
+    private func nutritionTab(recognition: RecognitionRecord) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
             paywallWrapped(.s1BasicNutrients) { basicNutrientsSection }
             paywallWrapped(.s3Vitamins) { vitaminsSection }
             paywallWrapped(.s4Minerals) { mineralsSection }
             paywallWrapped(.s6Glycemic) { glycemicSection }
-            paywallWrapped(.s8Dietary) { dietaryInfoSection }
         }
         .padding(.horizontal, 20)
         .padding(.top, 20)
@@ -595,9 +844,6 @@ struct ResultView: View {
     private func adviceTab(recognition: RecognitionRecord) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             aiAdviceSection
-            if membershipTier >= .pro, let impacts = recognition.metricImpacts, !impacts.isEmpty {
-                metricImpactsList(impacts)
-            }
         }
         .padding(.horizontal, 20)
         .padding(.top, 20)
@@ -674,7 +920,7 @@ struct ResultView: View {
                         .font(SafeMealFont.custom(18, relativeTo: .title3, weight: .bold))
                         .foregroundStyle(SafeMealTheme.textPrimary)
                     if item.feedbackPending {
-                        Image(systemName: "hourglass")
+                        HugeIcon(glyph: .hourglass, size: 16)
                             .font(.caption2)
                             .foregroundStyle(SafeMealTheme.warning)
                     }
@@ -869,15 +1115,6 @@ struct ResultView: View {
         Group {
             if let data = allergensData {
                 VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "exclamationmark.shield.fill")
-                            .font(.system(size: 14))
-                            .foregroundStyle(SafeMealTheme.danger)
-                        Text(SafeMealL10n.text(L10nKey.Result.allergenTitle))
-                            .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                            .foregroundStyle(SafeMealTheme.textPrimary)
-                    }
-
                     if !data.contains.isEmpty {
                         allergenRow(
                             label: SafeMealL10n.text(L10nKey.Result.allergenContains),
@@ -922,7 +1159,7 @@ struct ResultView: View {
             .foregroundStyle(color)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(color.opacity(isDark ? 0.18 : 0.12))
+            .background(isDark ? Color.white.opacity(0.08) : Color(.systemGray5))
             .clipShape(Capsule())
     }
 
@@ -931,22 +1168,32 @@ struct ResultView: View {
         Group {
             if let nutrients = recognition?.effectiveNutrition?.nutrients {
                 let score = computeSatietyScore(nutrients: nutrients)
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "fork.knife")
-                            .font(.system(size: 14))
-                            .foregroundStyle(SafeMealTheme.primary)
-                        Text(SafeMealL10n.text(L10nKey.Result.satietyTitle))
-                            .font(SafeMealFont.custom(15, relativeTo: .subheadline, weight: .bold))
-                            .foregroundStyle(SafeMealTheme.textPrimary)
-                    }
-
-                    HStack(spacing: 8) {
-                        satietyBar(score: score)
+                VStack(alignment: .leading, spacing: 12) {
+                    // 百分比大数字 + 标签
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(String(format: "%.0f%%", score * 100))
+                            .font(SafeMealFont.custom(28, relativeTo: .title2, weight: .bold))
+                            .foregroundStyle(satietyColor(score: score))
                         Text(satietyLabel(score: score))
                             .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .bold))
                             .foregroundStyle(satietyColor(score: score))
+                        Spacer()
                     }
+                    // 形象化进度条（占比）
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(SafeMealTheme.line.opacity(0.3))
+                            Capsule()
+                                .fill(satietyColor(score: score))
+                                .frame(width: max(8, geo.size.width * CGFloat(min(max(score, 0), 1))))
+                        }
+                    }
+                    .frame(height: 8)
+                    // 说明
+                    Text(SafeMealL10n.text(L10nKey.Result.satietyTitle))
+                        .font(SafeMealFont.textStyle(.caption))
+                        .foregroundStyle(SafeMealTheme.textSecondary)
                 }
                 .padding(18)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -1029,7 +1276,7 @@ struct ResultView: View {
                             .foregroundStyle(SafeMealTheme.textPrimary)
                         if item?.feedbackPending == true {
                             HStack(spacing: 2) {
-                                Image(systemName: "hourglass")
+                                HugeIcon(glyph: .hourglass, size: 16)
                                     .font(.caption2)
                                     .foregroundStyle(SafeMealTheme.warning)
                                 Text(SafeMealL10n.text(L10nKey.Result.feedbackPending))
@@ -1083,8 +1330,7 @@ struct ResultView: View {
 
                         Spacer(minLength: 10)
 
-                        Image(systemName: "questionmark.circle.fill")
-                            .font(.system(size: 18, weight: .semibold))
+                        HugeIcon(glyph: .helpCircle, size: 18)
                             .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.84))
                     }
 
@@ -1226,13 +1472,13 @@ struct ResultView: View {
         Group {
             switch direction {
             case "positive":
-                Image(systemName: "arrow.up.circle.fill")
+                HugeIcon(glyph: .circleArrowUp01, size: 16)
                     .foregroundStyle(SafeMealTheme.success)
             case "negative":
-                Image(systemName: "arrow.down.circle.fill")
+                HugeIcon(glyph: .circleArrowDown01, size: 16)
                     .foregroundStyle(SafeMealTheme.danger)
             default:
-                Image(systemName: "minus.circle.fill")
+                HugeIcon(glyph: .minusSignCircle, size: 16)
                     .foregroundStyle(SafeMealTheme.textSecondary)
             }
         }
@@ -1252,7 +1498,7 @@ struct ResultView: View {
             VStack(alignment: .leading, spacing: 10) {
                 ForEach(risks) { risk in
                     HStack(spacing: 10) {
-                        Image(systemName: risk.severity == "danger" ? "exclamationmark.triangle.fill" : "exclamationmark.circle.fill")
+                        HugeIcon(sf: risk.severity == "danger" ? "exclamationmark.triangle.fill" : "exclamationmark.circle.fill", size: 16)
                             .foregroundStyle(risk.severity == "danger" ? SafeMealTheme.danger : SafeMealTheme.warning)
                             .font(.system(size: 18))
                         VStack(alignment: .leading, spacing: 2) {
@@ -1276,8 +1522,7 @@ struct ResultView: View {
 
     private func sectionHeader(_ title: String, icon: String) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 18, weight: .semibold))
+            HugeIcon(sf: icon, size: 18)
                 .foregroundStyle(SafeMealTheme.primary)
             Text(title)
                 .font(SafeMealFont.custom(18, relativeTo: .headline, weight: .bold))
@@ -1524,10 +1769,12 @@ struct ResultView: View {
             if let diet = recognition?.effectiveNutrition?.dietaryInfo {
                 let allTags = dietaryTagItems(diet).filter { $0.1 }
                 if !allTags.isEmpty {
-                    sectionCard {
-                        FlowLayout(spacing: 8, lineSpacing: 8) {
-                            ForEach(allTags, id: \.0) { tag in
-                                dietaryTag(tag.0, isOn: tag.1)
+                    VStack(alignment: .leading, spacing: 10) {
+                        sectionCard {
+                            FlowLayout(spacing: 8, lineSpacing: 8) {
+                                ForEach(allTags, id: \.0) { tag in
+                                    dietaryTag(tag.0, isOn: tag.1)
+                                }
                             }
                         }
                     }
@@ -1672,8 +1919,7 @@ struct ResultView: View {
                         .padding(20)
                 } else {
                     VStack(spacing: 10) {
-                        Image(systemName: "photo")
-                            .font(.system(size: 28))
+                        HugeIcon(glyph: .image01, size: 28)
                         Text(SafeMealL10n.text(L10nKey.Result.imageMissing))
                             .font(SafeMealFont.textStyle(.subheadline))
                     }
@@ -1803,8 +2049,7 @@ struct ResultView: View {
     private func inlineActionWithIcon(icon: String, title: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 16, weight: .medium))
+                HugeIcon(sf: icon, size: 16)
                 Text(title)
                     .font(SafeMealFont.custom(15, relativeTo: .footnote))
             }
@@ -2005,10 +2250,8 @@ struct ResultView: View {
                     Color.clear
                         .frame(height: proxy.safeAreaInsets.top + 74)
 
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 40, weight: .bold))
+                    HugeIcon(glyph: .alert02, size: 40)
                         .foregroundStyle(SafeMealTheme.warning)
-                        .symbolRenderingMode(.hierarchical)
 
                     Text(SafeMealL10n.text(L10nKey.Result.missingTitle))
                         .font(SafeMealFont.custom(34, relativeTo: .largeTitle, weight: .bold))

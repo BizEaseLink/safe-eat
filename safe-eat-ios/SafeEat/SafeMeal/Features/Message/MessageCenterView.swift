@@ -112,8 +112,7 @@ struct MessageCenterView: View {
             }
         } label: {
             HStack(spacing: 6) {
-                Image(systemName: hasUnreadMessages ? "checkmark.circle" : "arrow.counterclockwise.circle")
-                    .font(.system(size: 14, weight: .semibold))
+                HugeIcon(sf: hasUnreadMessages ? "checkmark.circle" : "arrow.counterclockwise.circle", size: 14)
                 Text(hasUnreadMessages
                     ? SafeMealL10n.text(L10nKey.Message.markAllRead)
                     : (SafeMealL10n.isZh ? "重置未读" : "Reset unread"))
@@ -146,8 +145,7 @@ struct MessageCenterView: View {
     private var emptyView: some View {
         VStack(spacing: 16) {
             Spacer().frame(height: 40)
-            Image(systemName: "bell.slash")
-                .font(.system(size: 44, weight: .light))
+            HugeIcon(glyph: .notificationOff01, size: 44)
                 .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.4))
             Text(SafeMealL10n.text(L10nKey.Message.emptyTitle))
                 .font(SafeMealFont.custom(18, relativeTo: .title3))
@@ -338,7 +336,7 @@ private struct DisclosureSheetWrapper: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: {
-                        Image(systemName: "xmark")
+                        HugeIcon(glyph: .cancel01, size: 16)
                             .foregroundStyle(SafeMealTheme.textSecondary)
                     }
                 }

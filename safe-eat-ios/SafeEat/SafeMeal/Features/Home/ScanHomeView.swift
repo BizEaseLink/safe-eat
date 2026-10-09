@@ -152,8 +152,7 @@ struct ScanHomeView: View {
                 }
             } label: {
                 ZStack(alignment: .topTrailing) {
-                    Image(systemName: "bell")
-                        .font(.system(size: 20, weight: .medium))
+                    HugeIcon(glyph: .notification01, size: 20)
                         .foregroundStyle(SafeMealTheme.textPrimary)
                         .frame(width: 44, height: 44)
                         .background(
@@ -437,7 +436,7 @@ private struct HomeRecentRecordCard: View {
                 .fill(colorScheme == .dark ? Color.white.opacity(0.05) : Color.white.opacity(0.34))
                 .frame(width: 84, height: 84)
                 .overlay {
-                    Image(systemName: "photo")
+                    HugeIcon(glyph: .image01, size: 16)
                         .font(.title2)
                         .foregroundStyle(SafeMealTheme.textSecondary)
                 }

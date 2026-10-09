@@ -100,7 +100,7 @@ struct CaptchaSheet: View {
             }
 
             Button(action: { Task { await loadCaptcha() } }) {
-                Label("看不清？换一张", systemImage: "arrow.clockwise")
+                Label { Text("看不清？换一张") } icon: { HugeIcon(sf: "arrow.clockwise", size: 14) }
                     .font(SafeMealFont.custom(13, relativeTo: .caption))
                     .foregroundStyle(SafeMealTheme.primary)
             }

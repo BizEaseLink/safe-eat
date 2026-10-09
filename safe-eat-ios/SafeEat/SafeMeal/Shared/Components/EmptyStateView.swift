@@ -20,8 +20,7 @@ struct EmptyStateView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.system(size: 36))
+            HugeIcon(sf: icon, size: 36)
                 .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.5))
 
             VStack(spacing: 8) {

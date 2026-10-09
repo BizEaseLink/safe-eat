@@ -19,7 +19,7 @@ struct AboutSafeMealView: View {
 
                 NavigationLink(value: ProfileRoute.privacyPolicy) {
                     ProfileNavigationRow(
-                        icon: "hand.raised",
+                        icon: "shield02",
                         title: SafeMealL10n.text(L10nKey.Profile.About.privacyPolicy)
                     )
                 }

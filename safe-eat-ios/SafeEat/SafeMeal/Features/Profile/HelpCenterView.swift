@@ -21,8 +21,7 @@ struct HelpCenterView: View {
 
             ProfileSectionBlock(title: SafeMealL10n.text(L10nKey.Profile.Help.contactSection)) {
                 HStack(spacing: 12) {
-                    Image(systemName: "envelope.fill")
-                        .font(.system(size: 16, weight: .semibold))
+                    HugeIcon(glyph: .mail01, size: 16)
                         .foregroundStyle(SafeMealTheme.primary)
                     Text("bel_safemeal@163.com")
                         .font(SafeMealFont.textStyle(.body))
@@ -63,8 +62,7 @@ private struct FAQRow: View {
                         .foregroundStyle(SafeMealTheme.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer()
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
+                    HugeIcon(sf: isExpanded ? "chevron.up" : "chevron.down", size: 12)
                         .foregroundStyle(SafeMealTheme.textSecondary)
                 }
             }

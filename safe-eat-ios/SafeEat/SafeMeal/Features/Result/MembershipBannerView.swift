@@ -47,8 +47,7 @@ struct MembershipBannerView: View {
         if tier != .premium {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 22, weight: .semibold))
+                    HugeIcon(glyph: .crown03, size: 22)
                         .foregroundStyle(.white)
 
                     VStack(alignment: .leading, spacing: 4) {

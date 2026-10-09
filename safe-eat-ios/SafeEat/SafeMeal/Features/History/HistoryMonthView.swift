@@ -85,8 +85,7 @@ struct HistoryMonthView: View {
 
                                             Spacer()
 
-                                            Image(systemName: "chevron.right")
-                                                .font(.system(size: 14, weight: .semibold))
+                                            HugeIcon(glyph: .arrowRight01, size: 14)
                                                 .foregroundStyle(SafeMealTheme.textSecondary)
                                         }
                                         .padding(18)
@@ -130,8 +129,7 @@ struct HistoryMonthView: View {
             showServerHistory = true
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: "clock.arrow.circlepath")
-                    .font(.system(size: 20))
+                HugeIcon(glyph: .clock03, size: 20)
                     .foregroundStyle(SafeMealTheme.primary)
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -145,8 +143,7 @@ struct HistoryMonthView: View {
 
                 Spacer()
 
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
+                HugeIcon(glyph: .arrowRight01, size: 14)
                     .foregroundStyle(SafeMealTheme.textSecondary)
             }
             .padding(18)

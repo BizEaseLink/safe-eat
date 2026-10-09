@@ -182,8 +182,7 @@ struct MealPeriodSection: View {
 
     private var emptyState: some View {
         VStack(spacing: 10) {
-            Image(systemName: "fork.knife")
-                .font(.system(size: 28))
+            HugeIcon(glyph: .restaurant02, size: 28)
                 .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.5))
 
             Text(SafeMealL10n.format(L10nKey.Menu.mealEmptyFormat, selectedPeriod.displayName))
@@ -211,8 +210,7 @@ struct NotificationBellButton: View {
     var body: some View {
         Button(action: onTap) {
             ZStack(alignment: .topTrailing) {
-                Image(systemName: isEnabled ? "bell.fill" : "bell")
-                    .font(.system(size: 16, weight: .medium))
+                HugeIcon(sf: isEnabled ? "bell.fill" : "bell", size: 16)
                     .foregroundStyle(isEnabled ? SafeMealTheme.primary : SafeMealTheme.textSecondary)
                     .frame(width: 40, height: 40)
                     .background(
@@ -267,8 +265,7 @@ struct RecordShortcutButton: View {
                         .fill(iconCircleFill)
                         .frame(width: 44, height: 44)
 
-                    Image(systemName: icon)
-                        .font(.system(size: 18, weight: .semibold))
+                    HugeIcon(sf: icon, size: 18)
                         .foregroundStyle(SafeMealTheme.primary)
                 }
                 .padding(.top, 16)

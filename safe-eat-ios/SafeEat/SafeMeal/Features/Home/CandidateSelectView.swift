@@ -47,8 +47,7 @@ struct CandidateSelectView: View {
             Button {
                 dismiss()
             } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 28))
+                HugeIcon(glyph: .cancelCircle, size: 28)
                     .foregroundColor(SafeMealTheme.textSecondary)
             }
 
@@ -118,8 +117,7 @@ struct CandidateSelectView: View {
                     ProgressView()
                         .tint(SafeMealTheme.primary)
                 } else {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .medium))
+                    HugeIcon(glyph: .arrowRight01, size: 14)
                         .foregroundColor(SafeMealTheme.textSecondary)
                 }
             }
@@ -147,8 +145,7 @@ struct CandidateSelectView: View {
                 .foregroundColor(SafeMealTheme.textSecondary)
 
             HStack(spacing: 10) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 16))
+                HugeIcon(glyph: .search01, size: 16)
                     .foregroundColor(SafeMealTheme.textSecondary)
 
                 TextField(SafeMealL10n.text(L10nKey.Candidate.searchPlaceholder), text: $searchText)
@@ -163,8 +160,7 @@ struct CandidateSelectView: View {
                         searchText = ""
                         searchResults = []
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 16))
+                        HugeIcon(glyph: .cancelCircle, size: 16)
                             .foregroundColor(SafeMealTheme.textSecondary)
                     }
                 }
@@ -210,8 +206,7 @@ struct CandidateSelectView: View {
             confirmSelection(item.name)
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: "fork.knife")
-                    .font(.system(size: 14))
+                HugeIcon(glyph: .restaurant02, size: 14)
                     .foregroundColor(SafeMealTheme.primary)
 
                 Text(item.name)
@@ -224,8 +219,7 @@ struct CandidateSelectView: View {
                     ProgressView()
                         .tint(SafeMealTheme.primary)
                 } else {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .medium))
+                    HugeIcon(glyph: .arrowRight01, size: 14)
                         .foregroundColor(SafeMealTheme.textSecondary)
                 }
             }
@@ -248,8 +242,7 @@ struct CandidateSelectView: View {
 
     private var emptyCandidateView: some View {
         VStack(spacing: 12) {
-            Image(systemName: "questionmark.folder")
-                .font(.system(size: 36))
+            HugeIcon(glyph: .image01, size: 36)
                 .foregroundColor(SafeMealTheme.textSecondary)
             Text(SafeMealL10n.text(L10nKey.Candidate.emptyHint))
                 .font(SafeMealFont.textStyle(.subheadline))

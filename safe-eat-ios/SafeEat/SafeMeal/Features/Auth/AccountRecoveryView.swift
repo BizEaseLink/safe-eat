@@ -114,8 +114,7 @@ struct AccountRecoveryView: View {
                 rootVC.dismiss(animated: true)
             }
         } label: {
-            Image(systemName: "chevron.left")
-                .font(.system(size: 18, weight: .semibold))
+            HugeIcon(glyph: .arrowLeft01, size: 18)
                 .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: 46, height: 46)
                 .background(

@@ -146,6 +146,8 @@ struct Preparation: Codable {
     let isProcessed: Bool?
     // 后端 cookingMethod 是枚举类型，iOS 保持 String 兼容
     let cookingMethod: String?
+    // 后端 getNutritionMetricsV4 preparation.cookingSteps（foods.cooking_steps 列）
+    let cookingSteps: String?
     // 以下为旧字段，后端不返回但保留向后兼容
     let oilType: String?
     let oilAmount: String?

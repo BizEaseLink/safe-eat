@@ -391,8 +391,7 @@ struct EditProfileView: View {
 
             Spacer()
 
-            Image(systemName: icon)
-                .font(.system(size: 20))
+            HugeIcon(sf: icon, size: 20)
                 .foregroundStyle(SafeMealTheme.primary.opacity(0.7))
         }
         .padding(.horizontal, 16)

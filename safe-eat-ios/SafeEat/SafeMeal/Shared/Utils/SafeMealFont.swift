@@ -11,6 +11,9 @@ enum SafeMealFont {
     private(set) static var activeRegularFontName = fallbackRegularFontName
     private(set) static var activeSemiboldFontName = fallbackSemiboldFontName
     private(set) static var activeBoldFontName = fallbackBoldFontName
+    // HugeIcons 子集字体（运行时注册，root/resource 双候选）
+    private(set) static var activeHugeIconsSolidFontName = "fixed-solid-rounded-v2"
+    private(set) static var activeHugeIconsStrokeFontName = "fixed-stroke-rounded-v2"
 
     static func bootstrap() {
         let regularResult = registerAppFont(
@@ -32,6 +35,15 @@ enum SafeMealFont {
         activeRegularFontName = regularResult.fontName ?? fallbackRegularFontName
         activeSemiboldFontName = semiboldResult.fontName ?? fallbackSemiboldFontName
         activeBoldFontName = boldResult.fontName ?? fallbackBoldFontName
+
+        let hugeSolidResult = registerAppFont(named: "HugeIcons-solid-subset", fileExtension: "ttf", subdirectory: "resource/fonts")
+        let hugeStrokeResult = registerAppFont(named: "HugeIcons-stroke-subset", fileExtension: "ttf", subdirectory: "resource/fonts")
+        if let n = hugeSolidResult.fontName { activeHugeIconsSolidFontName = n }
+        if let n = hugeStrokeResult.fontName { activeHugeIconsStrokeFontName = n }
+        #if DEBUG
+        print("[SafeMealFont] hugeIconsSolid=\(activeHugeIconsSolidFontName) source=\(hugeSolidResult.source)")
+        print("[SafeMealFont] hugeIconsStroke=\(activeHugeIconsStrokeFontName) source=\(hugeStrokeResult.source)")
+        #endif
 
         #if DEBUG
         print("[SafeMealFont] regular=\(activeRegularFontName) source=\(regularResult.source)")

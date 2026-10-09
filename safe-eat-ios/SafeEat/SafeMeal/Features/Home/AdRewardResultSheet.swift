@@ -35,8 +35,7 @@ struct AdRewardResultSheet: View {
                                 .fill(SafeMealTheme.success.opacity(0.12))
                                 .frame(width: 46, height: 46)
 
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 18, weight: .semibold))
+                            HugeIcon(glyph: .addCircle, size: 18)
                                 .foregroundStyle(SafeMealTheme.success)
                         }
 
@@ -60,8 +59,7 @@ struct AdRewardResultSheet: View {
                                 .fill(SafeMealTheme.warning.opacity(0.12))
                                 .frame(width: 46, height: 46)
 
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.system(size: 18, weight: .semibold))
+                            HugeIcon(glyph: .alert02, size: 18)
                                 .foregroundStyle(SafeMealTheme.warning)
                         }
 

@@ -18,8 +18,7 @@ struct AlbumPicker: View {
             photoLibrary: .shared()
         ) {
             VStack(spacing: 6) {
-                Image(systemName: "photo.on.rectangle")
-                    .font(.system(size: 18, weight: .semibold))
+                HugeIcon(glyph: .image02, size: 18)
                     .foregroundColor(tint)
                 Text(SafeMealL10n.text(L10nKey.Tab.album))
                     .font(.system(size: 10, weight: .medium))

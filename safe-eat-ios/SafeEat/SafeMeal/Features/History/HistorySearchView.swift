@@ -20,8 +20,7 @@ struct HistorySearchMagnifier: View {
 
     var body: some View {
         Button(action: onTap) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 20, weight: .medium))
+            HugeIcon(glyph: .search01, size: 20)
                 .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: 44, height: 44)
                 .background(
@@ -161,8 +160,7 @@ struct HistorySearchView: View {
         Button {
             dismiss()
         } label: {
-            Image(systemName: "xmark")
-                .font(.system(size: 16, weight: .semibold))
+            HugeIcon(glyph: .cancel01, size: 16)
                 .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: 44, height: 44)
                 .background(
@@ -221,8 +219,7 @@ struct HistorySearchView: View {
 
     private var searchField: some View {
         HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 15, weight: .medium))
+            HugeIcon(glyph: .search01, size: 15)
                 .foregroundStyle(SafeMealTheme.textSecondary)
 
             TextField(
@@ -237,8 +234,7 @@ struct HistorySearchView: View {
                 Button {
                     query = ""
                 } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 16))
+                    HugeIcon(glyph: .cancelCircle, size: 16)
                         .foregroundStyle(SafeMealTheme.textSecondary)
                 }
             }
@@ -259,8 +255,7 @@ struct HistorySearchView: View {
 
     private var scopeHint: some View {
         VStack(spacing: 10) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 28, weight: .light))
+            HugeIcon(glyph: .search01, size: 28)
                 .foregroundStyle(SafeMealTheme.textSecondary)
 
             Text(scopeHintText)

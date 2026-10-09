@@ -19,8 +19,7 @@ struct DisclosureDetailView: View {
                 ProgressView()
             } else if let err = errorMessage {
                 VStack(spacing: 12) {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 32))
+                    HugeIcon(glyph: .alert02, size: 32)
                         .foregroundStyle(SafeMealTheme.warning)
                     Text(err)
                         .font(SafeMealFont.textStyle(.body))
@@ -42,8 +41,7 @@ struct DisclosureDetailView: View {
                 FullHTMLWebView(html: html)
             } else {
                 VStack(spacing: 12) {
-                    Image(systemName: "doc.text.magnifyingglass")
-                        .font(.system(size: 32))
+                    HugeIcon(glyph: .fileSearch, size: 32)
                         .foregroundStyle(SafeMealTheme.textSecondary)
                     Text(SafeMealL10n.text(L10nKey.Errors.invalidResponse))
                         .font(SafeMealFont.textStyle(.body))

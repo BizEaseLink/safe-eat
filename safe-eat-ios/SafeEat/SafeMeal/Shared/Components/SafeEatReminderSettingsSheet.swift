@@ -64,8 +64,7 @@ struct SafeMealReminderSettingsSheet: View {
                         .fill(SafeMealTheme.primary.opacity(0.12))
                         .frame(width: 46, height: 46)
 
-                    Image(systemName: draftEnabled ? "bell.fill" : "bell")
-                        .font(.system(size: 18, weight: .semibold))
+                    HugeIcon(sf: draftEnabled ? "bell.fill" : "bell", size: 18)
                         .foregroundStyle(SafeMealTheme.primary)
                 }
 

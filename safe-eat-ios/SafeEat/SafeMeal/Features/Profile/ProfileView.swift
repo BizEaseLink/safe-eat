@@ -226,8 +226,7 @@ struct ProfileView: View {
                             .foregroundStyle(SafeMealTheme.textSecondary)
 
                         HStack(spacing: 8) {
-                            Image(systemName: "globe")
-                                .font(.system(size: 13, weight: .semibold))
+                            HugeIcon(glyph: .globe02, size: 13)
                             Text(settings.languageSummary)
                                 .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .bold))
                         }
@@ -242,8 +241,7 @@ struct ProfileView: View {
 
                     Spacer()
 
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
+                    HugeIcon(glyph: .arrowRight01, size: 14)
                         .foregroundStyle(SafeMealTheme.textSecondary)
                 }
             }
@@ -294,8 +292,7 @@ struct ProfileView: View {
     private func healthTagChip(_ tag: HealthTagDisplay) -> some View {
         let bgColor = tag.color.opacity(0.10)
         return HStack(spacing: 6) {
-            Image(systemName: tag.icon)
-                .font(.system(size: 14, weight: .semibold))
+            HugeIcon(sf: tag.icon, size: 14)
                 .foregroundStyle(tag.color)
             Text(tag.displayName)
                 .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .semibold))
@@ -344,15 +341,13 @@ struct ProfileView: View {
     private var manageSubscriptionsLink: some View {
         Link(destination: URL(string: "https://apps.apple.com/account/subscriptions")!) {
             HStack(spacing: 8) {
-                Image(systemName: "creditcard.and.123")
-                    .font(.system(size: 14))
+                HugeIcon(glyph: .creditCard, size: 14)
                     .foregroundStyle(SafeMealTheme.primary)
                 Text("管理订阅")
                     .font(SafeMealFont.custom(13, relativeTo: .footnote))
                     .foregroundStyle(SafeMealTheme.primary)
                 Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12))
+                HugeIcon(glyph: .arrowRight01, size: 12)
                     .foregroundStyle(SafeMealTheme.textSecondary)
             }
             .padding(.horizontal, 14)
@@ -586,8 +581,7 @@ struct ProfileView: View {
                         Circle()
                             .fill(SafeMealTheme.primarySoft)
                             .frame(width: 86, height: 86)
-                        Image(systemName: "person.crop.circle.badge.plus")
-                            .font(.system(size: 32))
+                        HugeIcon(glyph: .userAdd01, size: 32)
                             .foregroundStyle(SafeMealTheme.primary)
                     }
 
@@ -604,8 +598,7 @@ struct ProfileView: View {
 
                     Spacer()
 
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
+                    HugeIcon(glyph: .arrowRight01, size: 14)
                         .foregroundStyle(SafeMealTheme.textSecondary)
                 }
                 .padding(20)
@@ -871,8 +864,7 @@ private struct MembershipTierCard: View {
                 Circle()
                     .fill(iconBgColor)
                     .frame(width: 44, height: 44)
-                Image(systemName: iconName)
-                    .font(.system(size: 20, weight: .semibold))
+                HugeIcon(sf: iconName, size: 20)
                     .foregroundStyle(iconFgColor)
             }
 
@@ -888,8 +880,7 @@ private struct MembershipTierCard: View {
 
             Spacer()
 
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
+            HugeIcon(glyph: .arrowRight01, size: 14)
                 .foregroundStyle(chevronColor)
         }
         .padding(16)

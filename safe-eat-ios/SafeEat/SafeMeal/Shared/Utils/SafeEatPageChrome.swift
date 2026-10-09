@@ -311,8 +311,7 @@ struct SafeMealTopBackChrome: View {
 
     private var backButton: some View {
         Button(action: onBack) {
-            Image(systemName: "chevron.left")
-                .font(.system(size: 20, weight: .semibold))
+            HugeIcon(glyph: .arrowLeft01, size: 20)
                 .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: buttonSize, height: buttonSize)
                 .background(
@@ -392,8 +391,7 @@ struct SafeMealEmptyState: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            Image(systemName: systemImage)
-                .font(.system(size: 28))
+            HugeIcon(sf: systemImage, size: 28)
                 .foregroundStyle(SafeMealTheme.textSecondary)
 
             VStack(spacing: 6) {
