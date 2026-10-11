@@ -342,7 +342,7 @@ struct LoginView: View {
         Button {
             handleBack()
         } label: {
-            HugeIcon(glyph: .arrowLeft01, size: 18)
+            HugeIcon(glyph: .arrowLeft01, size: 18, stroke: true)
                 .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: 46, height: 46)
                 .background(

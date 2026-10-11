@@ -834,6 +834,7 @@ enum L10nKey {
         static let sectionDietary = "result.section.dietary"
         static let sectionIngredients = "result.section.ingredients"
         static let sectionInstructions = "result.section.instructions"
+        static let sectionCookingMethod = "result.section.cooking_method"
         static let glycemicIndex = "result.glycemic.index"
         static let glycemicLoad = "result.glycemic.load"
         static let insulinIndex = "result.glycemic.insulin_index"
@@ -886,6 +887,9 @@ enum L10nKey {
         static let perServing = "result.nutrition.per_serving"
         static let actionAnalysisDetail = "result.action.analysis_detail"
         static let emptyDataHint = "result.empty_data_hint"
+        static let pendingConfirmFailed = "result.pending_confirm_failed"
+        static let identifyFailedTitle = "result.identify_failed_title"
+        static let identifyFailedSubtitle = "result.identify_failed_subtitle"
         // P1: 结果页 3 tab
         static let tabOverview = "result.tab.overview"
         static let tabNutrition = "result.tab.nutrition"

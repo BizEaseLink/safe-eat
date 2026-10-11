@@ -311,7 +311,7 @@ struct SafeMealTopBackChrome: View {
 
     private var backButton: some View {
         Button(action: onBack) {
-            HugeIcon(glyph: .arrowLeft01, size: 20)
+            HugeIcon(glyph: .arrowLeft01, size: 20, stroke: true)
                 .foregroundStyle(SafeMealTheme.textPrimary)
                 .frame(width: buttonSize, height: buttonSize)
                 .background(

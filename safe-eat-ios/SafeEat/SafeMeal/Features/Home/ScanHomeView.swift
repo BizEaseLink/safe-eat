@@ -422,7 +422,7 @@ private struct HomeRecentRecordCard: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 84, height: 84)
-                .padding(6)
+                        .padding(6)
                 .background(
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .fill(colorScheme == .dark ? Color.white.opacity(0.05) : Color.white.opacity(0.34))

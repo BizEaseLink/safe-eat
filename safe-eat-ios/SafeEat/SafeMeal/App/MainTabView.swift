@@ -29,15 +29,16 @@ struct MainTabView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var settings: AppSettingsStore
     @State private var showCamera = false
+    @State private var showNonFoodSheet = false
     @State private var showMembership = false
     @State private var showQuotaExceeded = false
+
     @State private var recognitionPhase: RecognitionPhase?
     @State private var recognizingPreviewImage: UIImage?
     @State private var resultRoute: ResultRoute?
     @State private var showAdRewardResult = false
     @State private var adRewardResultType: AdRewardResultType = .claimFailed
     // 识别流程中间数据
-    @State private var identifySession: IdentifySessionData?
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.openURL) private var openURL
     @State private var scanPressed = false
@@ -110,7 +111,7 @@ struct MainTabView: View {
                             }
                         )
                         .navigationDestination(item: $resultRoute) { route in
-                            ResultView(itemId: route.itemId)
+                            ResultView(itemId: route.itemId, isPending: route.isPending)
                         }
                         .navigationDestination(isPresented: $showMembership) {
                             MembershipPurchaseView()
@@ -137,22 +138,6 @@ struct MainTabView: View {
                 }
             }
 
-            // 识别中加载遮罩
-            if let phase = recognitionPhase {
-                SafeMealLoadingOverlay(
-                    phase: phase,
-                    previewImage: recognizingPreviewImage,
-                    onCandidateSelected: { foodId, name, sessionId in
-                        performConfirm(selectedFoodId: foodId, selectedName: name, sessionId: sessionId)
-                    },
-                    onDismiss: {
-                        recognitionPhase = nil
-                        recognizingPreviewImage = nil
-                    }
-                )
-                .transition(.opacity)
-                .zIndex(30)
-            }
 
             // 底部浮动导航区域（只在根页面显示）
             if isAtRoot {
@@ -164,6 +149,12 @@ struct MainTabView: View {
         .toolbar(.hidden, for: .tabBar)
         .environment(\.historyStackRoot, $historyStackRoot)
         .environment(\.resultDetailPresented, $resultDetailPresented)
+        .onChange(of: store.retakeRequested) { _, flag in
+            if flag {
+                store.retakeRequested = false
+                showCamera = true
+            }
+        }
         .onChange(of: store.selectedRootTab) { _, newTab in
             if selectedTab != newTab {
                 selectedTab = newTab
@@ -175,9 +166,36 @@ struct MainTabView: View {
                     showQuotaExceeded = true
                     return
                 }
-                recognizingPreviewImage = payload.croppedImage.loadingOverlayPreviewImage()
-                Task {
-                    await recognize(croppedImage: payload.croppedImage, rawImage: payload.rawImage)
+                // P5：拍照直入结果页骨架屏，identify 移到结果页执行（砍「识别中遮罩」）
+                store.pendingRecognition = PendingRecognitionTask(croppedImage: payload.croppedImage, rawImage: payload.rawImage)
+                recognitionPhase = nil
+                recognizingPreviewImage = nil
+                selectedTab = .home
+                store.selectedRootTab = .home
+                resultRoute = ResultRoute(id: UUID().uuidString, itemId: "pending-\(UUID().uuidString)", isPending: true)
+            }
+        }
+        .sheet(isPresented: $showNonFoodSheet) {
+            SafeMealSettingsSheetContainer(
+                title: SafeMealL10n.text(L10nKey.RecognitionPhase.nonFoodTitle),
+                subtitle: SafeMealL10n.text(L10nKey.RecognitionPhase.nonFoodSubtitle),
+                contentHeight: 120,
+                primaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Result.actionRetake)) {
+                    showNonFoodSheet = false
+                    showCamera = true
+                },
+                secondaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Common.back)) {
+                    showNonFoodSheet = false
+                }
+            ) {
+                // 内容区：展示用户拍的预览图，提示未识别
+                if let preview = recognizingPreviewImage {
+                    Image(uiImage: preview)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 100)
+                        .frame(maxWidth: .infinity)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
             }
         }
@@ -367,172 +385,6 @@ struct MainTabView: View {
         showCamera = true
     }
 
-    /// 相册选图后走识别管道：相册图不裁，已扶正到 .up，raw 传同一份。
-    /// 入口已迁移到 CameraCaptureView，相册选图复用 onCapture 通道，走下面的 recognize。
-    @MainActor
-    private func recognize(croppedImage: UIImage, rawImage: UIImage) async {
-        guard store.session != nil else {
-            store.requireLogin(featureHint: SafeMealL10n.text(L10nKey.Home.scanAction))
-            return
-        }
-
-        recognitionPhase = .identifying
-
-        guard let uploadData = croppedImage.jpegDataForUpload() else {
-            store.errorMessage = SafeMealL10n.text(L10nKey.Errors.imageCaptureFailed)
-            recognitionPhase = nil
-            recognizingPreviewImage = nil
-            return
-        }
-
-        do {
-            // 并行：identify API + 本地预览图处理同时进行
-            async let identifyTask = store.authorizedRequest { token in
-                try await store.api.identify(accessToken: token, imageData: uploadData, fileName: "capture.jpg")
-            }
-            async let previewTask = BackgroundRemovalService.makePreviewImage(
-                from: croppedImage,
-                adviceLevel: nil
-            )
-
-            let identifyResult = try await identifyTask
-            let previewImage = await previewTask
-
-            let groups = identifyResult.effectiveGroups
-
-            // 无候选 → 非食物提示
-            if groups.isEmpty {
-                recognitionPhase = .nonFood
-                recognizingPreviewImage = previewImage
-                // 识别结束（未识别到食物）：刷新首页额度，避免返回后额度信息停在旧值
-                await store.refreshDailyQuota()
-                return
-            }
-
-            // 单组 direct:组内 1 条且 100% 等值 → 直接 confirm,不展开选择页
-            let directGroups = groups.filter { $0.mode == "direct" }
-            if groups.count == 1 && directGroups.count == 1 {
-                recognitionPhase = .evaluating
-                recognizingPreviewImage = previewImage
-
-                let directFoodId = directGroups[0].effectiveMatches.first?.foodId
-
-                do {
-                    let record = try await store.authorizedRequest { token in
-                        try await store.api.confirm(
-                            accessToken: token,
-                            selectedFoodId: directFoodId,
-                            selectedName: nil,
-                            sessionId: identifyResult.sessionId
-                        )
-                    }
-                    let item = try store.recordRecognition(
-                        record,
-                        originalImage: croppedImage,
-                        previewImage: previewImage,
-                        rawImage: rawImage,
-                        alternateNames: groups.map { $0.aiName }
-                    )
-                    recognitionPhase = nil
-                    recognizingPreviewImage = nil
-                    selectedTab = .home
-                    store.selectedRootTab = .home
-                    // 识别完成（confirm 已扣款）：刷新首页额度
-                    await store.refreshDailyQuota()
-                    resultRoute = ResultRoute(id: item.id, itemId: item.id)
-                } catch {
-                    recognitionPhase = nil
-                    recognizingPreviewImage = nil
-                    if isQuotaExceededError(error) {
-                        showQuotaExceeded = true
-                    } else {
-                        store.handleAPIError(error)
-                    }
-                }
-            } else {
-                // select/draft/多组:展开选择页（分组树渲染,组内 mode 决定展开/直进/草稿）
-                identifySession = IdentifySessionData(
-                    groups: groups,
-                    sessionId: identifyResult.sessionId,
-                    croppedImage: croppedImage,
-                    rawImage: rawImage,
-                    previewImage: previewImage
-                )
-                recognizingPreviewImage = previewImage
-                recognitionPhase = .selecting(groups: groups, sessionId: identifyResult.sessionId)
-            }
-        } catch {
-            #if DEBUG
-            print("[MainTabView] recognize error: \(error)")
-            if let apiError = error as? APIError {
-                print("[MainTabView] APIError: \(apiError)")
-            }
-            #endif
-            recognitionPhase = nil
-            recognizingPreviewImage = nil
-            // 识别失败后刷新额度（后端 confirm 已扣款时需反映；未扣款时保持显示准确）
-            await store.refreshDailyQuota()
-            if isQuotaExceededError(error) {
-                showQuotaExceeded = true
-            } else {
-                store.handleAPIError(error)
-            }
-        }
-    }
-
-    // confirm 流程：从候选选择后调用(foodId 与 name 互斥)
-    @MainActor
-    private func performConfirm(selectedFoodId: String? = nil, selectedName: String? = nil, sessionId: String) {
-        guard let session = identifySession else { return }
-
-        recognitionPhase = .evaluating
-        recognizingPreviewImage = session.previewImage
-
-        Task {
-            do {
-                let record = try await store.authorizedRequest { token in
-                    try await store.api.confirm(
-                        accessToken: token,
-                        selectedFoodId: selectedFoodId,
-                        selectedName: selectedName,
-                        sessionId: sessionId
-                    )
-                }
-                let item = try store.recordRecognition(
-                    record,
-                    originalImage: session.croppedImage,
-                    previewImage: session.previewImage,
-                    rawImage: session.rawImage,
-                    alternateNames: session.groups.map { $0.aiName }
-                )
-                identifySession = nil
-                recognitionPhase = nil
-                recognizingPreviewImage = nil
-                selectedTab = .home
-                store.selectedRootTab = .home
-                // 识别完成（confirm 已扣款）：刷新首页额度
-                await store.refreshDailyQuota()
-                resultRoute = ResultRoute(id: item.id, itemId: item.id)
-            } catch {
-                identifySession = nil
-                recognitionPhase = nil
-                recognizingPreviewImage = nil
-                // 识别失败后刷新额度，保持首页额度与后端一致
-                await store.refreshDailyQuota()
-                if isQuotaExceededError(error) {
-                    showQuotaExceeded = true
-                } else {
-                    store.handleAPIError(error)
-                }
-            }
-        }
-    }
-
-    private func isQuotaExceededError(_ error: Error) -> Bool {
-        guard case let APIError.server(status, message, _) = error else { return false }
-        return status == 400 && message == SafeMealL10n.text(L10nKey.Errors.requestQuotaExceeded)
-    }
-
     private func watchRewardAd() {
         guard let vc = AdTopVC.resolve() else {
             print("[UMeng] 无法获取 rootViewController")
@@ -596,6 +448,8 @@ struct MainTabView: View {
 private struct ResultRoute: Identifiable, Hashable {
     let id: String
     let itemId: LocalHistoryItem.ID
+    /// P2: 待确认直进结果页（confirm 在结果页 pending 态执行，itemId 为占位）
+    var isPending: Bool = false
 
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.id == rhs.id
@@ -606,14 +460,6 @@ private struct ResultRoute: Identifiable, Hashable {
     }
 }
 
-// identify 会话数据：分组树 + sessionId + 原图/预览图
-struct IdentifySessionData {
-    let groups: [MatchGroup]
-    let sessionId: String
-    let croppedImage: UIImage
-    let rawImage: UIImage?
-    let previewImage: UIImage?
-}
 
 #Preview {
     MainTabView()

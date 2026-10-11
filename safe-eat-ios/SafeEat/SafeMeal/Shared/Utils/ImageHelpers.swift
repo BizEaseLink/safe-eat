@@ -311,14 +311,23 @@ private extension UIImage {
 enum LocalImageLoader {
     private static let stickerCache = NSCache<NSString, UIImage>()
 
+    // P4: 内存缓存，避免 body 重算/切 tab 时重复读盘解码导致图片闪烁
+    private static let imageCache = NSCache<NSString, UIImage>()
+
     static func loadImage(from uri: String?) -> UIImage? {
         guard let uri else { return nil }
+        if let cached = imageCache.object(forKey: uri as NSString) { return cached }
 
+        let image: UIImage?
         if let fileURL = URL(string: uri), fileURL.isFileURL {
-            return UIImage(contentsOfFile: fileURL.path)
+            image = UIImage(contentsOfFile: fileURL.path)
+        } else {
+            image = UIImage(contentsOfFile: uri)
         }
-
-        return UIImage(contentsOfFile: uri)
+        if let image {
+            imageCache.setObject(image, forKey: uri as NSString)
+        }
+        return image
     }
 
     static func loadDisplayImage(for item: LocalHistoryItem) -> UIImage? {
@@ -373,6 +382,7 @@ enum LocalImageLoader {
 
     static func clearAllCaches() {
         stickerCache.removeAllObjects()
+        imageCache.removeAllObjects()
     }
 }
 

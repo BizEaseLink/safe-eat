@@ -1259,3 +1259,7 @@
 "result.tab.advice" = "Advice";
 "result.recommendation.title" = "Advice";
 "result.section.instructions" = "Instructions";
+"result.pending_confirm_failed" = "Recognition confirmation failed, please try again";
+"result.section.cooking_method" = "Cooking Method";
+"result.identify_failed_title" = "Recognition Failed";
+"result.identify_failed_subtitle" = "Network error or unrecognizable image, please try again";

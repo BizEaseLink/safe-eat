@@ -1113,3 +1113,7 @@
 "result.tab.advice" = "建议";
 "result.recommendation.title" = "建议";
 "result.section.instructions" = "做法步骤";
+"result.pending_confirm_failed" = "识别确认失败，请重试";
+"result.section.cooking_method" = "烹饪方式";
+"result.identify_failed_title" = "识别失败";
+"result.identify_failed_subtitle" = "网络异常或图片无法识别，请重试";

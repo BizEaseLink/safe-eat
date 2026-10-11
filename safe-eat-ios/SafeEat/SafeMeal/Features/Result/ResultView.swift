@@ -6,6 +6,17 @@ struct ResultView: View {
     @EnvironmentObject private var store: AppStore
 
     let itemId: LocalHistoryItem.ID
+    /// P2: 待确认直进（confirm 在 pending 态执行，itemId 为占位）
+    var isPending: Bool = false
+
+    /// P2: confirm 完成后 resolve 成真实 item id
+    @State private var resolvedItemId: LocalHistoryItem.ID?
+    @State private var pendingFailed = false
+    @State private var showQuotaExceeded = false
+    // P5: 结果页骨架屏驱动的识别流程弹窗
+    @State private var showCandidateSheet = false   // 多候选选择
+    @State private var showIdentifyFailed = false   // 识别失败
+    @State private var showNonFoodSheet = false     // 未识别到食物
 
     @State private var isFlipped = false
     @State private var isLoadingDetail = false
@@ -23,7 +34,7 @@ struct ResultView: View {
     }
 
     private var item: LocalHistoryItem? {
-        store.historyItem(id: itemId)
+        store.historyItem(id: resolvedItemId ?? itemId)
     }
 
     private var recognition: RecognitionRecord? {
@@ -296,6 +307,7 @@ struct ResultView: View {
                         }
                 } else {
                     resultPage(item: item, recognition: recognition)
+                    .dimmedSheetBackground(showFeedback)
                     .sheet(isPresented: $showFeedback) {
                         NavigationStack {
                             FeedbackView(recognition: recognition, historyItem: item)
@@ -314,9 +326,102 @@ struct ResultView: View {
                         }
                     }
                 }
+            } else if isPending {
+                pendingLoadingView
+                    .dimmedSheetBackground(showCandidateSheet)
             } else {
                 missingState
             }
+        }
+        // P5: 候选选择 sheet（X 顶部关闭 + 列表层级；下拉/关闭=取消识别）
+        .sheet(isPresented: $showCandidateSheet, onDismiss: {
+            // 下拉关闭/取消 → 取消识别（identify 未扣款，直接丢弃）
+            if store.pendingRecognition?.stage == .identify {
+                store.pendingRecognition = nil
+                dismiss()
+            }
+        }) {
+            CandidateSheetView(
+                groups: store.pendingRecognition?.groups ?? [],
+                onSelect: { foodId, name in
+                    showCandidateSheet = false
+                    // 延迟启动 confirm，让背景「缩小→恢复原状」动画先播完
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        runConfirmSelection(foodId: foodId, name: name)
+                    }
+                },
+                onCancel: {
+                    showCandidateSheet = false
+                    store.pendingRecognition = nil
+                    dismiss()
+                }
+            )
+            .presentationDetents([.height(520)])
+            .presentationDragIndicator(.visible)
+            .interactiveDismissDisabled(true)
+        }
+        // P5: 未识别到食物 sheet
+        .sheet(isPresented: $showNonFoodSheet) {
+            SafeMealSettingsSheetContainer(
+                title: SafeMealL10n.text(L10nKey.RecognitionPhase.nonFoodTitle),
+                subtitle: SafeMealL10n.text(L10nKey.RecognitionPhase.nonFoodSubtitle),
+                contentHeight: 110,
+                primaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Result.actionRetake)) {
+                    showNonFoodSheet = false
+                    store.pendingRecognition = nil
+                    dismiss()
+                    store.retakeRequested = true
+                },
+                secondaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Common.back)) {
+                    showNonFoodSheet = false
+                    store.pendingRecognition = nil
+                    dismiss()
+                }
+            ) {
+                if let img = store.pendingRecognition?.croppedImage {
+                    Image(uiImage: img)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 100)
+                        .frame(maxWidth: .infinity)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+            }
+        }
+        // P5: 识别失败 sheet
+        .sheet(isPresented: $showIdentifyFailed) {
+            SafeMealSettingsSheetContainer(
+                title: SafeMealL10n.text(L10nKey.Result.identifyFailedTitle),
+                subtitle: SafeMealL10n.text(L10nKey.Result.identifyFailedSubtitle),
+                contentHeight: 40,
+                primaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Result.actionRetake)) {
+                    showIdentifyFailed = false
+                    store.pendingRecognition = nil
+                    dismiss()
+                    store.retakeRequested = true
+                },
+                secondaryButton: SheetButton(title: SafeMealL10n.text(L10nKey.Common.back)) {
+                    showIdentifyFailed = false
+                    store.pendingRecognition = nil
+                    dismiss()
+                }
+            ) { EmptyView() }
+        }
+        .sheet(isPresented: $showQuotaExceeded) {
+            QuotaExceededSheet(
+                snapshot: store.dailyQuota ?? DailyQuotaSnapshot(
+                    planTier: "FREE", totalQuota: 0, usedCount: 0, remainingQuota: 0,
+                    adClaimsCount: 0, adRewardPerWatch: nil, adWatchLimit: nil, remainingAdWatchCount: nil,
+                    quotaDate: "", monthlyTotalQuota: nil, monthlyUsedCount: nil, monthlyRemaining: nil,
+                    periodStart: nil, periodEnd: nil
+                ),
+                onWatchAd: nil,
+                onUpgrade: { showQuotaExceeded = false; showMembership = true },
+                onDismiss: { showQuotaExceeded = false }
+            )
+        }
+        .alert(SafeMealL10n.text(L10nKey.Result.pendingConfirmFailed), isPresented: $pendingFailed) {
+            Button(SafeMealL10n.text(L10nKey.Common.ok)) { dismiss() }
         }
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
@@ -355,7 +460,7 @@ struct ResultView: View {
                 Button {
                     dismiss()
                 } label: {
-                    HugeIcon(glyph: .arrowLeft01, size: 20)
+                    HugeIcon(glyph: .arrowLeft01, size: 20, stroke: true)
                         .foregroundStyle(SafeMealTheme.textPrimary)
                         .frame(width: 50, height: 50)
                         .background(
@@ -530,7 +635,7 @@ struct ResultView: View {
 
     private var statboxDivider: some View {
         Rectangle()
-            .fill(SafeMealTheme.line.opacity(0.5))
+            .fill(skeletonColor)
             .frame(width: 1, height: 40)
     }
 
@@ -709,10 +814,10 @@ struct ResultView: View {
                 ingredientsSection(recognition: recognition)
             }
 
-            // 做法（外部标题，有数据显示）
-            if hasInstructions(recognition) {
+            // 步骤（外部标题，有数据显示）
+            if hasCookingSteps(recognition) {
                 sectionHeader(SafeMealL10n.text(L10nKey.Result.sectionInstructions), icon: "list.number")
-                instructionsSection(recognition: recognition)
+                cookingStepsSection(recognition: recognition)
             }
 
             // 过敏原（外部标题，含有/可能含有）
@@ -750,10 +855,10 @@ struct ResultView: View {
     }
 
     // 是否有做法数据
-    private func hasInstructions(_ recognition: RecognitionRecord) -> Bool {
-        let prep = recognition.nutritionMetrics?.preparation
-        let stepsText = prep?.cookingSteps ?? prep?.cookingMethod
-        return !(stepsText ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    // 步骤是否有值
+    private func hasCookingSteps(_ recognition: RecognitionRecord) -> Bool {
+        let steps = recognition.nutritionMetrics?.preparation?.cookingSteps
+        return !(steps ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     private func ingredientsSection(recognition: RecognitionRecord) -> some View {
@@ -791,10 +896,9 @@ struct ResultView: View {
     }
 
     // MARK: - P1 Instructions / 做法步骤（有数据显示，无则隐藏）
-    private func instructionsSection(recognition: RecognitionRecord) -> some View {
-        let prep = recognition.nutritionMetrics?.preparation
-        // 优先 cookingSteps（HTML Instructions 步骤式），回退 cookingMethod
-        let stepsText = prep?.cookingSteps ?? prep?.cookingMethod
+    // 步骤（cookingSteps 编号步骤，独立于烹饪方式）
+    private func cookingStepsSection(recognition: RecognitionRecord) -> some View {
+        let stepsText = recognition.nutritionMetrics?.preparation?.cookingSteps
         let steps: [String] = (stepsText ?? "")
             .split(whereSeparator: { "\n；;。".contains($0) })
             .map { $0.trimmingCharacters(in: .whitespaces) }
@@ -1183,7 +1287,7 @@ struct ResultView: View {
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
                             Capsule()
-                                .fill(SafeMealTheme.line.opacity(0.3))
+                                .fill(skeletonColor)
                             Capsule()
                                 .fill(satietyColor(score: score))
                                 .frame(width: max(8, geo.size.width * CGFloat(min(max(score, 0), 1))))
@@ -2239,6 +2343,306 @@ struct ResultView: View {
         colorScheme == .dark
             ? Color.white.opacity(0.04)
             : Color.white.opacity(0.08)
+    }
+
+    // MARK: - P2 pending 态：confirm 在结果页异步执行，先显示骨架屏
+    private var pendingLoadingView: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .topLeading) {
+                pageBackground
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        // hero：预览图（与识别成功后 heroSection 同结构：顶部渐变 + 底部圆角34）
+                        ZStack {
+                            // 用 croppedImage（拍照原图，与识别成功后 originalImage 同源）保持视觉一致
+                            if let original = store.pendingRecognition?.croppedImage {
+                                Image(uiImage: original)
+                                    .resizable()
+                                    .scaledToFill()
+                            } else {
+                                Rectangle().fill(SafeMealTheme.primarySoft.opacity(0.35))
+                            }
+                            // 顶部轻渐变遮罩（与 heroSection 一致）
+                            LinearGradient(
+                                stops: [
+                                    .init(color: Color.black.opacity(0.42), location: 0),
+                                    .init(color: Color.black.opacity(0.14), location: 0.3),
+                                    .init(color: .clear, location: 0.62),
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        }
+                        .frame(height: 318)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                        .clipShape(
+                            UnevenRoundedRectangle(
+                                topLeadingRadius: 0,
+                                bottomLeadingRadius: 34,
+                                bottomTrailingRadius: 34,
+                                topTrailingRadius: 0
+                            )
+                        )
+
+                        // 上浮白卡骨架（与 detailSheet 完全同构：白底圆角28 + 负 margin 上浮叠 hero）
+                        VStack(alignment: .leading, spacing: 12) {
+                            // 名称骨架（对齐 minHeight:68 两行）
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(skeletonColor)
+                                .frame(width: 190, height: 30)
+                                .frame(minHeight: 68, alignment: .topLeading)
+                            // 摘要骨架
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(skeletonColor)
+                                .frame(height: 14)
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(skeletonColor)
+                                .frame(width: 250, height: 14)
+                            // statbox 三列骨架（对齐 statboxCell: padding vertical 12 + 分割线 1×40）
+                            HStack(spacing: 0) {
+                                skeletonStat
+                                skeletonDivider
+                                skeletonStat
+                                skeletonDivider
+                                skeletonStat
+                            }
+                            .padding(.top, 8)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 22)
+                        .padding(.bottom, 16)
+                        .shimmerContent()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                                .fill(colorScheme == .dark ? Color(red: 0.16, green: 0.17, blue: 0.19) : Color.white)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                                .stroke(SafeMealTheme.line.opacity(0.4), lineWidth: 1)
+                        )
+                        .shadow(color: Color.black.opacity(0.07), radius: 14, y: -5)
+                        .padding(.horizontal, 14)
+                        .padding(.top, -52)
+                        .zIndex(2)
+
+                        // tab 栏骨架：3 个药丸 tab，尺寸完全复刻真实 tabButton（高44 Capsule/等宽/spacing4/padding4），只去掉外层灰底胶囊
+                        HStack(spacing: 4) {
+                            ForEach(0..<3, id: \.self) { _ in
+                                Capsule()
+                                    .fill(skeletonColor)
+                                    .frame(height: 44)
+                                    .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .padding(4)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+                        .shimmerContent()
+
+                        // 营养 tab 内容骨架（分组式：标题短横 + 多行「名称……数值」，模仿宏营养素/维生素/矿物质结构）
+                        VStack(alignment: .leading, spacing: 18) {
+                            // 分组 1（宏量）
+                            VStack(alignment: .leading, spacing: 12) {
+                                RoundedRectangle(cornerRadius: 5)
+                                    .fill(skeletonColor)
+                                    .frame(width: 90, height: 13)
+                                ForEach(0..<3, id: \.self) { _ in
+                                    HStack(spacing: 12) {
+                                        RoundedRectangle(cornerRadius: 5)
+                                            .fill(skeletonColor)
+                                            .frame(width: 88, height: 12)
+                                        Spacer()
+                                        RoundedRectangle(cornerRadius: 5)
+                                            .fill(skeletonColor)
+                                            .frame(width: 52, height: 12)
+                                    }
+                                }
+                            }
+                            .shimmerContent()
+
+                            // 分组 2（维生素/矿物质）
+                            VStack(alignment: .leading, spacing: 12) {
+                                RoundedRectangle(cornerRadius: 5)
+                                    .fill(skeletonColor)
+                                    .frame(width: 70, height: 13)
+                                ForEach(0..<3, id: \.self) { _ in
+                                    HStack(spacing: 12) {
+                                        RoundedRectangle(cornerRadius: 5)
+                                            .fill(skeletonColor)
+                                            .frame(width: 96, height: 12)
+                                        Spacer()
+                                        RoundedRectangle(cornerRadius: 5)
+                                            .fill(skeletonColor)
+                                            .frame(width: 46, height: 12)
+                                    }
+                                }
+                            }
+                            .shimmerContent()
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 24)
+                    }
+                }
+                .ignoresSafeArea(edges: .top)
+
+                // 返回键（与正常结果页一致）
+                Button {
+                    dismiss()
+                } label: {
+                    HugeIcon(glyph: .arrowLeft01, size: 20, stroke: true)
+                        .foregroundStyle(SafeMealTheme.textPrimary)
+                        .frame(width: 50, height: 50)
+                        .background(
+                            Circle().fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.76))
+                        )
+                        .overlay(
+                            Circle().stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+                .padding(.top, proxy.safeAreaInsets.top + 8)
+                .padding(.leading, 20)
+            }
+            .ignoresSafeArea()
+        }
+        .task {
+            await runPendingFlow()
+        }
+    }
+
+    /// 骨架块颜色：系统标准中性灰（浅色 systemGray6 很浅 / 深色 white0.07），呼吸式脉动不突兀
+    private var skeletonColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.07) : Color(.systemGray5)
+    }
+
+    private var skeletonStat: some View {
+        VStack(spacing: 8) {
+            RoundedRectangle(cornerRadius: 6).fill(skeletonColor).frame(width: 44, height: 20)
+            RoundedRectangle(cornerRadius: 5).fill(skeletonColor).frame(width: 40, height: 10)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var skeletonDivider: some View {
+        Rectangle().fill(skeletonColor).frame(width: 1, height: 40)
+    }
+
+    // P5: 候选选中 → 转入 confirm 阶段
+    private func runConfirmSelection(foodId: String?, name: String?) {
+        guard var pending = store.pendingRecognition else { return }
+        pending.stage = .confirm
+        pending.selectedFoodId = foodId
+        pending.selectedName = name
+        store.pendingRecognition = pending
+        Task { await performPendingConfirm() }
+    }
+
+    // P5: 结果页识别全链路状态机（identify → 决策 → confirm）
+    @MainActor
+    private func runPendingFlow() async {
+        guard isPending, let pending = store.pendingRecognition else { return }
+        switch pending.stage {
+        case .identify: await runPendingIdentify()
+        case .confirm: await performPendingConfirm()
+        }
+    }
+
+    // P5: identify 阶段（在骨架屏内跑 identify API + 贴纸图，然后决策分流）
+    @MainActor
+    private func runPendingIdentify() async {
+        guard var pending = store.pendingRecognition else { return }
+        guard let uploadData = pending.croppedImage.jpegDataForUpload() else {
+            store.errorMessage = SafeMealL10n.text(L10nKey.Errors.imageCaptureFailed)
+            showIdentifyFailed = true
+            return
+        }
+        do {
+            async let identifyTask = store.authorizedRequest { token in
+                try await store.api.identify(accessToken: token, imageData: uploadData, fileName: "capture.jpg")
+            }
+            async let previewTask = BackgroundRemovalService.makePreviewImage(from: pending.croppedImage, adviceLevel: nil)
+
+            let identifyResult = try await identifyTask
+            let previewImage = await previewTask
+
+            let groups = identifyResult.effectiveGroups
+            pending.sessionId = identifyResult.sessionId
+            pending.previewImage = previewImage
+            pending.groups = groups
+            pending.alternateNames = groups.map { $0.aiName }
+
+            // 无候选 → 未识别 sheet
+            if groups.isEmpty {
+                store.pendingRecognition = pending
+                await store.refreshDailyQuota()
+                showNonFoodSheet = true
+                return
+            }
+
+            // 单候选 direct → 直接 confirm（仍在骨架屏）
+            let directGroups = groups.filter { $0.mode == "direct" }
+            if groups.count == 1 && directGroups.count == 1 {
+                pending.stage = .confirm
+                pending.selectedFoodId = directGroups[0].effectiveMatches.first?.foodId
+                pending.selectedName = nil
+                store.pendingRecognition = pending
+                await performPendingConfirm()
+            } else {
+                // 多候选 → 候选选择 sheet
+                store.pendingRecognition = pending
+                showCandidateSheet = true
+            }
+        } catch {
+            store.pendingRecognition = nil
+            await store.refreshDailyQuota()
+            if isQuotaExceededError(error) {
+                showQuotaExceeded = true
+            } else {
+                showIdentifyFailed = true
+            }
+        }
+    }
+
+    // P2: pending 态执行 confirm，成功 resolve 到真实 item，失败兜底
+    @MainActor
+    private func performPendingConfirm() async {
+        guard isPending, let pending = store.pendingRecognition else { return }
+        do {
+            let record = try await store.authorizedRequest { token in
+                try await store.api.confirm(
+                    accessToken: token,
+                    selectedFoodId: pending.selectedFoodId,
+                    selectedName: pending.selectedName,
+                    sessionId: pending.sessionId
+                )
+            }
+            let newItem = try store.recordRecognition(
+                record,
+                originalImage: pending.croppedImage,
+                previewImage: pending.previewImage,
+                rawImage: pending.rawImage,
+                alternateNames: pending.alternateNames
+            )
+            store.pendingRecognition = nil
+            resolvedItemId = newItem.id
+            await store.refreshDailyQuota()
+        } catch {
+            store.pendingRecognition = nil
+            await store.refreshDailyQuota()
+            if isQuotaExceededError(error) {
+                showQuotaExceeded = true
+            } else {
+                pendingFailed = true
+            }
+        }
+    }
+
+    private func isQuotaExceededError(_ error: Error) -> Bool {
+        guard case let APIError.server(status, message, _) = error else { return false }
+        return status == 400 && message == SafeMealL10n.text(L10nKey.Errors.requestQuotaExceeded)
     }
 
     private var missingState: some View {

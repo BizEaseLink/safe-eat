@@ -13,6 +13,28 @@ enum AppRootTab: Hashable {
     case profile
 }
 
+/// 识别 pending 阶段（结果页骨架屏驱动全链路）
+enum PendingStage {
+    case identify   // identify 阶段：拍照后进骨架屏，跑 identify API
+    case confirm    // confirm 阶段：identify 已出结果，跑 confirm API
+}
+
+/// 待确认的识别任务（P2/P5：identify + confirm 都在结果页骨架屏执行，输入/中间态先存 store）
+struct PendingRecognitionTask {
+    var stage: PendingStage = .identify
+    // identify 输入
+    let croppedImage: UIImage
+    let rawImage: UIImage?
+    // identify 输出（identify 成功后填充）
+    var sessionId: String = ""
+    var previewImage: UIImage?
+    var groups: [MatchGroup] = []
+    var alternateNames: [String] = []
+    // confirm 输入（单候选 direct 或多候选选中后填充）
+    var selectedFoodId: String?
+    var selectedName: String?
+}
+
 @MainActor
 final class AppStore: ObservableObject {
     @Published var hasBootstrapped = false
@@ -23,6 +45,10 @@ final class AppStore: ObservableObject {
     @Published var errorMessage: String?
     @Published var showLocalNetworkDenied = false
     @Published var selectedRootTab: AppRootTab = .home
+    /// P2: 待确认的识别任务（结果页 pending 态执行 confirm）
+    @Published var pendingRecognition: PendingRecognitionTask?
+    /// 结果页未识别/失败 sheet 请求重新拍摄（MainTabView 监听开相机）
+    @Published var retakeRequested = false
     @Published var pushProfileRoute: ProfileRoute?
     @Published var hasCompletedOnboarding: Bool
     @Published var allowsGuestHome: Bool

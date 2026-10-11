@@ -422,3 +422,87 @@ struct DisableScrollBounce: UIViewRepresentable {
         }
     }
 }
+
+// MARK: - 骨架屏 shimmer 光扫
+struct ShimmerModifier: ViewModifier {
+    @State private var dim = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(dim ? 0.45 : 1.0)
+            .clipped()
+            .onAppear {
+                withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
+                    dim = true
+                }
+            }
+    }
+}
+
+struct ShimmerContentModifier: ViewModifier {
+    @State private var dim = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(dim ? 0.45 : 1.0)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
+                    dim = true
+                }
+            }
+    }
+}
+
+extension View {
+    func shimmer() -> some View { modifier(ShimmerModifier()) }
+    func shimmerContent() -> some View { modifier(ShimmerContentModifier()) }
+}
+
+// MARK: - Sheet 弹出时的背景退后效果（blur + scale + 压暗，公共）
+struct DimmedSheetBackgroundModifier: ViewModifier {
+    let isPresented: Bool
+    @State private var scale: CGFloat = 1
+    @State private var blurRadius: CGFloat = 0
+    @State private var dim: CGFloat = 0
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(scale, anchor: .top)
+            .blur(radius: blurRadius)
+            .overlay(
+                Color.black.opacity(dim)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            )
+            .onAppear {
+                scale = isPresented ? 0.98 : 1
+                blurRadius = isPresented ? 10 : 0
+                dim = isPresented ? 0.22 : 0
+            }
+            .onChange(of: isPresented) { _, presented in
+                if presented {
+                    // 弹出：缩小 + 模糊 + 压暗
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        scale = 0.98
+                        blurRadius = 10
+                        dim = 0.22
+                    }
+                } else {
+                    // 关闭：0.96 → 1.0，快到慢（easeOut）
+                    withAnimation(.easeOut(duration: 0.28)) {
+                        scale = 1.0
+                        blurRadius = 0
+                        dim = 0
+                    }
+                }
+            }
+    }
+}
+
+extension View {
+    /// sheet 弹出时背景退后：blur(10) + scale(0.96) + 压暗
+    func dimmedSheetBackground(_ isPresented: Bool) -> some View {
+        modifier(DimmedSheetBackgroundModifier(isPresented: isPresented))
+    }
+}
+
