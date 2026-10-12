@@ -885,7 +885,7 @@
 "result.section.daily_values" = "每日参考值";
 "result.section.glycemic" = "血糖指数";
 "result.section.dietary" = "饮食标签";
-"result.section.ingredients" = "成分与烹饪";
+"result.section.ingredients" = "成分";
 "result.glycemic.index" = "血糖指数";
 "result.glycemic.load" = "血糖负荷";
 "result.glycemic.insulin_index" = "胰岛素指数";

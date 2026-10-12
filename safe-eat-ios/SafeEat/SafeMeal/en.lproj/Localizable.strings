@@ -799,7 +799,7 @@
 "result.section.daily_values" = "Daily Values";
 "result.section.glycemic" = "Glycemic Index";
 "result.section.dietary" = "Dietary Tags";
-"result.section.ingredients" = "Ingredients & Preparation";
+"result.section.ingredients" = "Ingredients";
 "result.glycemic.index" = "Glycemic Index";
 "result.glycemic.load" = "Glycemic Load";
 "result.glycemic.insulin_index" = "Insulin Index";
