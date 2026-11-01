@@ -9,7 +9,7 @@ enum AppConfig {
     // API 地址:测试连 SIT(https://sit.bizeaselink.cn),线上连生产(https://bizeaselink.cn)
     static let apiBaseURL: URL = {
         #if DEBUG
-        return URL(string: "https://bizeaselink.cn/api")!   // 测试: SIT
+        return URL(string: "http://192.168.31.149:3000/api")!   // 测试: SIT
         #else
         return URL(string: "https://bizeaselink.cn/api")!        // 线上: 生产域名
         #endif

@@ -747,10 +747,12 @@ struct ProfileView: View {
     }
 
     private func requestAppReview() {
-        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
+        // 系统弹窗（SKStoreReviewController.requestReview）受 Apple 频控（一年最多 3 次且由系统决定），
+        // 常表现为点了没反应；改为直接跳 App Store 写评分页，100% 打开评分面板
+        guard let url = URL(string: "https://apps.apple.com/cn/app/id\(AppConfig.appStoreID)?action=write-review") else {
             return
         }
-        SKStoreReviewController.requestReview(in: scene)
+        UIApplication.shared.open(url)
     }
 }
 

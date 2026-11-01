@@ -1098,6 +1098,7 @@ enum L10nKey {
         static let healthWeightLoss = "user.health.weight_loss"
         static let healthMuscle = "user.health.muscle_gain"
         static let healthWellness = "user.health.general_wellness"
+        static let healthPregnancy = "user.health.pregnancy_care"
         static let goalBalanced = "user.goal.balanced"
         static let goalFatLoss = "user.goal.fat_loss"
         static let goalMuscle = "user.goal.muscle_gain"

@@ -490,6 +490,7 @@ enum HealthTagMapper {
         "high_blood_sugar",
         "high_blood_lipids",
         "general_wellness",
+        "pregnancy_care",
     ]
 
     static func title(_ tag: String) -> String {
@@ -502,6 +503,8 @@ enum HealthTagMapper {
             return SafeMealL10n.text(L10nKey.User.healthLipids)
         case "general_wellness":
             return SafeMealL10n.text(L10nKey.User.healthWellness)
+        case "pregnancy_care":
+            return SafeMealL10n.text(L10nKey.User.healthPregnancy)
         default:
             return tag
         }

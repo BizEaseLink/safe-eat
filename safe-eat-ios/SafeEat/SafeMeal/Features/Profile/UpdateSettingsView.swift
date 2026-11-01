@@ -72,7 +72,7 @@ struct UpdateSettingsView: View {
     }
 
     private func openAppStoreURL() {
-        guard let url = URL(string: "https://apps.apple.com/app/id\(AppConfig.appStoreID)") else { return }
+        guard let url = URL(string: "https://apps.apple.com/cn/app/id\(AppConfig.appStoreID)") else { return }
         UIApplication.shared.open(url)
     }
 }
