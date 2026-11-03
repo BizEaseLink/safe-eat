@@ -137,8 +137,18 @@ struct SafeMealApp: App {
             // 登录页同款背景（主背景 + 柔和几何装饰块）
             SafeMealAuthBackground()
 
-            // Logo 绝对居中
+            // Logo 绝对居中（只加柔和阴影：白色 Logo 在浅背景上靠投影分离出轮廓）
             AppLogoView(size: 160, animate: true)
+                .shadow(
+                    color: colorScheme == .dark ? Color.clear : Color.black.opacity(0.18),
+                    radius: 12,
+                    y: 6
+                )
+                .shadow(
+                    color: colorScheme == .dark ? Color.clear : Color.black.opacity(0.10),
+                    radius: 30,
+                    y: 14
+                )
 
         }
         .transition(.opacity)
