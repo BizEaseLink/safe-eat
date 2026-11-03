@@ -16,6 +16,8 @@ struct SafeMealApp: App {
         case ready            // 进入主页面
     }
 
+    @Environment(\.colorScheme) private var colorScheme
+
     @State private var launchPhase: LaunchPhase = .logoAnimation
     @State private var showSplashAd = false
 
@@ -132,10 +134,52 @@ struct SafeMealApp: App {
     /// Logo 动画层：全屏背景 + 居中 Logo + 缩放渐显动画
     private var logoAnimationLayer: some View {
         ZStack {
-            Color(UIColor.systemBackground)
-                .ignoresSafeArea()
+            // 品牌绿渐变背景（参考大厂开屏：品牌色铺满）
+            LinearGradient(
+                colors: colorScheme == .dark
+                    ? [SafeMealTheme.primaryDeep, Color(red: 0.07, green: 0.09, blue: 0.08)]
+                    : [SafeMealTheme.primarySoft, Color.white],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
 
-            AppLogoView(size: 160, animate: true)
+            VStack(spacing: 22) {
+                Spacer()
+
+                AppLogoView(size: 168, animate: true)
+
+                // 品牌名（中英）
+                VStack(spacing: 4) {
+                    Text("食必安")
+                        .font(SafeMealFont.custom(30, relativeTo: .title, weight: .bold))
+                        .foregroundStyle(colorScheme == .dark ? Color.white : SafeMealTheme.primaryDeep)
+                    Text("SafeMeal")
+                        .font(SafeMealFont.custom(14, relativeTo: .caption, weight: .semibold))
+                        .tracking(2)
+                        .foregroundStyle(colorScheme == .dark ? Color.white.opacity(0.7) : SafeMealTheme.primary.opacity(0.8))
+                }
+
+                // 品牌 slogan（中英）
+                VStack(spacing: 6) {
+                    Text("拍照识食，AI健康安心吃")
+                        .font(SafeMealFont.custom(16, relativeTo: .body, weight: .semibold))
+                        .foregroundStyle(colorScheme == .dark ? Color.white.opacity(0.9) : SafeMealTheme.textPrimary)
+                    Text("AI Snap to Eat Smart")
+                        .font(SafeMealFont.custom(12, relativeTo: .caption2))
+                        .tracking(1)
+                        .foregroundStyle(colorScheme == .dark ? Color.white.opacity(0.55) : SafeMealTheme.textSecondary)
+                }
+                .multilineTextAlignment(.center)
+
+                Spacer()
+
+                // 底部品牌说明（大厂开屏常见）
+                Text("AI 营养助手 · 让每一餐都安心")
+                    .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                    .foregroundStyle(colorScheme == .dark ? Color.white.opacity(0.45) : SafeMealTheme.textSecondary.opacity(0.8))
+                    .padding(.bottom, 40)
+            }
         }
         .transition(.opacity)
         .task {
