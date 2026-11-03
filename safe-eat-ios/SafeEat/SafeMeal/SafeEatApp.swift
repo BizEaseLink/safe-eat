@@ -134,15 +134,9 @@ struct SafeMealApp: App {
     /// Logo 动画层：全屏背景 + 居中 Logo + 缩放渐显动画
     private var logoAnimationLayer: some View {
         ZStack {
-            // 品牌绿渐变背景（参考大厂开屏：品牌色铺满）
-            LinearGradient(
-                colors: colorScheme == .dark
-                    ? [SafeMealTheme.primaryDeep, Color(red: 0.07, green: 0.09, blue: 0.08)]
-                    : [SafeMealTheme.primarySoft, Color.white],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // 使用 App 统一主背景（与结果页/首页一致的渐变 + 左上角品牌光晕）
+            SafeMealMainGradientBackground()
+                .ignoresSafeArea()
 
             // Logo 绝对居中
             AppLogoView(size: 168, animate: true)
