@@ -223,7 +223,7 @@ struct CandidateSelectView: View {
                     .foregroundColor(SafeMealTheme.primary)
 
                 Text(item.name)
-                    .font(SafeMealFont.custom(17, relativeTo: .body, weight: .medium))
+                    .font(SafeMealFont.custom(17, relativeTo: .body, weight: .semibold))
                     .foregroundColor(SafeMealTheme.textPrimary)
                     .lineLimit(1)
 
