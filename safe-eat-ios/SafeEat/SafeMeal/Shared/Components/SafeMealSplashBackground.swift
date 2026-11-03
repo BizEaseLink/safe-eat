@@ -9,15 +9,16 @@ struct SafeMealSplashBackground: View {
 
     /// #2E7D5A 品牌绿
     private static let centerGreen = Color(red: 0.18, green: 0.49, blue: 0.353)
-    /// #F2FAF6 浅薄荷绿
-    private static let lightOuter = Color(red: 0.949, green: 0.980, blue: 0.965)
+    /// 浅色外圈：#D5EDE2（偏深的浅薄荷绿，承托白色 Logo）
+    private static let lightOuter = Color(red: 0.835, green: 0.929, blue: 0.886)
     /// 深色外圈：近黑墨绿
     private static let darkOuter = Color(red: 0.055, green: 0.078, blue: 0.067)
 
     var body: some View {
         GeometryReader { geo in
             // 半径覆盖屏幕最长边，保证光晕从中心一直衰减到四角
-            let maxRadius = max(geo.size.width, geo.size.height) * 0.95
+            // 光晕半径只占屏幕短边 42%，外围背景色保留可见（原来覆盖全屏导致背景看不到）
+            let maxRadius = min(geo.size.width, geo.size.height) * 0.34
 
             ZStack {
                 (colorScheme == .dark ? Self.darkOuter : Self.lightOuter)

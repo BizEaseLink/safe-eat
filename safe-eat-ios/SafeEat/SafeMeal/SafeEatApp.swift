@@ -138,7 +138,7 @@ struct SafeMealApp: App {
             SafeMealSplashBackground()
 
             // Logo 绝对居中
-            AppLogoView(size: 168, animate: true)
+            AppLogoView(size: 160, animate: true)
 
         }
         .transition(.opacity)
