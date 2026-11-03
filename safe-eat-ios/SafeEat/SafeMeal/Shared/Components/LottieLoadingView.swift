@@ -5,6 +5,8 @@ import Lottie
 struct LottieLoadingView: UIViewRepresentable {
     var size: CGFloat = 160
     var text: String? = nil
+    /// 是否循环播放（启动页用 false：播放一次后进入首页）
+    var loop: Bool = true
 
     @Environment(\.colorScheme) private var colorScheme
 
@@ -14,7 +16,7 @@ struct LottieLoadingView: UIViewRepresentable {
 
         let animationName = colorScheme == .dark ? "logo-dark" : "logo-light"
         let animationView = LottieAnimationView(name: animationName)
-        animationView.loopMode = .loop
+        animationView.loopMode = loop ? .loop : .playOnce
         animationView.play()
         animationView.translatesAutoresizingMaskIntoConstraints = false
         animationView.contentMode = .scaleAspectFit
