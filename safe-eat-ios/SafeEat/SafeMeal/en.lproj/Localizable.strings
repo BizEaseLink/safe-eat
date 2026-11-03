@@ -871,7 +871,7 @@
 "result.scanned_relative_format" = "Scanned %@";
 
 // Membership banner
-"result.membership_banner.title_free" = "Upgrade to Pro for detailed reports";
+"result.membership_banner.title_free" = "Become a member for full reports";
 "result.membership_banner.title_lite" = "Upgrade to Pro for dietary info";
 "result.membership_banner.title_pro" = "Upgrade to Premium for ingredient breakdown";
 "result.membership_banner.subtitle_free" = "Upgrade to Lite to view vitamins and minerals";
@@ -881,6 +881,9 @@
 "result.membership_banner.desc_lite" = "Lite users can see vitamin and mineral details";
 "result.membership_banner.desc_pro" = "Pro users can see dietary info and preparation";
 "result.membership_banner.action" = "Upgrade Now";
+"result.membership_banner.action_free" = "Become a member";
+"result.membership_banner.action_lite" = "Upgrade to Pro";
+"result.membership_banner.action_pro" = "Upgrade to Premium";
 
 // Per 100g serving label
 "result.per_100g_serving" = "Per 100g serving";

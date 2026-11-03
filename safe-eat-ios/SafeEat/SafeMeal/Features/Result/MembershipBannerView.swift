@@ -30,6 +30,20 @@ struct MembershipBannerView: View {
         }
     }
 
+    /// 按钮文案按 tier：free→开通会员 / lite→升级 Pro / pro→升级 Premium
+    private var actionText: String {
+        switch tier {
+        case .free:
+            return SafeMealL10n.text(L10nKey.Result.membershipBannerActionFree)
+        case .lite:
+            return SafeMealL10n.text(L10nKey.Result.membershipBannerActionLite)
+        case .pro:
+            return SafeMealL10n.text(L10nKey.Result.membershipBannerActionPro)
+        case .premium:
+            return ""
+        }
+    }
+
     private var subtitleText: String {
         switch tier {
         case .free:
@@ -70,7 +84,7 @@ struct MembershipBannerView: View {
                 Button {
                     onUpgrade()
                 } label: {
-                    Text(SafeMealL10n.text(L10nKey.Result.membershipBannerAction))
+                    Text(actionText)
                         .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .semibold))
                         .foregroundStyle(SafeMealTheme.primaryDeep)
                         .frame(maxWidth: .infinity)

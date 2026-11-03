@@ -78,6 +78,7 @@ struct CandidateSelectView: View {
             ForEach(candidates.sorted { $0.confidence > $1.confidence }) { candidate in
                 candidateRow(candidate)
             }
+            .padding(.vertical, 2)
         }
     }
 
@@ -94,7 +95,7 @@ struct CandidateSelectView: View {
                 ZStack {
                     Circle()
                         .stroke(SafeMealTheme.line, lineWidth: 3.5)
-                        .frame(width: 52, height: 52)
+                        .frame(width: 58, height: 58)
                     Circle()
                         .trim(from: 0, to: candidate.confidence)
                         .stroke(
@@ -104,13 +105,13 @@ struct CandidateSelectView: View {
                         .frame(width: 52, height: 52)
                         .rotationEffect(.degrees(-90))
                     Text("\(percent)%")
-                        .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .bold))
+                        .font(SafeMealFont.custom(14, relativeTo: .caption, weight: .bold))
                         .foregroundColor(SafeMealTheme.textPrimary)
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(candidate.name)
-                        .font(SafeMealFont.custom(18, relativeTo: .body, weight: .semibold))
+                        .font(SafeMealFont.custom(20, relativeTo: .body, weight: .bold))
                         .foregroundColor(SafeMealTheme.textPrimary)
                         .lineLimit(2)
                         .minimumScaleFactor(0.85)
@@ -133,10 +134,10 @@ struct CandidateSelectView: View {
                         .foregroundColor(SafeMealTheme.textSecondary.opacity(0.6))
                 }
             }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 16)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 20)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
                     .fill(isSelected ? SafeMealTheme.primary.opacity(0.10) : colorScheme == .dark ? Color.white.opacity(0.07) : Color.white.opacity(0.82))
             )
             .overlay(

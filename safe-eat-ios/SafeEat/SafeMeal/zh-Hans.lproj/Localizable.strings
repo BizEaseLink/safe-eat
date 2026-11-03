@@ -957,7 +957,7 @@
 "result.scanned_relative_format" = "扫描于 %@";
 
 // 会员引导横幅
-"result.membership_banner.title_free" = "升级 Pro 解锁详细报告";
+"result.membership_banner.title_free" = "开通会员，解锁完整报告";
 "result.membership_banner.title_lite" = "升级 Pro 解锁饮食信息";
 "result.membership_banner.title_pro" = "升级 Premium 解锁成分分解";
 "result.membership_banner.subtitle_free" = "升级 Lite 查看维生素和矿物质";
@@ -967,6 +967,9 @@
 "result.membership_banner.desc_lite" = "Lite 用户可见维生素和矿物质详情";
 "result.membership_banner.desc_pro" = "Pro 用户可见饮食信息和制备方式";
 "result.membership_banner.action" = "立即升级";
+"result.membership_banner.action_free" = "开通会员";
+"result.membership_banner.action_lite" = "升级 Pro";
+"result.membership_banner.action_pro" = "升级 Premium";
 
 // Per 100g serving 标注
 "result.per_100g_serving" = "每 100g";
