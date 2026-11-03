@@ -113,6 +113,9 @@ struct AboutSafeMealView: View {
                 Text(SafeMealL10n.text(L10nKey.Profile.About.copyright))
                     .font(SafeMealFont.custom(11, relativeTo: .caption2))
                     .foregroundStyle(Color.gray.opacity(0.6))
+                Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
+                    .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                    .foregroundStyle(Color.gray.opacity(0.6))
             }
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.top, 24)
