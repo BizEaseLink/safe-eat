@@ -140,21 +140,6 @@ struct SafeMealApp: App {
             // Logo 绝对居中
             AppLogoView(size: 168, animate: true)
 
-            // 底部：品牌名 + slogan（左对齐，靠底）
-            VStack {
-                Spacer()
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("食必安")
-                        .font(SafeMealFont.custom(28, relativeTo: .title, weight: .bold))
-                        .foregroundStyle(colorScheme == .dark ? Color.white : SafeMealTheme.primaryDeep)
-                    Text("拍照识食，AI健康安心吃")
-                        .font(SafeMealFont.custom(15, relativeTo: .body, weight: .semibold))
-                        .foregroundStyle(colorScheme == .dark ? Color.white.opacity(0.85) : SafeMealTheme.primary.opacity(0.9))
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 28)
-                .padding(.bottom, 56)
-            }
         }
         .transition(.opacity)
         .task {
