@@ -134,8 +134,9 @@ struct SafeMealApp: App {
     /// Logo 动画层：全屏背景 + 居中 Logo + 缩放渐显动画
     private var logoAnimationLayer: some View {
         ZStack {
-            // 登录页同款背景（主背景 + 柔和几何装饰块）
-            SafeMealAuthBackground()
+            // 首页同款主背景（不带几何装饰块，避免与其他遮罩层混杂）
+            SafeMealMainGradientBackground()
+                .ignoresSafeArea()
 
             // Logo 绝对居中（只加柔和阴影：白色 Logo 在浅背景上靠投影分离出轮廓）
             AppLogoView(size: 160, animate: true)
