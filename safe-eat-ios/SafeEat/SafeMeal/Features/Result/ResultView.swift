@@ -957,6 +957,11 @@ struct ResultView: View {
     // MARK: - P1 底部操作
     private func bottomActionsSection(item: LocalHistoryItem, recognition: RecognitionRecord) -> some View {
         VStack(spacing: 12) {
+            // 信息流广告：仅免费用户可见（会员不展示）
+            if membershipTier == .free {
+                NativeAdView()
+                    .frame(maxWidth: .infinity)
+            }
             HStack {
                 inlineActionWithIcon(icon: "camera.rotate", title: SafeMealL10n.text(L10nKey.Result.actionRetake)) {
                     dismiss()
