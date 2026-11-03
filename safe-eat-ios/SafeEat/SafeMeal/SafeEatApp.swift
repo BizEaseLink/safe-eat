@@ -144,36 +144,23 @@ struct SafeMealApp: App {
             )
             .ignoresSafeArea()
 
-            VStack(spacing: 26) {
+            // Logo 绝对居中
+            AppLogoView(size: 168, animate: true)
+
+            // 底部：品牌名 + slogan（左对齐，靠底）
+            VStack {
                 Spacer()
-
-                // Logo 居中
-                AppLogoView(size: 168, animate: true)
-
-                // 品牌名 + slogan：紧贴 Logo 下方（大厂开屏常见结构）
-                VStack(spacing: 6) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text("食必安")
-                        .font(SafeMealFont.custom(30, relativeTo: .title, weight: .bold))
+                        .font(SafeMealFont.custom(28, relativeTo: .title, weight: .bold))
                         .foregroundStyle(colorScheme == .dark ? Color.white : SafeMealTheme.primaryDeep)
-                    Text("SafeMeal")
-                        .font(SafeMealFont.custom(14, relativeTo: .caption, weight: .semibold))
-                        .tracking(2)
-                        .foregroundStyle(colorScheme == .dark ? Color.white.opacity(0.75) : SafeMealTheme.primary.opacity(0.85))
-
-                    VStack(spacing: 4) {
-                        Text("拍照识食，AI健康安心吃")
-                            .font(SafeMealFont.custom(16, relativeTo: .body, weight: .semibold))
-                            .foregroundStyle(colorScheme == .dark ? Color.white.opacity(0.92) : SafeMealTheme.textPrimary)
-                        Text("AI Snap to Eat Smart")
-                            .font(SafeMealFont.custom(12, relativeTo: .caption2))
-                            .tracking(1)
-                            .foregroundStyle(colorScheme == .dark ? Color.white.opacity(0.55) : SafeMealTheme.textSecondary)
-                    }
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 16)
+                    Text("拍照识食，AI健康安心吃")
+                        .font(SafeMealFont.custom(15, relativeTo: .body, weight: .semibold))
+                        .foregroundStyle(colorScheme == .dark ? Color.white.opacity(0.85) : SafeMealTheme.primary.opacity(0.9))
                 }
-
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 28)
+                .padding(.bottom, 56)
             }
         }
         .transition(.opacity)
