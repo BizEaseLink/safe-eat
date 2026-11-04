@@ -312,8 +312,11 @@ private struct DisclosureSheetWrapper: View {
     ]
 
     private var externalURL: URL? {
-        guard isExternalUrl, let raw = category.replacingOccurrences(of: "external_url:", with: "").trimmingCharacters(in: .whitespacesAndNewlines),
-              let url = URL(string: raw) else { return nil }
+        guard isExternalUrl else { return nil }
+        let raw = category
+            .replacingOccurrences(of: "external_url:", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = URL(string: raw) else { return nil }
         return url
     }
 
@@ -350,7 +353,7 @@ private struct DisclosureSheetWrapper: View {
                     } else {
                         // 站外域名：不在 App 内渲染，交给系统浏览器
                         VStack(spacing: 16) {
-                            HugeIcon(glyph: .link01, size: 32, stroke: true)
+                            HugeIcon(glyph: .arrowRight01, size: 32, stroke: true)
                                 .foregroundStyle(SafeMealTheme.textSecondary)
                             Text(SafeMealL10n.isZh ? "该链接将在浏览器中打开" : "This link will open in your browser")
                                 .font(SafeMealFont.custom(15, relativeTo: .body, weight: .semibold))
