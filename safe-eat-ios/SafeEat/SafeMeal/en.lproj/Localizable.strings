@@ -579,6 +579,7 @@
 "user.health.weight_loss" = "Fat Loss";
 "user.health.muscle_gain" = "Muscle Gain";
 "user.health.general_wellness" = "General Wellness";
+"user.health.pregnancy_care" = "Pregnancy Care";
 "user.goal.balanced" = "Balanced Diet";
 "user.goal.fat_loss" = "Fat Loss";
 "user.goal.muscle_gain" = "Muscle Gain";
@@ -799,7 +800,7 @@
 "result.section.daily_values" = "Daily Values";
 "result.section.glycemic" = "Glycemic Index";
 "result.section.dietary" = "Dietary Tags";
-"result.section.ingredients" = "Ingredients & Preparation";
+"result.section.ingredients" = "Ingredients";
 "result.glycemic.index" = "Glycemic Index";
 "result.glycemic.load" = "Glycemic Load";
 "result.glycemic.insulin_index" = "Insulin Index";
@@ -870,7 +871,7 @@
 "result.scanned_relative_format" = "Scanned %@";
 
 // Membership banner
-"result.membership_banner.title_free" = "Upgrade to Pro for detailed reports";
+"result.membership_banner.title_free" = "Become a member for full reports";
 "result.membership_banner.title_lite" = "Upgrade to Pro for dietary info";
 "result.membership_banner.title_pro" = "Upgrade to Premium for ingredient breakdown";
 "result.membership_banner.subtitle_free" = "Upgrade to Lite to view vitamins and minerals";
@@ -880,6 +881,9 @@
 "result.membership_banner.desc_lite" = "Lite users can see vitamin and mineral details";
 "result.membership_banner.desc_pro" = "Pro users can see dietary info and preparation";
 "result.membership_banner.action" = "Upgrade Now";
+"result.membership_banner.action_free" = "Become a member";
+"result.membership_banner.action_lite" = "Upgrade to Pro";
+"result.membership_banner.action_pro" = "Upgrade to Premium";
 
 // Per 100g serving label
 "result.per_100g_serving" = "Per 100g serving";
@@ -1252,3 +1256,14 @@
 "auth.terms.not_agreed" = "Please agree to the User Agreement and Privacy Policy first";
 "auth.set_password.title" = "Set Password";
 "auth.set_password.subtitle" = "Set a password to secure your account";
+
+// P1: Result 3 tabs
+"result.tab.overview" = "Overview";
+"result.tab.nutrition" = "Nutrition";
+"result.tab.advice" = "Advice";
+"result.recommendation.title" = "Advice";
+"result.section.instructions" = "Instructions";
+"result.pending_confirm_failed" = "Recognition confirmation failed, please try again";
+"result.section.cooking_method" = "Cooking Method";
+"result.identify_failed_title" = "Recognition Failed";
+"result.identify_failed_subtitle" = "Network error or unrecognizable image, please try again";

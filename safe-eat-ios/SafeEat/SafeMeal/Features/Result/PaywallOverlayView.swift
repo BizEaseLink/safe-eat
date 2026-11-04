@@ -87,16 +87,14 @@ struct PaywallOverlayView: View {
             .background(.ultraThinMaterial)
 
             VStack(spacing: 10) {
-                Image(systemName: "lock.fill")
-                    .font(.system(size: 22, weight: .semibold))
+                HugeIcon(glyph: .lockPassword, size: 22)
                     .foregroundStyle(SafeMealTheme.primary)
 
                 Button {
                     onUpgrade()
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 14))
+                        HugeIcon(glyph: .circleArrowUp01, size: 14)
                         Text(SafeMealL10n.text(L10nKey.Result.paywallUpgradeAction))
                             .font(SafeMealFont.custom(13, relativeTo: .footnote, weight: .semibold))
                     }
@@ -145,16 +143,14 @@ struct PaywallPartialRevealOverlay: View {
 
             // 锁+升级CTA
             VStack(spacing: 8) {
-                Image(systemName: "lock.fill")
-                    .font(.system(size: 18, weight: .semibold))
+                HugeIcon(glyph: .lockPassword, size: 18)
                     .foregroundStyle(SafeMealTheme.primary)
 
                 Button {
                     onUpgrade()
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 13))
+                        HugeIcon(glyph: .circleArrowUp01, size: 13)
                         Text(SafeMealL10n.text(L10nKey.Result.paywallUpgradeAction))
                             .font(SafeMealFont.custom(12, relativeTo: .footnote, weight: .semibold))
                     }

@@ -17,7 +17,6 @@ struct AdPlacementConfig: Codable, Identifiable {
 
     let code: String
     let slotId: String?
-    let enabled: Bool
 }
 
 enum AdPlacementCode: String, CaseIterable {

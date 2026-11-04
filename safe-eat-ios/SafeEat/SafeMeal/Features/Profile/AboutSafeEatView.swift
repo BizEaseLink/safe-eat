@@ -19,7 +19,7 @@ struct AboutSafeMealView: View {
 
                 NavigationLink(value: ProfileRoute.privacyPolicy) {
                     ProfileNavigationRow(
-                        icon: "hand.raised",
+                        icon: "shield02",
                         title: SafeMealL10n.text(L10nKey.Profile.About.privacyPolicy)
                     )
                 }
@@ -111,6 +111,9 @@ struct AboutSafeMealView: View {
                     .font(SafeMealFont.custom(11, relativeTo: .caption2))
                     .foregroundStyle(Color.gray.opacity(0.6))
                 Text(SafeMealL10n.text(L10nKey.Profile.About.copyright))
+                    .font(SafeMealFont.custom(11, relativeTo: .caption2))
+                    .foregroundStyle(Color.gray.opacity(0.6))
+                Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
                     .font(SafeMealFont.custom(11, relativeTo: .caption2))
                     .foregroundStyle(Color.gray.opacity(0.6))
             }

@@ -31,8 +31,7 @@ struct UpdateSettingsView: View {
             ProfileSurfaceCard {
                 Button(action: openAppStore) {
                     HStack(spacing: 12) {
-                        Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
-                            .font(.system(size: 16, weight: .semibold))
+                        HugeIcon(glyph: .refresh01, size: 16)
                             .foregroundStyle(SafeMealTheme.primary)
 
                         Text(SafeMealL10n.text(L10nKey.Profile.Update.checkAction))
@@ -73,7 +72,7 @@ struct UpdateSettingsView: View {
     }
 
     private func openAppStoreURL() {
-        guard let url = URL(string: "https://apps.apple.com/app/id\(AppConfig.appStoreID)") else { return }
+        guard let url = URL(string: "https://apps.apple.com/cn/app/id\(AppConfig.appStoreID)") else { return }
         UIApplication.shared.open(url)
     }
 }

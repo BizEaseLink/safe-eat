@@ -99,7 +99,7 @@ final class AppVersionStore {
         if let url = validStoreURL(from: updateInfo?.storeUrl) {
             UIApplication.shared.open(url)
         } else {
-            let url = URL(string: "https://apps.apple.com/app/id\(AppConfig.appStoreID)")!
+            let url = URL(string: "https://apps.apple.com/cn/app/id\(AppConfig.appStoreID)")!
             UIApplication.shared.open(url)
         }
     }

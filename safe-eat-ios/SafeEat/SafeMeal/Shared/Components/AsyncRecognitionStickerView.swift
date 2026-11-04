@@ -18,7 +18,7 @@ struct AsyncRecognitionStickerView: View {
         ZStack(alignment: .topTrailing) {
             stickerContent
             if item.feedbackPending {
-                Image(systemName: "hourglass")
+                HugeIcon(glyph: .hourglass, size: 16)
                     .font(.caption2)
                     .fontWeight(.medium)
                     .padding(.horizontal, 4)

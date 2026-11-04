@@ -72,7 +72,7 @@ struct HistoryServerListView: View {
                 Section {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Image(systemName: "lock.fill")
+                            HugeIcon(glyph: .lockPassword, size: 16)
                                 .foregroundStyle(.orange)
                             Text(SafeMealL10n.text(L10nKey.History.upgradePromptTitle))
                                 .font(.subheadline.bold())
@@ -96,10 +96,10 @@ struct HistoryServerListView: View {
         .navigationTitle(SafeMealL10n.text(L10nKey.History.serverNavTitle))
         .overlay {
             if records.isEmpty && !isLoading {
-                ContentUnavailableView(
-                    SafeMealL10n.text(L10nKey.History.serverEmptyTitle),
-                    systemImage: "clock.arrow.circlepath",
-                    description: Text(SafeMealL10n.text(L10nKey.History.serverEmptyMessage))
+                SafeMealEmptyState(
+                    title: SafeMealL10n.text(L10nKey.History.serverEmptyTitle),
+                    message: SafeMealL10n.text(L10nKey.History.serverEmptyMessage),
+                    systemImage: "clock.arrow.circlepath"
                 )
             }
         }

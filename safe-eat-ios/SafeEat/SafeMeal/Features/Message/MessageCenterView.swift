@@ -112,8 +112,7 @@ struct MessageCenterView: View {
             }
         } label: {
             HStack(spacing: 6) {
-                Image(systemName: hasUnreadMessages ? "checkmark.circle" : "arrow.counterclockwise.circle")
-                    .font(.system(size: 14, weight: .semibold))
+                HugeIcon(sf: hasUnreadMessages ? "checkmark.circle" : "arrow.counterclockwise.circle", size: 14)
                 Text(hasUnreadMessages
                     ? SafeMealL10n.text(L10nKey.Message.markAllRead)
                     : (SafeMealL10n.isZh ? "重置未读" : "Reset unread"))
@@ -146,8 +145,7 @@ struct MessageCenterView: View {
     private var emptyView: some View {
         VStack(spacing: 16) {
             Spacer().frame(height: 40)
-            Image(systemName: "bell.slash")
-                .font(.system(size: 44, weight: .light))
+            HugeIcon(glyph: .notificationOff01, size: 44)
                 .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.4))
             Text(SafeMealL10n.text(L10nKey.Message.emptyTitle))
                 .font(SafeMealFont.custom(18, relativeTo: .title3))
@@ -306,6 +304,27 @@ private struct DisclosureSheetWrapper: View {
         category.hasPrefix("external_url:")
     }
 
+    /// 仅允许自家域名在 App 内 WebView 渲染（避免"未声明/远程内容"审核风险）；
+    /// 站外链接一律交给系统浏览器打开。
+    private static let trustedHosts: Set<String> = [
+        "bizeaselink.cn",
+        "www.bizeaselink.cn",
+    ]
+
+    private var externalURL: URL? {
+        guard isExternalUrl else { return nil }
+        let raw = category
+            .replacingOccurrences(of: "external_url:", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = URL(string: raw) else { return nil }
+        return url
+    }
+
+    private var isTrustedExternalURL: Bool {
+        guard let url = externalURL, let host = url.host?.lowercased() else { return false }
+        return Self.trustedHosts.contains(host)
+    }
+
     private var urlString: String? {
         if isExternalUrl {
             return category.replacingOccurrences(of: "external_url:", with: "")
@@ -327,9 +346,34 @@ private struct DisclosureSheetWrapper: View {
     var body: some View {
         NavigationStack {
             Group {
-                if isExternalUrl, let urlStr = urlString, let url = URL(string: urlStr) {
-                    // 外链：用 WebView
-                    ExternalUrlView(url: url)
+                if isExternalUrl, let url = externalURL {
+                    if isTrustedExternalURL {
+                        // 自家域名：App 内 WebView（内容受控、可审核）
+                        ExternalUrlView(url: url)
+                    } else {
+                        // 站外域名：不在 App 内渲染，交给系统浏览器
+                        VStack(spacing: 16) {
+                            HugeIcon(glyph: .arrowRight01, size: 32, stroke: true)
+                                .foregroundStyle(SafeMealTheme.textSecondary)
+                            Text(SafeMealL10n.isZh ? "该链接将在浏览器中打开" : "This link will open in your browser")
+                                .font(SafeMealFont.custom(15, relativeTo: .body, weight: .semibold))
+                                .foregroundStyle(SafeMealTheme.textPrimary)
+                                .multilineTextAlignment(.center)
+                            Button {
+                                UIApplication.shared.open(url)
+                                dismiss()
+                            } label: {
+                                Text(SafeMealL10n.isZh ? "用浏览器打开" : "Open in Browser")
+                                    .font(SafeMealFont.custom(15, relativeTo: .body, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 28)
+                                    .padding(.vertical, 12)
+                                    .background(Capsule().fill(SafeMealTheme.primary))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(32)
+                    }
                 } else {
                     // 协议：复用已有的 DisclosureDetailView
                     DisclosureDetailView(title: disclosureTitle, category: category)
@@ -338,7 +382,7 @@ private struct DisclosureSheetWrapper: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: {
-                        Image(systemName: "xmark")
+                        HugeIcon(glyph: .cancel01, size: 16)
                             .foregroundStyle(SafeMealTheme.textSecondary)
                     }
                 }

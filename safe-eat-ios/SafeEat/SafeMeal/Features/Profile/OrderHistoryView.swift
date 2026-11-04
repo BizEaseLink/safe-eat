@@ -50,8 +50,7 @@ struct OrderHistoryView: View {
 
     private var emptyView: some View {
         VStack(spacing: 16) {
-            Image(systemName: "doc.text.magnifyingglass")
-                .font(.system(size: 48))
+            HugeIcon(glyph: .fileSearch, size: 48)
                 .foregroundStyle(SafeMealTheme.textSecondary)
 
             Text(SafeMealL10n.text(L10nKey.Order.emptyTitle))
@@ -69,8 +68,7 @@ struct OrderHistoryView: View {
 
     private func errorView(message: String) -> some View {
         VStack(spacing: 12) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 36))
+            HugeIcon(glyph: .alert02, size: 36)
                 .foregroundStyle(SafeMealTheme.warning)
 
             Text(message)

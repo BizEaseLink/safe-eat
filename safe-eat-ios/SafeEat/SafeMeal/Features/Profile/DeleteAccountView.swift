@@ -154,7 +154,7 @@ struct DeleteAccountView: View {
                         Text("账号注销中")
                             .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
                     } icon: {
-                        Image(systemName: "hourglass.circle.fill")
+                        HugeIcon(glyph: .hourglass, size: 16)
                             .foregroundStyle(SafeMealTheme.warning)
                     }
 
@@ -203,8 +203,7 @@ struct DeleteAccountView: View {
 
     private func deletionImpactRow(icon: String, text: String) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: icon)
-                .font(.system(size: 14))
+            HugeIcon(sf: icon, size: 14)
                 .foregroundStyle(SafeMealTheme.danger)
                 .frame(width: 20)
 
@@ -224,7 +223,7 @@ struct DeleteAccountView: View {
                         Text(SafeMealL10n.text(L10nKey.Profile.DeleteAccount.warningTitle))
                             .font(SafeMealFont.custom(16, relativeTo: .headline, weight: .bold))
                     } icon: {
-                        Image(systemName: "exclamationmark.triangle.fill")
+                        HugeIcon(glyph: .alert02, size: 16)
                             .foregroundStyle(SafeMealTheme.danger)
                     }
 
@@ -256,8 +255,7 @@ struct DeleteAccountView: View {
                 Button {
                     agreedToDelete.toggle()
                 } label: {
-                    Image(systemName: agreedToDelete ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 18))
+                    CheckCircle(isOn: agreedToDelete, size: 18)
                         .foregroundStyle(agreedToDelete ? SafeMealTheme.danger : SafeMealTheme.textSecondary)
                 }
                 .buttonStyle(.plain)

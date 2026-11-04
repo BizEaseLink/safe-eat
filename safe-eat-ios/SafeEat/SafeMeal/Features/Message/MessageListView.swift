@@ -13,8 +13,7 @@ struct MessageListView: View {
             if notificationStore.messages.isEmpty && !notificationStore.isLoading {
                 VStack(spacing: 16) {
                     Spacer()
-                    Image(systemName: "bell.slash")
-                        .font(.system(size: 44, weight: .light))
+                    HugeIcon(glyph: .notificationOff01, size: 44)
                         .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.4))
                     Text(SafeMealL10n.text(L10nKey.Message.emptyTitle))
                         .font(SafeMealFont.custom(18, relativeTo: .title3))

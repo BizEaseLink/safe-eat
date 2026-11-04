@@ -546,6 +546,7 @@
 "user.health.weight_loss" = "减脂";
 "user.health.muscle_gain" = "增肌";
 "user.health.general_wellness" = "日常健康";
+"user.health.pregnancy_care" = "孕期调养";
 "user.goal.balanced" = "均衡饮食";
 "user.goal.fat_loss" = "减脂";
 "user.goal.muscle_gain" = "增肌";
@@ -885,7 +886,7 @@
 "result.section.daily_values" = "每日参考值";
 "result.section.glycemic" = "血糖指数";
 "result.section.dietary" = "饮食标签";
-"result.section.ingredients" = "成分与烹饪";
+"result.section.ingredients" = "成分";
 "result.glycemic.index" = "血糖指数";
 "result.glycemic.load" = "血糖负荷";
 "result.glycemic.insulin_index" = "胰岛素指数";
@@ -956,7 +957,7 @@
 "result.scanned_relative_format" = "扫描于 %@";
 
 // 会员引导横幅
-"result.membership_banner.title_free" = "升级 Pro 解锁详细报告";
+"result.membership_banner.title_free" = "开通会员，解锁完整报告";
 "result.membership_banner.title_lite" = "升级 Pro 解锁饮食信息";
 "result.membership_banner.title_pro" = "升级 Premium 解锁成分分解";
 "result.membership_banner.subtitle_free" = "升级 Lite 查看维生素和矿物质";
@@ -966,6 +967,9 @@
 "result.membership_banner.desc_lite" = "Lite 用户可见维生素和矿物质详情";
 "result.membership_banner.desc_pro" = "Pro 用户可见饮食信息和制备方式";
 "result.membership_banner.action" = "立即升级";
+"result.membership_banner.action_free" = "开通会员";
+"result.membership_banner.action_lite" = "升级 Pro";
+"result.membership_banner.action_pro" = "升级 Premium";
 
 // Per 100g serving 标注
 "result.per_100g_serving" = "每 100g";
@@ -1106,3 +1110,14 @@
 "auth.terms.not_agreed" = "请先同意用户协议和隐私政策";
 "auth.set_password.title" = "设置密码";
 "auth.set_password.subtitle" = "设置密码以保护您的账户安全";
+
+// P1: 结果页 3 tab
+"result.tab.overview" = "概览";
+"result.tab.nutrition" = "营养";
+"result.tab.advice" = "建议";
+"result.recommendation.title" = "建议";
+"result.section.instructions" = "做法步骤";
+"result.pending_confirm_failed" = "识别确认失败，请重试";
+"result.section.cooking_method" = "烹饪方式";
+"result.identify_failed_title" = "识别失败";
+"result.identify_failed_subtitle" = "网络异常或图片无法识别，请重试";

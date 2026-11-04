@@ -311,14 +311,23 @@ private extension UIImage {
 enum LocalImageLoader {
     private static let stickerCache = NSCache<NSString, UIImage>()
 
+    // P4: 内存缓存，避免 body 重算/切 tab 时重复读盘解码导致图片闪烁
+    private static let imageCache = NSCache<NSString, UIImage>()
+
     static func loadImage(from uri: String?) -> UIImage? {
         guard let uri else { return nil }
+        if let cached = imageCache.object(forKey: uri as NSString) { return cached }
 
+        let image: UIImage?
         if let fileURL = URL(string: uri), fileURL.isFileURL {
-            return UIImage(contentsOfFile: fileURL.path)
+            image = UIImage(contentsOfFile: fileURL.path)
+        } else {
+            image = UIImage(contentsOfFile: uri)
         }
-
-        return UIImage(contentsOfFile: uri)
+        if let image {
+            imageCache.setObject(image, forKey: uri as NSString)
+        }
+        return image
     }
 
     static func loadDisplayImage(for item: LocalHistoryItem) -> UIImage? {
@@ -373,13 +382,14 @@ enum LocalImageLoader {
 
     static func clearAllCaches() {
         stickerCache.removeAllObjects()
+        imageCache.removeAllObjects()
     }
 }
 
 enum AdviceLevelMapper {
     static func title(_ level: String?) -> String {
         switch level {
-        case "recommended":
+        case "recommended", "excellent", "good":
             return SafeMealL10n.text(L10nKey.Advice.titleRecommended)
         case "moderate":
             return SafeMealL10n.text(L10nKey.Advice.titleModerate)
@@ -394,7 +404,7 @@ enum AdviceLevelMapper {
 
     static func color(_ level: String?) -> Color {
         switch level {
-        case "recommended":
+        case "recommended", "excellent", "good":
             return SafeMealTheme.success
         case "moderate":
             return SafeMealTheme.primary
@@ -830,8 +840,7 @@ struct SafeMealLoadingOverlay: View {
                     .padding(.horizontal, 18)
                     .padding(.vertical, 12)
             } else {
-                Image(systemName: "camera.viewfinder")
-                    .font(.system(size: 54, weight: .medium))
+                HugeIcon(glyph: .focusPoint, size: 54)
                     .foregroundStyle(SafeMealTheme.primary.opacity(0.68))
             }
         }
@@ -851,8 +860,7 @@ struct SafeMealLoadingOverlay: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 6)
             } else {
-                Image(systemName: "camera.viewfinder")
-                    .font(.system(size: 32, weight: .medium))
+                HugeIcon(glyph: .focusPoint, size: 32)
                     .foregroundStyle(SafeMealTheme.primary.opacity(0.68))
             }
         }
@@ -949,8 +957,7 @@ struct SafeMealLoadingOverlay: View {
             Spacer()
 
             if expandable {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .medium))
+                HugeIcon(glyph: .arrowRight01, size: 14)
                     .foregroundColor(SafeMealTheme.textSecondary)
                     .rotationEffect(.degrees(isExpanded ? 90 : 0))
             }
@@ -972,8 +979,7 @@ struct SafeMealLoadingOverlay: View {
             onCandidateSelected?(match.foodId, nil, sessionId)
         } label: {
             HStack(spacing: 14) {
-                Image(systemName: "fork.knife")
-                    .font(.system(size: 16))
+                HugeIcon(glyph: .restaurant02, size: 16)
                     .foregroundColor(SafeMealTheme.primary)
                     .frame(width: 40, height: 40)
 
@@ -983,8 +989,7 @@ struct SafeMealLoadingOverlay: View {
 
                 Spacer()
 
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .medium))
+                HugeIcon(glyph: .arrowRight01, size: 14)
                     .foregroundColor(SafeMealTheme.textSecondary)
             }
             .padding(.horizontal, 14)
@@ -1018,8 +1023,7 @@ struct SafeMealLoadingOverlay: View {
             }
         } label: {
             HStack(spacing: 10) {
-                Image(systemName: "lightbulb.fill")
-                    .font(.system(size: 16, weight: .semibold))
+                HugeIcon(glyph: .idea01, size: 16)
                     .foregroundStyle(SafeMealTheme.warning)
 
                 VStack(alignment: .leading, spacing: 3) {
@@ -1035,8 +1039,7 @@ struct SafeMealLoadingOverlay: View {
 
                 Spacer()
 
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 10, weight: .medium))
+                HugeIcon(glyph: .arrowRight01, size: 10)
                     .foregroundStyle(SafeMealTheme.textSecondary.opacity(0.5))
             }
             .padding(.horizontal, 14)
@@ -1317,7 +1320,7 @@ struct RecognitionStickerThumbnailView: View {
                 .fill(.white)
                 .frame(height: height)
                 .overlay {
-                    Image(systemName: "photo")
+                    HugeIcon(glyph: .image01, size: 16)
                         .font(.title2)
                         .foregroundStyle(.secondary)
                 }

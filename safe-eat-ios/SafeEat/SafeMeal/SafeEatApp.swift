@@ -16,11 +16,15 @@ struct SafeMealApp: App {
         case ready            // 进入主页面
     }
 
+    @Environment(\.colorScheme) private var colorScheme
+
     @State private var launchPhase: LaunchPhase = .logoAnimation
+    @State private var logoScale: CGFloat = 0.65
     @State private var showSplashAd = false
 
     /// Logo 动画时长（秒）
-    private static let logoAnimationDuration: TimeInterval = 1.67
+    /// Logo 动画时长（秒）：Lottie 单次约 1.67s，留缓冲后约 2.6s（原来太短）
+    private static let logoAnimationDuration: TimeInterval = 2.6
 
     /// 付费会员跳过所有广告（开屏、插屏、信息流、Banner）
     private var isPaidMember: Bool {
@@ -132,10 +136,26 @@ struct SafeMealApp: App {
     /// Logo 动画层：全屏背景 + 居中 Logo + 缩放渐显动画
     private var logoAnimationLayer: some View {
         ZStack {
-            Color(UIColor.systemBackground)
+            // 首页同款主背景（不带几何装饰块，避免与其他遮罩层混杂）
+            SafeMealMainGradientBackground()
                 .ignoresSafeArea()
 
-            AppLogoView(size: 160, animate: true)
+            // Logo：Lottie 品牌动画（播放一次）+ 弹性放大入场
+            LottieLoadingView(size: 160, loop: false)
+                .frame(width: 170, height: 170)
+                .scaleEffect(logoScale)
+                .shadow(
+                    color: colorScheme == .dark ? Color.clear : Color.black.opacity(0.18),
+                    radius: 12,
+                    y: 6
+                )
+                .onAppear {
+                    // 弹一弹：0.65 缩放弹到 1.0
+                    withAnimation(.spring(response: 0.55, dampingFraction: 0.55)) {
+                        logoScale = 1.0
+                    }
+                }
+
         }
         .transition(.opacity)
         .task {

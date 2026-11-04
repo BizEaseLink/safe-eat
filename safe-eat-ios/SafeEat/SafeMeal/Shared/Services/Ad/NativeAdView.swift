@@ -7,7 +7,11 @@ struct NativeAdView: UIViewRepresentable {
     func makeUIView(context: Context) -> UIView {
         let container = UIView()
 
-        guard adConfig.nativeEnabled else { return container }
+        guard adConfig.nativeEnabled else {
+            print("[UMeng] 信息流广告未启用：placements=\(adConfig.placements.count)（后端未返回 native 或配置拉取失败）")
+            return container
+        }
+        print("[UMeng] 信息流广告开始加载，slotId=\(UMengConfig.SlotId.native)")
 
         let slotId = UMengConfig.SlotId.native
         guard !slotId.isEmpty else { return container }

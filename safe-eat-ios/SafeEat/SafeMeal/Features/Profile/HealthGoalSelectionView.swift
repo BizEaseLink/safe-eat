@@ -106,8 +106,7 @@ struct HealthGoalSelectionView: View {
     private func templateGroupSection(group: HealthProfileTemplate.HealthProfileGroup) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                Image(systemName: group.icon)
-                    .font(.system(size: 16))
+                HugeIcon(sf: group.icon, size: 16)
                     .foregroundStyle(SafeMealTheme.primary)
                 Text(group.title)
                     .font(SafeMealFont.custom(17, relativeTo: .headline, weight: .bold))
@@ -159,8 +158,7 @@ struct HealthGoalSelectionView: View {
                         .fill(isSelected ? tagColor.opacity(colorScheme == .dark ? 0.22 : 0.12) : (colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.92)))
                         .frame(width: 48, height: 48)
 
-                    Image(systemName: template.icon)
-                        .font(.system(size: 22, weight: .semibold))
+                    HugeIcon(sf: template.icon, size: 22)
                         .foregroundStyle(isSelected ? tagColor : SafeMealTheme.textSecondary)
                 }
 
@@ -201,13 +199,13 @@ struct HealthGoalSelectionView: View {
                     Button {
                         primaryId = selectedIds.first(where: { $0 != template.id })
                     } label: {
-                        Label(SafeMealL10n.text(L10nKey.HealthGoal.unsetPrimaryAction), systemImage: "star")
+                        Label { Text(SafeMealL10n.text(L10nKey.HealthGoal.unsetPrimaryAction)) } icon: { HugeIcon(sf: "star", size: 14) }
                     }
                 } else {
                     Button {
                         primaryId = template.id
                     } label: {
-                        Label(SafeMealL10n.text(L10nKey.HealthGoal.setPrimaryAction), systemImage: "star.fill")
+                        Label { Text(SafeMealL10n.text(L10nKey.HealthGoal.setPrimaryAction)) } icon: { HugeIcon(sf: "star.fill", size: 14) }
                     }
                 }
 
@@ -221,7 +219,7 @@ struct HealthGoalSelectionView: View {
                         }
                     }
                 } label: {
-                    Label(SafeMealL10n.text(L10nKey.HealthGoal.removeAction), systemImage: "minus.circle")
+                    Label { Text(SafeMealL10n.text(L10nKey.HealthGoal.removeAction)) } icon: { HugeIcon(sf: "minus.circle", size: 14) }
                 }
             }
         }

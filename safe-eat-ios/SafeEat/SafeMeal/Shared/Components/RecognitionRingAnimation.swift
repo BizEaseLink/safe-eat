@@ -150,8 +150,7 @@ struct RecognitionRingAnimation: View {
 
     private func tagLabel(icon: String, title: String, detail: String) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
+            HugeIcon(sf: icon, size: 12)
                 .foregroundStyle(SafeMealTheme.primary)
                 .frame(width: 18)
 

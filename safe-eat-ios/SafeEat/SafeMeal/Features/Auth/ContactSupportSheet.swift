@@ -44,8 +44,7 @@ struct ContactSupportSheet: View {
                 // 邮箱：点击打开 mailto（与 HelpCenterView 行为一致）
                 contactRow(
                     iconView: AnyView(
-                        Image(systemName: "envelope.circle.fill")
-                            .font(.system(size: 22))
+                        HugeIcon(glyph: .mail01, size: 22)
                             .foregroundStyle(SafeMealTheme.primary)
                     ),
                     iconColor: SafeMealTheme.primary,
@@ -101,8 +100,7 @@ struct ContactSupportSheet: View {
 
                 Spacer()
 
-                Image(systemName: trailingIcon)
-                    .font(.system(size: 13, weight: .medium))
+                HugeIcon(sf: trailingIcon, size: 13)
                     .foregroundStyle(SafeMealTheme.textSecondary)
             }
             .padding(12)

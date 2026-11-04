@@ -11,6 +11,8 @@
 	<array>
 		<string>resource/fonts/ChillRoundFRegular.ttf</string>
 		<string>resource/fonts/ChillRoundFBold.ttf</string>
+		<string>HugeIcons-stroke-subset.ttf</string>
+		<string>HugeIcons-solid-subset.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

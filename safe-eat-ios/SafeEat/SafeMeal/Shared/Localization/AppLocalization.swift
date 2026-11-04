@@ -833,6 +833,8 @@ enum L10nKey {
         static let sectionGlycemic = "result.section.glycemic"
         static let sectionDietary = "result.section.dietary"
         static let sectionIngredients = "result.section.ingredients"
+        static let sectionInstructions = "result.section.instructions"
+        static let sectionCookingMethod = "result.section.cooking_method"
         static let glycemicIndex = "result.glycemic.index"
         static let glycemicLoad = "result.glycemic.load"
         static let insulinIndex = "result.glycemic.insulin_index"
@@ -882,9 +884,20 @@ enum L10nKey {
         static let membershipBannerDescLite = "result.membership_banner.desc_lite"
         static let membershipBannerDescPro = "result.membership_banner.desc_pro"
         static let membershipBannerAction = "result.membership_banner.action"
+        static let membershipBannerActionFree = "result.membership_banner.action_free"
+        static let membershipBannerActionLite = "result.membership_banner.action_lite"
+        static let membershipBannerActionPro = "result.membership_banner.action_pro"
         static let perServing = "result.nutrition.per_serving"
         static let actionAnalysisDetail = "result.action.analysis_detail"
         static let emptyDataHint = "result.empty_data_hint"
+        static let pendingConfirmFailed = "result.pending_confirm_failed"
+        static let identifyFailedTitle = "result.identify_failed_title"
+        static let identifyFailedSubtitle = "result.identify_failed_subtitle"
+        // P1: 结果页 3 tab
+        static let tabOverview = "result.tab.overview"
+        static let tabNutrition = "result.tab.nutrition"
+        static let tabAdvice = "result.tab.advice"
+        static let recommendationTitle = "result.recommendation.title"
     }
 
     enum Feedback {
@@ -1088,6 +1101,7 @@ enum L10nKey {
         static let healthWeightLoss = "user.health.weight_loss"
         static let healthMuscle = "user.health.muscle_gain"
         static let healthWellness = "user.health.general_wellness"
+        static let healthPregnancy = "user.health.pregnancy_care"
         static let goalBalanced = "user.goal.balanced"
         static let goalFatLoss = "user.goal.fat_loss"
         static let goalMuscle = "user.goal.muscle_gain"

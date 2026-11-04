@@ -217,7 +217,7 @@ struct HistoryWeekView: View {
             Button(role: .destructive) {
                 store.removeHistoryItem(item)
             } label: {
-                Label(SafeMealL10n.text(L10nKey.Common.delete), systemImage: "trash")
+                Label { Text(SafeMealL10n.text(L10nKey.Common.delete)) } icon: { HugeIcon(sf: "trash", size: 14) }
             }
         }
         .onTapGesture {

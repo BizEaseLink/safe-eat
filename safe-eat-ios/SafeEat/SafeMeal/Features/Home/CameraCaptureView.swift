@@ -87,8 +87,7 @@ struct CameraCaptureView: View {
             Button {
                 dismiss()
             } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 22, weight: .semibold))
+                HugeIcon(glyph: .cancel01, size: 22)
                     .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
@@ -107,8 +106,7 @@ struct CameraCaptureView: View {
             Button {
                 camera.toggleFlash()
             } label: {
-                Image(systemName: camera.isFlashEnabled ? "bolt.fill" : "bolt.slash.fill")
-                    .font(.system(size: 24, weight: .semibold))
+                HugeIcon(sf: camera.isFlashEnabled ? "bolt.fill" : "bolt.slash.fill", size: 24)
                     .foregroundStyle(camera.isFlashEnabled ? SafeMealTheme.warning : .white)
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
@@ -204,8 +202,7 @@ struct CameraCaptureView: View {
 
     private var permissionPlaceholder: some View {
         VStack(spacing: 16) {
-            Image(systemName: "camera.fill")
-                .font(.system(size: 42))
+            HugeIcon(glyph: .camera01, size: 42)
                 .foregroundStyle(.white.opacity(0.9))
 
             Text(SafeMealL10n.text(L10nKey.Home.cameraPermissionTitle))

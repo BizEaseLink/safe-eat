@@ -23,29 +23,14 @@ final class AdConfigStore {
         loadCachedConfig()
     }
 
-    var splashEnabled: Bool {
-        placement(for: .splash)?.enabled == true
-    }
-
-    var rewardVideoEnabled: Bool {
-        placement(for: .rewardVideo)?.enabled == true
-    }
-
-    var nativeEnabled: Bool {
-        placement(for: .native)?.enabled == true
-    }
-
-    var interstitialEnabled: Bool {
-        placement(for: .interstitial)?.enabled == true
-    }
-
-    var bannerEnabled: Bool {
-        placement(for: .banner)?.enabled == true
-    }
-
-    var floatWindowEnabled: Bool {
-        placement(for: .floatWindow)?.enabled == true
-    }
+    // 合规改造：App 端不再有「远程开关」，后端只返回启用中的广告位。
+    // 存在即启用；是否展示唯一由会员身份决定（会员全部跳过）。
+    var splashEnabled: Bool { placement(for: .splash) != nil }
+    var rewardVideoEnabled: Bool { placement(for: .rewardVideo) != nil }
+    var nativeEnabled: Bool { placement(for: .native) != nil }
+    var interstitialEnabled: Bool { placement(for: .interstitial) != nil }
+    var bannerEnabled: Bool { placement(for: .banner) != nil }
+    var floatWindowEnabled: Bool { placement(for: .floatWindow) != nil }
 
     /// 浮窗广告每日弹出次数上限（默认 10）
     var floatWindowDailyLimit: Int {

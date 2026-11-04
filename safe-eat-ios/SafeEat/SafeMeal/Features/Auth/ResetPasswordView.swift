@@ -205,8 +205,7 @@ struct ResetPasswordView: View {
 
     private func requirementRow(text: String, passed: Bool) -> some View {
         HStack(spacing: 4) {
-            Image(systemName: passed ? "checkmark.circle.fill" : "circle")
-                .font(.system(size: 12))
+            CheckCircle(isOn: passed, size: 12)
                 .foregroundStyle(passed ? SafeMealTheme.success : SafeMealTheme.textSecondary)
             Text(text)
                 .font(SafeMealFont.textStyle(.caption2))

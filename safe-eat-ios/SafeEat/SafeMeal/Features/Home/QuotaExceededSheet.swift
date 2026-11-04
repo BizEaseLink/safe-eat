@@ -42,8 +42,7 @@ struct QuotaExceededSheet: View {
                             .fill(Color.orange.opacity(0.12))
                             .frame(width: 46, height: 46)
 
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 18, weight: .semibold))
+                        HugeIcon(glyph: .alert02, size: 18)
                             .foregroundStyle(.orange)
                     }
 
@@ -69,8 +68,7 @@ struct QuotaExceededSheet: View {
                                     .fill(SafeMealTheme.primary.opacity(0.12))
                                     .frame(width: 46, height: 46)
 
-                                Image(systemName: "play.circle.fill")
-                                    .font(.system(size: 18, weight: .semibold))
+                                HugeIcon(glyph: .playCircle, size: 18)
                                     .foregroundStyle(SafeMealTheme.primary)
                             }
 
@@ -86,8 +84,7 @@ struct QuotaExceededSheet: View {
 
                             Spacer()
 
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 14, weight: .medium))
+                            HugeIcon(glyph: .arrowRight01, size: 14)
                                 .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                     }

@@ -3,8 +3,7 @@ import SwiftUI
 struct TrendPlaceholderView: View {
     var body: some View {
         VStack(spacing: 16) {
-            Image(systemName: "monitoring")
-                .font(.system(size: 48, weight: .light))
+            HugeIcon(glyph: .analytics01, size: 48)
                 .foregroundStyle(SafeMealTheme.textSecondary)
 
             Text(SafeMealL10n.text(L10nKey.Tab.trend))

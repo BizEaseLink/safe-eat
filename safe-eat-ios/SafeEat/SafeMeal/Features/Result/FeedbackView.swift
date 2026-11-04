@@ -302,8 +302,7 @@ struct FeedbackView: View {
 
             HStack {
                 Spacer()
-                Image(systemName: "arrow.down")
-                    .font(.system(size: 20, weight: .semibold))
+                HugeIcon(glyph: .arrowDown01, size: 20)
                     .foregroundStyle(SafeMealTheme.textSecondary)
                     .frame(width: 36, height: 36)
                     .background(
@@ -619,7 +618,7 @@ struct FeedbackView: View {
                 }
             } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: "plus.circle.fill")
+                    HugeIcon(glyph: .addCircle, size: 16)
                     Text("选择要修改的营养项")
                 }
                 .font(SafeMealFont.custom(14, relativeTo: .footnote, weight: .bold))
@@ -648,8 +647,7 @@ struct FeedbackView: View {
                         Button {
                             nutritionRows.removeAll { $0.id == row.id }
                         } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 18))
+                            HugeIcon(glyph: .cancelCircle, size: 18)
                                 .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                         .buttonStyle(.plain)
@@ -784,8 +782,7 @@ struct FeedbackView: View {
                 Button {
                     showSourceDialog = true
                 } label: {
-                    Image(systemName: "photo.on.rectangle.angled")
-                        .font(.system(size: 14, weight: .semibold))
+                    HugeIcon(glyph: .album02, size: 14)
                         .foregroundStyle(SafeMealTheme.textSecondary)
                         .frame(width: 28, height: 28)
                         .background(
@@ -806,8 +803,7 @@ struct FeedbackView: View {
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
                         .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.72))
                         .overlay {
-                            Image(systemName: "photo")
-                                .font(.system(size: 26))
+                            HugeIcon(glyph: .image01, size: 26)
                                 .foregroundStyle(SafeMealTheme.textSecondary)
                         }
                 }
@@ -845,8 +841,7 @@ struct FeedbackView: View {
                     isNameFieldFocused = false
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "clock.arrow.circlepath")
-                            .font(.system(size: 13, weight: .semibold))
+                        HugeIcon(glyph: .clock03, size: 13)
                         Text(displayName)
                             .font(SafeMealFont.custom(14, relativeTo: .footnote, weight: .bold))
                             .lineLimit(1)
@@ -874,8 +869,7 @@ struct FeedbackView: View {
                                 ProgressView()
                                     .frame(width: 18, height: 18)
                             } else {
-                                Image(systemName: "magnifyingglass")
-                                    .font(.system(size: 16, weight: .semibold))
+                                HugeIcon(glyph: .search01, size: 16)
                             }
                         }
                         .foregroundStyle(.white)
@@ -911,8 +905,7 @@ struct FeedbackView: View {
                         proposedName = ""
                         searchResults = []
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 18))
+                        HugeIcon(glyph: .cancelCircle, size: 18)
                             .foregroundStyle(SafeMealTheme.textSecondary)
                     }
                     .buttonStyle(.plain)
@@ -1028,8 +1021,7 @@ struct FeedbackView: View {
 
     private var auditNoteCard: some View {
         HStack(spacing: 10) {
-            Image(systemName: "shield.checkmark")
-                .font(.system(size: 18, weight: .semibold))
+            HugeIcon(glyph: .securityCheck, size: 18)
                 .foregroundStyle(SafeMealTheme.primary)
             VStack(alignment: .leading, spacing: 2) {
                 Text(SafeMealL10n.text(L10nKey.Feedback.auditTitle))
@@ -1085,8 +1077,7 @@ struct FeedbackView: View {
 
     private var thanksFootnote: some View {
         HStack(spacing: 8) {
-            Image(systemName: "checkmark.circle")
-                .font(.system(size: 18, weight: .semibold))
+            HugeIcon(glyph: .checkmarkCircle01, size: 18)
             Text(SafeMealL10n.text(L10nKey.Feedback.thanks))
                 .font(SafeMealFont.custom(16, relativeTo: .footnote))
         }
@@ -1237,8 +1228,7 @@ struct FeedbackView: View {
                     Circle()
                         .fill(SafeMealTheme.success)
                         .frame(width: 78, height: 78)
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 38, weight: .bold))
+                    HugeIcon(glyph: .tick01, size: 38)
                         .foregroundStyle(.white)
                 }
 

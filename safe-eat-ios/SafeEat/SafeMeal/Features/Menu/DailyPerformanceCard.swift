@@ -201,8 +201,7 @@ struct DailyPerformanceCard: View {
                         HStack(spacing: 4) {
                             Text(SafeMealL10n.text(L10nKey.Menu.dailyScanLog))
                                 .font(SafeMealFont.custom(13, relativeTo: .caption, weight: .bold))
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 11, weight: .bold))
+                            HugeIcon(glyph: .arrowRight01, size: 11)
                         }
                         .foregroundStyle(SafeMealTheme.primary)
                         .padding(.horizontal, 10)
@@ -259,8 +258,7 @@ struct DailyPerformanceCard: View {
 
     private func metricChip(title: String, value: String, icon: String, iconColor: Color) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 14, weight: .semibold))
+            HugeIcon(sf: icon, size: 14)
                 .foregroundStyle(iconColor)
 
             VStack(alignment: .leading, spacing: 2) {
@@ -405,7 +403,7 @@ struct WeeklySummaryCard: View {
 
                 if consecutiveDays > 0 {
                     HStack(spacing: 4) {
-                        Image(systemName: "flame.fill")
+                        HugeIcon(glyph: .fire03, size: 16)
                         Text(SafeMealL10n.format(L10nKey.Menu.weeklyConsecutiveDaysFormat, consecutiveDays))
                     }
                     .font(SafeMealFont.custom(12, relativeTo: .caption, weight: .bold))
@@ -454,7 +452,7 @@ struct WeeklySummaryCard: View {
                 Button { onTapped(weekStartDate) } label: {
                     HStack(spacing: 4) {
                         Text(SafeMealL10n.text(L10nKey.Menu.weeklyViewDetail))
-                        Image(systemName: "arrow.forward")
+                        HugeIcon(glyph: .arrowRight01, size: 16)
                     }
                     .font(SafeMealFont.custom(14, relativeTo: .subheadline, weight: .bold))
                     .foregroundStyle(SafeMealTheme.primary)
