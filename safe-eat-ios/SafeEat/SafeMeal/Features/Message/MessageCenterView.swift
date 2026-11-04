@@ -309,7 +309,6 @@ private struct DisclosureSheetWrapper: View {
     private static let trustedHosts: Set<String> = [
         "bizeaselink.cn",
         "www.bizeaselink.cn",
-        "sit.bizeaselink.cn",
     ]
 
     private var externalURL: URL? {
