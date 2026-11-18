@@ -11,6 +11,7 @@ struct SafeMealApp: App {
 
     /// 入口流程阶段
     private enum LaunchPhase {
+        case loading          // 开屏加载初始化（参数/配置/用户数据）
         case logoAnimation    // Logo 动画播放中
         case splashAd         // 开屏广告展示中
         case ready            // 进入主页面
@@ -18,7 +19,7 @@ struct SafeMealApp: App {
 
     @Environment(\.colorScheme) private var colorScheme
 
-    @State private var launchPhase: LaunchPhase = .logoAnimation
+    @State private var launchPhase: LaunchPhase = .loading
     @State private var logoScale: CGFloat = 0.65
     @State private var showSplashAd = false
 
@@ -40,7 +41,11 @@ struct SafeMealApp: App {
     init() {
         SafeMealFont.bootstrap()
         SafeMealAppearance.configure()
+    }
 
+    /// 启动友盟 SDK（统计 + 广告）。**必须在 ATT 授权完成后调用**：
+    /// Apple 要求 ATT 权限请求出现在任何可用于追踪的数据收集之前，否则审核 2.1 打回。
+    private func startUMengSDKs() {
         #if DEBUG
         UMConfigure.setLogEnabled(true)
         UMUnionAdSdk.enableLogs(true)
@@ -60,19 +65,17 @@ struct SafeMealApp: App {
                     .environmentObject(settings)
                     .environment(\.locale, settings.displayLocale)
                     .task {
-                        // 设置通知 delegate + 启动业务（广告配置用缓存，不在此 fetch）
-                        notificationDelegate.configure(store: store)
                         // 注入会员判断闭包给插屏广告管理器（视图安装后再取 @StateObject，避免临时实例）
                         InterstitialAdManager.shared.isPremiumProvider = { [store] in
                             guard let tier = store.profile?.currentPlanTier else { return false }
                             return tier != "free"
                         }
-                        await store.bootstrap()
-                        await settings.refreshNotificationStatus()
-                        ATTrackingManager.requestTrackingAuthorization { status in
-                            print("[UMeng] IDFA 权限状态: \(status.rawValue)")
-                        }
                     }
+
+                // 开屏加载层（初始化参数/配置/用户数据）
+                if launchPhase == .loading {
+                    splashLoadingLayer
+                }
 
                 // Logo 动画层
                 if launchPhase == .logoAnimation {
@@ -133,6 +136,34 @@ struct SafeMealApp: App {
         }
     }
 
+    /// 开屏加载层：品牌背景 + Logo + 加载指示；并行加载参数/配置/用户数据
+    private var splashLoadingLayer: some View {
+        ZStack {
+            SafeMealMainGradientBackground()
+                .ignoresSafeArea()
+
+            VStack(spacing: 20) {
+                AppLogoView(size: 120)
+                ProgressView()
+                    .tint(SafeMealTheme.primary)
+            }
+        }
+        .transition(.opacity)
+        .task {
+            // 设置通知 delegate（仅一次）
+            notificationDelegate.configure(store: store)
+            // 并行加载：用户业务数据 + 通知状态 + 广告配置
+            async let bootstrap: Void = store.bootstrap()
+            async let notify: Void = settings.refreshNotificationStatus()
+            async let ads: Void = AdConfigStore.shared.fetchConfig()
+            _ = await (bootstrap, notify, ads)
+
+            withAnimation(.easeOut(duration: 0.25)) {
+                launchPhase = .logoAnimation
+            }
+        }
+    }
+
     /// Logo 动画层：全屏背景 + 居中 Logo + 缩放渐显动画
     private var logoAnimationLayer: some View {
         ZStack {
@@ -159,8 +190,16 @@ struct SafeMealApp: App {
         }
         .transition(.opacity)
         .task {
-            // Logo 动画播放完毕后决定下一步，广告配置用缓存直接判断
+            // Logo 动画播放完毕后决定下一步（广告配置在加载阶段已拉取）
             try? await Task.sleep(for: .seconds(Self.logoAnimationDuration))
+
+            // ① ATT：必须在任何追踪数据收集（友盟/广告 SDK 启动）之前请求
+            let status = await ATTrackingManager.requestTrackingAuthorization()
+            print("[UMeng] IDFA 权限状态: \(status.rawValue)")
+
+            // ② ATT 完成后再启动友盟统计 + 广告 SDK
+            startUMengSDKs()
+
             withAnimation(.easeOut(duration: 0.3)) {
                 if shouldShowSplashAd {
                     launchPhase = .splashAd
