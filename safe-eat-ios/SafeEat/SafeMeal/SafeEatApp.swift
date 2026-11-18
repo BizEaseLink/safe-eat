@@ -1,5 +1,6 @@
 import SwiftUI
 import AppTrackingTransparency
+import AVFoundation
 import Combine
 
 @main
@@ -22,6 +23,8 @@ struct SafeMealApp: App {
     @State private var launchPhase: LaunchPhase = .loading
     @State private var logoScale: CGFloat = 0.65
     @State private var showSplashAd = false
+    /// 是否已完成「集中权限引导」（相机/通知只请求一次，避免用户觉得反复弹）
+    @AppStorage("sm_permission_onboarding_done") private var permissionOnboardingDone = false
 
     /// Logo 动画时长（秒）
     /// Logo 动画时长（秒）：Lottie 单次约 1.67s，留缓冲后约 2.6s（原来太短）
@@ -41,6 +44,20 @@ struct SafeMealApp: App {
     init() {
         SafeMealFont.bootstrap()
         SafeMealAppearance.configure()
+    }
+
+    /// 集中权限引导：相机 + 通知（ATT 已在启动流程中单独请求）
+    /// 只在首次进入 ready 时调用一次（UserDefaults 标记），避免功能触发时反复弹窗。
+    private func requestRemainingPermissions() async {
+        // 相机：未决定时才请求（已允许/已拒绝不再弹）
+        if AVCaptureDevice.authorizationStatus(for: .video) == .notDetermined {
+            _ = await AVCaptureDevice.requestAccess(for: .video)
+        }
+        // 通知：未决定时才请求
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        if settings.authorizationStatus == .notDetermined {
+            _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound])
+        }
     }
 
     /// 启动友盟 SDK（统计 + 广告）。**必须在 ATT 授权完成后调用**：
@@ -107,6 +124,12 @@ struct SafeMealApp: App {
             }
             .onChange(of: adConfig.splashEnabled) { enabled in
                 if !enabled { showSplashAd = false }
+            }
+            // 集中权限引导：首次进入首页/登录页后，一次性请求相机 + 通知（之后不再弹）
+            .onChange(of: launchPhase) { phase in
+                guard phase == .ready, !permissionOnboardingDone else { return }
+                permissionOnboardingDone = true
+                Task { await requestRemainingPermissions() }
             }
             // App 从后台回到前台时，刷新配置
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
