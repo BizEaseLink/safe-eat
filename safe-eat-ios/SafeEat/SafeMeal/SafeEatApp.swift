@@ -166,16 +166,20 @@ struct SafeMealApp: App {
                 .ignoresSafeArea()
 
             VStack(spacing: 20) {
-                AppLogoView(size: 120)
+                // 与 Logo 动画层保持同样大小（160），加载阶段用静态 Logo（不放动画）
+                AppLogoView(size: 160)
                 ProgressView()
                     .tint(SafeMealTheme.primary)
             }
         }
         .transition(.opacity)
         .task {
-            // 设置通知 delegate（仅一次）
+            // ① ATT 必须最先弹：任何网络请求（会触发本地网络权限）和 SDK 启动之前
+            let status = await ATTrackingManager.requestTrackingAuthorization()
+            print("[UMeng] IDFA 权限状态: \(status.rawValue)")
+
+            // ② ATT 完成后再做初始化（网络请求 / 参数 / 配置）
             notificationDelegate.configure(store: store)
-            // 并行加载：用户业务数据 + 通知状态 + 广告配置
             async let bootstrap: Void = store.bootstrap()
             async let notify: Void = settings.refreshNotificationStatus()
             async let ads: Void = AdConfigStore.shared.fetchConfig()
@@ -196,7 +200,7 @@ struct SafeMealApp: App {
 
             // Logo：Lottie 品牌动画（播放一次）+ 弹性放大入场
             LottieLoadingView(size: 160, loop: false)
-                .frame(width: 170, height: 170)
+                .frame(width: 160, height: 160)
                 .scaleEffect(logoScale)
                 .shadow(
                     color: colorScheme == .dark ? Color.clear : Color.black.opacity(0.18),
@@ -213,14 +217,10 @@ struct SafeMealApp: App {
         }
         .transition(.opacity)
         .task {
-            // Logo 动画播放完毕后决定下一步（广告配置在加载阶段已拉取）
+            // Logo 动画播放完毕后决定下一步（ATT 已在开屏加载阶段最先请求）
             try? await Task.sleep(for: .seconds(Self.logoAnimationDuration))
 
-            // ① ATT：必须在任何追踪数据收集（友盟/广告 SDK 启动）之前请求
-            let status = await ATTrackingManager.requestTrackingAuthorization()
-            print("[UMeng] IDFA 权限状态: \(status.rawValue)")
-
-            // ② ATT 完成后再启动友盟统计 + 广告 SDK
+            // 启动友盟统计 + 广告 SDK（ATT 已完成）
             startUMengSDKs()
 
             withAnimation(.easeOut(duration: 0.3)) {
