@@ -12,17 +12,22 @@ struct SafeMealApp: App {
 
     /// 入口流程阶段
     private enum LaunchPhase {
-        case loading          // 开屏加载初始化（参数/配置/用户数据）
-        case logoAnimation    // Logo 动画播放中
+        case splash           // 开屏（同一页：加载中 → 加载完成播动画）
         case splashAd         // 开屏广告展示中
         case ready            // 进入主页面
     }
 
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.scenePhase) private var scenePhase
 
-    @State private var launchPhase: LaunchPhase = .loading
-    @State private var logoScale: CGFloat = 0.65
+    @State private var launchPhase: LaunchPhase = .splash
+    @State private var logoScale: CGFloat = 1.0
+    /// 开屏初始化是否完成（完成后同一页切 Lottie 动画）
+    @State private var splashBootstrapped = false
+    @State private var splashPlayingLottie = false
     @State private var showSplashAd = false
+    /// ATT + 初始化流程是否已开始（避免重复）
+    @State private var attFlowStarted = false
     /// 是否已完成「集中权限引导」（相机/通知只请求一次，避免用户觉得反复弹）
     @AppStorage("sm_permission_onboarding_done") private var permissionOnboardingDone = false
 
@@ -46,18 +51,64 @@ struct SafeMealApp: App {
         SafeMealAppearance.configure()
     }
 
+    /// ATT + 初始化 + 开屏动画：**必须在 scenePhase == .active 时调用**，否则系统不弹窗（直接返回 0）。
+    /// 全部在同一个开屏页内完成：ATT → 加载参数/配置 → 切 Lottie → 启动 SDK → 开屏广告判断。
+    private func performATTThenInit() async {
+        guard !attFlowStarted else { return }
+        attFlowStarted = true
+
+        print("[ATT] 请求前 scenePhase=\(scenePhase)")
+        let status = await ATTrackingManager.requestTrackingAuthorization()
+        print("[ATT] 请求结果 status=\(status.rawValue)（0=未决定 1=受限 2=拒绝 3=授权）")
+
+        // 初始化（网络请求 / 参数 / 配置）
+        notificationDelegate.configure(store: store)
+        async let bootstrap: Void = store.bootstrap()
+        async let notify: Void = settings.refreshNotificationStatus()
+        async let ads: Void = AdConfigStore.shared.fetchConfig()
+        _ = await (bootstrap, notify, ads)
+
+        // 初始化完成 → 同一页切 Lottie 动画（loading 隐藏）
+        splashBootstrapped = true
+        withAnimation(.easeOut(duration: 0.25)) {
+            splashPlayingLottie = true
+        }
+
+        // 动画播完 → 启动友盟统计/广告 SDK → 开屏广告判断
+        try? await Task.sleep(for: .seconds(Self.logoAnimationDuration))
+        startUMengSDKs()
+        withAnimation(.easeOut(duration: 0.3)) {
+            if shouldShowSplashAd {
+                launchPhase = .splashAd
+                showSplashAd = true
+            } else {
+                launchPhase = .ready
+            }
+        }
+    }
+
     /// 集中权限引导：相机 + 通知（ATT 已在启动流程中单独请求）
     /// 只在首次进入 ready 时调用一次（UserDefaults 标记），避免功能触发时反复弹窗。
     private func requestRemainingPermissions() async {
-        // 相机：未决定时才请求（已允许/已拒绝不再弹）
-        if AVCaptureDevice.authorizationStatus(for: .video) == .notDetermined {
-            _ = await AVCaptureDevice.requestAccess(for: .video)
-        }
+        // 相机不在这里请求：改为用户打开拍照时再提示（避免启动就索取相机权限）
         // 通知：未决定时才请求
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         if settings.authorizationStatus == .notDetermined {
             _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound])
         }
+    }
+
+    /// 系统是否为深色外观（直接读窗口 traitCollection，避免 ATT 弹窗后 SwiftUI colorScheme 环境异常导致深浅色跳变）
+
+    /// 读取系统外观（优先 keyWindow 的 traitCollection）
+    private func readSystemDark() -> Bool {
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            let window = scene.windows.first(where: { $0.isKeyWindow }) ?? scene.windows.first
+            if let window {
+                return window.traitCollection.userInterfaceStyle == .dark
+            }
+        }
+        return UITraitCollection.current.userInterfaceStyle == .dark
     }
 
     /// 启动友盟 SDK（统计 + 广告）。**必须在 ATT 授权完成后调用**：
@@ -89,14 +140,12 @@ struct SafeMealApp: App {
                         }
                     }
 
-                // 开屏加载层（初始化参数/配置/用户数据）
-                if launchPhase == .loading {
-                    splashLoadingLayer
-                }
-
-                // Logo 动画层
-                if launchPhase == .logoAnimation {
-                    logoAnimationLayer
+                // 开屏页（同一页：加载初始化 → 完成后播 Lottie 动画）
+                if launchPhase == .splash {
+                    SplashOverlay(
+                        bootstrapped: splashBootstrapped,
+                        playingLottie: splashPlayingLottie
+                    )
                 }
 
                 // 开屏广告层
@@ -124,6 +173,11 @@ struct SafeMealApp: App {
             }
             .onChange(of: adConfig.splashEnabled) { enabled in
                 if !enabled { showSplashAd = false }
+            }
+            // ATT 需要 app 处于 active 才弹：启动时若还是 inactive，等变为 active 再请求
+            .onChange(of: scenePhase) { _, phase in
+                guard phase == .active, launchPhase == .splash, !attFlowStarted else { return }
+                Task { await performATTThenInit() }
             }
             // 集中权限引导：首次进入首页/登录页后，一次性请求相机 + 通知（之后不再弹）
             .onChange(of: launchPhase) { phase in
@@ -159,78 +213,4 @@ struct SafeMealApp: App {
         }
     }
 
-    /// 开屏加载层：品牌背景 + Logo + 加载指示；并行加载参数/配置/用户数据
-    private var splashLoadingLayer: some View {
-        ZStack {
-            SafeMealMainGradientBackground()
-                .ignoresSafeArea()
-
-            VStack(spacing: 20) {
-                // 与 Logo 动画层保持同样大小（160），加载阶段用静态 Logo（不放动画）
-                AppLogoView(size: 160)
-                ProgressView()
-                    .tint(SafeMealTheme.primary)
-            }
-        }
-        .transition(.opacity)
-        .task {
-            // ① ATT 必须最先弹：任何网络请求（会触发本地网络权限）和 SDK 启动之前
-            let status = await ATTrackingManager.requestTrackingAuthorization()
-            print("[UMeng] IDFA 权限状态: \(status.rawValue)")
-
-            // ② ATT 完成后再做初始化（网络请求 / 参数 / 配置）
-            notificationDelegate.configure(store: store)
-            async let bootstrap: Void = store.bootstrap()
-            async let notify: Void = settings.refreshNotificationStatus()
-            async let ads: Void = AdConfigStore.shared.fetchConfig()
-            _ = await (bootstrap, notify, ads)
-
-            withAnimation(.easeOut(duration: 0.25)) {
-                launchPhase = .logoAnimation
-            }
-        }
-    }
-
-    /// Logo 动画层：全屏背景 + 居中 Logo + 缩放渐显动画
-    private var logoAnimationLayer: some View {
-        ZStack {
-            // 首页同款主背景（不带几何装饰块，避免与其他遮罩层混杂）
-            SafeMealMainGradientBackground()
-                .ignoresSafeArea()
-
-            // Logo：Lottie 品牌动画（播放一次）+ 弹性放大入场
-            LottieLoadingView(size: 160, loop: false)
-                .frame(width: 160, height: 160)
-                .scaleEffect(logoScale)
-                .shadow(
-                    color: colorScheme == .dark ? Color.clear : Color.black.opacity(0.18),
-                    radius: 12,
-                    y: 6
-                )
-                .onAppear {
-                    // 弹一弹：0.65 缩放弹到 1.0
-                    withAnimation(.spring(response: 0.55, dampingFraction: 0.55)) {
-                        logoScale = 1.0
-                    }
-                }
-
-        }
-        .transition(.opacity)
-        .task {
-            // Logo 动画播放完毕后决定下一步（ATT 已在开屏加载阶段最先请求）
-            try? await Task.sleep(for: .seconds(Self.logoAnimationDuration))
-
-            // 启动友盟统计 + 广告 SDK（ATT 已完成）
-            startUMengSDKs()
-
-            withAnimation(.easeOut(duration: 0.3)) {
-                if shouldShowSplashAd {
-                    launchPhase = .splashAd
-                    showSplashAd = true
-                } else {
-                    launchPhase = .ready
-                }
-            }
-        }
-    }
 }

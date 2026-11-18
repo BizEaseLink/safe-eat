@@ -987,7 +987,9 @@ final class AppStore: ObservableObject {
 
     private func currentAccessToken() throws -> String {
         guard let token = session?.accessToken else {
-            showLoginPrompt = true
+            // 未登录时不要自动弹登录框：启动期的自动请求（参数/配置/额度）在没有会话时
+            // 会走到这里，若自动弹窗会在开屏加载页就中断体验。登录引导只在用户操作
+            // 受限功能时由 requireLogin(featureHint:) 主动触发。
             throw APIError.server(status: 401, message: SafeMealL10n.text(L10nKey.Errors.sessionExpired), code: nil)
         }
         return token

@@ -8,7 +8,9 @@ struct SplashAdOverlay: UIViewRepresentable {
 
     func makeUIView(context: Context) -> UIView {
         let container = UIView()
-        container.backgroundColor = .black
+        // 透明背景：广告无填充（no ad）或加载失败时会直接关闭，露出开屏页背景，避免黑屏一闪
+        container.backgroundColor = .clear
+        container.isOpaque = false
 
         // 没有有效 slotId 时直接跳过广告
         guard let slotId = AdConfigStore.shared.slotId(for: .splash), !slotId.isEmpty else {
