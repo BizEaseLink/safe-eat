@@ -133,6 +133,8 @@ enum L10nKey {
         static let phoneLabel = "auth.field.phone"
         static let codeLabel = "auth.field.code"
         static let passwordLabel = "auth.field.password"
+            static let passwordShow = "auth.password.show"
+            static let passwordHide = "auth.password.hide"
         static let confirmPasswordLabel = "auth.field.confirm_password"
         static let actionLogin = "auth.action.login"
         static let actionCodeLogin = "auth.action.code_login"

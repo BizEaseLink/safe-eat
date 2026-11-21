@@ -433,7 +433,7 @@ struct ProfileSecureField: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(isSecure ? "显示密码" : "隐藏密码")
+            .accessibilityLabel(SafeMealL10n.text(isSecure ? L10nKey.Auth.passwordShow : L10nKey.Auth.passwordHide))
         }
         .padding(.horizontal, 16)
         .frame(height: 56)

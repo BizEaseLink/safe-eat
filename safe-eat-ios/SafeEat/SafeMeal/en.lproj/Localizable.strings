@@ -1267,3 +1267,5 @@
 "result.section.cooking_method" = "Cooking Method";
 "result.identify_failed_title" = "Recognition Failed";
 "result.identify_failed_subtitle" = "Network error or unrecognizable image, please try again";
+"auth.password.show" = "Show password";
+"auth.password.hide" = "Hide password";
