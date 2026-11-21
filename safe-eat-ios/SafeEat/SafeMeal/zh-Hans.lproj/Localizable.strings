@@ -624,7 +624,7 @@
 "result.metric_impacts.title" = "营养指标评分";
 "result.metric_impacts.score_format" = "加权 %d 分";
 "result.risk_facts.title" = "风险提示";
-"result.ai_advice.title" = "AI 建议";
+"result.ai_advice.title" = "建议";
 "result.ai_advice.health_tips_title" = "健康小贴士";
 "result.ai_advice.upgrade_hint" = "升级查看更多建议";
 
@@ -855,7 +855,7 @@
 // MOB-3: AI 建议分区标题
 "result.ai_advice.summary_label" = "摘要";
 "result.ai_advice.detailed_label" = "详细建议";
-"result.ai_advice.upgrade_tier_hint_format" = "解锁 %@ 完整 AI 建议";
+"result.ai_advice.upgrade_tier_hint_format" = "解锁 %@ 完整建议";
 // C1: 快捷指标卡
 "result.quick_metric.glycemic_index" = "升糖指数";
 "result.quick_metric.glycemic.low" = "低";

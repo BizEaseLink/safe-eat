@@ -745,20 +745,7 @@ struct LoginView: View {
     }
 
     private func authSecureField(title: String, text: Binding<String>) -> some View {
-        SecureField(title, text: text)
-            .textInputAutocapitalization(.never)
-            .font(SafeMealFont.custom(16, relativeTo: .body))
-            .foregroundStyle(SafeMealTheme.textPrimary)
-            .padding(.horizontal, 16)
-            .frame(height: 56)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.78))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
-            )
+        AuthSecureField(title: title, text: text)
     }
 
     private func authPrimaryButton(title: String, isLoading: Bool = false, action: @escaping () -> Void) -> some View {
@@ -989,4 +976,50 @@ struct LoginView: View {
     LoginView()
         .environmentObject(AppStore())
         .environmentObject(AppSettingsStore.shared)
+}
+
+/// 登录页密码输入框（带显示/隐藏密码的眼睛按钮）
+private struct AuthSecureField: View {
+    @Environment(\.colorScheme) private var colorScheme
+    let title: String
+    @Binding var text: String
+    @State private var isSecure = true
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Group {
+                if isSecure {
+                    SecureField(title, text: $text)
+                } else {
+                    TextField(title, text: $text)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                }
+            }
+            .font(SafeMealFont.custom(16, relativeTo: .body))
+            .foregroundStyle(SafeMealTheme.textPrimary)
+
+            Button {
+                isSecure.toggle()
+            } label: {
+                Image(systemName: isSecure ? "eye.slash" : "eye")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(isSecure ? "显示密码" : "隐藏密码")
+        }
+        .padding(.horizontal, 16)
+        .frame(height: 56)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.78))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : SafeMealTheme.line, lineWidth: 1)
+        )
+    }
 }

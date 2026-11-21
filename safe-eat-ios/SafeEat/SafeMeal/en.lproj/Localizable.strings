@@ -764,12 +764,12 @@
 "result.metric_impacts.title" = "Nutrition Metric Scores";
 "result.metric_impacts.score_format" = "Weighted %d pts";
 "result.risk_facts.title" = "Risk Alerts";
-"result.ai_advice.title" = "AI Advice";
+"result.ai_advice.title" = "Advice";
 "result.ai_advice.health_tips_title" = "Health Tips";
 "result.ai_advice.upgrade_hint" = "Upgrade for more advice";
 "result.ai_advice.summary_label" = "Summary";
 "result.ai_advice.detailed_label" = "Detailed Advice";
-"result.ai_advice.upgrade_tier_hint_format" = "Unlock full AI advice with %@";
+"result.ai_advice.upgrade_tier_hint_format" = "Unlock full advice with %@";
 // C1: Quick metric cards
 "result.quick_metric.glycemic_index" = "Glycemic";
 "result.quick_metric.glycemic.low" = "LOW";

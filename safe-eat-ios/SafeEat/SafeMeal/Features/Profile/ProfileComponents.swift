@@ -407,22 +407,44 @@ struct ProfileSecureField: View {
     @Environment(\.colorScheme) private var colorScheme
     let title: String
     @Binding var text: String
+    @State private var isSecure = true
 
     var body: some View {
-        SecureField(title, text: $text)
-            .textInputAutocapitalization(.never)
+        HStack(spacing: 8) {
+            Group {
+                if isSecure {
+                    SecureField(title, text: $text)
+                } else {
+                    TextField(title, text: $text)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                }
+            }
             .font(SafeMealFont.custom(16, relativeTo: .body))
             .foregroundStyle(SafeMealTheme.textPrimary)
-            .padding(.horizontal, 16)
-            .frame(height: 56)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(profileControlFill(for: colorScheme))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(profileStrokeColor(for: colorScheme), lineWidth: 1)
-            )
+
+            Button {
+                isSecure.toggle()
+            } label: {
+                Image(systemName: isSecure ? "eye.slash" : "eye")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(SafeMealTheme.textSecondary)
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(isSecure ? "显示密码" : "隐藏密码")
+        }
+        .padding(.horizontal, 16)
+        .frame(height: 56)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(profileControlFill(for: colorScheme))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(profileStrokeColor(for: colorScheme), lineWidth: 1)
+        )
     }
 }
 
